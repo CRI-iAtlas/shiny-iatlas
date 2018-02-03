@@ -1,4 +1,4 @@
-# shiny-protyping
+# shiny-prototyping
 
 Run using 
 runApp("iatlas-demo/")
