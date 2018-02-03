@@ -1,0 +1,80 @@
+Origin	OriginalLabel	BigQueryLabel	FeatureMatrixLabelTSV	FeatureMatrixLabelBigQuery	FriendlyLabel	TransformationsApplied	Note
+syn8464746	ClusterModel1	ClusterModel1	Subtype_Immune_Model_Based	Subtype_Immune_Model_Based	Immune Subtype	prefixed with "C" for FMx	
+syn8396853	Subtype_Selected	Subtype_Selected	Subtype_Curated_Malta_Noushmehr_et_al	Subtype_Curated_Malta_Noushmehr_et_al	TCGA Subtype		
+		Study	Study	Study	TCGA Study		
+syn5808205	NA	estimated_leukocyte_fraction	leukocyte_fraction	leukocyte_fraction	Leukocyte Fraction		
+syn7300639	purity	Purity	Stromal_Fraction	Stromal_Fraction	Stromal Fraction	1-Purity	
+syn7300639	Subclonal genome fraction	Subclonal_genome_fraction	Subclonal_genome_fraction	Subclonal_genome_fraction	Intratumor Heterogeneity		
+syn9872614	TIL_fraction	TIL_fraction_image	TIL_fraction_from_images	TIL_fraction_from_images	TIL Region Fraction		
+syn6165992	Module11_Prolif_score	Score	Module11_Prolif_score	Module11_Prolif_score	Proliferation		BQ Table in tidy format
+syn6165992	CHANG_CORE_SERUM_RESPONSE_UP	Score	CHANG_CORE_SERUM_RESPONSE_UP	CHANG_CORE_SERUM_RESPONSE_UP	Wound Healing		
+syn6165992	CSF1_response	Score	CSF1_response	CSF1_response	Macrophage Regulation		
+syn6165992	LIexpression_score	Score	LIexpression_score	LIexpression_score	Lymphocyte Infiltration Signature Score		
+syn6165992	Module3_IFN_score	Score	Module3_IFN_score	Module3_IFN_score	IFN-gamma Response		
+syn6165992	TGFB_score_21050467	Score	TGFB_score_21050467	TGFB_score_21050467	TGF-beta Response		
+syn8566192	numberOfImmunogenicMutation	numberOfImmunogenicMutation	numberOfImmunogenicMutation	numberOfImmunogenicMutation	SNV Neoantigens		
+syn9628488	neoantigen_num	neoantigen_num	indel_neoantigen_num	indel_neoantigen_num	Indel Neoantigens		
+syn7415026	AS	AS_	AS	AS	Aneuploidy Score		
+syn8493905	evenness_by_seq	evenness_by_seq	BCR_Evenness	BCR_Evenness	BCR Evenness		
+syn8493905	shannon_entropy_by_seq	shannon_entropy_by_seq	BCR_Shannon	BCR_Shannon	BCR Shannon		
+syn8493905	num_unique_seq	num_unique_seq	BCR_Richness	BCR_Richness	BCR Richness		
+syn7063422	shannon	shannon	TCR_Shannon	TCR_Shannon	TCR Shannon		
+syn7063422	numClones	numClones	TCR_Richness	TCR_Richness	TCR Richness		TCR_numClones within script to generate FMx
+syn7063422	totTCR_reads	totTCR_reads	totTCR_reads	totTCR_reads	NA		
+NA	NA	NA	TCR_Evenness	TCR_Evenness	TCR Evenness	TCR_Evenness=TCR_Shannon/log(TCR_numClones)	
+NA	NA	NA	CTA_Score	CTA_Score	CTA Score		Cancer Testis Antigen Score - currently read in from disk
+syn11082523	NormScore	Score	Th1.cells	Th1_cells	Th1 Cells	Filter BQTable on 'Th1 cells'	Need help from Dave to check
+syn11082523	NormScore	Score	Th2.cells	Th2_cells	Th2 Cells	Filter BQTable on 'Th2 cells'	Need help from Dave to check
+syn11082523	NormScore	Score	Th17.cells	Th17_cells	Th17 Cells	Filter BQTable on 'Th17 cells'	Need help from Dave to check
+syn8121775	OS	OS	OS	OS	OS		
+syn8121775	OS_time	OS_time	OS_time	OS_time	OS Time		
+syn8121775	PFI_1	PFI_1	PFI_1	PFI_1	PFI		
+syn8121775	PFI_time_1	PFI_time_1	PFI_time_1	PFI_time_1	PFI Time		
+syn7337221	B.cells.memory	B.cells.memory	B.cells.memory	B_cells_memory	B Cells Memory		
+syn7337221	B.cells.naive	B.cells.naive	B.cells.naive	B_cells_naive	B Cells Naive		
+syn7337221	Dendritic.cells.activated	Dendritic.cells.activated	Dendritic.cells.activated	Dendritic_cells_activated	Dendritic Cells Activated		
+syn7337221	Dendritic.cells.resting	Dendritic.cells.resting	Dendritic.cells.resting	Dendritic_cells_resting	Dendritic Cells Resting		
+syn7337221	Eosinophils	Eosinophils	Eosinophils	Eosinophils	Eosinophils		
+syn7337221	Macrophages.M0	Macrophages.M0	Macrophages.M0	Macrophages_M0	Macrophages M0		
+syn7337221	Macrophages.M1	Macrophages.M1	Macrophages.M1	Macrophages_M1	Macrophages M1		
+syn7337221	Macrophages.M2	Macrophages.M2	Macrophages.M2	Macrophages_M2	Macrophages M2		
+syn7337221	Mast.cells.activated	Mast.cells.activated	Mast.cells.activated	Mast_cells_activated	Mast Cells Activated		
+syn7337221	Mast.cells.resting	Mast.cells.resting	Mast.cells.resting	Mast_cells_resting	Mast Cells Resting		
+syn7337221	Monocytes	Monocytes	Monocytes	Monocytes	Monocytes		
+syn7337221	Neutrophils	Neutrophils	Neutrophils	Neutrophils	Neutrophils		
+syn7337221	NK.cells.activated	NK.cells.activated	NK.cells.activated	NK_cells_activated	NK Cells Activated		
+syn7337221	NK.cells.resting	NK.cells.resting	NK.cells.resting	NK_cells_resting	NK Cells Resting		
+syn7337221	Plasma.cells	Plasma.cells	Plasma.cells	Plasma_cells	Plasma Cells		
+syn7337221	T.cells.CD4.memory.activated	T.cells.CD4.memory.activated	T.cells.CD4.memory.activated	T_cells_CD4_memory_activated	T Cells CD4 Memory Activated		
+syn7337221	T.cells.CD4.memory.resting	T.cells.CD4.memory.resting	T.cells.CD4.memory.resting	T_cells_CD4_memory_resting	T Cells CD4 Memory Resting		
+syn7337221	T.cells.CD4.naive	T.cells.CD4.naive	T.cells.CD4.naive	T_cells_CD4_naive	T Cells CD4 Naive		
+syn7337221	T.cells.CD8	T.cells.CD8	T.cells.CD8	T_cells_CD8	T Cells CD8		
+syn7337221	T.cells.follicular.helper	T.cells.follicular.helper	T.cells.follicular.helper	T_cells_follicular_helper	T Cells Follicular Helper		
+syn7337221	T.cells.gamma.delta	T.cells.gamma.delta	T.cells.gamma.delta	T_cells_gamma_delta	T Cells gamma delta		
+syn7337221	T.cells.regulatory..Tregs.	T.cells.regulatory.Tregs	T.cells.regulatory.Tregs	T_cells_regulatory_Tregs	T Cells Regulatory Tregs	Extra dots removed priort to BQ load	
+syn8540746	Lymphocytes	Lymphocytes	Lymphocytes.Aggregate1	Lymphocytes_Aggregate1	Lymphocytes		
+syn8540746	Neutrophils	Neutrophils	Neutrophils.Aggregate1	Neutrophils_Aggregate1	Neutrophils		
+syn8540746	Eosinophils	Eosinophils	Eosinophils.Aggregate1	Eosinophils_Aggregate1	Eosinophils		
+syn8540746	Mast.cells	Mast_cells	Mast_cells.Aggregate1	Mast_cells_Aggregate1	Mast Cells		
+syn8540746	Dendritic.cells	Dendritic_cells	Dendritic_cells.Aggregate1	Dendritic_cells_Aggregate1	Dendritic Cells		
+syn8540746	Macrophage	Macrophage	Macrophage.Aggregate1	Macrophage_Aggregate1	Macrophages		
+syn8540752	Neutrophils	Neutrophils	Neutrophils.Aggregate2	Neutrophils_Aggregate2	Neutrophils		
+syn8540752	Eosinophils	Eosinophils	Eosinophils.Aggregate2	Eosinophils_Aggregate2	Eosinophils		
+syn8540752	Mast.cells	Mast_cells	Mast_cells.Aggregate2	Mast_cells_Aggregate2	Mast Cells		
+syn8540752	Dendritic.cells	Dendritic_cells	Dendritic_cells.Aggregate2	Dendritic_cells_Aggregate2	Dendritic Cells		
+syn8540752	Macrophage	Macrophage	Macrophage.Aggregate2	Macrophage_Aggregate2	Macrophage		
+syn8540752	NK.cells	NK_cells	NK_cells.Aggregate2	NK_cells_Aggregate2	NK Cells		
+syn8540752	B.cells	B_cells	B_cells.Aggregate2	B_cells_Aggregate2	B Cells		
+syn8540752	T.cells.CD8	T_cells_CD8	T_cells_CD8.Aggregate2	T_cells_CD8_Aggregate2	T Cells CD8		
+syn8540752	T.cells.CD4	T_cells_CD4	T_cells_CD4.Aggregate2	T_cells_CD4_Aggregate2	T Cells CD4		
+syn8540753	B.cells	B_cells	B_cells.Aggregate3	B_cells_Aggregate3	B Cells		Need to check if we use Aggregate 3 in the paper!
+syn8540753	Plasma.cells	Plasma_cells	Plasma_cells.Aggregate3	Plasma_cells_Aggregate3	Plasma Cells		
+syn8540753	T.cells.CD8	T_cells_CD8	T_cells_CD8.Aggregate3	T_cells_CD8_Aggregate3	T Cells CD8		
+syn8540753	T.cells.CD4	T_cells_CD4	T_cells_CD4.Aggregate3	T_cells_CD4_Aggregate3	T Cells CD4		
+syn8540753	T.cells.gamma.delta	T_cells_gamma_delta	T_cells_gamma_delta.Aggregate3	T_cells_gamma_delta_Aggregate3	T Cells gamma delta		
+syn8540753	NK.cells	NK_cells	NK_cells.Aggregate3	NK_cells_Aggregate3	NK Cells		
+syn8540753	Macrophage	Macrophage	Macrophage.Aggregate3	Macrophage_Aggregate3	Macrophages		
+syn8540753	Dendritic.cells	Dendritic_cells	Dendritic_cells.Aggregate3	Dendritic_cells_Aggregate3	Dendritic Cells		
+syn8540753	Mast.cells	Mast_cells	Mast_cells.Aggregate3	Mast_cells_Aggregate3	Mast Cells		
+syn8540753	Neutrophils	Neutrophils	Neutrophils.Aggregate3	Neutrophils_Aggregate3	Neutrophils		
+syn8540753	Eosinophils	Eosinophils	Eosinophils.Aggregate3	Eosinophils_Aggregate3	Eosinophils		
