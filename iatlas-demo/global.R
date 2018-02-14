@@ -10,7 +10,8 @@ source("modules/cellcontentmodule.R")
 source("modules/immuneinterfacemodule.R")
 source("modules/featurecorrelationmodule.R")
 source("modules/survivalmodule.R")
-
+#source("functions/load_data.R")
+#source("functions/utils.R")
 
 # common plot theme
 theme_1012 <- theme(
