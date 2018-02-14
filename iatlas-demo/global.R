@@ -6,6 +6,12 @@ library(survival)
 library(survminer)
 library(tidyverse)
 
+source("modules/cellcontentmodule.R")
+source("modules/immuneinterfacemodule.R")
+source("modules/featurecorrelationmodule.R")
+source("modules/survivalmodule.R")
+
+
 # common plot theme
 theme_1012 <- theme(
     axis.text = element_text(face = "bold", size = 10, color = "black"),

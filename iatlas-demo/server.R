@@ -9,13 +9,13 @@ options(shiny.maxRequestSize = 100*1024^2)
 # Begin Shiny Server definition.
 ################################################################################
 shinyServer(function(input, output) {
-    # Cell content
-    source("panels/panel-server-cellcontent.R", local = TRUE)
+    # # Cell content
+    callModule(cellcontent, "module1")
     # Clonal diversity
-    source("panels/panel-server-clonaldiversity.R", local = TRUE)
+    callModule(immuneinterface, "module2")
     # Correlation heatmaps
-    source("panels/panel-server-corrheatmap.R", local = TRUE)
+    callModule(featurecorrelation, "module3")
     # Survival curves
-    source("panels/panel-server-survivalcurve.R", local = TRUE)
+    callModule(survival, "module4")
 })
 ################################################################################
