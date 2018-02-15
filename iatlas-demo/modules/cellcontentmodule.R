@@ -33,22 +33,22 @@ cellcontent_UI <- function(id) {
 cellcontent <- function(input, output, session){
     
     output$distPlot <- renderPlot({
-        sampgroup   <- get_cellcontent_label("samplegroups", input$selectionchoice)
-        cellcontent <- get_cellcontent_label("cellcontent", input$cellcontentchoice)
+        sample_group_label <- get_cellcontent_label("samplegroups", input$selectionchoice)
+        cellcontent_label <- get_cellcontent_label("cellcontent", input$cellcontentchoice)
         ## create dfp, the data frame for plotting, based on choices
-        dfp <- create_cellcontent_df(sampgroup, cellcontent)
-        ## custom colors if available 
-        plotcolors <- decide_plotcolors(sampgroup)
+        plot_df <- create_cellcontent_df(sample_group_label, cellcontent_label)
         plot <- create_boxplot(
-            dfp, 
-            x = sampgroup, 
-            y = cellcontent, 
-            fill = sampgroup, 
+            plot_df, 
+            x = sample_group_label, 
+            y = cellcontent_label, 
+            fill = sample_group_label, 
             input$selectionchoice, 
             input$cellcontentchoice)
-        if(!is.null(plotcolors)){
-            plot <- plot + scale_fill_manual(values = plotcolors)}
-        print(p)
+        ## custom colors if available 
+        plot_colors <- decide_plot_colors(sample_group_label)
+        if(!is.null(plot_colors)){
+            plot <- plot + scale_fill_manual(values = plot_colors)}
+        print(plot)
     })
 }
 
@@ -61,15 +61,15 @@ get_cellcontent_label <- function(lst, selection){
         as.character
 }
 
-decide_plotcolors <- function(sampgroup){
-    if (sampgroup == 'Study'){
-        plotcolors <- cellcontent_data$tcga_colors
+decide_plot_colors <- function(sample_group_label){
+    if (sample_group_label == 'Study'){
+        plot_colors <- cellcontent_data$tcga_colors
     }
-    else if (sampgroup == 'Subtype_Immune_Model_Based'){
-        plotcolors <- cellcontent_data$subtype_colors
+    else if (sample_group_label == 'Subtype_Immune_Model_Based'){
+        plot_colors <- cellcontent_data$subtype_colors
     }
     else {
-        plotcolors <- NULL
+        plot_colors <- NULL
     }
-    return(plotcolors)
+    return(plot_colors)
 }
