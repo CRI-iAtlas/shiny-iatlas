@@ -11,13 +11,13 @@ cellcontent_UI <- function(id) {
                     # Drop-down selected sample groups
                     selectInput(inputId=ns("selectionchoice"),
                                 label="Select Sample Groups",
-                                choices=as.character(cellcontent_data$sampleselectionchoices),
+                                choices=as.character(cellcontent_data$sample_selection_choices),
                                 selected="Immune Subtype"),
                     
                     # Drop-down selected cell content
                     selectInput(inputId=ns("cellcontentchoice"),
                                 label="Select Cellular Content",
-                                choices=as.character(cellcontent_data$cellcontentchoices),
+                                choices=as.character(cellcontent_data$cell_content_choices),
                                 selected="Leukocyte Fraction")
                 ),
                 
@@ -33,8 +33,8 @@ cellcontent_UI <- function(id) {
 cellcontent <- function(input, output, session){
     
     output$distPlot <- renderPlot({
-        sampgroup <- as.character(cellcontent_data$samplegroups[input$selectionchoice]) ## the label at the data source
-        cellcontent <- as.character(cellcontent_data$cellcontent[input$cellcontentchoice])
+        sampgroup <- as.character(cellcontent_data$sample_groups[input$selectionchoice]) ## the label at the data source
+        cellcontent <- as.character(cellcontent_data$cell_content[input$cellcontentchoice])
         ## create dfp, the data frame for plotting, based on choices
         if ( USE_REMOTE) { 
             bq <- paste('SELECT ',sampgroup," , ", cellcontent," FROM [isb-cgc-01-0007:Feature_Matrix.PanImmune_FMx]",
@@ -47,6 +47,9 @@ cellcontent <- function(input, output, session){
         ## custom colors if available 
         if (sampgroup=='Study'){plotcolors <- cellcontent_data$tcga_colors}
         else if (sampgroup=='Subtype_Immune_Model_Based') {plotcolors <- cellcontent_data$subtype_colors}
+        
+        print(input$selectionchoice)
+        print(input$cellcontentchoice)
         
         p <- create_boxplot(dfp, x = sampgroup, y = cellcontent, fill = sampgroup, input$selectionchoice, input$cellcontentchoice)
         if ( sampgroup %in% c('Study','Subtype_Immune_Model_Based'))
