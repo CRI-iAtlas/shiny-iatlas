@@ -73,11 +73,10 @@ create_receptor_type_choices <- function(){
         purrr::set_names(.)
 }
 
-
 ## selection choices for the cell fractions.  Lots of other choices possible.
 create_cell_content <- function(){
     if (!USE_REMOTE) {
-        cellcontent <- c(
+        cell_content <- c(
             'leukocyte_fraction',
             'Lymphocytes.Aggregate1',
             'T.cells.CD8',
@@ -85,7 +84,7 @@ create_cell_content <- function(){
             'Macrophage.Aggregate1'
         )
     } else {
-        cellcontent <- c(
+        cell_content <- c(
             'leukocyte_fraction',
             'Lymphocytes.Aggregate1',
             'T_cells_CD8',
@@ -93,6 +92,7 @@ create_cell_content <- function(){
             'Macrophage_Aggregate1'
         )
     }
+    return(cell_content)
 }
 
 create_cell_content_choices <- function(cell_content, friendly_var){
