@@ -5,16 +5,11 @@ library(heatmaply)
 library(survival)
 library(survminer)
 library(tidyverse)
+library(yaml)
 
-source("modules/cellcontentmodule.R")
-source("modules/immuneinterfacemodule.R")
-source("modules/featurecorrelationmodule.R")
-source("modules/survivalmodule.R")
-source("functions/load_data.R")
-source("functions/utils.R")
-source("functions/boxplot.R")
-source("functions/heatmap.R")
-source("functions/kmplot.R")
+config_yaml <- yaml::read_yaml("configuration.yaml")
+
+purrr::walk(config_yaml$source_files, source)
 
 # common plot theme
 theme_1012 <- theme(
@@ -28,7 +23,7 @@ theme_1012 <- theme(
 )
 
 # general data loading & prep
-USE_REMOTE = FALSE ## set data as remote (BigQuery) or local(Feature Matrix on disk)
+USE_REMOTE_BQ = F ## set data as remote (BigQuery) or local(Feature Matrix on disk)
+USE_REMOTE_GS = F
 
-
-panimmune_data <- load_data(USE_REMOTE)
+panimmune_data <- load_data()

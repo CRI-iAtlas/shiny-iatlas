@@ -1,5 +1,5 @@
-load_data <- function(USE_REMOTE) {
-    if (!USE_REMOTE){ 
+load_data <- function() {
+    if (!USE_REMOTE_BQ){ 
         load("data/PanImmune_FMx.RData") ## reads in data frame, df. Adjust as needed for local loading
     }
     
@@ -75,7 +75,7 @@ create_receptor_type_choices <- function(){
 
 ## selection choices for the cell fractions.  Lots of other choices possible.
 create_cell_content <- function(){
-    if (!USE_REMOTE) {
+    if (!USE_REMOTE_BQ) {
         cell_content <- c(
             'leukocyte_fraction',
             'Lymphocytes.Aggregate1',
