@@ -33,25 +33,43 @@ cellcontent_UI <- function(id) {
 cellcontent <- function(input, output, session){
     
     output$distPlot <- renderPlot({
-        sampgroup <- as.character(cellcontent_data$samplegroups[input$selectionchoice]) ## the label at the data source
-        cellcontent <- as.character(cellcontent_data$cellcontent[input$cellcontentchoice])
+        sampgroup   <- get_cellcontent_label("samplegroups", input$selectionchoice)
+        cellcontent <- get_cellcontent_label("cellcontent", input$cellcontentchoice)
         ## create dfp, the data frame for plotting, based on choices
-        if ( USE_REMOTE) { 
-            bq <- paste('SELECT ',sampgroup," , ", cellcontent," FROM [isb-cgc-01-0007:Feature_Matrix.PanImmune_FMx]",
-                        " where ",cellcontent," is not null and ",sampgroup," is not null")
-            dfp <- query_exec(bq,project="isb-cgc-01-0007") }
-        else {
-            dfp <- cellcontent_data$df %>% select(sampgroup,cellcontent) %>% .[complete.cases(.),]
-        }
-        
+        dfp <- create_cellcontent_df(sampgroup, cellcontent)
         ## custom colors if available 
-        if (sampgroup=='Study'){plotcolors <- cellcontent_data$tcga_colors}
-        else if (sampgroup=='Subtype_Immune_Model_Based') {plotcolors <- cellcontent_data$subtype_colors}
-        
-        p <- create_boxplot(dfp, x = sampgroup, y = cellcontent, fill = sampgroup, input$selectionchoice, input$cellcontentchoice)
-        if ( sampgroup %in% c('Study','Subtype_Immune_Model_Based'))
-        {p <- p + scale_fill_manual(values=plotcolors )}
+        plotcolors <- decide_plotcolors(sampgroup)
+        plot <- create_boxplot(
+            dfp, 
+            x = sampgroup, 
+            y = cellcontent, 
+            fill = sampgroup, 
+            input$selectionchoice, 
+            input$cellcontentchoice)
+        if(!is.null(plotcolors)){
+            plot <- plot + scale_fill_manual(values = plotcolors)}
         print(p)
     })
 }
 
+# helper functions ------------------------------------------------------------
+
+get_cellcontent_label <- function(lst, selection){
+    cellcontent_data %>% 
+        magrittr::extract2(lst) %>% 
+        magrittr::extract2(selection) %>% 
+        as.character
+}
+
+decide_plotcolors <- function(sampgroup){
+    if (sampgroup == 'Study'){
+        plotcolors <- cellcontent_data$tcga_colors
+    }
+    else if (sampgroup == 'Subtype_Immune_Model_Based'){
+        plotcolors <- cellcontent_data$subtype_colors
+    }
+    else {
+        plotcolors <- NULL
+    }
+    return(plotcolors)
+}
