@@ -1,6 +1,7 @@
 #cellcontentmodule
 create_boxplot <- function(df, sample_group, cellcontent, x_label, y_label ){
-    ggplot(df, aes_string(sample_group, cellcontent, fill = sampgroup)) + 
+    df %>% 
+        ggplot(aes_string(x = sample_group, y = cellcontent, fill = sampgroup)) + 
         geom_boxplot() +
         guides(colour = FALSE, fill = FALSE) +
         ylab(y_label) + 
