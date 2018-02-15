@@ -1,20 +1,9 @@
-library(shinythemes)
-library(bigrquery)
-library(plotly)
-library(heatmaply)
-library(survival)
-library(survminer)
+library(yaml)
 library(tidyverse)
+config_yaml <- yaml::read_yaml("configuration.yaml")
+purrr::walk(config_yaml$libraries, library, character.only = T)
+purrr::walk(config_yaml$source_files, source)
 
-source("modules/cellcontentmodule.R")
-source("modules/immuneinterfacemodule.R")
-source("modules/featurecorrelationmodule.R")
-source("modules/survivalmodule.R")
-source("functions/load_data.R")
-source("functions/utils.R")
-source("functions/boxplot.R")
-source("functions/heatmap.R")
-source("functions/kmplot.R")
 
 # common plot theme
 theme_1012 <- theme(
