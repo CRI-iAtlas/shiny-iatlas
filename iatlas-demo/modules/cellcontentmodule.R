@@ -48,12 +48,7 @@ cellcontent <- function(input, output, session){
         if (sampgroup=='Study'){plotcolors <- cellcontent_data$tcga_colors}
         else if (sampgroup=='Subtype_Immune_Model_Based') {plotcolors <- cellcontent_data$subtype_colors}
         
-        p <- ggplot(dfp,aes_string(sampgroup,cellcontent,fill=sampgroup)) + geom_boxplot() +
-            guides(colour = FALSE, fill = FALSE) +
-            ylab(input$cellcontentchoice) + xlab(input$selectionchoice) +
-            theme_bw() +
-            theme_1012  +
-            theme(axis.text.x = element_text(angle=90,vjust = 0.5))
+        p <- create_boxplot(dfp, x = sampgroup, y = cellcontent, fill = sampgroup, input$selectionchoice, input$cellcontentchoice)
         if ( sampgroup %in% c('Study','Subtype_Immune_Model_Based'))
         {p <- p + scale_fill_manual(values=plotcolors )}
         print(p)

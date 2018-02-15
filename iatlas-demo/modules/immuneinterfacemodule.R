@@ -105,16 +105,8 @@ immuneinterface <- function(input, output, session){
                 mutate(diversity = (diversity - div_mean) / div_sd)
             scale_label <- paste0("Z-score: ", scale_label)
         }
-        
-        p <- dfp %>% 
-            ggplot(aes_string(x = sample_group, y = "diversity")) + 
-            geom_boxplot(aes_string(fill = sample_group)) +
-            guides(colour = FALSE, fill = FALSE) +
-            ylab(glue::glue("Diversity [{label}]", label = scale_label)) + 
-            xlab(input$selection_choice) +
-            theme_bw() +
-            theme_1012  + 
-            theme(axis.text.x = element_text(angle = 90, vjust = 0.5)) +
+        y_label <- glue::glue("Diversity [{label}]", label = scale_label)
+        p <- create_boxplot(dfp, x = sample_group, y = "diversity", fill = sample_group, input$selection_choice, y_label) +
             facet_grid(receptor ~ .)
         if (sample_group %in% c('Study', 'Subtype_Immune_Model_Based')) {
             p <- p + scale_fill_manual(values = plotcolors)
