@@ -52,7 +52,7 @@ immuneinterface_UI <- function(id) {
 immuneinterface <- function(input, output, session){
     output$diversityPlot <- renderPlot({
         
-        sample_group <- clonaldiversity_data$sample_groups[input$selection_choice] ## the label at the data source
+        sample_group <- get_label_from_data_obj(clonaldiversity_data, "sample_groups", input$selection_choice)
         diversity_metric <- input$diversity_metric_choice
         receptor_types <- input$receptor_type_choices
         
@@ -60,31 +60,7 @@ immuneinterface <- function(input, output, session){
                                          sep = "_")
         
         ## create dfp, the data frame for plotting, based on choices
-        if (USE_REMOTE) { 
-            bq <- glue::glue('
-                             SELECT {samples}, {vars} \\
-                             FROM [isb-cgc-01-0007:Feature_Matrix.PanImmune_FMx] \\
-                             where {samples} is not null \\
-                             and {vars} is not null \\
-                             ',
-                             samples = sample_group, vars = diversity_vars
-            )
-            dfp <- query_exec(bq, project="isb-cgc-01-0007") }
-        else {
-            dfp <- clonaldiversity_data$df %>% 
-                select(sample_group, diversity_vars) %>% 
-                .[complete.cases(.), ] %>% 
-                gather(metric, diversity, -1) %>% 
-                separate(metric, into = c("receptor", "metric"), sep = "_")
-        }
-        
-        ## custom colors if available 
-        if (sample_group == 'Study') {
-            plotcolors <- clonaldiversity_data$tcga_colors
-        }
-        else if (sample_group == 'Subtype_Immune_Model_Based') {
-            plotcolors <- clonaldiversity_data$subtype_colors
-        }
+        dfp <- create_immuneinterface_df(sample_group, diversity_vars)
         
         ## adjust scales
         if (diversity_metric %in% c("Evenness", "Richness")) {
@@ -106,13 +82,16 @@ immuneinterface <- function(input, output, session){
             scale_label <- paste0("Z-score: ", scale_label)
         }
         y_label <- glue::glue("Diversity [{label}]", label = scale_label)
-        p <- create_boxplot(dfp, x = sample_group, y = "diversity", fill = sample_group, input$selection_choice, y_label) +
+        plot <- create_boxplot(dfp, x = sample_group, y = "diversity", fill = sample_group, input$selection_choice, y_label) +
             facet_grid(receptor ~ .)
-        if (sample_group %in% c('Study', 'Subtype_Immune_Model_Based')) {
-            p <- p + scale_fill_manual(values = plotcolors)
-        }
-        print(p)
+        ## custom colors if available 
+        plot_colors <- decide_plot_colors(clonaldiversity_data, sample_group)
+        if(!is.na(plot_colors)){
+            plot <- plot + scale_fill_manual(values = plot_colors)}
+        print(plot)
     })
-    
-    
 }
+
+# helper functions ------------------------------------------------------------
+
+

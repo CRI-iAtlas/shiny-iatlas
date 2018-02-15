@@ -138,3 +138,19 @@ buildDataFrame_surv <- function(dat, var1, timevar, divk) {
     print(head(df))
     df
 }
+
+get_label_from_data_obj <- function(obj, obj_list, selection){
+    obj %>% 
+        magrittr::extract2(obj_list) %>% 
+        magrittr::extract2(selection) %>% 
+        as.character
+}
+
+decide_plot_colors <- function(data_obj, sample_group_label){
+    color_mapping <- c(
+        'Study' = "tcga_colors",
+        'Subtype_Immune_Model_Based' = "subtype_colors")
+    if(!sample_group_label %in% names(color_mapping)) return(NA)
+    color_item  <- magrittr::extract2(color_mapping, sample_group_label)
+    plot_colors <- magrittr::extract2(data_obj, color_item)
+}
