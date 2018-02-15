@@ -1,11 +1,11 @@
 #featurecorrelationmodule
-create_heatmap <- function(df, input_var, cluster_cols, cluster_rows, palatte){
+create_heatmap <- function(df, input_var, cluster_cols, cluster_rows, colors){
     heatmaply(
         df, 
-        main = getNiceName(input_var), 
+        main = input_var, 
         Colv = cluster_cols, 
         Rowv = cluster_rows,
-        colors = palatte,
+        colors = colors,
         margins = c(150, 200, NA, 0)) %>% 
     layout(
         xaxis = list(tickangle = 45),

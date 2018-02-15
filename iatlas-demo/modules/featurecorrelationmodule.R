@@ -35,14 +35,20 @@ featurecorrelation_UI <- function(id) {
                           "TCGA Subtypes"="Subtype_Curated_Malta_Noushmehr_et_al"), 
                         selected = "Immune Subtypes"),
                     
-                    checkboxInput(ns("clustercols"), label = "Cluster Columns", value = F),
-                    checkboxInput(ns("clusterrows"), label = "Cluster Rows", value = T)
+                    checkboxInput(
+                        ns("clustercols"), 
+                        label = "Cluster Columns", 
+                        value = F),
+                    
+                    checkboxInput(
+                        ns("clusterrows"), 
+                        label = "Cluster Rows", 
+                        value = T)
                 ),
                 
                 mainPanel(
                     plotlyOutput(ns("corrPlot"), height = "600px"),
                     HTML("<br><br><br>")
-                    #verbatimTextOutput("event")
                 )
             )
         )
@@ -50,7 +56,6 @@ featurecorrelation_UI <- function(id) {
 }
 
 featurecorrelation <- function(input, output, session){
-    # renderPlotly() also understands ggplot2 objects!
     output$corrPlot <- renderPlotly({
         # first build the correlation matrix
         df <- buildDataFrame_corr(corrheatmap_data$dat, input$var1, input$var2, input$catx)
@@ -58,18 +63,8 @@ featurecorrelation <- function(input, output, session){
         cluster_cols <- as.logical(input$clustercols)
         cluster_rows <- as.logical(input$clusterrows)
         # color scheme
-        rwb <- colorRampPalette(colors = c("blue", "white", "red"))
-        heatmaply(df, 
-                  main = getNiceName(input$var2), 
-                  Colv=cluster_cols, Rowv=cluster_rows,
-                  colors = rwb,
-                  margins = c(150,200,NA,0)) %>% 
-            layout(xaxis = list(tickangle = 45),
-                   font = list(family = "Roboto, Open Sans, sans-serif"))
-    })
-    
-    output$event <- renderPrint({
-        d <- event_data("plotly_hover")
-        if (is.null(d)) "Hover on a point!" else d
+        colors <- colorRampPalette(colors = c("blue", "white", "red"))
+        input_var <- getNiceName(input$var2)
+        create_heatmap(df, input_var, cluster_cols, cluster_rows, colors)
     })
 }

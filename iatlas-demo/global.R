@@ -13,8 +13,8 @@ source("modules/survivalmodule.R")
 source("functions/load_data.R")
 source("functions/utils.R")
 source("functions/boxplot.R")
-#source("functions/heatmap.R")
-#source("functions/kmplot.R")
+source("functions/heatmap.R")
+source("functions/kmplot.R")
 
 # common plot theme
 theme_1012 <- theme(
