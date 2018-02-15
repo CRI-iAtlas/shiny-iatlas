@@ -35,6 +35,10 @@ cellcontent <- function(input, output, session){
     output$distPlot <- renderPlot({
         sample_group_label <- get_label_from_data_obj(cellcontent_data, "samplegroups", input$selectionchoice)
         cellcontent_label <- get_label_from_data_obj(cellcontent_data, "cellcontent", input$cellcontentchoice)
+        print(input$cellcontentchoice)
+        print("###")
+        print(cellcontent_data$cellcontent)
+        
         ## create dfp, the data frame for plotting, based on choices
         plot_df <- create_cellcontent_df(sample_group_label, cellcontent_label)
         ## custom colors if available 
