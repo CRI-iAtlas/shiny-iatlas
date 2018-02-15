@@ -125,7 +125,7 @@ load_clonaldiversity_data <- function(USE_REMOTE) {
          receptor_type_choices = receptor_type_choices)
 }
 
-load_corrheatmap_data <- function(USE_REMOTE) {
+load_corrheatmap_data <- function() {
     load("data/PanImmune_FMx.RData")
     list(dat = df)
 }

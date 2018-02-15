@@ -50,5 +50,3 @@ cellcontent <- function(input, output, session){
         print(plot)
     })
 }
-
-# helper functions ------------------------------------------------------------

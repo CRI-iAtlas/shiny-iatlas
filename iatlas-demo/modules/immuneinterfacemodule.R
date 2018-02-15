@@ -64,9 +64,9 @@ immuneinterface <- function(input, output, session){
         
         ## adjust scales
         if (diversity_metric %in% c("Evenness", "Richness")) {
-            plot_df <- plot_df %>% 
+            plot_df <- plot_df %>%
                 mutate(diversity = log10(diversity + 1))
-            scale_label <- glue::glue("log10({metric}+1)", 
+            scale_label <- glue::glue("log10({metric}+1)",
                                       metric = diversity_metric)
         } else {
             scale_label <- diversity_metric
@@ -96,7 +96,3 @@ immuneinterface <- function(input, output, session){
         print(plot)
     })
 }
-
-# helper functions ------------------------------------------------------------
-
-

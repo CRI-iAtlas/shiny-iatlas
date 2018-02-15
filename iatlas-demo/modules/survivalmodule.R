@@ -45,7 +45,7 @@ survival_UI <- function(id) {
 survival <- function(input, output, session){
     
     output$survPlot <- renderPlot({
-        df    <- buildDataFrame_surv(survivalcurve_data$dat, input$var1_surv, input$timevar, input$divk)
+        df    <- buildDataFrame_surv(corrheatmap_data$dat, input$var1_surv, input$timevar, input$divk)
         fit   <- survfit(Surv(Time, Status) ~ Variable, data = df) 
         title <- getNiceName(input$var1_surv)
         create_kmplot(fit, df, input$confint, input$risktable, title)

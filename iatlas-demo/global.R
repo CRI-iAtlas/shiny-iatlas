@@ -33,5 +33,4 @@ USE_REMOTE = FALSE ## set data as remote (BigQuery) or local(Feature Matrix on d
 
 cellcontent_data <- load_cellcontent_data(USE_REMOTE)
 clonaldiversity_data <- load_clonaldiversity_data(USE_REMOTE)
-corrheatmap_data <- load_corrheatmap_data(USE_REMOTE)
-survivalcurve_data <- corrheatmap_data
+corrheatmap_data <- load_corrheatmap_data()
