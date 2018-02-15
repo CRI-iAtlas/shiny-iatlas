@@ -34,6 +34,8 @@ cellcontent <- function(input, output, session){
     
     output$distPlot <- renderPlot({
         sampgroup <- as.character(cellcontent_data$sample_groups[input$selectionchoice]) ## the label at the data source
+        print(input$cellcontentchoice)
+        print(cellcontent_data$cell_content)
         cellcontent <- as.character(cellcontent_data$cell_content[input$cellcontentchoice])
         ## create dfp, the data frame for plotting, based on choices
         if ( USE_REMOTE) { 

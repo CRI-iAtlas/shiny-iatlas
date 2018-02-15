@@ -8,7 +8,7 @@ load_data <- function(USE_REMOTE) {
     sample_selection_choices <- create_sample_selection_choices(friendly_var, sample_groups)
     cell_content <- create_cell_content()
 
-    x <- list(
+    list(
         df = df,
         tcga_colors = create_tcga_colors(),
         subtype_colors = create_subtype_colors(),
@@ -79,11 +79,23 @@ create_receptor_type_choices <- function(){
 
 ## selection choices for the cell fractions.  Lots of other choices possible.
 create_cell_content <- function(){
-    c('leukocyte_fraction',
-      'Lymphocytes.Aggregate1',
-      'T_cells_CD8',
-      'T_cells_CD4_Aggregate2',
-      'Macrophage_Aggregate1')
+    if (!USE_REMOTE) {
+        cellcontent <- c(
+            'leukocyte_fraction',
+            'Lymphocytes.Aggregate1',
+            'T.cells.CD8',
+            'T_cells_CD4.Aggregate2',
+            'Macrophage.Aggregate1'
+        )
+    } else {
+        cellcontent <- c(
+            'leukocyte_fraction',
+            'Lymphocytes.Aggregate1',
+            'T_cells_CD8',
+            'T_cells_CD4_Aggregate2',
+            'Macrophage_Aggregate1'
+        )
+    }
 }
 
 create_cell_content_choices <- function(cell_content, friendly_var){
