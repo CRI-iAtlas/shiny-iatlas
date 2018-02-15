@@ -12,6 +12,8 @@ source("modules/featurecorrelationmodule.R")
 source("modules/survivalmodule.R")
 #source("functions/load_data.R")
 #source("functions/utils.R")
+#source("functions/heatmap.R")
+#source("functions/boxplot.R")
 
 # common plot theme
 theme_1012 <- theme(
