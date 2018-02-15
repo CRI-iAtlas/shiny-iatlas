@@ -12,7 +12,7 @@ immuneinterface_UI <- function(id) {
                     selectInput(
                         inputId = ns("selection_choice"),
                         label = "Select Sample Groups",
-                        choices = as.character(clonaldiversity_data$sample_selection_choices),
+                        choices = as.character(panimmune_data$sample_selection_choices),
                         selected = "Immune Subtype"
                     ), 
                     
@@ -20,7 +20,7 @@ immuneinterface_UI <- function(id) {
                     selectInput(
                         inputId = ns("diversity_metric_choice"),
                         label = "Select Receptor Type(s)",
-                        choices = as.character(clonaldiversity_data$diversity_metric_choices),
+                        choices = as.character(panimmune_data$diversity_metric_choices),
                         selected = "Shannon"
                     ),
                     
@@ -28,7 +28,7 @@ immuneinterface_UI <- function(id) {
                     checkboxGroupInput(
                         inputId = ns("receptor_type_choices"),
                         label = "Select Receptor Type(s)",
-                        choices = as.character(clonaldiversity_data$receptor_type_choices),
+                        choices = as.character(panimmune_data$receptor_type_choices),
                         selected = "TCR"
                     ),
                     
@@ -52,7 +52,7 @@ immuneinterface_UI <- function(id) {
 immuneinterface <- function(input, output, session){
     output$diversityPlot <- renderPlot({
         
-        sample_group <- clonaldiversity_data$sample_groups[input$selection_choice] ## the label at the data source
+        sample_group <- panimmune_data$sample_groups[input$selection_choice] ## the label at the data source
         diversity_metric <- input$diversity_metric_choice
         receptor_types <- input$receptor_type_choices
         
@@ -71,7 +71,7 @@ immuneinterface <- function(input, output, session){
             )
             dfp <- query_exec(bq, project="isb-cgc-01-0007") }
         else {
-            dfp <- clonaldiversity_data$df %>% 
+            dfp <- panimmune_data$df %>% 
                 select(sample_group, diversity_vars) %>% 
                 .[complete.cases(.), ] %>% 
                 gather(metric, diversity, -1) %>% 
@@ -80,10 +80,10 @@ immuneinterface <- function(input, output, session){
         
         ## custom colors if available 
         if (sample_group == 'Study') {
-            plotcolors <- clonaldiversity_data$tcga_colors
+            plotcolors <- panimmune_data$tcga_colors
         }
         else if (sample_group == 'Subtype_Immune_Model_Based') {
-            plotcolors <- clonaldiversity_data$subtype_colors
+            plotcolors <- panimmune_data$subtype_colors
         }
         
         ## adjust scales

@@ -58,7 +58,7 @@ featurecorrelation_UI <- function(id) {
 featurecorrelation <- function(input, output, session){
     output$corrPlot <- renderPlotly({
         # first build the correlation matrix
-        df <- buildDataFrame_corr(corrheatmap_data$dat, input$var1, input$var2, input$catx)
+        df <- buildDataFrame_corr(panimmune_data$df, input$var1, input$var2, input$catx)
         # then get the heatmap options
         cluster_cols <- as.logical(input$clustercols)
         cluster_rows <- as.logical(input$clusterrows)

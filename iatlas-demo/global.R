@@ -31,7 +31,4 @@ theme_1012 <- theme(
 USE_REMOTE = FALSE ## set data as remote (BigQuery) or local(Feature Matrix on disk)
 
 
-cellcontent_data <- load_data(USE_REMOTE)
-clonaldiversity_data <- cellcontent_data
-corrheatmap_data <- load_corrheatmap_data()
-survivalcurve_data <- corrheatmap_data
+panimmune_data <- load_data(USE_REMOTE)

@@ -7,6 +7,8 @@ load_data <- function(USE_REMOTE) {
     sample_groups <- create_sample_groups(friendly_var)
     sample_selection_choices <- create_sample_selection_choices(friendly_var, sample_groups)
     cell_content <- create_cell_content()
+    cell_content_choices <- create_cell_content_choices(cell_content, friendly_var)
+    names(cell_content) <- cell_content_choices
 
     list(
         df = df,
@@ -17,12 +19,7 @@ load_data <- function(USE_REMOTE) {
         diversity_metric_choices = create_diversity_metric_choices(),
         receptor_type_choices = create_receptor_type_choices(),
         cell_content = cell_content,
-        cell_content_choices = create_cell_content_choices(cell_content, friendly_var))
-}
-
-load_corrheatmap_data <- function() {
-    load("data/PanImmune_FMx.RData")
-    list(dat = df)
+        cell_content_choices = cell_content_choices)
 }
 
 # helper functions ------------------------------------------------------------

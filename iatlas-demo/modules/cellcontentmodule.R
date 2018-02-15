@@ -11,13 +11,13 @@ cellcontent_UI <- function(id) {
                     # Drop-down selected sample groups
                     selectInput(inputId=ns("selectionchoice"),
                                 label="Select Sample Groups",
-                                choices=as.character(cellcontent_data$sample_selection_choices),
+                                choices=as.character(panimmune_data$sample_selection_choices),
                                 selected="Immune Subtype"),
                     
                     # Drop-down selected cell content
                     selectInput(inputId=ns("cellcontentchoice"),
                                 label="Select Cellular Content",
-                                choices=as.character(cellcontent_data$cell_content_choices),
+                                choices=as.character(panimmune_data$cell_content_choices),
                                 selected="Leukocyte Fraction")
                 ),
                 
@@ -33,22 +33,20 @@ cellcontent_UI <- function(id) {
 cellcontent <- function(input, output, session){
     
     output$distPlot <- renderPlot({
-        sampgroup <- as.character(cellcontent_data$sample_groups[input$selectionchoice]) ## the label at the data source
-        print(input$cellcontentchoice)
-        print(cellcontent_data$cell_content)
-        cellcontent <- as.character(cellcontent_data$cell_content[input$cellcontentchoice])
+        sampgroup <- as.character(panimmune_data$sample_groups[input$selectionchoice]) ## the label at the data source
+        cellcontent <- as.character(panimmune_data$cell_content[input$cellcontentchoice])
         ## create dfp, the data frame for plotting, based on choices
         if ( USE_REMOTE) { 
             bq <- paste('SELECT ',sampgroup," , ", cellcontent," FROM [isb-cgc-01-0007:Feature_Matrix.PanImmune_FMx]",
                         " where ",cellcontent," is not null and ",sampgroup," is not null")
             dfp <- query_exec(bq,project="isb-cgc-01-0007") }
         else {
-            dfp <- cellcontent_data$df %>% select(sampgroup,cellcontent) %>% .[complete.cases(.),]
+            dfp <- panimmune_data$df %>% select(sampgroup,cellcontent) %>% .[complete.cases(.),]
         }
         
         ## custom colors if available 
-        if (sampgroup=='Study'){plotcolors <- cellcontent_data$tcga_colors}
-        else if (sampgroup=='Subtype_Immune_Model_Based') {plotcolors <- cellcontent_data$subtype_colors}
+        if (sampgroup=='Study'){plotcolors <- panimmune_data$tcga_colors}
+        else if (sampgroup=='Subtype_Immune_Model_Based') {plotcolors <- panimmune_data$subtype_colors}
         
         print(input$selectionchoice)
         print(input$cellcontentchoice)
