@@ -52,7 +52,7 @@ immuneinterface_UI <- function(id) {
 immuneinterface <- function(input, output, session){
     output$diversityPlot <- renderPlot({
         
-        sample_group <- get_label_from_data_obj(clonaldiversity_data, "sample_groups", input$selection_choice)
+        sample_group_label <- get_label_from_data_obj(clonaldiversity_data, "sample_groups", input$selection_choice)
         diversity_metric <- input$diversity_metric_choice
         receptor_types <- input$receptor_type_choices
         
@@ -60,11 +60,11 @@ immuneinterface <- function(input, output, session){
                                          sep = "_")
         
         ## create dfp, the data frame for plotting, based on choices
-        dfp <- create_immuneinterface_df(sample_group, diversity_vars)
+        plot_df <- create_immuneinterface_df(sample_group_label, diversity_vars)
         
         ## adjust scales
         if (diversity_metric %in% c("Evenness", "Richness")) {
-            dfp <- dfp %>% 
+            plot_df <- plot_df %>% 
                 mutate(diversity = log10(diversity + 1))
             scale_label <- glue::glue("log10({metric}+1)", 
                                       metric = diversity_metric)
@@ -73,7 +73,7 @@ immuneinterface <- function(input, output, session){
         }
         
         if (input$ztransform) {
-            dfp <- dfp %>% 
+            plot_df <- plot_df %>% 
                 group_by(receptor, metric) %>% 
                 mutate(div_mean = mean(diversity), 
                        div_sd = sd(diversity)) %>% 
@@ -82,12 +82,17 @@ immuneinterface <- function(input, output, session){
             scale_label <- paste0("Z-score: ", scale_label)
         }
         y_label <- glue::glue("Diversity [{label}]", label = scale_label)
-        plot <- create_boxplot(dfp, x = sample_group, y = "diversity", fill = sample_group, input$selection_choice, y_label) +
-            facet_grid(receptor ~ .)
         ## custom colors if available 
-        plot_colors <- decide_plot_colors(clonaldiversity_data, sample_group)
-        if(!is.na(plot_colors)){
-            plot <- plot + scale_fill_manual(values = plot_colors)}
+        plot_colors <- decide_plot_colors(clonaldiversity_data, sample_group_label)
+        plot <- create_boxplot(
+            plot_df, 
+            x = sample_group_label,
+            y = "diversity", 
+            fill_factor = sample_group_label, 
+            x_label = input$selection_choice, 
+            y_label = y_label, 
+            fill_colors = plot_colors, 
+            facet = "receptor ~ .") 
         print(plot)
     })
 }

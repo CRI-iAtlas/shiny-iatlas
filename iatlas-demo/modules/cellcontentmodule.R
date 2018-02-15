@@ -37,17 +37,16 @@ cellcontent <- function(input, output, session){
         cellcontent_label <- get_label_from_data_obj(cellcontent_data, "cellcontent", input$cellcontentchoice)
         ## create dfp, the data frame for plotting, based on choices
         plot_df <- create_cellcontent_df(sample_group_label, cellcontent_label)
+        ## custom colors if available 
+        plot_colors <- decide_plot_colors(cellcontent_data, sample_group_label)
         plot <- create_boxplot(
             plot_df, 
             x = sample_group_label, 
             y = cellcontent_label, 
-            fill = sample_group_label, 
-            input$selectionchoice, 
-            input$cellcontentchoice)
-        ## custom colors if available 
-        plot_colors <- decide_plot_colors(cellcontent_data, sample_group_label)
-        if(!is.na(plot_colors)){
-            plot <- plot + scale_fill_manual(values = plot_colors)}
+            fill_factor = sample_group_label, 
+            x_label = input$selectionchoice, 
+            y_label = input$cellcontentchoice,
+            fill_colors = plot_colors)
         print(plot)
     })
 }
