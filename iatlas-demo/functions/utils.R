@@ -18,12 +18,17 @@ get_variable_group <- function(name){
     factor(df$FeatureMatrixLabelTSV, levels = df$FeatureMatrixLabelTSV)
 }
 
-# formatting
-
+# these switch between internal name and display name
 get_display_name <- function(name){
     feature_table %>% 
         filter(FeatureMatrixLabelTSV == name) %>% 
         use_series(FriendlyLabel)
+}
+
+get_internal_name <- function(name){
+    feature_table %>% 
+        filter(FriendlyLabel == name) %>% 
+        use_series(FeatureMatrixLabelTSV)
 }
 
 
@@ -87,13 +92,6 @@ buildDataFrame_surv <- function(dat, var1, timevar, divk) {
     df
 }
 
-get_label_from_data_obj <- function(obj, obj_list, selection){
-    obj %>% 
-        magrittr::extract2(obj_list) %>% 
-        magrittr::extract2(selection) %>% 
-        as.character
-}
-
 decide_plot_colors <- function(data_obj, sample_group_label){
     color_mapping <- c(
         'Study' = "tcga_colors",
@@ -102,3 +100,21 @@ decide_plot_colors <- function(data_obj, sample_group_label){
     color_item  <- magrittr::extract2(color_mapping, sample_group_label)
     plot_colors <- magrittr::extract2(data_obj, color_item)
 }
+
+
+# unused functions ------------------------------------------------------------
+
+# get_label_from_data_obj <- function(obj, obj_list, selection){
+#     obj %>% 
+#         magrittr::extract2(obj_list) %>% 
+#         magrittr::extract2(selection) %>% 
+#         as.character
+# }
+# 
+# 
+# reverse_named_list <- function(lst){
+#     new_names <- unname(lst)
+#     new_items <- names(lst)
+#     new_list <- set_names(new_items, new_names)
+# }
+

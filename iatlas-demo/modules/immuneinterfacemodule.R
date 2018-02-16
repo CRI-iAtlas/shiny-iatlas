@@ -52,7 +52,7 @@ immuneinterface_UI <- function(id) {
 immuneinterface <- function(input, output, session){
     output$diversityPlot <- renderPlot({
         
-        sample_group_label <- get_label_from_data_obj(panimmune_data, "sample_groups", input$selection_choice)
+        sample_group_label <- get_internal_name(input$selection_choice)
         diversity_metric <- input$diversity_metric_choice
         receptor_types <- input$receptor_type_choices
         

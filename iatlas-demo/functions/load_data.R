@@ -3,22 +3,20 @@ load_data <- function() {
         load("data/PanImmune_FMx.RData") ## reads in data frame, df. Adjust as needed for local loading
     }
     
-    sample_groups <- create_sample_groups()
-    sample_selection_choices <- create_sample_selection_choices(sample_groups)
-    cell_content <- create_cell_content()
-    cell_content_choices <- create_cell_content_choices(cell_content)
-    names(cell_content) <- cell_content_choices
+    sample_selection_groups <- create_sample_selection_groups()
+    cell_content_groups <- create_cell_content_groups()
 
     list(
         df = df,
         tcga_colors = create_tcga_colors(),
         subtype_colors = create_subtype_colors(),
-        sample_groups = sample_groups,
-        sample_selection_choices = sample_selection_choices,
-        diversity_metric_choices = create_diversity_metric_choices(),
-        receptor_type_choices = create_receptor_type_choices(),
-        cell_content = cell_content,
-        cell_content_choices = cell_content_choices)
+        sample_selection_groups = sample_selection_groups,
+        sample_selection_choices = map_chr(sample_selection_groups, get_display_name),
+        cell_content_groups = cell_content_groups,
+        cell_content_choices = map_chr(cell_content_groups, get_display_name),
+        diversity_metric_choices = set_names_to_self(config_yaml$diversity_metric_choices),
+        receptor_type_choices = set_names_to_self(config_yaml$receptor_type_choices))
+        
 }
 
 load_manifest <- function(){
@@ -48,57 +46,23 @@ create_tcga_colors <- function(){
 }
 
 ## selection choices for the dropdown menu of sample groups
-create_sample_groups <- function(){
+create_sample_selection_groups <- function(){
     choices <- feature_table %>% 
         filter(`Variable Class` == "Sample Category") %>% 
         use_series(FeatureMatrixLabelTSV)
-    labels <- map_chr(choices, get_display_name) 
-    set_names(choices, labels)
-}
-
-create_sample_selection_choices <- function(sample_groups){
-    names <- unname(sample_groups)
-    items <- names(sample_groups)
-    set_names(items, names)
-}
-
-## selection choices for diversity metrics
-create_diversity_metric_choices <- function(){
-    c('Evenness', 'Shannon', 'Richness') %>% 
-        purrr::set_names(.)
-}
-
-## selection choices for receptor type
-create_receptor_type_choices <- function(){
-    c("TCR", "BCR") %>% 
-        purrr::set_names(.)
 }
 
 ## selection choices for the cell fractions.  Lots of other choices possible.
-create_cell_content <- function(){
+create_cell_content_groups <- function(){
     if (!USE_REMOTE_BQ) {
-        cell_content <- c(
-            'leukocyte_fraction',
-            'Lymphocytes.Aggregate1',
-            'T.cells.CD8',
-            'T_cells_CD4.Aggregate2',
-            'Macrophage.Aggregate1'
-        )
+        cell_content <- config_yaml$cell_content_local
     } else {
-        cell_content <- c(
-            'leukocyte_fraction',
-            'Lymphocytes.Aggregate1',
-            'T_cells_CD8',
-            'T_cells_CD4_Aggregate2',
-            'Macrophage_Aggregate1'
-        )
+        cell_content <- config_yaml$cell_content_bq
     }
-    return(cell_content)
 }
 
-create_cell_content_choices <- function(cell_content){
-    items <- map_chr(cell_content, get_display_name) 
-    set_names(items, cell_content)
+set_names_to_self <- function(lst){
+    set_names(lst, lst)
 }
 
 
