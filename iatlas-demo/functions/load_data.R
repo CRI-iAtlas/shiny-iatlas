@@ -24,7 +24,7 @@ load_data <- function() {
 
 load_manifest <- function(){
     if (!USE_REMOTE_GS) {
-        feature_table <- read_tsv("data/IRWG data manifest - Features.tsv")
+        feature_table <- read_tsv("data/IRWG data manifest - Features2.tsv")
     } else {
         data_manifest <- gs_title("IRWG data manifest")
         feature_table <- gs_read(ss = data_manifest, ws = "Features")

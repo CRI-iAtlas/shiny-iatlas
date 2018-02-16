@@ -19,7 +19,7 @@ theme_1012 <- theme(
 
 # general data loading & prep
 USE_REMOTE_BQ = F ## set data as remote (BigQuery) or local(Feature Matrix on disk)
-USE_REMOTE_GS = T #class membership list doesn't work with local data currently
+USE_REMOTE_GS = T
 
 panimmune_data        <- load_data()
 feature_table         <- load_manifest()
