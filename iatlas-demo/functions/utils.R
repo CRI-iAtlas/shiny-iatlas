@@ -24,10 +24,13 @@ create_membership_list <- function(feature_table){
 
 # look up tables to get sets of column names in the feature matrix.
 
-getVars <- function(var1) {
-    config_yaml %>% 
-        extract2(var1) %>% 
-        unlist
+get_variable_group <- function(name){
+    df <- feature_table %>% 
+        select(`Variable Class`, FeatureMatrixLabelTSV, `Variable Class Order`) %>% 
+        filter(`Variable Class` == name) %>% 
+        .[complete.cases(.),] %>% 
+        arrange(`Variable Class Order`)
+    factor(df$FeatureMatrixLabelTSV, levels = df$FeatureMatrixLabelTSV)
 }
 
 # formatting
@@ -47,7 +50,7 @@ buildDataFrame_corr <- function(dat, var1, var2, catx) {
     
     # get the vectors associated with each term
     cats <- sort(getCats(dat, catx))
-    vars <- sort(getVars(var1))
+    vars <- get_variable_group(var1)
     
     # this would be the correlations
     cormat <- matrix(data=0, ncol=length(cats), nrow=length(vars))
