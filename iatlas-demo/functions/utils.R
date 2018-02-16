@@ -31,6 +31,15 @@ get_internal_name <- function(name){
         use_series(FeatureMatrixLabelTSV)
 }
 
+decide_plot_colors <- function(data_obj, sample_group_label){
+    color_mapping <- c(
+        'Study' = "tcga_colors",
+        'Subtype_Immune_Model_Based' = "subtype_colors")
+    if(!sample_group_label %in% names(color_mapping)) return(NA)
+    color_item  <- magrittr::extract2(color_mapping, sample_group_label)
+    plot_colors <- magrittr::extract2(data_obj, color_item)
+}
+
 
 
 buildDataFrame_corr <- function(dat, var1, var2, catx) {
@@ -91,16 +100,6 @@ buildDataFrame_surv <- function(dat, var1, timevar, divk) {
     df <- na.omit(df)
     df
 }
-
-decide_plot_colors <- function(data_obj, sample_group_label){
-    color_mapping <- c(
-        'Study' = "tcga_colors",
-        'Subtype_Immune_Model_Based' = "subtype_colors")
-    if(!sample_group_label %in% names(color_mapping)) return(NA)
-    color_item  <- magrittr::extract2(color_mapping, sample_group_label)
-    plot_colors <- magrittr::extract2(data_obj, color_item)
-}
-
 
 # unused functions ------------------------------------------------------------
 

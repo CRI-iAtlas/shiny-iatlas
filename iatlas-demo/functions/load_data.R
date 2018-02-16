@@ -1,3 +1,14 @@
+load_manifest <- function(){
+    if (!USE_REMOTE_GS) {
+        feature_table <- read_tsv("data/IRWG data manifest - Features2.tsv")
+    } else {
+        data_manifest <- gs_title("IRWG data manifest")
+        feature_table <- gs_read(ss = data_manifest, ws = "Features")
+    }
+    return(feature_table)
+}
+
+
 load_data <- function() {
     if (!USE_REMOTE_BQ){ 
         load("data/PanImmune_FMx.RData") ## reads in data frame, df. Adjust as needed for local loading
@@ -17,16 +28,6 @@ load_data <- function() {
         diversity_metric_choices = set_names_to_self(config_yaml$diversity_metric_choices),
         receptor_type_choices = set_names_to_self(config_yaml$receptor_type_choices))
         
-}
-
-load_manifest <- function(){
-    if (!USE_REMOTE_GS) {
-        feature_table <- read_tsv("data/IRWG data manifest - Features2.tsv")
-    } else {
-        data_manifest <- gs_title("IRWG data manifest")
-        feature_table <- gs_read(ss = data_manifest, ws = "Features")
-    }
-    return(feature_table)
 }
 
 # helper functions ------------------------------------------------------------
