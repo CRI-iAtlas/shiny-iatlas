@@ -23,4 +23,4 @@ USE_REMOTE_GS = T
 
 panimmune_data        <- load_data()
 feature_table         <- load_manifest()
-class_membership_list <- create_membership_list(feature_table)
+# class_membership_list <- create_membership_list() not used currently

@@ -1,28 +1,13 @@
-# functions for dealing with manifest
 
-create_membership_list <- function(feature_table){
-    if (!USE_REMOTE_BQ) { ## some ugliness as BigQuery transforms "." to "_" on upload for variable names
-        fmx.var <- feature_table$FeatureMatrixLabelTSV
-    } else {
-        fmx.var <- feature_table$FeatureMatrixLabelBigQuery
-    }
-    friendly.var <-feature_table$FriendlyLabel
-    ## names(fmx.var) <- friendly.var ## has duplicated names (e.g. Macrophages). Marked for deletion.
-    names(friendly.var) <- fmx.var
-    variable.classes <- setdiff(unique(feature_table$`Variable Class`),NA)
-    dff <- feature_table %>%
-        select(FeatureMatrixLabelTSV,`Variable Class`,`Variable Class Order`) %>%
-        filter(!is.na(.$`Variable Class`)) %>%
-        .[complete.cases(.),] ## some variables handy to keep in a class, but not for primary display
-    class.membership <- list() ## ordered membership of variable clases
-    for (vc in variable.classes){
-        class.membership[[vc]] <- dff %>% filter(`Variable Class`==vc) %>% arrange(`Variable Class Order`) %>% pull(FeatureMatrixLabelTSV)
-    }
-    return(class.membership)
+
+create_membership_list <- function(){
+    names <- feature_table %>% 
+        filter(!is.na(`Variable Class`)) %>% 
+        use_series(`Variable Class`) %>% 
+        unique
+    map(names, get_variable_group) %>% 
+        set_names(names)
 }
-
-
-# look up tables to get sets of column names in the feature matrix.
 
 get_variable_group <- function(name){
     df <- feature_table %>% 
