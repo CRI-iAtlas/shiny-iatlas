@@ -11,15 +11,14 @@ featurecorrelation_UI <- function(id) {
                     selectInput(
                         ns("var1"), 
                         "Variable 1", 
-                        c(   
-                            "Core Expression Signature",           
-                            "DNA Alteration",                      
-                            "Adaptive Receptor",                   
-                            "T Helper Cell Score",                 
-                            "Immune Cell Proportion - Original",   
-                            "Immune Cell Proportion - Aggregate 1",
-                            "Immune Cell Proportion - Aggregate 2",
-                            "Immune Cell Proportion - Aggregate 3"),
+                        c("Core Expression Signature",
+                          "DNA Alteration",
+                          "Adaptive Receptor",
+                          "T Helper Cell Score",
+                          "Immune Cell Proportion - Original",
+                          "Immune Cell Proportion - Aggregate 1",
+                          "Immune Cell Proportion - Aggregate 2",
+                          "Immune Cell Proportion - Aggregate 3"),
                         selected = "Immune Cell Proportion - Aggregate 2"),
                     
                     selectInput(
