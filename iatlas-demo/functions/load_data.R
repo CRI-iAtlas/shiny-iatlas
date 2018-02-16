@@ -3,11 +3,10 @@ load_data <- function() {
         load("data/PanImmune_FMx.RData") ## reads in data frame, df. Adjust as needed for local loading
     }
     
-    friendly_var <- create_friendly_variables()
-    sample_groups <- create_sample_groups(friendly_var)
-    sample_selection_choices <- create_sample_selection_choices(friendly_var, sample_groups)
+    sample_groups <- create_sample_groups()
+    sample_selection_choices <- create_sample_selection_choices(sample_groups)
     cell_content <- create_cell_content()
-    cell_content_choices <- create_cell_content_choices(cell_content, friendly_var)
+    cell_content_choices <- create_cell_content_choices(cell_content)
     names(cell_content) <- cell_content_choices
 
     list(
@@ -48,27 +47,19 @@ create_tcga_colors <- function(){
         purrr::set_names(tcga_colors_df$`Study Abbreviation`)
 }
 
-## Features manifest file is used to map data source and friendly names for
-## display purposes
-create_friendly_variables <- function(){
-    fmx_vars_df <- read_tsv("data/IRWG data manifest - Features.tsv")
-    fmx_var <- fmx_vars_df$FeatureMatrixLabelTSV %>% 
-        purrr::set_names(fmx_vars_df$FriendlyLabel)
-    friendly_var <- fmx_vars_df$FriendlyLabel %>% 
-        purrr::set_names(fmx_var)
-}
-
 ## selection choices for the dropdown menu of sample groups
-create_sample_groups <- function(friendly_var){
-    c('Subtype_Immune_Model_Based',
-      'Study',
-      'Subtype_Curated_Malta_Noushmehr_et_al') %>% 
-        purrr::set_names(friendly_var[.])
+create_sample_groups <- function(){
+    choices <- feature_table %>% 
+        filter(`Variable Class` == "Sample Category") %>% 
+        use_series(FeatureMatrixLabelTSV)
+    labels <- map_chr(choices, get_display_name) 
+    set_names(choices, labels)
 }
 
-create_sample_selection_choices <- function(friendly_var, sample_groups){
-    sample_selection_choices <- friendly_var[sample_groups] %>% 
-        purrr::set_names(sample_groups)
+create_sample_selection_choices <- function(sample_groups){
+    names <- unname(sample_groups)
+    items <- names(sample_groups)
+    set_names(items, names)
 }
 
 ## selection choices for diversity metrics
@@ -105,11 +96,10 @@ create_cell_content <- function(){
     return(cell_content)
 }
 
-create_cell_content_choices <- function(cell_content, friendly_var){
-    cell_content_choices <- friendly_var[cell_content]
-    names(cell_content) <- cell_content_choices
+create_cell_content_choices <- function(cell_content){
+    items <- map_chr(cell_content, get_display_name) 
+    set_names(items, cell_content)
 }
-
 
 
 # cellcontent module helpers --------------------------------------------------

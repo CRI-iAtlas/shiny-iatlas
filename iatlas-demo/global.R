@@ -21,6 +21,6 @@ theme_1012 <- theme(
 USE_REMOTE_BQ = F ## set data as remote (BigQuery) or local(Feature Matrix on disk)
 USE_REMOTE_GS = T
 
-panimmune_data        <- load_data()
 feature_table         <- load_manifest()
+panimmune_data        <- load_data()
 # class_membership_list <- create_membership_list() not used currently
