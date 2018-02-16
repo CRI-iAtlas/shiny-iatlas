@@ -69,7 +69,6 @@ buildDataFrame_surv <- function(dat, var1, timevar, divk) {
     df <- data.frame(Status = dat[,timevar2], Time = dat[,timevar], 
                      Variable=cats, Measure=dat[,var1])
     df <- na.omit(df)
-    print(head(df))
     df
 }
 

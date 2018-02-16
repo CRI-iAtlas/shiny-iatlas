@@ -12,7 +12,7 @@ immuneinterface_UI <- function(id) {
                     selectInput(
                         inputId = ns("selection_choice"),
                         label = "Select Sample Groups",
-                        choices = as.character(clonaldiversity_data$sample_selection_choices),
+                        choices = as.character(panimmune_data$sample_selection_choices),
                         selected = "Immune Subtype"
                     ), 
                     
@@ -20,7 +20,7 @@ immuneinterface_UI <- function(id) {
                     selectInput(
                         inputId = ns("diversity_metric_choice"),
                         label = "Select Receptor Type(s)",
-                        choices = as.character(clonaldiversity_data$diversity_metric_choices),
+                        choices = as.character(panimmune_data$diversity_metric_choices),
                         selected = "Shannon"
                     ),
                     
@@ -28,7 +28,7 @@ immuneinterface_UI <- function(id) {
                     checkboxGroupInput(
                         inputId = ns("receptor_type_choices"),
                         label = "Select Receptor Type(s)",
-                        choices = as.character(clonaldiversity_data$receptor_type_choices),
+                        choices = as.character(panimmune_data$receptor_type_choices),
                         selected = "TCR"
                     ),
                     
@@ -52,7 +52,7 @@ immuneinterface_UI <- function(id) {
 immuneinterface <- function(input, output, session){
     output$diversityPlot <- renderPlot({
         
-        sample_group_label <- get_label_from_data_obj(clonaldiversity_data, "sample_groups", input$selection_choice)
+        sample_group_label <- get_label_from_data_obj(panimmune_data, "sample_groups", input$selection_choice)
         diversity_metric <- input$diversity_metric_choice
         receptor_types <- input$receptor_type_choices
         
@@ -60,7 +60,9 @@ immuneinterface <- function(input, output, session){
                                          sep = "_")
         
         ## create dfp, the data frame for plotting, based on choices
+
         plot_df <- create_immuneinterface_df(sample_group_label, diversity_vars)
+
         
         ## adjust scales
         if (diversity_metric %in% c("Evenness", "Richness")) {
@@ -83,7 +85,7 @@ immuneinterface <- function(input, output, session){
         }
         y_label <- glue::glue("Diversity [{label}]", label = scale_label)
         ## custom colors if available 
-        plot_colors <- decide_plot_colors(clonaldiversity_data, sample_group_label)
+        plot_colors <- decide_plot_colors(panimmune_data, sample_group_label)
         plot <- create_boxplot(
             plot_df, 
             x = sample_group_label,

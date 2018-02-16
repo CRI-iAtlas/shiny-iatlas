@@ -11,13 +11,13 @@ cellcontent_UI <- function(id) {
                     # Drop-down selected sample groups
                     selectInput(inputId=ns("selectionchoice"),
                                 label="Select Sample Groups",
-                                choices=as.character(cellcontent_data$sampleselectionchoices),
+                                choices=as.character(panimmune_data$sample_selection_choices),
                                 selected="Immune Subtype"),
                     
                     # Drop-down selected cell content
                     selectInput(inputId=ns("cellcontentchoice"),
                                 label="Select Cellular Content",
-                                choices=as.character(cellcontent_data$cellcontentchoices),
+                                choices=as.character(panimmune_data$cell_content_choices),
                                 selected="Leukocyte Fraction")
                 ),
                 
@@ -33,16 +33,10 @@ cellcontent_UI <- function(id) {
 cellcontent <- function(input, output, session){
     
     output$distPlot <- renderPlot({
-        sample_group_label <- get_label_from_data_obj(cellcontent_data, "samplegroups", input$selectionchoice)
-        cellcontent_label <- get_label_from_data_obj(cellcontent_data, "cellcontent", input$cellcontentchoice)
-        print(input$cellcontentchoice)
-        print("###")
-        print(cellcontent_data$cellcontent)
-        
-        ## create dfp, the data frame for plotting, based on choices
+        sample_group_label <- get_label_from_data_obj(panimmune_data, "sample_groups", input$selectionchoice)
+        cellcontent_label <- get_label_from_data_obj(panimmune_data, "cell_content", input$cellcontentchoice)
         plot_df <- create_cellcontent_df(sample_group_label, cellcontent_label)
-        ## custom colors if available 
-        plot_colors <- decide_plot_colors(cellcontent_data, sample_group_label)
+        plot_colors <- decide_plot_colors(panimmune_data, sample_group_label)
         plot <- create_boxplot(
             plot_df, 
             x = sample_group_label, 

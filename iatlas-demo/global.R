@@ -1,5 +1,6 @@
 library(yaml)
 library(tidyverse)
+
 config_yaml <- yaml::read_yaml("configuration.yaml")
 purrr::walk(config_yaml$libraries, library, character.only = T)
 purrr::walk(config_yaml$source_files, source)
@@ -17,9 +18,8 @@ theme_1012 <- theme(
 )
 
 # general data loading & prep
-USE_REMOTE = FALSE ## set data as remote (BigQuery) or local(Feature Matrix on disk)
+USE_REMOTE_BQ = F ## set data as remote (BigQuery) or local(Feature Matrix on disk)
+USE_REMOTE_GS = F
 
+panimmune_data <- load_data()
 
-cellcontent_data <- load_cellcontent_data(USE_REMOTE)
-clonaldiversity_data <- load_clonaldiversity_data(USE_REMOTE)
-corrheatmap_data <- load_corrheatmap_data()
