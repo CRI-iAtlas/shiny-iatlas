@@ -1,3 +1,27 @@
+# functions for dealing with manifest
+
+create_membership_list <- function(feature_table){
+    if (!USE_REMOTE_BQ) { ## some ugliness as BigQuery transforms "." to "_" on upload for variable names
+        fmx.var <- feature_table$FeatureMatrixLabelTSV
+    } else {
+        fmx.var <- feature_table$FeatureMatrixLabelBigQuery
+    }
+    friendly.var <-feature_table$FriendlyLabel
+    ## names(fmx.var) <- friendly.var ## has duplicated names (e.g. Macrophages). Marked for deletion.
+    names(friendly.var) <- fmx.var
+    variable.classes <- setdiff(unique(feature_table$`Variable Class`),NA)
+    dff <- feature_table %>%
+        select(FeatureMatrixLabelTSV,`Variable Class`,`Variable Class Order`) %>%
+        filter(!is.na(.$`Variable Class`)) %>%
+        .[complete.cases(.),] ## some variables handy to keep in a class, but not for primary display
+    class.membership <- list() ## ordered membership of variable clases
+    for (vc in variable.classes){
+        class.membership[[vc]] <- dff %>% filter(`Variable Class`==vc) %>% arrange(`Variable Class Order`) %>% pull(FeatureMatrixLabelTSV)
+    }
+    return(class.membership)
+}
+
+
 # look up tables to get sets of column names in the feature matrix.
 
 getVars <- function(var1) {
@@ -11,6 +35,14 @@ getVars <- function(var1) {
 getNiceName <- function(x) {
     config_yaml$nice_names[x]
 }
+
+get_display_name <- function(feature_table, name){
+    feature_table %>% 
+        filter(FeatureMatrixLabelTSV == name) %>% 
+        use_series(FriendlyLabel)
+}
+
+
 
 buildDataFrame_corr <- function(dat, var1, var2, catx) {
     getCats <- function(dat, catx) {

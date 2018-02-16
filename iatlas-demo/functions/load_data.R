@@ -22,6 +22,16 @@ load_data <- function() {
         cell_content_choices = cell_content_choices)
 }
 
+load_manifest <- function(){
+    if (!USE_REMOTE_GS) {
+        feature_table <- read_tsv("data/IRWG data manifest - Features.tsv")
+    } else {
+        data_manifest <- gs_title("IRWG data manifest")
+        feature_table <- gs_read(ss = data_manifest, ws = "Features")
+    }
+    return(feature_table)
+}
+
 # helper functions ------------------------------------------------------------
 
 ## Color Maps for Display of Immune Subtypes and TCGA tumors

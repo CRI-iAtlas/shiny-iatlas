@@ -16,6 +16,7 @@ libraries:
   - "heatmaply"
   - "survival"
   - "survminer"
+  - "googlesheets"
 
 nice_names:
   "Subtype_Immune_Model_Based": "Immune Subtypes"
