@@ -30,6 +30,18 @@ load_data <- function() {
         
 }
 
+load_modulators <- function(){
+    if (!USE_REMOTE_GS) {
+        # df1 <- 
+        # df2 <- 
+    } else {
+        data_manifest <- gs_title("Cancer Immunomodulators - TCGA PanImmune Group")
+        df1 <- gs_read(ss = data_manifest, ws = "Direct Relationship")
+        df2 <- gs_read(ss = data_manifest, ws = "Potential Factors")
+    }
+    return(list("Direct Relationship" = df1, "Potential Factors" = df2))
+}
+
 # helper functions ------------------------------------------------------------
 
 ## Color Maps for Display of Immune Subtypes and TCGA tumors

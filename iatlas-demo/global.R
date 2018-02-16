@@ -23,4 +23,5 @@ USE_REMOTE_GS = T
 
 feature_table         <- load_manifest()
 panimmune_data        <- load_data()
+modulators_data       <- load_modulators()
 # class_membership_list <- create_membership_list() not used currently
