@@ -32,11 +32,7 @@ getVars <- function(var1) {
 
 # formatting
 
-getNiceName <- function(x) {
-    config_yaml$nice_names[x]
-}
-
-get_display_name <- function(feature_table, name){
+get_display_name <- function(name){
     feature_table %>% 
         filter(FeatureMatrixLabelTSV == name) %>% 
         use_series(FriendlyLabel)
@@ -68,8 +64,7 @@ buildDataFrame_corr <- function(dat, var1, var2, catx) {
         }      
     }  
     # give it nice names
-    #colnames(cormat) <- sapply(colnames(cormat), getNiceName)
-    rownames(cormat) <- sapply(rownames(cormat), getNiceName)
+    rownames(cormat) <- sapply(rownames(cormat), get_display_name)
     cormat[is.na(cormat)] <- 0
     cormat
 }
