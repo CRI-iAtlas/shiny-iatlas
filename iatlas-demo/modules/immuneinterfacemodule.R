@@ -75,12 +75,7 @@ immuneinterface <- function(input, output, session){
         }
         
         if (input$ztransform) {
-            plot_df <- plot_df %>% 
-                group_by(receptor, metric) %>% 
-                mutate(div_mean = mean(diversity), 
-                       div_sd = sd(diversity)) %>% 
-                ungroup() %>% 
-                mutate(diversity = (diversity - div_mean) / div_sd)
+            plot_df     <- ztransform_df(plot_df)
             scale_label <- paste0("Z-score: ", scale_label)
         }
         y_label <- glue::glue("Diversity [{label}]", label = scale_label)
@@ -98,3 +93,18 @@ immuneinterface <- function(input, output, session){
         print(plot)
     })
 }
+
+# helper functions ------------------------------------------------------------
+
+ztransform_df <- function(df){
+    df %>% 
+        group_by(receptor, metric) %>% 
+        mutate(div_mean = mean(diversity), 
+               div_sd = sd(diversity)) %>% 
+        ungroup() %>% 
+        mutate(diversity = (diversity - div_mean) / div_sd)
+}
+
+
+
+
