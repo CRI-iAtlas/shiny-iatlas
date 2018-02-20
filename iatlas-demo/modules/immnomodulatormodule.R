@@ -19,8 +19,8 @@ immunomodulator_UI <- function(id) {
                     # Drop-down selected immuno modulator
                     selectInput(
                         inputId = ns("im_choice"),
-                        label = "Select Immunomodulator Group",
-                        choices = as.character(config_yaml$immunomodulator_groups))
+                        label = "Select Immunomodulator Gene",
+                        choices = as.character(panimmune_data$direct_relationship_modulators$HGNC_Symbol))
                 ),
                 
                 mainPanel(
@@ -37,9 +37,8 @@ immunomodulator <- function(input, output, session){
     output$distPlot <- renderPlot({
         ss_group <- get_internal_name(input$ss_choice)
         im_group <- input$im_choice
-        plot_df <- panimmune_data$direct_relationship_modulators %>% 
-            select(im_group, HGNC_Symbol) %>% 
-            left_join(panimmune_data$immunomodulator_df, ., by = c("Symbol" = "HGNC_Symbol")) %>% 
+        plot_df <- panimmune_data$immunomodulator_df %>% 
+            filter(Symbol == im_group) %>% 
             left_join(panimmune_data$df) %>% 
             mutate(log_count = log10(normalized_count + 1)) %>% 
             select(ss_group, log_count) %>% 
