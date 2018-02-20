@@ -8,7 +8,6 @@ load_manifest <- function(){
     return(feature_table)
 }
 
-
 load_data <- function() {
     if (!USE_REMOTE_BQ){ 
         load("data/PanImmune_FMx.RData") ## reads in data frame, df. Adjust as needed for local loading
@@ -16,6 +15,7 @@ load_data <- function() {
     
     sample_selection_groups <- create_sample_selection_groups()
     cell_content_groups <- create_cell_content_groups()
+    modulators <- load_modulators()
 
     list(
         df = df,
@@ -26,9 +26,13 @@ load_data <- function() {
         cell_content_groups = cell_content_groups,
         cell_content_choices = map_chr(cell_content_groups, get_display_name),
         diversity_metric_choices = set_names_to_self(config_yaml$diversity_metric_choices),
-        receptor_type_choices = set_names_to_self(config_yaml$receptor_type_choices))
+        receptor_type_choices = set_names_to_self(config_yaml$receptor_type_choices),
+        direct_relationship_modulators = modulators$direct_relationship,
+        potential_factors_modulators = modulators$potential_factors)
         
 }
+
+# helper functions ------------------------------------------------------------
 
 load_modulators <- function(){
     if (!USE_REMOTE_GS) {
@@ -39,10 +43,9 @@ load_modulators <- function(){
         df1 <- gs_read(ss = data_manifest, ws = "Direct Relationship")
         df2 <- gs_read(ss = data_manifest, ws = "Potential Factors")
     }
-    return(list("Direct Relationship" = df1, "Potential Factors" = df2))
+    return(list("direct_relationship" = df1, "potential_factors" = df2))
 }
 
-# helper functions ------------------------------------------------------------
 
 ## Color Maps for Display of Immune Subtypes and TCGA tumors
 create_subtype_colors <- function(){

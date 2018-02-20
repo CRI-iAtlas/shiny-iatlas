@@ -1,7 +1,7 @@
 
 
 create_membership_list <- function(){
-    names <- feature_table %>% 
+    names <- panimmune_data$feature_table %>% 
         filter(!is.na(`Variable Class`)) %>% 
         use_series(`Variable Class`) %>% 
         unique

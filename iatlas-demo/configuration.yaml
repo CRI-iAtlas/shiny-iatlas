@@ -3,6 +3,7 @@ source_files:
   - "modules/immuneinterfacemodule.R"
   - "modules/featurecorrelationmodule.R"
   - "modules/survivalmodule.R"
+  - "modules/immnomodulatormodule.R"
   - "functions/load_data.R"
   - "functions/utils.R"
   - "functions/boxplot.R"

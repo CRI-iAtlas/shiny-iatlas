@@ -17,5 +17,7 @@ shinyServer(function(input, output) {
     callModule(featurecorrelation, "module3")
     # Survival curves
     callModule(survival, "module4")
+    # immunomodulators
+    callModule(immunomodulator, "module5")
 })
 ################################################################################
