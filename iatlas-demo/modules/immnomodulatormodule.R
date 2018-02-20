@@ -19,10 +19,8 @@ immunomodulator_UI <- function(id) {
                     # Drop-down selected immuno modulator
                     selectInput(
                         inputId = ns("im_choice"),
-                        label = "Select Cellular Content",
-                        choices = as.character(
-                            panimmune_data$cell_content_choices),
-                        selected = "Leukocyte Fraction")
+                        label = "Select Immunomodulator Group",
+                        choices = as.character(config_yaml$immunomodulator_groups))
                 ),
                 
                 mainPanel(
@@ -38,16 +36,22 @@ immunomodulator <- function(input, output, session){
     
     output$distPlot <- renderPlot({
         ss_group <- get_internal_name(input$ss_choice)
-        im_group <- get_internal_name(input$im_choice)
-        plot_df <- create_cellcontent_df(ss_group, im_group)
+        im_group <- input$im_choice
+        plot_df <- panimmune_data$direct_relationship_modulators %>% 
+            select(im_group, HGNC_Symbol) %>% 
+            left_join(panimmune_data$immunomodulator_df, ., by = c("Symbol" = "HGNC_Symbol")) %>% 
+            left_join(panimmune_data$df) %>% 
+            mutate(log_count = log10(normalized_count + 1)) %>% 
+            select(ss_group, log_count) %>% 
+            .[complete.cases(.), ] 
         plot_colors <- decide_plot_colors(panimmune_data, ss_group)
         plot <- create_boxplot(
             plot_df, 
             x = ss_group, 
-            y = im_group, 
+            y = "log_count", 
             fill_factor = ss_group, 
             x_label = input$ss_choice, 
-            y_label = input$im_choice,
+            y_label = "Log10 (Count + 1)",
             fill_colors = plot_colors)
         print(plot)
     })

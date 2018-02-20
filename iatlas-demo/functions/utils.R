@@ -18,6 +18,15 @@ get_variable_group <- function(name){
     factor(df$FeatureMatrixLabelTSV, levels = df$FeatureMatrixLabelTSV)
 }
 
+get_modulators_group <- function(name){
+    df <- panimmune_data$direct_relationship_modulators %>% 
+        select(`Variable Class`, FeatureMatrixLabelTSV, `Variable Class Order`) %>% 
+        filter(`Variable Class` == name) %>% 
+        .[complete.cases(.),] %>% 
+        arrange(`Variable Class Order`)
+    factor(df$FeatureMatrixLabelTSV, levels = df$FeatureMatrixLabelTSV)
+}
+
 # these switch between internal name and display name
 get_display_name <- function(name){
     feature_table %>% 

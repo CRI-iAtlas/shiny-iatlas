@@ -41,3 +41,9 @@ diversity_metric_choices:
 receptor_type_choices:
   - "TCR"
   - "BCR"
+  
+immunomodulator_groups:
+  - "Gene_Family"
+  - "Super_Category"
+  - "Immune_Checkpoint"
+  - "Function"

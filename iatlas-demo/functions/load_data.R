@@ -28,8 +28,8 @@ load_data <- function() {
         diversity_metric_choices = set_names_to_self(config_yaml$diversity_metric_choices),
         receptor_type_choices = set_names_to_self(config_yaml$receptor_type_choices),
         direct_relationship_modulators = modulators$direct_relationship,
-        potential_factors_modulators = modulators$potential_factors)
-        
+        potential_factors_modulators = modulators$potential_factors,
+        immunomodulator_df = create_immunomodulator_df(modulators$direct_relationship))
 }
 
 # helper functions ------------------------------------------------------------
@@ -43,6 +43,8 @@ load_modulators <- function(){
         df1 <- gs_read(ss = data_manifest, ws = "Direct Relationship")
         df2 <- gs_read(ss = data_manifest, ws = "Potential Factors")
     }
+    df1 <- set_names(df1, str_replace_all(names(df1), " ", "_"))
+    df2 <- set_names(df2, str_replace_all(names(df2), " ", "_"))
     return(list("direct_relationship" = df1, "potential_factors" = df2))
 }
 
@@ -79,6 +81,32 @@ create_cell_content_groups <- function(){
 
 set_names_to_self <- function(lst){
     set_names(lst, lst)
+}
+
+create_immunomodulator_df <- function(sample_group, diversity_vars){
+    if ( USE_REMOTE_BQ) { 
+        df <- get_immunomodulator_df_from_bq()
+    } else {
+        df <- get_immunomodulator_df_from_local()
+    }
+    return(df)
+}
+
+get_immunomodulator_df_from_local <- function(){
+    read_tsv("data/modulator_exp.tsv")
+}
+
+get_immunomodulator_df_from_bq <- function(direct_relationship_modulators){
+    gene_string <- direct_relationship_modulators %>% 
+        use_series("HGNC Symbol") %>% 
+        unique %>% 
+        discard(is.na(.)) %>% 
+        str_c(collapse = "', '") %>% 
+        str_c("('", ., "')")
+    query <- str_c(
+        "SELECT ParticipantBarcode, Symbol, normalized_count FROM [isb-cgc-01-0008:Filtered.EBpp_AdjustPANCAN_RNASeqV2_filtered] WHERE Symbol IN ", 
+        gene_string)
+    query_exec(query, project = "isb-cgc-01-0008", max_pages = Inf)
 }
 
 
@@ -142,3 +170,8 @@ create_immuneinterface_df_from_local <- function(sample_group, diversity_vars){
         gather(metric, diversity, -1) %>% 
         separate(metric, into = c("receptor", "metric"), sep = "_")
 }
+
+
+
+
+

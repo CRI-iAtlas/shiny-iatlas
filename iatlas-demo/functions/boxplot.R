@@ -1,4 +1,7 @@
 create_boxplot <- function(df, x, y, fill_factor, x_label, y_label, fill_colors = NA, facet = NA){
+    print(df)
+    print(x)
+    print(y)
     plot <- df %>% 
         ggplot(aes_string(x, y, fill = fill_factor)) + 
         geom_boxplot() +
