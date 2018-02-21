@@ -51,7 +51,8 @@ immunomodulator <- function(input, output, session){
             fill_factor = ss_group, 
             x_label = input$ss_choice, 
             y_label = "Log10 (Count + 1)",
-            fill_colors = plot_colors)
+            fill_colors = plot_colors,
+            title = get_modulator_display_name(im_group))
         print(plot)
     })
 }

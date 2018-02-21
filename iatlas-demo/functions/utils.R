@@ -40,6 +40,21 @@ get_internal_name <- function(name){
         use_series(FeatureMatrixLabelTSV)
 }
 
+get_modulator_display_name <- function(name){
+    panimmune_data$direct_relationship_modulators %>% 
+        filter(HGNC_Symbol == name) %>% 
+        use_series(Gene)
+}
+
+get_modulator_internal_name <- function(name){
+    panimmune_data$direct_relationship_modulators %>% 
+        filter(Gene == name) %>% 
+        use_series(HGNC_Symbol)
+}
+
+
+
+
 decide_plot_colors <- function(data_obj, sample_group_label){
     color_mapping <- c(
         'Study' = "tcga_colors",
