@@ -69,7 +69,7 @@ featurecorrelation <- function(input, output, session){
         cluster_rows <- as.logical(input$clusterrows)
         # color scheme
         colors <- colorRampPalette(colors = c("blue", "white", "red"))
-        input_var <- get_display_name(input$var2)
+        input_var <- get_variable_display_name(input$var2)
         create_heatmap(df, input_var, cluster_cols, cluster_rows, colors)
     })
 }

@@ -37,8 +37,8 @@ cellcontent_UI <- function(id) {
 cellcontent <- function(input, output, session){
     
     output$distPlot <- renderPlot({
-        ss_group <- get_internal_name(input$ss_choice)
-        cc_group <- get_internal_name(input$cc_choice)
+        ss_group <- get_variable_internal_name(input$ss_choice)
+        cc_group <- get_variable_internal_name(input$cc_choice)
         plot_df <- create_cellcontent_df(ss_group, cc_group)
         plot_colors <- decide_plot_colors(panimmune_data, ss_group)
         plot <- create_boxplot(

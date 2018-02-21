@@ -47,7 +47,7 @@ survival <- function(input, output, session){
     output$survPlot <- renderPlot({
         df    <- buildDataFrame_surv(panimmune_data$df, input$var1_surv, input$timevar, input$divk)
         fit   <- survfit(Surv(Time, Status) ~ Variable, data = df) 
-        title <- get_display_name(input$var1_surv)
+        title <- get_variable_display_name(input$var1_surv)
         create_kmplot(fit, df, input$confint, input$risktable, title)
     })
 }

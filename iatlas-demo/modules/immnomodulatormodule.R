@@ -35,7 +35,7 @@ immunomodulator_UI <- function(id) {
 immunomodulator <- function(input, output, session){
     
     output$distPlot <- renderPlot({
-        ss_group <- get_internal_name(input$ss_choice)
+        ss_group <- get_variable_internal_name(input$ss_choice)
         im_group <- input$im_choice
         plot_df <- panimmune_data$immunomodulator_df %>% 
             filter(Symbol == im_group) %>% 

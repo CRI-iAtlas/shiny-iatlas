@@ -1,55 +1,38 @@
 
 
-create_membership_list <- function(){
-    names <- panimmune_data$feature_table %>% 
-        filter(!is.na(`Variable Class`)) %>% 
-        use_series(`Variable Class`) %>% 
-        unique
-    map(names, get_variable_group) %>% 
-        set_names(names)
-}
-
-get_variable_group <- function(name){
-    df <- feature_table %>% 
-        select(`Variable Class`, FeatureMatrixLabelTSV, `Variable Class Order`) %>% 
-        filter(`Variable Class` == name) %>% 
-        .[complete.cases(.),] %>% 
-        arrange(`Variable Class Order`)
-    factor(df$FeatureMatrixLabelTSV, levels = df$FeatureMatrixLabelTSV)
-}
-
-get_modulators_group <- function(name){
-    df <- panimmune_data$direct_relationship_modulators %>% 
-        select(`Variable Class`, FeatureMatrixLabelTSV, `Variable Class Order`) %>% 
-        filter(`Variable Class` == name) %>% 
-        .[complete.cases(.),] %>% 
-        arrange(`Variable Class Order`)
-    factor(df$FeatureMatrixLabelTSV, levels = df$FeatureMatrixLabelTSV)
-}
-
 # these switch between internal name and display name
-get_display_name <- function(name){
-    feature_table %>% 
-        filter(FeatureMatrixLabelTSV == name) %>% 
-        use_series(FriendlyLabel)
+switch_names <- function(df, name, old_col, new_col){
+    df %>%
+        filter(.data[[old_col]] == name) %>% 
+        extract2(new_col)
+}
+   
+get_variable_display_name <- function(name){
+    switch_names(feature_table, 
+                 name, 
+                 "FeatureMatrixLabelTSV", 
+                 "FriendlyLabel")
 }
 
-get_internal_name <- function(name){
-    feature_table %>% 
-        filter(FriendlyLabel == name) %>% 
-        use_series(FeatureMatrixLabelTSV)
+get_variable_internal_name <- function(name){
+    switch_names(feature_table, 
+                 name, 
+                 "FriendlyLabel", 
+                 "FeatureMatrixLabelTSV")
 }
 
 get_modulator_display_name <- function(name){
-    panimmune_data$direct_relationship_modulators %>% 
-        filter(HGNC_Symbol == name) %>% 
-        use_series(Gene)
+    switch_names(panimmune_data$direct_relationship_modulators, 
+                 name, 
+                 "HGNC_Symbol", 
+                 "Gene")
 }
 
 get_modulator_internal_name <- function(name){
-    panimmune_data$direct_relationship_modulators %>% 
-        filter(Gene == name) %>% 
-        use_series(HGNC_Symbol)
+    switch_names(panimmune_data$direct_relationship_modulators,
+                 name, 
+                 "Gene", 
+                 "HGNC_Symbol")
 }
 
 
@@ -90,7 +73,7 @@ buildDataFrame_corr <- function(dat, var1, var2, catx) {
         }      
     }  
     # give it nice names
-    rownames(cormat) <- sapply(rownames(cormat), get_display_name)
+    rownames(cormat) <- sapply(rownames(cormat), get_variable_display_name)
     cormat[is.na(cormat)] <- 0
     cormat
 }
@@ -141,3 +124,29 @@ buildDataFrame_surv <- function(dat, var1, timevar, divk) {
 #     new_list <- set_names(new_items, new_names)
 # }
 
+# create_membership_list <- function(){
+#     names <- panimmune_data$feature_table %>% 
+#         filter(!is.na(`Variable Class`)) %>% 
+#         use_series(`Variable Class`) %>% 
+#         unique
+#     map(names, get_variable_group) %>% 
+#         set_names(names)
+# }
+
+# get_variable_group <- function(name){
+#     df <- feature_table %>% 
+#         select(`Variable Class`, FeatureMatrixLabelTSV, `Variable Class Order`) %>% 
+#         filter(`Variable Class` == name) %>% 
+#         .[complete.cases(.),] %>% 
+#         arrange(`Variable Class Order`)
+#     factor(df$FeatureMatrixLabelTSV, levels = df$FeatureMatrixLabelTSV)
+# }
+# 
+# get_modulators_group <- function(name){
+#     df <- panimmune_data$direct_relationship_modulators %>% 
+#         select(`Variable Class`, FeatureMatrixLabelTSV, `Variable Class Order`) %>% 
+#         filter(`Variable Class` == name) %>% 
+#         .[complete.cases(.),] %>% 
+#         arrange(`Variable Class Order`)
+#     factor(df$FeatureMatrixLabelTSV, levels = df$FeatureMatrixLabelTSV)
+# }
