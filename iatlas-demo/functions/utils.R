@@ -1,4 +1,11 @@
-
+get_variable_group <- function(name){
+    df <- feature_table %>%
+        select(`Variable Class`, FeatureMatrixLabelTSV, `Variable Class Order`) %>%
+        filter(`Variable Class` == name) %>%
+        .[complete.cases(.),] %>%
+        arrange(`Variable Class Order`)
+    factor(df$FeatureMatrixLabelTSV, levels = df$FeatureMatrixLabelTSV)
+}
 
 # these switch between internal name and display name
 switch_names <- function(df, name, old_col, new_col){
@@ -133,14 +140,7 @@ buildDataFrame_surv <- function(dat, var1, timevar, divk) {
 #         set_names(names)
 # }
 
-# get_variable_group <- function(name){
-#     df <- feature_table %>% 
-#         select(`Variable Class`, FeatureMatrixLabelTSV, `Variable Class Order`) %>% 
-#         filter(`Variable Class` == name) %>% 
-#         .[complete.cases(.),] %>% 
-#         arrange(`Variable Class Order`)
-#     factor(df$FeatureMatrixLabelTSV, levels = df$FeatureMatrixLabelTSV)
-# }
+
 # 
 # get_modulators_group <- function(name){
 #     df <- panimmune_data$direct_relationship_modulators %>% 

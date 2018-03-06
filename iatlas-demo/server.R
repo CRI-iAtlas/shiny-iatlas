@@ -19,5 +19,6 @@ shinyServer(function(input, output) {
     callModule(survival, "module4")
     # immunomodulators
     callModule(immunomodulator, "module5")
+    callModule(immunomodulator2, "module6")
 })
 ################################################################################

@@ -4,6 +4,7 @@ source_files:
   - "modules/featurecorrelationmodule.R"
   - "modules/survivalmodule.R"
   - "modules/immnomodulatormodule.R"
+  - "modules/immnomodulatormodule2.R"
   - "functions/load_data.R"
   - "functions/utils.R"
   - "functions/boxplot.R"
