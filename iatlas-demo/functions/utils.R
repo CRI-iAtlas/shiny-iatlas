@@ -115,6 +115,37 @@ buildDataFrame_surv <- function(dat, var1, timevar, divk) {
     df
 }
 
+# immunomodulator helpers -----------------------------------------------------
+
+create_im_gene_boxplot_df <- function(im_choice, ss_group){
+    panimmune_data$immunomodulator_df %>% 
+        filter(Symbol == im_choice) %>% 
+        left_join(panimmune_data$df) %>% 
+        mutate(log_count = log10(normalized_count + 1)) %>% 
+        select(ss_group, log_count) %>% 
+        .[complete.cases(.), ] 
+}
+
+create_im_gene_histplot_df <- function(
+    boxplot_df, boxplot_column, boxplot_selected_group){
+    
+    filter(boxplot_df, UQ(as.name(boxplot_column)) == boxplot_selected_group)
+}
+
+get_selected_group_from_plotly_boxplot <- function(
+    plot_df, plot_column, eventdata){
+    
+    selected_box_index <- eventdata$x[[1]]
+    plot_df %>% 
+        extract2(plot_column) %>% 
+        as.factor %>% 
+        levels %>% 
+        extract2(selected_box_index)
+}
+
+
+
+
 # unused functions ------------------------------------------------------------
 
 # get_label_from_data_obj <- function(obj, obj_list, selection){

@@ -36,20 +36,12 @@ immunomodulator2_UI <- function(id) {
 immunomodulator2 <- function(input, output, session){
     
     ss_group <- reactive(get_variable_internal_name(input$ss_choice))
-    
-    plot_df <- reactive({
-        plot_df <- panimmune_data$immunomodulator_df %>% 
-            filter(Symbol == input$im_choice) %>% 
-            left_join(panimmune_data$df) %>% 
-            mutate(log_count = log10(normalized_count + 1)) %>% 
-            select(ss_group(), log_count) %>% 
-            .[complete.cases(.), ] 
-    })
-    
+    boxplot_df <- reactive(create_im_gene_boxplot_df(input$im_choice, ss_group()))
+
     output$boxPlot <- renderPlotly({
         plot_colors <- decide_plot_colors(panimmune_data, ss_group())
         plot <- create_boxplot(
-            plot_df(), 
+            boxplot_df(), 
             x = ss_group(), 
             y = "log_count", 
             fill_factor = ss_group(), 
@@ -64,26 +56,23 @@ immunomodulator2 <- function(input, output, session){
         
         eventdata <- event_data("plotly_click", source = "select")
         validate(need(!is.null(eventdata), "Click boxplot"))
-        boxplot_n <- eventdata$x[[1]]
 
-        boxplot_selected_group <- plot_df() %>% 
-            extract2(ss_group()) %>% 
-            as.factor %>% 
-            levels %>% 
-            extract2(boxplot_n)
+        boxplot_selected_group <- get_selected_group_from_plotly_boxplot(
+            boxplot_df(),
+            ss_group(), 
+            eventdata)
         
-        dd_plot_df <- plot_df() %>% 
-            filter(UQ(as.name(ss_group())) ==  boxplot_selected_group)
+        histplot_df <- create_im_gene_histplot_df(
+            boxplot_df(), 
+            ss_group(),
+            boxplot_selected_group)
+            
+        plot <- create_histplot(
+            histplot_df,
+            x = "log_count",
+            x_label = "Log10 (Count + 1)",
+            title = boxplot_selected_group)
         
-        plot <- dd_plot_df %>% 
-            ggplot(aes_string("log_count")) +
-            geom_histogram() + 
-            theme_bw() +
-            theme_1012 +
-            ylab("Count") + 
-            xlab("Log count") +
-            ggtitle(boxplot_selected_group) +
-            theme(axis.text.x = element_text(angle = 90, vjust = 0.5))
         print(ggplotly(plot))
     })
 }
