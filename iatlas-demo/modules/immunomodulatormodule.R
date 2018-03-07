@@ -1,4 +1,4 @@
-immunomodulator2_UI <- function(id) {
+immunomodulator_UI <- function(id) {
     
     ns <- NS(id)
     
@@ -33,11 +33,11 @@ immunomodulator2_UI <- function(id) {
     )
 }
 
-immunomodulator2 <- function(input, output, session){
+immunomodulator <- function(input, output, session){
     
     ss_group <- reactive(get_variable_internal_name(input$ss_choice))
     boxplot_df <- reactive(create_im_gene_boxplot_df(input$im_choice, ss_group()))
-
+    
     output$boxPlot <- renderPlotly({
         plot_colors <- decide_plot_colors(panimmune_data, ss_group())
         plot <- create_boxplot(
@@ -56,7 +56,7 @@ immunomodulator2 <- function(input, output, session){
         
         eventdata <- event_data("plotly_click", source = "select")
         validate(need(!is.null(eventdata), "Click boxplot"))
-
+        
         boxplot_selected_group <- get_selected_group_from_plotly_boxplot(
             boxplot_df(),
             ss_group(), 
@@ -66,7 +66,7 @@ immunomodulator2 <- function(input, output, session){
             boxplot_df(), 
             ss_group(),
             boxplot_selected_group)
-            
+        
         plot <- create_histplot(
             histplot_df,
             x = "log_count",
