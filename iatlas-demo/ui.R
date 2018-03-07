@@ -59,7 +59,6 @@ immuneinterfacetab <- tabPanel("Clonal Diversity", immuneinterface_UI("module2")
 featurecorrelationtab <- tabPanel("Feature Correlations", featurecorrelation_UI("module3"))
 survivaltab <- tabPanel("Survival Curves", survival_UI("module4"))
 immunomodulatortab <- tabPanel("Immunomodulators", immunomodulator_UI("module5"))
-immunomodulatortab2 <- tabPanel("Immunomodulators_drilldown", immunomodulator2_UI("module6"))
 
 explorepage = fluidPage(theme = shinytheme("sandstone"),
                         headerPanel("Explore TCGA Immune Characterizations"),
@@ -69,8 +68,7 @@ explorepage = fluidPage(theme = shinytheme("sandstone"),
                                            immuneinterfacetab,
                                            featurecorrelationtab,
                                            survivaltab,
-                                           immunomodulatortab,
-                                           immunomodulatortab2)
+                                           immunomodulatortab)
                         )
 )
 
