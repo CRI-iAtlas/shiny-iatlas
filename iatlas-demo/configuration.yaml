@@ -2,6 +2,7 @@ source_files:
   - "modules/cellcontentmodule.R"
   - "modules/immuneinterfacemodule.R"
   - "modules/featurecorrelationmodule.R"
+  - "modules/featurecorrelationmodule2.R"
   - "modules/survivalmodule.R"
   - "modules/immunomodulatormodule.R"
   - "functions/load_data.R"

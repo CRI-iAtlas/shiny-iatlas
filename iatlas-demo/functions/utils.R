@@ -57,6 +57,8 @@ decide_plot_colors <- function(data_obj, sample_group_label){
 
 
 buildDataFrame_corr <- function(dat, var1, var2, catx) {
+    
+
     getCats <- function(dat, catx) {
         cats <- as.character(na.omit(unique(dat[,catx])))
     }

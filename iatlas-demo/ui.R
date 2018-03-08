@@ -57,6 +57,7 @@ sbp_data = sidebarPanel(
 cellcontenttab <- tabPanel("Cell Content", cellcontent_UI("module1"))
 immuneinterfacetab <- tabPanel("Clonal Diversity", immuneinterface_UI("module2"))
 featurecorrelationtab <- tabPanel("Feature Correlations", featurecorrelation_UI("module3"))
+featurecorrelationtab2 <- tabPanel("Feature Correlations", featurecorrelation_UI2("module6"))
 survivaltab <- tabPanel("Survival Curves", survival_UI("module4"))
 immunomodulatortab <- tabPanel("Immunomodulators", immunomodulator_UI("module5"))
 
@@ -67,6 +68,7 @@ explorepage = fluidPage(theme = shinytheme("sandstone"),
                                            cellcontenttab,
                                            immuneinterfacetab,
                                            featurecorrelationtab,
+                                           featurecorrelationtab2,
                                            survivaltab,
                                            immunomodulatortab)
                         )
