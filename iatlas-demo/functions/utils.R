@@ -7,6 +7,15 @@ get_variable_group <- function(name){
     factor(df$FeatureMatrixLabelTSV, levels = df$FeatureMatrixLabelTSV)
 }
 
+get_category_group <- function(category){
+    panimmune_data$df %>% 
+        extract2(category) %>% 
+        na.omit %>% 
+        unique %>% 
+        sort %>% 
+        as.character
+}
+
 # these switch between internal name and display name
 switch_names <- function(df, name, old_col, new_col){
     df %>%
@@ -58,13 +67,8 @@ decide_plot_colors <- function(data_obj, sample_group_label){
 
 buildDataFrame_corr <- function(dat, var1, var2, catx) {
     
-
-    getCats <- function(dat, catx) {
-        cats <- as.character(na.omit(unique(dat[,catx])))
-    }
-    
     # get the vectors associated with each term
-    cats <- sort(getCats(dat, catx))
+    cats <- get_category_group(catx)
     vars <- get_variable_group(var1)
     
     # this would be the correlations
@@ -143,6 +147,71 @@ get_selected_group_from_plotly_boxplot <- function(
         as.factor %>% 
         levels %>% 
         extract2(selected_box_index)
+}
+
+# feature correlation helpers -------------------------------------------------
+
+create_feature_correlation_df <- function(dat, var1, var2, catx) {
+    
+    dat  <- panimmune_data$df
+    var1 <- "Immune Cell Proportion - Aggregate 2"
+    var2 <- "leukocyte_fraction"
+    catx <- "Subtype_Immune_Model_Based"
+    
+    cats <- get_category_group(catx)
+    vars <- get_variable_group(var1)
+    
+    # this would be the correlations
+    all_cats_df <- dat %>% 
+        as_data_frame %>% 
+        filter(UQ(as.name(catx)) %in% cats) %>% 
+        select_(.dots = c(catx, var2, as.character(vars)))
+
+    cormat2 <- create_correlation_matrix(all_cats_df, cats, vars, var2)
+}
+
+create_correlation_matrix <- function(dat, cats, vars, var2){
+    cormat <- matrix(
+        data = 0, 
+        ncol = length(cats),
+        nrow = length(vars))
+    rownames(cormat) <- vars
+    colnames(cormat) <- cats
+    # for each factor in catx
+    for (ci in cats) {
+        # subset dat
+        subdat <- dat[dat[,catx] == ci,]
+        # compute correlation 
+        for (var in vars) {
+            cormat[var,ci] <- get_correlation(var, var2, subdat)
+        }      
+    }  
+    # give it nice names
+    rownames(cormat) <- sapply(rownames(cormat), get_variable_display_name)
+    cormat[is.na(cormat)] <- 0
+    return(cormat)
+}
+
+get_correlation <- function(var1, var2, df){
+    cor(select_(df, var1),
+        select_(df, var2),
+        method = "spearman", 
+        use    = "pairwise.complete.obs")
+}
+
+
+get_scatterplot_df <- function(dat, var1, var2, catx){
+    # dat  <- panimmune_data$df
+    # var1 <- "Immune Cell Proportion - Aggregate 2"
+    # var2 <- "leukocyte_fraction"
+    # catx <- "Subtype_Immune_Model_Based"
+    # get the vectors associated with each term
+    cats <- get_category_group(catx)
+    vars <- get_variable_group(var1)
+    df2 <- dat %>% 
+        as_data_frame %>% 
+        filter(UQ(as.name(catx)) %in% cats) %>% 
+        select_(.dots = c(catx, var2, as.character(vars)))
 }
 
 

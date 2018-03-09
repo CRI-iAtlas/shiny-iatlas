@@ -38,17 +38,7 @@ featurecorrelation_UI2 <- function(id) {
                         c("Immune Subtypes"="Subtype_Immune_Model_Based",
                           "TCGA Tissues"="Study",
                           "TCGA Subtypes"="Subtype_Curated_Malta_Noushmehr_et_al"), 
-                        selected = "Immune Subtypes"),
-                    
-                    checkboxInput(
-                        ns("clustercols"), 
-                        label = "Cluster Columns", 
-                        value = F),
-                    
-                    checkboxInput(
-                        ns("clusterrows"), 
-                        label = "Cluster Rows", 
-                        value = T)
+                        selected = "Immune Subtypes")
                 ),
                 
                 mainPanel(
@@ -63,11 +53,12 @@ featurecorrelation_UI2 <- function(id) {
 
 featurecorrelation2 <- function(input, output, session){
     
+    # df_by_category <- reactive(filter_df_by_category())
     
     output$corrPlot <- renderPlotly({
         # first build the correlation matrix
-        df <- buildDataFrame_corr(panimmune_data$df, "Immune Cell Proportion - Aggregate 2", "leukocyte_fraction", "Subtype_Immune_Model_Based") 
-        df <- buildDataFrame_corr(panimmune_data$df, input$var1, input$var2, input$catx) 
+        # df <- buildDataFrame_corr(panimmune_data$df, "Immune Cell Proportion - Aggregate 2", "leukocyte_fraction", "Subtype_Immune_Model_Based") 
+        df <- create_feature_correlation_df(panimmune_data$df, input$var1, input$var2, input$catx) 
         # then get the heatmap options
         # cluster_cols <- as.logical(input$clustercols)
         # cluster_rows <- as.logical(input$clusterrows)
@@ -106,21 +97,3 @@ featurecorrelation2 <- function(input, output, session){
 }
 
 
-get_scatterplot_df <- function(dat, var1, var2, catx){
-    # dat  <- panimmune_data$df
-    # var1 <- "Immune Cell Proportion - Aggregate 2"
-    # var2 <- "leukocyte_fraction"
-    # catx <- "Subtype_Immune_Model_Based"
-    
-    getCats <- function(dat, catx) {
-        cats <- as.character(na.omit(unique(dat[,catx])))
-    }
-    
-    # get the vectors associated with each term
-    cats <- sort(getCats(dat, catx))
-    vars <- get_variable_group(var1)
-    df2 <- dat %>% 
-        as_data_frame %>% 
-        filter(UQ(as.name(catx)) %in% cats) %>% 
-        select_(.dots = c(catx, var2, as.character(vars)))
-}
