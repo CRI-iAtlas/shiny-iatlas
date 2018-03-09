@@ -42,7 +42,7 @@ featurecorrelation_UI2 <- function(id) {
                 ),
                 
                 mainPanel(
-                    plotlyOutput(ns("corrPlot"), height = "600px"),
+                    plotlyOutput(ns("corrPlot")),
                     plotlyOutput(ns("scatterPlot")),
                     HTML("<br><br><br>")
                 )
@@ -70,12 +70,19 @@ featurecorrelation2 <- function(input, output, session){
             categories(),
             variables()) 
         
+        
         plot_ly(z = corr_matrix,
                 x = colnames(corr_matrix),
                 y = rownames(corr_matrix),
                 type = "heatmap",
-                source = "heatplot", 
-                colors = colorRamp(c("blue", "white", "red")))
+                source = "heatplot",
+                colors = colorRamp(c("blue", "white", "red"))) %>% 
+            layout(margin = list(
+                l = 100,
+                r = 10,
+                b = 50,
+                t = 10,
+                pad = 2))
     })
     
     output$scatterPlot <- renderPlotly({
@@ -101,7 +108,21 @@ featurecorrelation2 <- function(input, output, session){
             geom_point () + 
             theme_bw() +
             theme_1012 +
-            theme(axis.text.x = element_text(angle = 90, vjust = 0.5))
+            xlab(get_variable_display_name(input$var2)) +
+            ylab(eventdata$y[[1]]) +
+            labs(title = eventdata$x[[1]])
+            
+                    
+        
+        plot %>% 
+            ggplotly %>% 
+            layout(margin = list(
+                l = 100,
+                r = 40,
+                b = 50,
+                t = 100,
+                pad = 2)) %>% 
+            print
     })
 }
 
