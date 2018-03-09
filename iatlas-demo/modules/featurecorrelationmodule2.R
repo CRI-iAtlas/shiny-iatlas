@@ -52,24 +52,27 @@ featurecorrelation_UI2 <- function(id) {
 }
 
 featurecorrelation2 <- function(input, output, session){
+    categories <- reactive(get_category_group(input$catx))
+    variables  <- reactive(as.character(get_variable_group(input$var1)))
     
-    # df_by_category <- reactive(filter_df_by_category())
+    df_by_selections <- reactive(filter_data_by_selections(
+        input$var2, 
+        input$catx,
+        categories(),
+        variables()))
     
     output$corrPlot <- renderPlotly({
-        # first build the correlation matrix
-        # df <- buildDataFrame_corr(panimmune_data$df, "Immune Cell Proportion - Aggregate 2", "leukocyte_fraction", "Subtype_Immune_Model_Based") 
-        df <- create_feature_correlation_df(panimmune_data$df, input$var1, input$var2, input$catx) 
-        # then get the heatmap options
-        # cluster_cols <- as.logical(input$clustercols)
-        # cluster_rows <- as.logical(input$clusterrows)
-        # color scheme
-        # colors_f <- colorRampPalette(colors = c("blue", "white", "red"))
-        input_var <- get_variable_display_name(input$var2)
-        # p <- create_heatmap(df, get_variable_display_name("leukocyte_fraction"), T,T, colors)
-        # create_heatmap(df, input_var, cluster_cols, cluster_rows, colors)
-        plot_ly(z = df,
-                x = colnames(df),
-                y = rownames(df),
+        
+        corr_matrix <- create_correlation_matrix(
+            df_by_selections(), 
+            input$var2, 
+            input$catx,
+            categories(),
+            variables()) 
+        
+        plot_ly(z = corr_matrix,
+                x = colnames(corr_matrix),
+                y = rownames(corr_matrix),
                 type = "heatmap",
                 source = "heatplot", 
                 colors = colorRamp(c("blue", "white", "red")))
@@ -77,23 +80,41 @@ featurecorrelation2 <- function(input, output, session){
     
     output$scatterPlot <- renderPlotly({
         
+        
         eventdata <- event_data("plotly_click", source = "heatplot")
         validate(need(!is.null(eventdata), "Click heatmap"))
         
-        select_x <- eventdata$x[[1]]
-        df1 <- get_scatterplot_df(panimmune_data$df, input$var1, input$var2, input$catx) %>% 
-            filter(UQ(as.name(as.character(input$catx))) == select_x)
-        select_y <- get_variable_internal_name(eventdata$y[[1]]) %>% 
-            .[. %in% colnames(df1)]
-        df2 <- df1 %>%
-            select_(.dots = input$var2, select_y) 
-        plot <- df2 %>% 
-            ggplot(aes_string(x = input$var2, y = select_y)) +
+        internal_variable_name <- 
+            eventdata$y[[1]] %>% 
+            get_variable_internal_name %>% 
+            .[. %in% colnames(df_by_selections())]
+        
+        plot_df <- create_scatter_plot_df(
+            df_by_selections(),
+            input$catx,
+            eventdata$x[[1]],
+            internal_variable_name,
+            input$var2)
+        
+        plot <- plot_df %>% 
+            ggplot(aes_string(x = input$var2, y = internal_variable_name)) +
             geom_point () + 
             theme_bw() +
             theme_1012 +
             theme(axis.text.x = element_text(angle = 90, vjust = 0.5))
     })
+}
+
+create_scatter_plot_df <- function(
+    df, 
+    category_column, 
+    category_plot_selection, 
+    internal_variable_name,
+    variable2_selection){
+    
+    plot_df <- df %>% 
+        filter(UQ(as.name(category_column)) == category_plot_selection) %>% 
+        select_(.dots = variable2_selection, internal_variable_name) 
 }
 
 

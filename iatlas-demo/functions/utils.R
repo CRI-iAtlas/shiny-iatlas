@@ -151,26 +151,14 @@ get_selected_group_from_plotly_boxplot <- function(
 
 # feature correlation helpers -------------------------------------------------
 
-create_feature_correlation_df <- function(dat, var1, var2, catx) {
-    
-    dat  <- panimmune_data$df
-    var1 <- "Immune Cell Proportion - Aggregate 2"
-    var2 <- "leukocyte_fraction"
-    catx <- "Subtype_Immune_Model_Based"
-    
-    cats <- get_category_group(catx)
-    vars <- get_variable_group(var1)
-    
-    # this would be the correlations
-    all_cats_df <- dat %>% 
+filter_data_by_selections <- function(var2, catx, cats, vars){
+    panimmune_data$df %>% 
         as_data_frame %>% 
         filter(UQ(as.name(catx)) %in% cats) %>% 
-        select_(.dots = c(catx, var2, as.character(vars)))
-
-    cormat2 <- create_correlation_matrix(all_cats_df, cats, vars, var2)
+        select_(.dots = c(catx, var2, vars))
 }
 
-create_correlation_matrix <- function(dat, cats, vars, var2){
+create_correlation_matrix <- function(dat, var2, catx, cats, vars){
     cormat <- matrix(
         data = 0, 
         ncol = length(cats),
@@ -198,24 +186,6 @@ get_correlation <- function(var1, var2, df){
         method = "spearman", 
         use    = "pairwise.complete.obs")
 }
-
-
-get_scatterplot_df <- function(dat, var1, var2, catx){
-    # dat  <- panimmune_data$df
-    # var1 <- "Immune Cell Proportion - Aggregate 2"
-    # var2 <- "leukocyte_fraction"
-    # catx <- "Subtype_Immune_Model_Based"
-    # get the vectors associated with each term
-    cats <- get_category_group(catx)
-    vars <- get_variable_group(var1)
-    df2 <- dat %>% 
-        as_data_frame %>% 
-        filter(UQ(as.name(catx)) %in% cats) %>% 
-        select_(.dots = c(catx, var2, as.character(vars)))
-}
-
-
-
 
 # unused functions ------------------------------------------------------------
 
