@@ -1,0 +1,87 @@
+Origin	OriginalLabel	BigQueryLabel	FeatureMatrixLabelTSV	FeatureMatrixLabelBigQuery	FriendlyLabel	TransformationsApplied	Note	Variable Class	Variable Class Order	Unit	VariableType
+syn8464746	ClusterModel1	ClusterModel1	Subtype_Immune_Model_Based	Subtype_Immune_Model_Based	Immune Subtype	"prefixed with ""C"" for FMx"	NA	Sample Category	NA	NA	Categorical
+syn8396853	Subtype_Selected	Subtype_Selected	Subtype_Curated_Malta_Noushmehr_et_al	Subtype_Curated_Malta_Noushmehr_et_al	TCGA Subtype	NA	NA	Sample Category	NA	NA	Categorical
+NA	NA	Study	Study	Study	TCGA Study	NA	NA	Sample Category	NA	NA	Categorical
+syn5808205	NA	estimated_leukocyte_fraction	leukocyte_fraction	leukocyte_fraction	Leukocyte Fraction	NA	NA	Overall Proportion	1	NA	Numeric
+syn7300639	purity	Purity	Stromal_Fraction	Stromal_Fraction	Stromal Fraction	1-Purity	NA	Overall Proportion	2	NA	Numeric
+syn11227775	NA	NA	til_percentage	til_percentage	TIL Regional Fraction (Percent)	NA	NA	Overall Proportion	3	NA	Numeric
+syn6165992	Module11_Prolif_score	Score	Module11_Prolif_score	Module11_Prolif_score	Proliferation	NA	BQ Table in tidy format	Auxiliary Expression Signature	1	Score	Numeric
+syn6165992	CHANG_CORE_SERUM_RESPONSE_UP	Score	CHANG_CORE_SERUM_RESPONSE_UP	CHANG_CORE_SERUM_RESPONSE_UP	Wound Healing	NA	NA	Core Expression Signature	5	Score	Numeric
+syn6165992	CSF1_response	Score	CSF1_response	CSF1_response	Macrophage Regulation	NA	NA	Core Expression Signature	3	Score	Numeric
+syn6165992	LIexpression_score	Score	LIexpression_score	LIexpression_score	Lymphocyte Infiltration	NA	NA	Core Expression Signature	4	Score	Numeric
+syn6165992	Module3_IFN_score	Score	Module3_IFN_score	Module3_IFN_score	IFN-gamma Response	NA	NA	Core Expression Signature	1	Score	Numeric
+syn6165992	TGFB_score_21050467	Score	TGFB_score_21050467	TGFB_score_21050467	TGF-beta Response	NA	NA	Core Expression Signature	2	Score	Numeric
+syn7415026	Subclonal genome fraction	Subclonal_genome_fraction	Subclonal_genome_fraction	Subclonal_genome_fraction	Intratumor Heterogeneity	NA	NA	DNA Alteration	4	Count	Numeric
+syn8566192	numberOfImmunogenicMutation	numberOfImmunogenicMutation	numberOfImmunogenicMutation	numberOfImmunogenicMutation	SNV Neoantigen	NA	NA	DNA Alteration	2	Count	Numeric
+syn9628488	neoantigen_num	neoantigen_num	indel_neoantigen_num	indel_neoantigen_num	Indel Neoantigen	NA	NA	DNA Alteration	3	Count	Numeric
+syn7994727	Silent per Mb	Silent_per_Mb	mutationrate_silent_per_Mb	mutationrate_silent_per_Mb	Silent Mutation Rate	averaging over multiple tumor samples	NA	DNA Alteration	NA	Per Megabase	Numeric
+syn7994727	Non-silent per Mb	Non_silent_per_Mb	mutationrate_nonsilent_per_Mb	mutationrate_nonsilent_per_Mb	Nonsilent Mutation Rate	averaging over multiple tumor samples	NA	DNA Alteration	1	Per Megabase	Numeric
+syn7415024	n_segs	n_segs	n_segs	n_segs	Number of Segments	NA	NA	DNA Alteration	6	Count	Numeric
+syn7415024	frac_altered	frac_altered	frac_altered	frac_altered	Fraction Altered	NA	NA	DNA Alteration	7	NA	Numeric
+syn7415026	AS	AS_	AS	AS	Aneuploidy Score	NA	NA	DNA Alteration	5	NA	Numeric
+syn8605330	HRD	HRD	HRD	HRD	Homologous Recombination Deficiency	NA	NA	DNA Alteration	8	NA	Numeric
+syn7415026	LOH_n_seg	LOH_n_seg	LOH_n_seg	LOH_n_seg	Number of Segments with LOH	NA	NA	DNA Alteration	9	NA	Numeric
+syn7415026	LOH_frac_altered	LOH_frac_altered	LOH_frac_altered	LOH_frac_altered	Fraction of Segments with LOH	NA	NA	DNA Alteration	10	NA	Numeric
+syn8493905	evenness_by_seq	evenness_by_seq	BCR_Evenness	BCR_Evenness	BCR Evenness	NA	NA	Adaptive Receptor	6	Score	Numeric
+syn8493905	shannon_entropy_by_seq	shannon_entropy_by_seq	BCR_Shannon	BCR_Shannon	BCR Shannon	NA	NA	Adaptive Receptor	4	Score	Numeric
+syn8493905	num_unique_seq	num_unique_seq	BCR_Richness	BCR_Richness	BCR Richness	NA	NA	Adaptive Receptor	5	Score	Numeric
+syn7063422	shannon	shannon	TCR_Shannon	TCR_Shannon	TCR Shannon	NA	NA	Adaptive Receptor	1	Score	Numeric
+syn7063422	numClones	numClones	TCR_Richness	TCR_Richness	TCR Richness	NA	TCR_numClones within script to generate FMx	Adaptive Receptor	2	Score	Numeric
+syn7063422	totTCR_reads	totTCR_reads	totTCR_reads	totTCR_reads	NA	NA	NA	NA	NA	NA	Numeric
+NA	NA	NA	TCR_Evenness	TCR_Evenness	TCR Evenness	TCR_Evenness=TCR_Shannon/log(TCR_numClones)	NA	Adaptive Receptor	3	Score	Numeric
+NA	NA	NA	CTA_Score	CTA_Score	CTA Score	NA	Cancer Testis Antigen Score - currently read in from disk	NA	NA	NA	Numeric
+syn11082523	NormScore	Score	Th1.cells	Th1_cells	Th1 Cells	Filter BQTable on 'Th1 cells'	Need help from Dave to check	T Helper Cell Score	1	NA	Numeric
+syn11082523	NormScore	Score	Th2.cells	Th2_cells	Th2 Cells	Filter BQTable on 'Th2 cells'	Need help from Dave to check	T Helper Cell Score	2	NA	Numeric
+syn11082523	NormScore	Score	Th17.cells	Th17_cells	Th17 Cells	Filter BQTable on 'Th17 cells'	Need help from Dave to check	T Helper Cell Score	3	NA	Numeric
+syn8121775	OS	OS	OS	OS	OS	NA	NA	NA	NA	NA	Numeric
+syn8121775	OS_time	OS_time	OS_time	OS_time	OS Time	NA	NA	NA	NA	NA	Numeric
+syn8121775	PFI_1	PFI_1	PFI_1	PFI_1	PFI	NA	NA	NA	NA	NA	Numeric
+syn8121775	PFI_time_1	PFI_time_1	PFI_time_1	PFI_time_1	PFI Time	NA	NA	NA	NA	NA	Numeric
+syn7337221	B.cells.memory	B.cells.memory	B.cells.memory	B_cells_memory	B Cells Memory	NA	NA	Immune Cell Proportion - Original	9	NA	Numeric
+syn7337221	B.cells.naive	B.cells.naive	B.cells.naive	B_cells_naive	B Cells Naive	NA	NA	Immune Cell Proportion - Original	8	NA	Numeric
+syn7337221	Dendritic.cells.activated	Dendritic.cells.activated	Dendritic.cells.activated	Dendritic_cells_activated	Dendritic Cells Activated	NA	NA	Immune Cell Proportion - Original	18	NA	Numeric
+syn7337221	Dendritic.cells.resting	Dendritic.cells.resting	Dendritic.cells.resting	Dendritic_cells_resting	Dendritic Cells Resting	NA	NA	Immune Cell Proportion - Original	17	NA	Numeric
+syn7337221	Eosinophils	Eosinophils	Eosinophils	Eosinophils	Eosinophils	NA	NA	Immune Cell Proportion - Original	22	NA	Numeric
+syn7337221	Macrophages.M0	Macrophages.M0	Macrophages.M0	Macrophages_M0	Macrophages M0	NA	NA	Immune Cell Proportion - Original	14	NA	Numeric
+syn7337221	Macrophages.M1	Macrophages.M1	Macrophages.M1	Macrophages_M1	Macrophages M1	NA	NA	Immune Cell Proportion - Original	15	NA	Numeric
+syn7337221	Macrophages.M2	Macrophages.M2	Macrophages.M2	Macrophages_M2	Macrophages M2	NA	NA	Immune Cell Proportion - Original	16	NA	Numeric
+syn7337221	Mast.cells.activated	Mast.cells.activated	Mast.cells.activated	Mast_cells_activated	Mast Cells Activated	NA	NA	Immune Cell Proportion - Original	20	NA	Numeric
+syn7337221	Mast.cells.resting	Mast.cells.resting	Mast.cells.resting	Mast_cells_resting	Mast Cells Resting	NA	NA	Immune Cell Proportion - Original	19	NA	Numeric
+syn7337221	Monocytes	Monocytes	Monocytes	Monocytes	Monocytes	NA	NA	Immune Cell Proportion - Original	13	NA	Numeric
+syn7337221	Neutrophils	Neutrophils	Neutrophils	Neutrophils	Neutrophils	NA	NA	Immune Cell Proportion - Original	21	NA	Numeric
+syn7337221	NK.cells.activated	NK.cells.activated	NK.cells.activated	NK_cells_activated	NK Cells Activated	NA	NA	Immune Cell Proportion - Original	11	NA	Numeric
+syn7337221	NK.cells.resting	NK.cells.resting	NK.cells.resting	NK_cells_resting	NK Cells Resting	NA	NA	Immune Cell Proportion - Original	10	NA	Numeric
+syn7337221	Plasma.cells	Plasma.cells	Plasma.cells	Plasma_cells	Plasma Cells	NA	NA	Immune Cell Proportion - Original	12	NA	Numeric
+syn7337221	T.cells.CD4.memory.activated	T.cells.CD4.memory.activated	T.cells.CD4.memory.activated	T_cells_CD4_memory_activated	T Cells CD4 Memory Activated	NA	NA	Immune Cell Proportion - Original	4	NA	Numeric
+syn7337221	T.cells.CD4.memory.resting	T.cells.CD4.memory.resting	T.cells.CD4.memory.resting	T_cells_CD4_memory_resting	T Cells CD4 Memory Resting	NA	NA	Immune Cell Proportion - Original	3	NA	Numeric
+syn7337221	T.cells.CD4.naive	T.cells.CD4.naive	T.cells.CD4.naive	T_cells_CD4_naive	T Cells CD4 Naive	NA	NA	Immune Cell Proportion - Original	2	NA	Numeric
+syn7337221	T.cells.CD8	T.cells.CD8	T.cells.CD8	T_cells_CD8	T Cells CD8	NA	NA	Immune Cell Proportion - Original	1	NA	Numeric
+syn7337221	T.cells.follicular.helper	T.cells.follicular.helper	T.cells.follicular.helper	T_cells_follicular_helper	T Cells Follicular Helper	NA	NA	Immune Cell Proportion - Original	6	NA	Numeric
+syn7337221	T.cells.gamma.delta	T.cells.gamma.delta	T.cells.gamma.delta	T_cells_gamma_delta	T Cells gamma delta	NA	NA	Immune Cell Proportion - Original	7	NA	Numeric
+syn7337221	T.cells.regulatory..Tregs.	T.cells.regulatory.Tregs	T.cells.regulatory.Tregs	T_cells_regulatory_Tregs	T Cells Regulatory Tregs	Extra dots removed priort to BQ load	NA	Immune Cell Proportion - Original	5	NA	Numeric
+syn8540746	Lymphocytes	Lymphocytes	Lymphocytes.Aggregate1	Lymphocytes_Aggregate1	Lymphocytes	NA	NA	Immune Cell Proportion - Aggregate 1	1	NA	Numeric
+syn8540746	Neutrophils	Neutrophils	Neutrophils.Aggregate1	Neutrophils_Aggregate1	Neutrophils	NA	NA	Immune Cell Proportion - Aggregate 1	5	NA	Numeric
+syn8540746	Eosinophils	Eosinophils	Eosinophils.Aggregate1	Eosinophils_Aggregate1	Eosinophils	NA	NA	Immune Cell Proportion - Aggregate 1	6	NA	Numeric
+syn8540746	Mast.cells	Mast_cells	Mast_cells.Aggregate1	Mast_cells_Aggregate1	Mast Cells	NA	NA	Immune Cell Proportion - Aggregate 1	4	NA	Numeric
+syn8540746	Dendritic.cells	Dendritic_cells	Dendritic_cells.Aggregate1	Dendritic_cells_Aggregate1	Dendritic Cells	NA	NA	Immune Cell Proportion - Aggregate 1	3	NA	Numeric
+syn8540746	Macrophage	Macrophage	Macrophage.Aggregate1	Macrophage_Aggregate1	Macrophages	NA	NA	Immune Cell Proportion - Aggregate 1	2	NA	Numeric
+syn8540752	Neutrophils	Neutrophils	Neutrophils.Aggregate2	Neutrophils_Aggregate2	Neutrophils	NA	NA	Immune Cell Proportion - Aggregate 2	8	NA	Numeric
+syn8540752	Eosinophils	Eosinophils	Eosinophils.Aggregate2	Eosinophils_Aggregate2	Eosinophils	NA	NA	Immune Cell Proportion - Aggregate 2	9	NA	Numeric
+syn8540752	Mast.cells	Mast_cells	Mast_cells.Aggregate2	Mast_cells_Aggregate2	Mast Cells	NA	NA	Immune Cell Proportion - Aggregate 2	7	NA	Numeric
+syn8540752	Dendritic.cells	Dendritic_cells	Dendritic_cells.Aggregate2	Dendritic_cells_Aggregate2	Dendritic Cells	NA	NA	Immune Cell Proportion - Aggregate 2	6	NA	Numeric
+syn8540752	Macrophage	Macrophage	Macrophage.Aggregate2	Macrophage_Aggregate2	Macrophages	NA	NA	Immune Cell Proportion - Aggregate 2	5	NA	Numeric
+syn8540752	NK.cells	NK_cells	NK_cells.Aggregate2	NK_cells_Aggregate2	NK Cells	NA	NA	Immune Cell Proportion - Aggregate 2	4	NA	Numeric
+syn8540752	B.cells	B_cells	B_cells.Aggregate2	B_cells_Aggregate2	B Cells	NA	NA	Immune Cell Proportion - Aggregate 2	3	NA	Numeric
+syn8540752	T.cells.CD8	T_cells_CD8	T_cells_CD8.Aggregate2	T_cells_CD8_Aggregate2	T Cells CD8	NA	NA	Immune Cell Proportion - Aggregate 2	1	NA	Numeric
+syn8540752	T.cells.CD4	T_cells_CD4	T_cells_CD4.Aggregate2	T_cells_CD4_Aggregate2	T Cells CD4	NA	NA	Immune Cell Proportion - Aggregate 2	2	NA	Numeric
+syn8540753	B.cells	B_cells	B_cells.Aggregate3	B_cells_Aggregate3	B Cells	NA	Need to check if we use Aggregate 3 in the paper!	Immune Cell Proportion - Aggregate 3	4	NA	Numeric
+syn8540753	Plasma.cells	Plasma_cells	Plasma_cells.Aggregate3	Plasma_cells_Aggregate3	Plasma Cells	NA	NA	Immune Cell Proportion - Aggregate 3	6	NA	Numeric
+syn8540753	T.cells.CD8	T_cells_CD8	T_cells_CD8.Aggregate3	T_cells_CD8_Aggregate3	T Cells CD8	NA	NA	Immune Cell Proportion - Aggregate 3	1	NA	Numeric
+syn8540753	T.cells.CD4	T_cells_CD4	T_cells_CD4.Aggregate3	T_cells_CD4_Aggregate3	T Cells CD4	NA	NA	Immune Cell Proportion - Aggregate 3	2	NA	Numeric
+syn8540753	T.cells.gamma.delta	T_cells_gamma_delta	T_cells_gamma_delta.Aggregate3	T_cells_gamma_delta_Aggregate3	T Cells gamma delta	NA	NA	Immune Cell Proportion - Aggregate 3	3	NA	Numeric
+syn8540753	NK.cells	NK_cells	NK_cells.Aggregate3	NK_cells_Aggregate3	NK Cells	NA	NA	Immune Cell Proportion - Aggregate 3	5	NA	Numeric
+syn8540753	Macrophage	Macrophage	Macrophage.Aggregate3	Macrophage_Aggregate3	Macrophages	NA	NA	Immune Cell Proportion - Aggregate 3	7	NA	Numeric
+syn8540753	Dendritic.cells	Dendritic_cells	Dendritic_cells.Aggregate3	Dendritic_cells_Aggregate3	Dendritic Cells	NA	NA	Immune Cell Proportion - Aggregate 3	8	NA	Numeric
+syn8540753	Mast.cells	Mast_cells	Mast_cells.Aggregate3	Mast_cells_Aggregate3	Mast Cells	NA	NA	Immune Cell Proportion - Aggregate 3	9	NA	Numeric
+syn8540753	Neutrophils	Neutrophils	Neutrophils.Aggregate3	Neutrophils_Aggregate3	Neutrophils	NA	NA	Immune Cell Proportion - Aggregate 3	10	NA	Numeric
+syn8540753	Eosinophils	Eosinophils	Eosinophils.Aggregate3	Eosinophils_Aggregate3	Eosinophils	NA	NA	Immune Cell Proportion - Aggregate 3	11	NA	Numeric
