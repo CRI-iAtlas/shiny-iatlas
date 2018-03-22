@@ -60,6 +60,11 @@ buildDataFrame_surv <- function(dat, var1, timevar, divk) {
 
 # immunomodulator helpers -----------------------------------------------------
 
+create_im_gene_histplot_df <- function(
+  boxplot_df, boxplot_column, boxplot_selected_group) {
+  filter(boxplot_df, UQ(as.name(boxplot_column)) == boxplot_selected_group)
+}
+
 create_im_gene_boxplot_df <- function(im_choice, ss_group) {
   panimmune_data$immunomodulator_df %>%
     filter(Symbol == im_choice) %>%

@@ -72,11 +72,6 @@ decide_plot_colors <- function(data_obj, sample_group_label) {
 
 # immunomodulator helpers -----------------------------------------------------
 
-create_im_gene_histplot_df <- function(
-                                       boxplot_df, boxplot_column, boxplot_selected_group) {
-  filter(boxplot_df, UQ(as.name(boxplot_column)) == boxplot_selected_group)
-}
-
 get_selected_group_from_plotly_boxplot <- function(
                                                    plot_df, plot_column, eventdata) {
   selected_box_index <- eventdata$x[[1]]
