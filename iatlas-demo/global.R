@@ -18,8 +18,8 @@ theme_1012 <- theme(
 )
 
 # general data loading & prep
-USE_REMOTE_BQ <- F ## set data as remote (BigQuery) or local(Feature Matrix on disk)
-USE_REMOTE_GS <- T
+USE_REMOTE_BQ <- config_yaml$bq_remote 
+USE_REMOTE_GS <- config_yaml$gs_remote
 
 feature_table <- load_manifest()
 panimmune_data <- load_data()
