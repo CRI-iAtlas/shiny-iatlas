@@ -1,6 +1,6 @@
 load_manifest <- function() {
   if (!USE_REMOTE_GS) {
-    feature_table <- read_tsv("data/IRWG data manifest - Features2.tsv")
+    feature_table <- read_tsv("data/irwg_data-manifest_features.feather")
   } else {
     data_manifest <- gs_title("IRWG data manifest")
     feature_table <- gs_read(ss = data_manifest, ws = "Features")
@@ -10,7 +10,7 @@ load_manifest <- function() {
 
 load_data <- function() {
   if (!USE_REMOTE_BQ) {
-    load("data/PanImmune_FMx.RData") ## reads in data frame, df. Adjust as needed for local loading
+    df <- read_feather("data/irwg_feature-matrix.feather")
   }
 
   sample_selection_groups <- create_sample_selection_groups()
@@ -37,8 +37,8 @@ load_data <- function() {
 
 load_modulators <- function() {
   if (!USE_REMOTE_GS) {
-    # df1 <-
-    # df2 <-
+    df1 <- read_feather("data/irwg_im-genes_direct.feather")
+    df2 <- read_feather("data/irwg_im-genes_potential.feather")
   } else {
     data_manifest <- gs_title("Cancer Immunomodulators - TCGA PanImmune Group")
     df1 <- gs_read(ss = data_manifest, ws = "Direct Relationship")
@@ -57,7 +57,9 @@ create_subtype_colors <- function() {
 }
 
 create_tcga_colors <- function() {
-  tcga_colors_df <- read_tsv("data/PanCanAtlasTumorsWithHistology-color-coded-2017V2.tsv") %>%
+  tcga_colors_df <- read_feather(
+    "data/iatlas-demo/data/tcga-pancan_study-table.feather"
+    ) %>% 
     select(`Study Abbreviation`, `Hex Colors`) %>%
     mutate(`Hex Colors` = paste0("#", `Hex Colors`))
   tcga_colors <- tcga_colors_df$`Hex Colors` %>%
@@ -94,7 +96,7 @@ create_immunomodulator_df <- function(sample_group, diversity_vars) {
 }
 
 get_immunomodulator_df_from_local <- function() {
-  read_tsv("data/modulator_exp.tsv")
+  read_feather("data/irwg_im-expr.feather")
 }
 
 get_immunomodulator_df_from_bq <- function(direct_relationship_modulators) {
