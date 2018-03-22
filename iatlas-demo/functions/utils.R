@@ -69,15 +69,3 @@ decide_plot_colors <- function(data_obj, sample_group_label) {
   plot_colors <- magrittr::extract2(data_obj, color_item)
 }
 
-
-# immunomodulator helpers -----------------------------------------------------
-
-get_selected_group_from_plotly_boxplot <- function(
-                                                   plot_df, plot_column, eventdata) {
-  selected_box_index <- eventdata$x[[1]]
-  plot_df %>%
-    extract2(plot_column) %>%
-    as.factor() %>%
-    levels() %>%
-    extract2(selected_box_index)
-}
