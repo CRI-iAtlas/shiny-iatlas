@@ -6,6 +6,8 @@ source_files:
   - "modules/survivalmodule.R"
   - "modules/immunomodulatormodule.R"
   - "functions/load_data.R"
+  - "functions/transform.R"
+  - "functions/drilldown.R"
   - "functions/utils.R"
   - "functions/boxplot.R"
   - "functions/heatmap.R"
