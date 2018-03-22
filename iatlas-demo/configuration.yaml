@@ -22,6 +22,7 @@ libraries:
   - "survival"
   - "survminer"
   - "googlesheets"
+  - "feather"
  
 bq_remote: false # set data as remote (BigQuery) or local (on disk)
 gs_remote: false

@@ -1,6 +1,6 @@
 load_manifest <- function() {
   if (!USE_REMOTE_GS) {
-    feature_table <- read_tsv("data/irwg_data-manifest_features.feather")
+    feature_table <- read_feather("data/irwg_data-manifest_features.feather")
   } else {
     data_manifest <- gs_title("IRWG data manifest")
     feature_table <- gs_read(ss = data_manifest, ws = "Features")
@@ -57,9 +57,7 @@ create_subtype_colors <- function() {
 }
 
 create_tcga_colors <- function() {
-  tcga_colors_df <- read_feather(
-    "data/iatlas-demo/data/tcga-pancan_study-table.feather"
-    ) %>% 
+  tcga_colors_df <- read_feather("data/tcga-pancan_study-table.feather") %>% 
     select(`Study Abbreviation`, `Hex Colors`) %>%
     mutate(`Hex Colors` = paste0("#", `Hex Colors`))
   tcga_colors <- tcga_colors_df$`Hex Colors` %>%
