@@ -53,6 +53,7 @@ featurecorrelation_UI <- function(id) {
                 
                 mainPanel(
                     plotlyOutput(ns("corrPlot"), height = "600px"),
+                    plotlyOutput(ns("scatterPlot")),
                     HTML("<br><br><br>")
                 )
             )
@@ -63,13 +64,24 @@ featurecorrelation_UI <- function(id) {
 featurecorrelation <- function(input, output, session){
     output$corrPlot <- renderPlotly({
         # first build the correlation matrix
+        # df <- buildDataFrame_corr(panimmune_data$df, "Immune Cell Proportion - Aggregate 2", "leukocyte_fraction", "Subtype_Immune_Model_Based")
         df <- buildDataFrame_corr(panimmune_data$df, input$var1, input$var2, input$catx)
+        print(df)
         # then get the heatmap options
         cluster_cols <- as.logical(input$clustercols)
         cluster_rows <- as.logical(input$clusterrows)
         # color scheme
         colors <- colorRampPalette(colors = c("blue", "white", "red"))
         input_var <- get_variable_display_name(input$var2)
+        # p <- create_heatmap(df, get_variable_display_name("leukocyte_fraction"), T,T, colors)
         create_heatmap(df, input_var, cluster_cols, cluster_rows, colors)
+    })
+    
+    output$scatterPlot <- renderPlotly({
+        
+        eventdata <- event_data("plotly_click", source = "A")
+        validate(need(!is.null(eventdata), "Click heatmap"))
+        print(eventdata)
+        
     })
 }

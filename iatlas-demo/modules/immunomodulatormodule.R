@@ -25,7 +25,8 @@ immunomodulator_UI <- function(id) {
                 
                 mainPanel(
                     # Show a plot of the generated distribution
-                    plotOutput(ns("distPlot"))
+                    plotlyOutput(ns("boxPlot")),
+                    plotlyOutput(ns("histPlot"))
                 )
             )    
         )
@@ -34,25 +35,44 @@ immunomodulator_UI <- function(id) {
 
 immunomodulator <- function(input, output, session){
     
-    output$distPlot <- renderPlot({
-        ss_group <- get_variable_internal_name(input$ss_choice)
-        im_group <- input$im_choice
-        plot_df <- panimmune_data$immunomodulator_df %>% 
-            filter(Symbol == im_group) %>% 
-            left_join(panimmune_data$df) %>% 
-            mutate(log_count = log10(normalized_count + 1)) %>% 
-            select(ss_group, log_count) %>% 
-            .[complete.cases(.), ] 
-        plot_colors <- decide_plot_colors(panimmune_data, ss_group)
+    ss_group <- reactive(get_variable_internal_name(input$ss_choice))
+    boxplot_df <- reactive(create_im_gene_boxplot_df(input$im_choice, ss_group()))
+    
+    output$boxPlot <- renderPlotly({
+        plot_colors <- decide_plot_colors(panimmune_data, ss_group())
         plot <- create_boxplot(
-            plot_df, 
-            x = ss_group, 
+            boxplot_df(), 
+            x = ss_group(), 
             y = "log_count", 
-            fill_factor = ss_group, 
+            fill_factor = ss_group(), 
             x_label = input$ss_choice, 
             y_label = "Log10 (Count + 1)",
             fill_colors = plot_colors,
-            title = get_modulator_display_name(im_group))
-        print(plot)
+            title = get_modulator_display_name(input$im_choice))
+        print(ggplotly(plot, source = "select"))
+    })
+    
+    output$histPlot <- renderPlotly({
+        
+        eventdata <- event_data("plotly_click", source = "select")
+        validate(need(!is.null(eventdata), "Click boxplot"))
+        
+        boxplot_selected_group <- get_selected_group_from_plotly_boxplot(
+            boxplot_df(),
+            ss_group(), 
+            eventdata)
+        
+        histplot_df <- create_im_gene_histplot_df(
+            boxplot_df(), 
+            ss_group(),
+            boxplot_selected_group)
+        
+        plot <- create_histplot(
+            histplot_df,
+            x = "log_count",
+            x_label = "Log10 (Count + 1)",
+            title = boxplot_selected_group)
+        
+        print(ggplotly(plot))
     })
 }
