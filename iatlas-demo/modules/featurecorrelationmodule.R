@@ -137,13 +137,3 @@ featurecorrelation <- function(input, output, session) {
   })
 }
 
-create_scatter_plot_df <- function(
-                                   df,
-                                   category_column,
-                                   category_plot_selection,
-                                   internal_variable_name,
-                                   variable2_selection) {
-  plot_df <- df %>%
-    filter(UQ(as.name(category_column)) == category_plot_selection) %>%
-    select_(.dots = variable2_selection, internal_variable_name)
-}
