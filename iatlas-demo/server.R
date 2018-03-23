@@ -15,7 +15,6 @@ shinyServer(function(input, output) {
   callModule(immuneinterface, "module2")
   # Correlation heatmaps
   callModule(featurecorrelation, "module3")
-  callModule(featurecorrelation2, "module6")
   # Survival curves
   callModule(survival, "module4")
   # immunomodulators
