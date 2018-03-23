@@ -80,10 +80,6 @@ create_cell_content_groups <- function() {
   }
 }
 
-set_names_to_self <- function(lst) {
-  set_names(lst, lst)
-}
-
 create_immunomodulator_df <- function(sample_group, diversity_vars) {
   if (USE_REMOTE_BQ) {
     df <- get_immunomodulator_df_from_bq()

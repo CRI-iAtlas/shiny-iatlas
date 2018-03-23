@@ -1,3 +1,7 @@
+set_names_to_self <- function(lst) {
+  set_names(lst, lst)
+}
+
 get_variable_group <- function(name) {
   df <- feature_table %>%
     select(`Variable Class`, FeatureMatrixLabelTSV, `Variable Class Order`) %>%
