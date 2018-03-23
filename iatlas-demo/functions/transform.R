@@ -1,33 +1,15 @@
+# dataframe builders
 
-buildDataFrame_corr <- function(dat, var1, var2, catx) {
-  
-  # get the vectors associated with each term
-  cats <- get_category_group(catx)
-  vars <- get_variable_group(var1)
-  
-  # this would be the correlations
-  cormat <- matrix(data = 0, ncol = length(cats), nrow = length(vars))
-  rownames(cormat) <- vars
-  colnames(cormat) <- cats
-  # for each factor in catx
-  for (ci in cats) {
-    # subset dat
-    subdat <- dat[dat[, catx] == ci, ]
-    # compute correlation
-    for (vi in vars) {
-      cormat[vi, ci] <- cor(subdat[, vi], subdat[, var2],
-                            method = "spearman",
-                            use = "pairwise.complete.obs"
-      )
-    }
-  }
-  # give it nice names
-  rownames(cormat) <- sapply(rownames(cormat), get_variable_display_name)
-  cormat[is.na(cormat)] <- 0
-  cormat
+build_scatterplot_df <- function(
+  df, category_column, category_plot_selection, internal_variable_name,
+  variable2_selection
+) {
+  plot_df <- df %>%
+    filter(UQ(as.name(category_column)) == category_plot_selection) %>%
+    select_(.dots = variable2_selection, internal_variable_name)
 }
 
-buildDataFrame_surv <- function(dat, var1, timevar, divk) {
+build_survival_df <- function(dat, var1, timevar, divk) {
   getCats <- function(dat, var1, divk) {
     if (var1 %in% c("Subtype_Immune_Model_Based")) {
       # then we don't need to produce catagories.
@@ -58,14 +40,13 @@ buildDataFrame_surv <- function(dat, var1, timevar, divk) {
   df
 }
 
-# immunomodulator helpers -----------------------------------------------------
-
-create_im_gene_histplot_df <- function(
-  boxplot_df, boxplot_column, boxplot_selected_group) {
+build_histogram_df <- function(
+  boxplot_df, boxplot_column, boxplot_selected_group
+) {
   filter(boxplot_df, UQ(as.name(boxplot_column)) == boxplot_selected_group)
 }
 
-create_im_gene_boxplot_df <- function(im_choice, ss_group) {
+build_boxplot_df <- function(im_choice, ss_group) {
   panimmune_data$immunomodulator_df %>%
     filter(Symbol == im_choice) %>%
     left_join(panimmune_data$df) %>%
@@ -74,22 +55,18 @@ create_im_gene_boxplot_df <- function(im_choice, ss_group) {
     .[complete.cases(.), ]
 }
 
-create_im_gene_histplot_df <- function(
-  boxplot_df, boxplot_column, boxplot_selected_group) {
-  filter(boxplot_df, UQ(as.name(boxplot_column)) == boxplot_selected_group)
-}
+# matrix builders
 
-
-# feature correlation helpers -------------------------------------------------
-
-filter_data_by_selections <- function(var2, catx, cats, vars) {
-  panimmune_data$df %>%
-    as_data_frame() %>%
-    filter(UQ(as.name(catx)) %in% cats) %>%
-    select_(.dots = c(catx, var2, vars))
-}
-
-create_correlation_matrix <- function(dat, var2, catx, cats, vars) {
+build_correlation_mat <- function(dat, var2, catx, cats, vars) {
+  
+  get_correlation <- function(var1, var2, df) {
+    cor(select_(df, var1),
+        select_(df, var2),
+        method = "spearman",
+        use = "pairwise.complete.obs"
+    )
+  }
+  
   cormat <- matrix(
     data = 0,
     ncol = length(cats),
@@ -112,22 +89,14 @@ create_correlation_matrix <- function(dat, var2, catx, cats, vars) {
   return(cormat)
 }
 
-get_correlation <- function(var1, var2, df) {
-  cor(select_(df, var1),
-      select_(df, var2),
-      method = "spearman",
-      use = "pairwise.complete.obs"
-  )
+
+# dataframe operations
+
+filter_data_by_selections <- function(var2, catx, cats, vars) {
+  panimmune_data$df %>%
+    as_data_frame() %>%
+    filter(UQ(as.name(catx)) %in% cats) %>%
+    select_(.dots = c(catx, var2, vars))
 }
 
 
-create_scatter_plot_df <- function(
-  df,
-  category_column,
-  category_plot_selection,
-  internal_variable_name,
-  variable2_selection) {
-  plot_df <- df %>%
-    filter(UQ(as.name(category_column)) == category_plot_selection) %>%
-    select_(.dots = variable2_selection, internal_variable_name)
-}

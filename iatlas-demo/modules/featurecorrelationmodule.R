@@ -70,7 +70,7 @@ featurecorrelation <- function(input, output, session) {
   ))
 
   output$corrPlot <- renderPlotly({
-    corr_matrix <- create_correlation_matrix(
+    corr_matrix <- build_correlation_mat(
       df_by_selections(),
       input$var2,
       input$catx,
@@ -105,7 +105,7 @@ featurecorrelation <- function(input, output, session) {
       get_variable_internal_name() %>%
       .[. %in% colnames(df_by_selections())]
 
-    plot_df <- create_scatter_plot_df(
+    plot_df <- build_scatterplot_df(
       df_by_selections(),
       input$catx,
       eventdata$x[[1]],

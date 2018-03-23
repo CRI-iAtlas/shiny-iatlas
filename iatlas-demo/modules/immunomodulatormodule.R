@@ -36,7 +36,7 @@ immunomodulator_UI <- function(id) {
 immunomodulator <- function(input, output, session){
     
     ss_group <- reactive(get_variable_internal_name(input$ss_choice))
-    boxplot_df <- reactive(create_im_gene_boxplot_df(input$im_choice, ss_group()))
+    boxplot_df <- reactive(build_boxplot_df(input$im_choice, ss_group()))
     
     output$boxPlot <- renderPlotly({
         plot_colors <- decide_plot_colors(panimmune_data, ss_group())
@@ -62,7 +62,7 @@ immunomodulator <- function(input, output, session){
             ss_group(), 
             eventdata)
         
-        histplot_df <- create_im_gene_histplot_df(
+        histplot_df <- build_histogram_df(
             boxplot_df(), 
             ss_group(),
             boxplot_selected_group)
