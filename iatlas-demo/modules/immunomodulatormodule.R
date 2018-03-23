@@ -67,7 +67,7 @@ immunomodulator <- function(input, output, session){
             ss_group(),
             boxplot_selected_group)
         
-        plot <- create_histplot(
+        plot <- create_histogram(
             histplot_df,
             x = "log_count",
             x_label = "Log10 (Count + 1)",

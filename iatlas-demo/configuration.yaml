@@ -11,7 +11,7 @@ source_files:
   - "functions/boxplot.R"
   - "functions/heatmap.R"
   - "functions/kmplot.R"
-  - "functions/histplot.R"
+  - "functions/histogram.R"
 
 libraries:
   - "shinythemes"

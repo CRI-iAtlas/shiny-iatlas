@@ -1,4 +1,4 @@
-create_histplot <- function(df, x, x_label, y_label = "Count", title = NULL) {
+create_histogram <- function(df, x, x_label, y_label = "Count", title = NULL) {
   plot <- df %>%
     ggplot(aes_string(x)) +
     geom_histogram() +
