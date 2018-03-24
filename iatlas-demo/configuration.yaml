@@ -2,15 +2,16 @@ source_files:
   - "modules/cellcontentmodule.R"
   - "modules/immuneinterfacemodule.R"
   - "modules/featurecorrelationmodule.R"
-  - "modules/featurecorrelationmodule2.R"
   - "modules/survivalmodule.R"
   - "modules/immunomodulatormodule.R"
   - "functions/load_data.R"
+  - "functions/transform.R"
+  - "functions/drilldown.R"
   - "functions/utils.R"
   - "functions/boxplot.R"
   - "functions/heatmap.R"
   - "functions/kmplot.R"
-  - "functions/histplot.R"
+  - "functions/histogram.R"
 
 libraries:
   - "shinythemes"
@@ -20,6 +21,10 @@ libraries:
   - "survival"
   - "survminer"
   - "googlesheets"
+  - "feather"
+ 
+bq_remote: false # set data as remote (BigQuery) or local (on disk)
+gs_remote: false
   
 cell_content_local:
   - "leukocyte_fraction"
@@ -49,3 +54,4 @@ immunomodulator_groups:
   - "Super_Category"
   - "Immune_Checkpoint"
   - "Function"
+  
