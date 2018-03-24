@@ -12,6 +12,7 @@ source_files:
   - "functions/heatmap.R"
   - "functions/kmplot.R"
   - "functions/histogram.R"
+  - "functions/format.R"
 
 libraries:
   - "shinythemes"
