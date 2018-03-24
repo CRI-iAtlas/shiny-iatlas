@@ -23,6 +23,7 @@ libraries:
   - "survminer"
   - "googlesheets"
   - "feather"
+  - "shinydashboard"
  
 bq_remote: false # set data as remote (BigQuery) or local (on disk)
 gs_remote: false
