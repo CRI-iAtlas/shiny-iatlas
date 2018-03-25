@@ -1,12 +1,11 @@
 cellcontent_UI <- function(id) {
   ns <- NS(id)
-
+  
   tagList(
-    fluidPage(
-      # Application title
-      titlePanel("Immune Cell Content by Sample Group"),
-      sidebarLayout(
-        sidebarPanel(
+    # Application title
+    titlePanel("Immune Cell Content by Sample Group"),
+    fluidRow(
+      box(width = 4,
           # Drop-down selected sample groups
           selectInput(
             inputId = ns("ss_choice"),
@@ -16,7 +15,7 @@ cellcontent_UI <- function(id) {
             ),
             selected = "Immune Subtype"
           ),
-
+          
           # Drop-down selected cell content
           selectInput(
             inputId = ns("cc_choice"),
@@ -26,12 +25,11 @@ cellcontent_UI <- function(id) {
             ),
             selected = "Leukocyte Fraction"
           )
-        ),
-
-        mainPanel(
+      ),
+      
+      box(width = 8,
           # Show a plot of the generated distribution
           plotOutput(ns("distPlot"))
-        )
       )
     )
   )
