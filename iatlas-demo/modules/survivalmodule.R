@@ -2,7 +2,12 @@ survival_UI <- function(id) {
   ns <- NS(id)
   
   tagList(
-    titlePanel("Immune Feature Kaplan-Meier Plot"),
+    fluidRow(
+      box(width = 12, background = "black",
+          span(strong("Immune Feature Kaplan-Meier Plot"),
+               style = "font-size:18px")
+      )
+    ),
     fluidRow(
       box(width = 4,
         selectInput(

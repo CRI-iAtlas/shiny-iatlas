@@ -2,7 +2,12 @@ featurecorrelation_UI <- function(id) {
   ns <- NS(id)
   
   tagList(
-    titlePanel("Immune Feature Correlation Heatmap"),
+    fluidRow(
+      box(width = 12, background = "black",
+          span(strong("Immune Feature Correlation Heatmap"),
+               style = "font-size:18px")
+      )
+    ),
     fluidRow(
       box(width = 4,
         selectInput(
