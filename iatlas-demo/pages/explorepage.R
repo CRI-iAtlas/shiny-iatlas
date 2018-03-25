@@ -1,8 +1,8 @@
 explorepage <- dashboardPage(
   dashboardHeader(disable = TRUE),
   dashboardSidebar(
-    sidebarMenu(
-      menuItem("iAtlas Explorer",   
+    sidebarMenu(id = "explorertabs",
+      menuItem("iAtlas Explorer Dashboard",   
                tabName = "dashboard", 
                icon = icon("dashboard")),
       menuItem(startExpanded = TRUE,
@@ -33,8 +33,42 @@ explorepage <- dashboardPage(
   ),
   dashboardBody(
     tabItems(
-      tabItem(tabName = "dashboard",
-              h2("Welcome to the iAtlas Portal prototype!")
+      tabItem(
+        tabName = "dashboard",
+        titlePanel("Welcome to the iAtlas Portal prototype!"),
+        box(width = 12,
+            title = "Select module to explore data...",
+            solidHeader = TRUE, status = "warning",
+            fluidRow(
+              box(width = 4,
+                  title = "Cell Content",
+                  solidHeader = TRUE, status = "primary",
+                  actionButton("link_to_module1", "Open Module")
+              ),
+              box(width = 4,
+                  title = "Clonal Diversity",
+                  solidHeader = TRUE, status = "primary",
+                  actionButton("link_to_module2", "Open Module")
+              ),
+              box(width = 4,
+                  title = "Feature Correlations",
+                  solidHeader = TRUE, status = "primary",
+                  actionButton("link_to_module3", "Open Module")
+              )
+            ),
+            fluidRow(
+              box(width = 4,
+                  title = "Survival Curves",
+                  solidHeader = TRUE, status = "primary",
+                  actionButton("link_to_module4", "Open Module")
+              ),
+              box(width = 4,
+                  title = "Immunomodulators",
+                  solidHeader = TRUE, status = "primary",
+                  actionButton("link_to_module5", "Open Module")
+              )
+            )
+        )
       ),
       tabItem(tabName = "cell_content",
               cellcontent_UI("module1")
