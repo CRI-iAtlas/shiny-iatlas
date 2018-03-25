@@ -11,23 +11,27 @@ explorepage <- dashboardPage(
                menuSubItem(
                  "Cell Content", 
                  tabName = "cell_content", 
-                 icon = icon("th")),
+                 icon = icon("chevron-circle-right")),
                menuSubItem(
                  "Clonal Diversity",    
                  tabName = "clonal_diversity", 
-                 icon = icon("th")),
+                 icon = icon("chevron-circle-right")),
                menuSubItem(
                  "Feature Correlations", 
                  tabName = "feature_correlations", 
-                 icon = icon("th")),
+                 icon = icon("chevron-circle-right")),
                menuSubItem(
                  "Survival Curves",
                  tabName = "survival_curves", 
-                 icon = icon("th")),
+                 icon = icon("chevron-circle-right")),
                menuSubItem(
                  "Immunomodulators",
                  tabName = "immunomodulators", 
-                 icon = icon("th"))
+                 icon = icon("chevron-circle-right"))
+      ),
+      menuItem("Data Description",
+               icon = icon("th-list"),
+               tabName = "datainfo"
       )
     )
   ),
@@ -87,7 +91,9 @@ explorepage <- dashboardPage(
       ),
       tabItem(tabName = "immunomodulators",
               immunomodulator_UI("module5")
-      )
+      ),
+      tabItem(tabName = "datainfo",
+              datainfo_UI("moduleX"))
     )
   )
 )
