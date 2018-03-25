@@ -1,0 +1,12 @@
+.navbar {
+    position: relative;
+    min-height: 50px;
+    margin-bottom: 0;
+    border: 2px solid transparent;
+}
+
+.wrapper {
+    height: auto;
+    margin-left: -15px;
+    margin-right: -15px;
+}
