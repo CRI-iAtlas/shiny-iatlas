@@ -17,8 +17,8 @@ ui <- navbarPage(
   title = strong("CRI iAtlas Portal"), selected = "Explore",	
   tabPanel("Explore", explorepage, icon = icon("bar-chart")),	
   tabPanel("About", aboutpage, icon = icon("info-circle")),	
-  tabPanel("Documentation", icon = icon("file-text")),	
-  tabPanel("Resources", icon = icon("link")),	
+  tabPanel("Documentation", docspage, icon = icon("file-text")),	
+  tabPanel("Resources", resourcespage, icon = icon("link")),	
   header = headerTagList,	
   collapsible = TRUE,	inverse = TRUE,
   windowTitle = "CRI iAtlas Portal"	

@@ -16,6 +16,8 @@ source_files:
   - "functions/format.R"
   - "pages/aboutpage.R"
   - "pages/explorepage.R"
+  - "pages/docspage.R"
+  - "pages/resourcespage.R"
 
 libraries:
   - "shinythemes"

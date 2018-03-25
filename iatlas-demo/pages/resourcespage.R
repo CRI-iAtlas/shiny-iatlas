@@ -1,8 +1,8 @@
-aboutpage <- fluidPage(
+resourcespage <- fluidPage(
   br(),
   fluidRow(
     box(width = 12, background = "black",
-        span(strong("About"),
+        span(strong("Resources"),
              style = "font-size:18px")
     )
   ),

@@ -35,7 +35,10 @@ explorepage <- dashboardPage(
     tabItems(
       tabItem(
         tabName = "dashboard",
-        titlePanel("Welcome to the iAtlas Portal prototype!"),
+        box(width = 12, background = "black",
+          span(strong("Welcome to the iAtlas Portal Explorer!"),
+               style = "font-size:18px")
+        ),
         box(width = 12,
             title = "Select module to explore data...",
             solidHeader = TRUE, status = "warning",
