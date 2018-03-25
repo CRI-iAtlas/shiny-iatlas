@@ -7,8 +7,13 @@ aboutpage <- fluidPage(
     )
   ),
   fluidRow(
-    column(12,
-           "iAtlas is cool."
+    column(width = 12,
+           h4("About the Cancer Research Institute"),
+           "The Cancer Research Institute (CRI), established in 1953, is the world’s leading nonprofit organization dedicated exclusively to transforming cancer patient care by advancing scientific efforts to develop new and effective immune system-based strategies to prevent, diagnose, treat, and eventually cure all cancers. Guided by a world-renowned Scientific Advisory Council that includes three Nobel laureates and 26 members of the National Academy of Sciences, CRI has invested $336 million in support of research conducted by immunologists and tumor immunologists at the world’s leading medical centers and universities, and has contributed to many of the key scientific advances that demonstrate the potential for immunotherapy to change the face of cancer treatment. Learn more at www.cancerresearch.org.",
+           h4("About Sage Bionetworks"),
+           "Sage Bionetworks is a nonprofit biomedical research organization, founded in 2009, with a vision to promote innovations in personalized medicine by enabling a community-based approach to scientific inquiries and discoveries. Sage Bionetworks strives to activate patients and to incentivize scientists, funders and researchers to work in fundamentally new ways in order to shape research, accelerate access to knowledge and transform human health. It is located on the campus of the Fred Hutchinson Cancer Research Center in Seattle, Washington and is supported through a portfolio of philanthropic donations, competitive research grants, and commercial partnerships. More information is available at www.sagebase.org.",
+           h4("About Institute for Systems Biology"),
+           "The Institute for Systems Biology is a nonprofit biomedical research organization based in Seattle, Washington. It was founded in 2000 by systems biologist Leroy Hood, immunologist Alan Aderem, and protein chemist Ruedi Aebersold. ISB was established on the belief that the conventional models for exploring and funding breakthrough science have not caught up with the real potential of what is possible today. ISB serves as the ultimate environment where scientific collaboration stretches across disciplines and across academic and industrial organizations, where our researchers have the intellectual freedom to challenge the status quo, and where grand visions for breakthroughs in human health inspire a collective drive to achieve the seemingly impossible. Our core values ensure that we always keep our focus on the big ideas that eventually will have the largest impact on human health. ISB is an affiliate of Providence Health & Services. Learn more at www.systemsbiology.org."
     )
   )
 )
