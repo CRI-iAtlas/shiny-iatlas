@@ -47,6 +47,21 @@ explorepage <- dashboardPage(
         ),
         fluidRow(
           box(width = 12,
+            p("Here, you can explore iAtlas data through interactive visualizations and detailed descriptions of individual features.")
+          )
+        ),
+        fluidRow(
+          box(width = 12,
+            p("A summary of what's in the portal..."),
+            fluidRow(
+              infoBox("Features", 78, width = 4, color = "black", fill = TRUE),
+              infoBox("Data Types", 10, width = 4, color = "black", fill = TRUE),
+              infoBox("TCGA Cancers", 33, width = 4, color = "black", fill = TRUE)
+            )
+          )
+        ),
+        fluidRow(
+          box(width = 12,
               title = "Select module to explore data...",
               solidHeader = TRUE, status = "warning",
               fluidRow(
