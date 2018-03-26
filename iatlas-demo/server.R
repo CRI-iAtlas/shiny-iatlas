@@ -21,6 +21,9 @@ shinyServer(function(input, output, session) {
   # immunomodulators
   callModule(immunomodulator, "module5")
   
+  # Data info
+  callModule(datainfo, "moduleX")
+  
   output$ss_choice <- renderText({
     input$ss_choice
   })
