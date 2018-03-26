@@ -1,3 +1,7 @@
+body {
+  font-family: Open Sans, Helvetica Neue, Helvetica, Arial, sans-serif;  
+}
+
 .navbar {
     position: relative;
     min-height: 50px;

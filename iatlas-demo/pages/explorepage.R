@@ -2,12 +2,11 @@ explorepage <- dashboardPage(
   dashboardHeader(disable = TRUE),
   dashboardSidebar(
     sidebarMenu(id = "explorertabs",
-      menuItem("iAtlas Explorer Dashboard",   
+      menuItem("iAtlas Explorer",   
                tabName = "dashboard", 
                icon = icon("dashboard")),
-      menuItem(startExpanded = TRUE,
-               "Modules",   
-               icon = icon("bar-chart"),
+      menuItem("Analysis Modules",   
+               icon = icon("bar-chart"), startExpanded = TRUE,
                menuSubItem(
                  "Cell Content", 
                  tabName = "cell_content", 
@@ -41,7 +40,7 @@ explorepage <- dashboardPage(
         tabName = "dashboard",
         fluidRow(
           box(width = 12, background = "black",
-              span(strong("Welcome to the iAtlas Portal Explorer!"),
+              span(strong("Welcome to the iAtlas Explorer!"),
                    style = "font-size:18px")
           )
         ),
@@ -62,8 +61,9 @@ explorepage <- dashboardPage(
         ),
         fluidRow(
           box(width = 12,
-              title = "Select module to explore data...",
+              title = "Analysis Modules",
               solidHeader = TRUE, status = "warning",
+              p("Select module to explore data."),
               fluidRow(
                 box(width = 4,
                     title = "Cell Content",
