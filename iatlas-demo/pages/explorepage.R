@@ -5,6 +5,14 @@ explorepage <- dashboardPage(
       menuItem("iAtlas Explorer",   
                tabName = "dashboard", 
                icon = icon("dashboard")),
+      selectInput(
+        inputId = "ss_choice",
+        label = "Select Sample Groups",
+        choices = as.character(
+          panimmune_data$sample_selection_choices
+        ),
+        selected = "Immune Subtype"
+      ),
       menuItem("Analysis Modules",   
                icon = icon("bar-chart"), startExpanded = TRUE,
                menuSubItem(
@@ -34,6 +42,12 @@ explorepage <- dashboardPage(
       menuItem("Data Description",
                icon = icon("th-list"),
                tabName = "datainfo"
+      ),
+      hr(),
+      wellPanel(
+        
+        strong("Selected groups:"),
+        textOutput("ss_choice")
       )
     )
   ),
