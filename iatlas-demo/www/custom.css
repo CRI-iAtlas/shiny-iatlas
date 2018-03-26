@@ -1,0 +1,25 @@
+body {
+  font-family: Open Sans, Helvetica Neue, Helvetica, Arial, sans-serif;  
+}
+
+.navbar {
+    position: relative;
+    min-height: 50px;
+    margin-bottom: 0;
+    border: 2px solid transparent;
+}
+
+.wrapper {
+    height: auto;
+    margin-left: -15px;
+    margin-right: -15px;
+    margin-bottom: -30px;
+}
+
+.content-wrapper {
+    min-height: 100%!important;
+}
+
+.bg-black {
+    background-color: #333!important;
+}

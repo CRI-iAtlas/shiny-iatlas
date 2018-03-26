@@ -1,9 +1,11 @@
 source_files:
+  - "modules/dashboardmodule.R"
   - "modules/cellcontentmodule.R"
   - "modules/immuneinterfacemodule.R"
   - "modules/featurecorrelationmodule.R"
   - "modules/survivalmodule.R"
   - "modules/immunomodulatormodule.R"
+  - "modules/datainfomodule.R"
   - "functions/load_data.R"
   - "functions/transform.R"
   - "functions/drilldown.R"
@@ -13,6 +15,10 @@ source_files:
   - "functions/kmplot.R"
   - "functions/histogram.R"
   - "functions/format.R"
+  - "pages/aboutpage.R"
+  - "pages/explorepage.R"
+  - "pages/docspage.R"
+  - "pages/resourcespage.R"
 
 libraries:
   - "shinythemes"
@@ -56,4 +62,3 @@ immunomodulator_groups:
   - "Super_Category"
   - "Immune_Checkpoint"
   - "Function"
-  

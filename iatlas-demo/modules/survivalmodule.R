@@ -1,46 +1,49 @@
 survival_UI <- function(id) {
   ns <- NS(id)
-
+  
   tagList(
-    fluidPage(
-      titlePanel("Immune Feature Kaplan-Meier Plot"),
-      sidebarLayout(
-        sidebarPanel(
-          selectInput(
-            ns("var1_surv"),
-            "Variable",
-            c(
-              "Immune Subtypes" = "Subtype_Immune_Model_Based",
-              "Leukocyte Fraction" = "leukocyte_fraction",
-              "Mutation Rate, Non-Silent" = "mutationrate_nonsilent_per_Mb",
-              "Indel Neoantigens" = "indel_neoantigen_num",
-              "SNV Neoantigens" = "numberOfImmunogenicMutation",
-              "Stemness Score RNA" = "StemnessScoreRNA"
-            ),
-            selected = "Subtype_Immune_Model_Based"
+    fluidRow(
+      box(width = 12, background = "black",
+          span(strong("Immune Feature Kaplan-Meier Plot"),
+               style = "font-size:18px")
+      )
+    ),
+    fluidRow(
+      box(width = 4,
+        selectInput(
+          ns("var1_surv"),
+          "Variable",
+          c(
+            "Immune Subtypes" = "Subtype_Immune_Model_Based",
+            "Leukocyte Fraction" = "leukocyte_fraction",
+            "Mutation Rate, Non-Silent" = "mutationrate_nonsilent_per_Mb",
+            "Indel Neoantigens" = "indel_neoantigen_num",
+            "SNV Neoantigens" = "numberOfImmunogenicMutation",
+            "Stemness Score RNA" = "StemnessScoreRNA"
           ),
-
-          selectInput(
-            ns("timevar"),
-            "Time Varible",
-            c("OS Time" = "OS_time", "PFI Time" = "PFI_time_1"),
-            selected = "OS_time"
-          ),
-
-          sliderInput(
-            ns("divk"),
-            "Divider",
-            min = 0,
-            max = 10,
-            value = 2
-          ),
-
-          checkboxInput(ns("confint"), "Confidence Intervals", value = F),
-          checkboxInput(ns("risktable"), "Risk Table", value = T)
+          selected = "Subtype_Immune_Model_Based"
         ),
-        mainPanel(
-          plotOutput(ns("survPlot"), height = 600)
-        )
+        
+        selectInput(
+          ns("timevar"),
+          "Time Varible",
+          c("OS Time" = "OS_time", "PFI Time" = "PFI_time_1"),
+          selected = "OS_time"
+        ),
+        
+        sliderInput(
+          ns("divk"),
+          "Divider",
+          min = 0,
+          max = 10,
+          value = 2
+        ),
+        
+        checkboxInput(ns("confint"), "Confidence Intervals", value = F),
+        checkboxInput(ns("risktable"), "Risk Table", value = T)
+      ),
+      box(width = 8,
+        plotOutput(ns("survPlot"), height = 600)
       )
     )
   )

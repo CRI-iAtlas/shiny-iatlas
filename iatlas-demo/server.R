@@ -8,8 +8,9 @@ options(shiny.maxRequestSize = 100 * 1024^2)
 ################################################################################
 # Begin Shiny Server definition.
 ################################################################################
-shinyServer(function(input, output) {
-  # # Cell content
+shinyServer(function(input, output, session) {
+
+  # Cell content
   callModule(cellcontent, "module1")
   # Clonal diversity
   callModule(immuneinterface, "module2")
@@ -19,5 +20,22 @@ shinyServer(function(input, output) {
   callModule(survival, "module4")
   # immunomodulators
   callModule(immunomodulator, "module5")
+  
+  observeEvent(input$link_to_module1, {
+    shinydashboard::updateTabItems(session, "explorertabs", "cell_content")
+  })
+  observeEvent(input$link_to_module2, {
+    shinydashboard::updateTabItems(session, "explorertabs", "clonal_diversity")
+  })
+  observeEvent(input$link_to_module3, {
+    shinydashboard::updateTabItems(session, "explorertabs", "feature_correlations")
+  })
+  observeEvent(input$link_to_module4, {
+    shinydashboard::updateTabItems(session, "explorertabs", "survival_curves")
+  })
+  observeEvent(input$link_to_module5, {
+    shinydashboard::updateTabItems(session, "explorertabs", "immunomodulators")
+  })
+
 })
 ################################################################################
