@@ -65,32 +65,86 @@ explorepage <- dashboardPage(
               solidHeader = TRUE, status = "warning",
               p("Select module to explore data."),
               fluidRow(
-                box(width = 4,
-                    title = "Cell Content",
-                    solidHeader = TRUE, status = "primary",
-                    actionButton("link_to_module1", "Open Module")
+                box(
+                  width = 6,
+                  title = "Cell Content",
+                  solidHeader = TRUE, status = "primary",
+                  fluidRow(
+                    column(
+                      width = 4,
+                      shiny::img(src = "images/cell_content.png", width = "100%")
+                    ),
+                    column(
+                      width = 8,
+                      p("Check out the Cell Content module for some box plots of cell types in different sample groups and stuff."),
+                      actionButton("link_to_module1", "Open Module")
+                    )
+                  )
                 ),
-                box(width = 4,
-                    title = "Clonal Diversity",
-                    solidHeader = TRUE, status = "primary",
-                    actionButton("link_to_module2", "Open Module")
-                ),
-                box(width = 4,
-                    title = "Feature Correlations",
-                    solidHeader = TRUE, status = "primary",
-                    actionButton("link_to_module3", "Open Module")
+                box(
+                  width = 6,
+                  title = "Clonal Diversity",
+                  solidHeader = TRUE, status = "primary",
+                  fluidRow(
+                    column(
+                      width = 4,
+                      shiny::img(src = "images/cell_content.png", width = "100%")
+                    ),
+                    column(
+                      width = 8,
+                      p("Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua."),
+                      actionButton("link_to_module2", "Open Module")
+                    )
+                  )
                 )
               ),
               fluidRow(
-                box(width = 4,
+                box(width = 6,
+                    title = "Feature Correlations",
+                    solidHeader = TRUE, status = "primary",
+                    fluidRow(
+                      column(
+                        width = 4,
+                        shiny::img(src = "images/cell_content.png", width = "100%")
+                      ),
+                      column(
+                        width = 8,
+                        p("Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua."),
+                        actionButton("link_to_module3", "Open Module")
+                      )
+                    )
+                ),
+                box(width = 6,
                     title = "Survival Curves",
                     solidHeader = TRUE, status = "primary",
-                    actionButton("link_to_module4", "Open Module")
-                ),
-                box(width = 4,
+                    fluidRow(
+                      column(
+                        width = 4,
+                        shiny::img(src = "images/cell_content.png", width = "100%")
+                      ),
+                      column(
+                        width = 8,
+                        p("Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua."),
+                        actionButton("link_to_module4", "Open Module")
+                      )
+                    )
+                )
+              ),
+              fluidRow(
+                box(width = 6,
                     title = "Immunomodulators",
                     solidHeader = TRUE, status = "primary",
-                    actionButton("link_to_module5", "Open Module")
+                    fluidRow(
+                      column(
+                        width = 4,
+                        shiny::img(src = "images/cell_content.png", width = "100%")
+                      ),
+                      column(
+                        width = 8,
+                        p("Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua."),
+                        actionButton("link_to_module5", "Open Module")
+                      )
+                    )
                 )
               )
           )
