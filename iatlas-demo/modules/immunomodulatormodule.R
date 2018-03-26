@@ -3,14 +3,9 @@ immunomodulator_UI <- function(id) {
   ns <- NS(id)
   
   tagList(
+    titleBox("Immunomodulators"),
     fluidRow(
-      box(width = 12, background = "black",
-          span(strong("Immunomodulators"),
-               style = "font-size:18px")
-      )
-    ),
-    fluidRow(
-      box(width = 4,
+      optionsBox(width = 4,
         # Drop-down selected sample groups
         selectInput(
           inputId = ns("ss_choice"),
@@ -26,7 +21,7 @@ immunomodulator_UI <- function(id) {
           choices = as.character(panimmune_data$direct_relationship_modulators$HGNC_Symbol))
       ),
       
-      box(width = 8,
+      plotBox(width = 8,
         # Show a plot of the generated distribution
         plotlyOutput(ns("boxPlot")),
         plotlyOutput(ns("histPlot"))

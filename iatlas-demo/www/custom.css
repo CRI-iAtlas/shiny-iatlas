@@ -20,6 +20,28 @@ body {
     min-height: 100%!important;
 }
 
+.box.box-solid {
+  border: 0!important;
+  border-top: 3px solid #666!important;
+}
+
+.box.box-success {
+  border-top-color: rgba(174, 205, 49, 0.5)!important;
+}
+
+.box.box-danger {
+  border-top-color: #666!important;
+}
+
 .bg-black {
     background-color: #333!important;
+}
+
+.bg-navy {
+    background-color: rgba(44, 59, 65, 0.7)!important;
+}
+
+.bg-green {
+    background-color: rgba(174, 205, 49, 0.5)!important;
+    color: #222!important;
 }

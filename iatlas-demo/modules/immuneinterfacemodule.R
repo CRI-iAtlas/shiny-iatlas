@@ -2,14 +2,9 @@ immuneinterface_UI <- function(id) {
   ns <- NS(id)
   
   tagList(
+    titleBox("Clonal Diversity by Sample Group"),
     fluidRow(
-      box(width = 12, background = "black",
-          span(strong("Clonal Diversity by Sample Group"),
-               style = "font-size:18px")
-      )
-    ),
-    fluidRow(
-      box(width = 4,
+      optionsBox(width = 4,
         # Drop-down selected sample groups
         selectInput(
           inputId = ns("selection_choice"),
@@ -42,7 +37,7 @@ immuneinterface_UI <- function(id) {
         )
       ),
       
-      box(width = 8,
+      plotBox(width = 8,
         # Show a plot of the generated distribution
         plotOutput(outputId = ns("diversityPlot"))
       )

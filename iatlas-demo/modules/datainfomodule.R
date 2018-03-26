@@ -2,14 +2,9 @@ datainfo_UI <- function(id) {
   ns <- NS(id)
   
   tagList(
+    titleBox("Data Description"),
     fluidRow(
-      box(width = 12, background = "black",
-          span(strong("Data Description"),
-               style = "font-size:18px")
-      )
-    ),
-    fluidRow(
-      box(width = 12,
+      tableBox(width = 12,
           "Table goes here..."
           )
       )
