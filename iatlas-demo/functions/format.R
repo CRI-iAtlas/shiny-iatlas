@@ -28,6 +28,25 @@ messageBox <- function(...) {
   box(..., status = "danger", background = "green")
 }
 
+imgLinkBox <- function(..., linkId, title, imgSrc, boxText, linkText) {
+  box(
+    ...,
+    title = title,
+    solidHeader = TRUE, status = "primary",
+    fluidRow(
+      column(
+        width = 4,
+        shiny::img(src = imgSrc, width = "100%")
+      ),
+      column(
+        width = 8,
+        p(boxText),
+        actionButton(inputId = linkId, label = linkText)
+      )
+    )
+  )
+}
+
 # common plot theme
 theme_1012 <- theme(
   axis.text = element_text(face = "bold", size = 10, color = "black"),
