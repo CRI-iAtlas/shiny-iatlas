@@ -16,6 +16,10 @@ body {
     margin-bottom: -30px;
 }
 
+.content-wrapper {
+    min-height: 100%!important;
+}
+
 .bg-black {
     background-color: #333!important;
 }
