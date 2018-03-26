@@ -21,6 +21,10 @@ shinyServer(function(input, output, session) {
   # immunomodulators
   callModule(immunomodulator, "module5")
   
+  output$ss_choice <- renderText({
+    input$ss_choice
+  })
+  
   observeEvent(input$link_to_module1, {
     shinydashboard::updateTabItems(session, "explorertabs", "cell_content")
   })

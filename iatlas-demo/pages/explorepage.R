@@ -5,23 +5,34 @@ explorepage <- dashboardPage(
       menuItem("iAtlas Explorer",   
                tabName = "dashboard", 
                icon = icon("dashboard")),
+      selectInput(
+        inputId = "ss_choice",
+        label = "Select Sample Groups",
+        choices = as.character(
+          panimmune_data$sample_selection_choices
+        ),
+        selected = "Immune Subtype"
+      ),
       menuItem("Analysis Modules",   
                icon = icon("bar-chart"), startExpanded = TRUE,
                menuSubItem(
-                 "Cell Content", 
-                 tabName = "cell_content", 
-                 icon = icon("chevron-circle-right")),
-               menuSubItem(
-                 "Clonal Diversity",    
-                 tabName = "clonal_diversity", 
-                 icon = icon("chevron-circle-right")),
-               menuSubItem(
-                 "Feature Correlations", 
+                 "Sample Groups Overview",
                  tabName = "feature_correlations", 
                  icon = icon("chevron-circle-right")),
                menuSubItem(
-                 "Survival Curves",
+                 "Tumor Composition", 
+                 tabName = "cell_content", 
+                 icon = icon("chevron-circle-right")),
+               menuSubItem(
+                 "Clinical Outcomes",
                  tabName = "survival_curves", 
+                 icon = icon("chevron-circle-right")),
+               menuSubItem(
+                 "Genomic State", 
+                 icon = icon("chevron-circle-right")),
+               menuSubItem(
+                 "Immune Interface",    
+                 tabName = "clonal_diversity", 
                  icon = icon("chevron-circle-right")),
                menuSubItem(
                  "Immunomodulators",
@@ -31,6 +42,12 @@ explorepage <- dashboardPage(
       menuItem("Data Description",
                icon = icon("th-list"),
                tabName = "datainfo"
+      ),
+      hr(),
+      wellPanel(
+        
+        strong("Selected groups:"),
+        textOutput("ss_choice")
       )
     )
   ),
@@ -46,7 +63,7 @@ explorepage <- dashboardPage(
         ),
         fluidRow(
           box(width = 12,
-            p("A summary of what's in the portal..."),
+            p("A summary of what's in the portal... (JE: might make more sense to include this on a 'Home' page for the portal"),
             fluidRow(
               infoBox("Features", 78, width = 4, color = "black", fill = TRUE),
               infoBox("Data Types", 10, width = 4, color = "black", fill = TRUE),
@@ -60,86 +77,57 @@ explorepage <- dashboardPage(
               solidHeader = TRUE, status = "warning",
               p("Select module to explore data."),
               fluidRow(
-                box(
+                imgLinkBox(
                   width = 6,
-                  title = "Cell Content",
-                  solidHeader = TRUE, status = "primary",
-                  fluidRow(
-                    column(
-                      width = 4,
-                      shiny::img(src = "images/cell_content.png", width = "100%")
-                    ),
-                    column(
-                      width = 8,
-                      p("Check out the Cell Content module for some box plots of cell types in different sample groups and stuff."),
-                      actionButton("link_to_module1", "Open Module")
-                    )
-                  )
+                  linkId = "link_to_module3",
+                  title = "Sample Groups Overview",
+                  imgSrc = "images/cell_content.png",
+                  boxText = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
+                  linkText = "Open Module"
                 ),
-                box(
+                imgLinkBox(
                   width = 6,
-                  title = "Clonal Diversity",
-                  solidHeader = TRUE, status = "primary",
-                  fluidRow(
-                    column(
-                      width = 4,
-                      shiny::img(src = "images/cell_content.png", width = "100%")
-                    ),
-                    column(
-                      width = 8,
-                      p("Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua."),
-                      actionButton("link_to_module2", "Open Module")
-                    )
-                  )
+                  linkId = "link_to_module1",
+                  title = "Tumor Composition",
+                  imgSrc = "images/cell_content.png",
+                  boxText = "Check out the Cell Content module for some box plots of cell types in different sample groups and stuff.",
+                  linkText = "Open Module"
                 )
               ),
               fluidRow(
-                box(width = 6,
-                    title = "Feature Correlations",
-                    solidHeader = TRUE, status = "primary",
-                    fluidRow(
-                      column(
-                        width = 4,
-                        shiny::img(src = "images/cell_content.png", width = "100%")
-                      ),
-                      column(
-                        width = 8,
-                        p("Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua."),
-                        actionButton("link_to_module3", "Open Module")
-                      )
-                    )
+                imgLinkBox(
+                  width = 6,
+                  linkId = "link_to_module4",
+                  title = "Clinical Outcomes",
+                  imgSrc = "images/cell_content.png",
+                  boxText = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
+                  linkText = "Open Module"
                 ),
-                box(width = 6,
-                    title = "Survival Curves",
-                    solidHeader = TRUE, status = "primary",
-                    fluidRow(
-                      column(
-                        width = 4,
-                        shiny::img(src = "images/cell_content.png", width = "100%")
-                      ),
-                      column(
-                        width = 8,
-                        p("Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua."),
-                        actionButton("link_to_module4", "Open Module")
-                      )
-                    )
+                imgLinkBox(
+                  width = 6,
+                  linkId = "#",
+                  title = "Genomic State",
+                  imgSrc = "images/cell_content.png",
+                  boxText = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
+                  linkText = "Open Module"
                 )
               ),
               fluidRow(
-                box(width = 6,
-                    title = "Immunomodulators",
-                    solidHeader = TRUE, status = "primary",
-                    fluidRow(
-                      column(
-                        width = 4,
-                        shiny::img(src = "images/cell_content.png", width = "100%")
-                      ),
-                      column(
-                        width = 8,
-                        p("Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua."),
-                        actionButton("link_to_module5", "Open Module")
-                      )
-                    )
+                imgLinkBox(
+                  width = 6,
+                  linkId = "link_to_module2",
+                  title = "Immune Interface",
+                  imgSrc = "images/cell_content.png",
+                  boxText = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
+                  linkText = "Open Module"
+                ),
+                imgLinkBox(
+                  width = 6,
+                  title = "Immunomodulators",
+                  linkId = "link_to_module5",
+                  imgSrc = "images/cell_content.png",
+                  boxText = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
+                  linkText = "Open Module"
                 )
               )
           )

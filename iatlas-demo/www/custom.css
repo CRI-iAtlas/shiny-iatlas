@@ -20,6 +20,15 @@ body {
     min-height: 100%!important;
 }
 
+.well {
+  color: #DDD;
+  font-size: 12px;
+  border: 1px solid #333;
+  background-color: rgba(0, 0, 0, 0.3)!important;
+  margin-left: 10px;
+  margin-right: 10px;
+}
+
 .box.box-solid {
   border: 0!important;
   border-top: 3px solid #666!important;
