@@ -19,6 +19,7 @@ function_files:
   - "functions/format.R"
   - "functions/scatterplot.R"
   - "functions/violinplot.R"
+  - "functions/mosiacplot.R"
 
 page_files:
   - "pages/aboutpage.R"
@@ -36,6 +37,7 @@ libraries:
   - "googlesheets"
   - "feather"
   - "shinydashboard"
+  - "ggmosaic"
  
 bq_remote: false # set data as remote (BigQuery) or local (on disk)
 gs_remote: false
