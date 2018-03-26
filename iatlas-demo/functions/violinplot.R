@@ -15,7 +15,8 @@ create_violinplot <- function(
         theme_1012 +
         xlab(xlab) +
         ylab(ylab) +
-        labs(title)
+        labs(title) +
+        theme(axis.text.x = element_text(angle = 90, hjust = 1))
     if (!is.na(fill_colors)) {
         plot <- plot + scale_fill_manual(values = fill_colors)
     }

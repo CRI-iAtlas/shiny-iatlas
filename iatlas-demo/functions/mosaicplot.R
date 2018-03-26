@@ -6,9 +6,10 @@ create_mosaicplot <- function(
     fill_colors = NA, 
     facet = NA){
     
+    
     plot <- df %>%
-        ggplot(aes(x = product(Subtype_Immune_Model_Based, Study))) +
-        geom_mosaic(aes_string(fill = fill_factor)) +
+        ggplot(aes_string(x = str_c("product(", y, ",", x, ")")  )) +
+        geom_mosaic(aes_string(fill = y)) +
         theme_bw() +
         theme_1012 +
         xlab(xlab) +

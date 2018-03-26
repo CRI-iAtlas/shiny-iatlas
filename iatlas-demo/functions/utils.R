@@ -73,3 +73,19 @@ decide_plot_colors <- function(data_obj, sample_group_label) {
   plot_colors <- magrittr::extract2(data_obj, color_item)
 }
 
+get_friendly_numeric_columns <- function(){
+    get_numeric_columns() %>% 
+        purrr::map(get_variable_display_name) %>% 
+        compact %>% 
+        unlist %>% 
+        discard(is.na(.))
+        
+}
+
+get_numeric_columns <- function(){
+    panimmune_data$df %>% 
+        select_if(is.numeric) %>% 
+        colnames
+}
+
+

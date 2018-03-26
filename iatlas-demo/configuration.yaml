@@ -70,3 +70,8 @@ immunomodulator_groups:
   - "Super_Category"
   - "Immune_Checkpoint"
   - "Function"
+  
+immune_groups:
+  - "Subtype_Immune_Model_Based"
+  - "Subtype_Curated_Malta_Noushmehr_et_al"
+  - "Study"    
