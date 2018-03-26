@@ -47,7 +47,7 @@ featurecorrelation_UI <- function(id) {
         )
       ),
       
-      box(width = 8,
+      plotBox(width = 8,
         plotlyOutput(ns("corrPlot")),
         plotlyOutput(ns("scatterPlot")),
         HTML("<br><br><br>")

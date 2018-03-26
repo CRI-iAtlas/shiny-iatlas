@@ -37,7 +37,7 @@ survival_UI <- function(id) {
         checkboxInput(ns("confint"), "Confidence Intervals", value = F),
         checkboxInput(ns("risktable"), "Risk Table", value = T)
       ),
-      box(width = 8,
+      plotBox(width = 8,
         plotOutput(ns("survPlot"), height = 600)
       )
     )

@@ -4,7 +4,7 @@ datainfo_UI <- function(id) {
   tagList(
     titleBox("Data Description"),
     fluidRow(
-      box(width = 12,
+      tableBox(width = 12,
           "Table goes here..."
           )
       )

@@ -12,6 +12,14 @@ optionsBox <- function(...) {
   box(..., background = "navy")
 }
 
+plotBox <- function(...) {
+  box(..., status = "warning")
+}
+
+tableBox <- function(...) {
+  box(..., status = "warning")
+}
+
 # common plot theme
 theme_1012 <- theme(
   axis.text = element_text(face = "bold", size = 10, color = "black"),

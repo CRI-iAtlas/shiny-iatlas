@@ -37,7 +37,7 @@ immuneinterface_UI <- function(id) {
         )
       ),
       
-      box(width = 8,
+      plotBox(width = 8,
         # Show a plot of the generated distribution
         plotOutput(outputId = ns("diversityPlot"))
       )

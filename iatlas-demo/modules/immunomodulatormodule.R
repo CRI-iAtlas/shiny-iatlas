@@ -21,7 +21,7 @@ immunomodulator_UI <- function(id) {
           choices = as.character(panimmune_data$direct_relationship_modulators$HGNC_Symbol))
       ),
       
-      box(width = 8,
+      plotBox(width = 8,
         # Show a plot of the generated distribution
         plotlyOutput(ns("boxPlot")),
         plotlyOutput(ns("histPlot"))
