@@ -23,3 +23,7 @@ body {
 .bg-black {
     background-color: #333!important;
 }
+
+.bg-navy {
+    background-color: rgba(44, 59, 65, 0.7)!important;
+}

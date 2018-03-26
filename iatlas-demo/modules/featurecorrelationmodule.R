@@ -4,7 +4,7 @@ featurecorrelation_UI <- function(id) {
   tagList(
     titleBox("Immune Feature Correlation Heatmap"),
     fluidRow(
-      box(width = 4,
+      optionsBox(width = 4,
         selectInput(
           ns("var1"),
           "Variable 1",

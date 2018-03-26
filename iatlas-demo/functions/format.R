@@ -8,6 +8,10 @@ titleBox <- function(title) {
   )
 }
 
+optionsBox <- function(...) {
+  box(..., background = "navy")
+}
+
 # common plot theme
 theme_1012 <- theme(
   axis.text = element_text(face = "bold", size = 10, color = "black"),

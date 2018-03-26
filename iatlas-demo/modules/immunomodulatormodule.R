@@ -5,7 +5,7 @@ immunomodulator_UI <- function(id) {
   tagList(
     titleBox("Immunomodulators"),
     fluidRow(
-      box(width = 4,
+      optionsBox(width = 4,
         # Drop-down selected sample groups
         selectInput(
           inputId = ns("ss_choice"),

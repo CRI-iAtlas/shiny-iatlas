@@ -4,26 +4,27 @@ cellcontent_UI <- function(id) {
   tagList(
     titleBox("Immune Cell Content by Sample Group"),
     fluidRow(
-      box(width = 4,
-          # Drop-down selected sample groups
-          selectInput(
-            inputId = ns("ss_choice"),
-            label = "Select Sample Groups",
-            choices = as.character(
-              panimmune_data$sample_selection_choices
-            ),
-            selected = "Immune Subtype"
+      optionsBox(
+        width = 4, 
+        # Drop-down selected sample groups
+        selectInput(
+          inputId = ns("ss_choice"),
+          label = "Select Sample Groups",
+          choices = as.character(
+            panimmune_data$sample_selection_choices
           ),
-          
-          # Drop-down selected cell content
-          selectInput(
-            inputId = ns("cc_choice"),
-            label = "Select Cellular Content",
-            choices = as.character(
-              panimmune_data$cell_content_choices
-            ),
-            selected = "Leukocyte Fraction"
-          )
+          selected = "Immune Subtype"
+        ),
+        
+        # Drop-down selected cell content
+        selectInput(
+          inputId = ns("cc_choice"),
+          label = "Select Cellular Content",
+          choices = as.character(
+            panimmune_data$cell_content_choices
+          ),
+          selected = "Leukocyte Fraction"
+        )
       ),
       
       box(width = 8,

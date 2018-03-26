@@ -4,7 +4,7 @@ survival_UI <- function(id) {
   tagList(
     titleBox("Immune Feature Kaplan-Meier Plot"),
     fluidRow(
-      box(width = 4,
+      optionsBox(width = 4,
         selectInput(
           ns("var1_surv"),
           "Variable",

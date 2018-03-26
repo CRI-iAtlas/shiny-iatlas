@@ -4,7 +4,7 @@ immuneinterface_UI <- function(id) {
   tagList(
     titleBox("Clonal Diversity by Sample Group"),
     fluidRow(
-      box(width = 4,
+      optionsBox(width = 4,
         # Drop-down selected sample groups
         selectInput(
           inputId = ns("selection_choice"),
