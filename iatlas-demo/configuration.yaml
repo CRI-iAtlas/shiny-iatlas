@@ -17,6 +17,7 @@ function_files:
   - "functions/kmplot.R"
   - "functions/histogram.R"
   - "functions/format.R"
+  - "functions/scatterplot.R"
 
 page_files:
   - "pages/aboutpage.R"

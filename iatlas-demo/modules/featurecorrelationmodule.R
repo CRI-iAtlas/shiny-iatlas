@@ -81,22 +81,7 @@ featurecorrelation <- function(input, output, session) {
       variables()
     )
     
-    
-    plot_ly(
-      z = corr_matrix,
-      x = colnames(corr_matrix),
-      y = rownames(corr_matrix),
-      type = "heatmap",
-      source = "heatplot",
-      colors = colorRamp(c("blue", "white", "red"))
-    ) %>%
-      layout(margin = list(
-        l = 100,
-        r = 10,
-        b = 50,
-        t = 10,
-        pad = 2
-      ))
+    heatmap_plot <- create_plotly_heatmap(corr_matrix)
   })
   
   output$scatterPlot <- renderPlotly({
@@ -116,27 +101,15 @@ featurecorrelation <- function(input, output, session) {
       input$var2
     )
     
-    plot <- plot_df %>%
-      ggplot(aes_string(x = input$var2, y = internal_variable_name)) +
-      geom_point() +
-      theme_bw() +
-      theme_1012 +
-      xlab(get_variable_display_name(input$var2)) +
-      ylab(eventdata$y[[1]]) +
-      labs(title = eventdata$x[[1]])
-    
-    
-    
-    plot %>%
-      ggplotly() %>%
-      layout(margin = list(
-        l = 100,
-        r = 40,
-        b = 50,
-        t = 100,
-        pad = 2
-      )) %>%
-      print()
+    plot_df %>% 
+        create_gg_scatterplot(
+            input$var2, 
+            internal_variable_name,
+            get_variable_display_name(input$var2),
+            eventdata$y[[1]],
+            eventdata$x[[1]]) %>% 
+        create_plotly_scatterplot %>% 
+        print
   })
 }
 

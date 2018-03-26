@@ -12,6 +12,5 @@ USE_REMOTE_GS <- config_yaml$gs_remote
 feature_table <- load_manifest()
 panimmune_data <- load_data()
 
-
 purrr::walk(config_yaml$module_files, source)
 purrr::walk(config_yaml$page_files, source)
