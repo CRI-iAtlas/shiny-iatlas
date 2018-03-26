@@ -19,7 +19,7 @@ function_files:
   - "functions/format.R"
   - "functions/scatterplot.R"
   - "functions/violinplot.R"
-  - "functions/mosiacplot.R"
+  - "functions/mosaicplot.R"
 
 page_files:
   - "pages/aboutpage.R"
