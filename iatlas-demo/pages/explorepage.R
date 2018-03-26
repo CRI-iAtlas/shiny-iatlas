@@ -38,12 +38,7 @@ explorepage <- dashboardPage(
     tabItems(
       tabItem(
         tabName = "dashboard",
-        fluidRow(
-          box(width = 12, background = "black",
-              span(strong("Welcome to the iAtlas Explorer!"),
-                   style = "font-size:18px")
-          )
-        ),
+        titleBox("Welcome to the iAtlas Explorer!"),
         fluidRow(
           box(width = 12,
             p("Here, you can explore iAtlas data through interactive visualizations and detailed descriptions of individual features.")

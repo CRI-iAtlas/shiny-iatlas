@@ -1,11 +1,6 @@
 aboutpage <- fluidPage(
   br(),
-  fluidRow(
-    box(width = 12, background = "black",
-        span(strong("About"),
-             style = "font-size:18px")
-    )
-  ),
+  titleBox("About"),
   fluidRow(
     column(width = 12,
            h4("About the Cancer Research Institute"),

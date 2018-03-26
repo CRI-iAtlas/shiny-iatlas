@@ -3,12 +3,7 @@ immunomodulator_UI <- function(id) {
   ns <- NS(id)
   
   tagList(
-    fluidRow(
-      box(width = 12, background = "black",
-          span(strong("Immunomodulators"),
-               style = "font-size:18px")
-      )
-    ),
+    titleBox("Immunomodulators"),
     fluidRow(
       box(width = 4,
         # Drop-down selected sample groups

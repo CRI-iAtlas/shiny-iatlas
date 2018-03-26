@@ -1,3 +1,13 @@
+# Shiny layout elements
+titleBox <- function(title) {
+  fluidRow(
+    box(width = 12, background = "black",
+        span(strong(title),
+             style = "font-size:18px")
+    )
+  )
+}
+
 # common plot theme
 theme_1012 <- theme(
   axis.text = element_text(face = "bold", size = 10, color = "black"),
