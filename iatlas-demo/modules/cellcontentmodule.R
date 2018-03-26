@@ -4,6 +4,16 @@ cellcontent_UI <- function(id) {
   tagList(
     titleBox("Immune Cell Content by Sample Group"),
     fluidRow(
+      textBox(
+        width = 12,
+        p("`textBox` elements can be used to contain explanatory or descriptive text, in paragraph form.")
+      ),
+      messageBox(
+        width = 12,
+        p("`messageBox` elements can be used for highlighting certain points or providing an aside/note.")
+      )
+    ),
+    fluidRow(
       optionsBox(
         width = 4, 
         # Drop-down selected sample groups

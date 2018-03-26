@@ -20,6 +20,14 @@ tableBox <- function(...) {
   box(..., status = "warning")
 }
 
+textBox <- function(...) {
+  box(..., status = "success")
+}
+
+messageBox <- function(...) {
+  box(..., status = "danger", background = "green")
+}
+
 # common plot theme
 theme_1012 <- theme(
   axis.text = element_text(face = "bold", size = 10, color = "black"),
