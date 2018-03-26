@@ -1,4 +1,4 @@
-source_files:
+module_files:
   - "modules/dashboardmodule.R"
   - "modules/cellcontentmodule.R"
   - "modules/immuneinterfacemodule.R"
@@ -6,6 +6,8 @@ source_files:
   - "modules/survivalmodule.R"
   - "modules/immunomodulatormodule.R"
   - "modules/datainfomodule.R"
+  
+function_files:
   - "functions/load_data.R"
   - "functions/transform.R"
   - "functions/drilldown.R"
@@ -15,6 +17,8 @@ source_files:
   - "functions/kmplot.R"
   - "functions/histogram.R"
   - "functions/format.R"
+
+page_files:
   - "pages/aboutpage.R"
   - "pages/explorepage.R"
   - "pages/docspage.R"
