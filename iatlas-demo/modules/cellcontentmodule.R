@@ -2,36 +2,42 @@ cellcontent_UI <- function(id) {
   ns <- NS(id)
   
   tagList(
+    titleBox("Immune Cell Content by Sample Group"),
     fluidRow(
-      box(width = 12, background = "black",
-          span(strong("Immune Cell Content by Sample Group"),
-               style = "font-size:18px")
+      textBox(
+        width = 12,
+        p("`textBox` elements can be used to contain explanatory or descriptive text, in paragraph form.")
+      ),
+      messageBox(
+        width = 12,
+        p("`messageBox` elements can be used for highlighting certain points or providing an aside/note.")
       )
     ),
     fluidRow(
-      box(width = 4,
-          # Drop-down selected sample groups
-          selectInput(
-            inputId = ns("ss_choice"),
-            label = "Select Sample Groups",
-            choices = as.character(
-              panimmune_data$sample_selection_choices
-            ),
-            selected = "Immune Subtype"
+      optionsBox(
+        width = 4, 
+        # Drop-down selected sample groups
+        selectInput(
+          inputId = ns("ss_choice"),
+          label = "Select Sample Groups",
+          choices = as.character(
+            panimmune_data$sample_selection_choices
           ),
-          
-          # Drop-down selected cell content
-          selectInput(
-            inputId = ns("cc_choice"),
-            label = "Select Cellular Content",
-            choices = as.character(
-              panimmune_data$cell_content_choices
-            ),
-            selected = "Leukocyte Fraction"
-          )
+          selected = "Immune Subtype"
+        ),
+        
+        # Drop-down selected cell content
+        selectInput(
+          inputId = ns("cc_choice"),
+          label = "Select Cellular Content",
+          choices = as.character(
+            panimmune_data$cell_content_choices
+          ),
+          selected = "Leukocyte Fraction"
+        )
       ),
       
-      box(width = 8,
+      plotBox(width = 8,
           # Show a plot of the generated distribution
           plotOutput(ns("distPlot"))
       )

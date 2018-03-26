@@ -1,3 +1,33 @@
+# Shiny layout elements
+titleBox <- function(title) {
+  fluidRow(
+    box(width = 12, background = "black",
+        span(strong(title),
+             style = "font-size:18px")
+    )
+  )
+}
+
+optionsBox <- function(...) {
+  box(..., background = "navy")
+}
+
+plotBox <- function(...) {
+  box(..., status = "warning")
+}
+
+tableBox <- function(...) {
+  box(..., status = "warning")
+}
+
+textBox <- function(...) {
+  box(..., status = "success")
+}
+
+messageBox <- function(...) {
+  box(..., status = "danger", background = "green")
+}
+
 # common plot theme
 theme_1012 <- theme(
   axis.text = element_text(face = "bold", size = 10, color = "black"),
