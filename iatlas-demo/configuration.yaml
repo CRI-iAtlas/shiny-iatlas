@@ -1,14 +1,31 @@
-source_files:
+module_files:
+  - "modules/dashboardmodule.R"
   - "modules/cellcontentmodule.R"
   - "modules/immuneinterfacemodule.R"
   - "modules/featurecorrelationmodule.R"
   - "modules/survivalmodule.R"
-  - "modules/immnomodulatormodule.R"
+  - "modules/immunomodulatormodule.R"
+  - "modules/datainfomodule.R"
+  
+function_files:
   - "functions/load_data.R"
+  - "functions/transform.R"
+  - "functions/drilldown.R"
   - "functions/utils.R"
   - "functions/boxplot.R"
   - "functions/heatmap.R"
   - "functions/kmplot.R"
+  - "functions/histogram.R"
+  - "functions/format.R"
+  - "functions/scatterplot.R"
+  - "functions/violinplot.R"
+  - "functions/mosaicplot.R"
+
+page_files:
+  - "pages/aboutpage.R"
+  - "pages/explorepage.R"
+  - "pages/docspage.R"
+  - "pages/resourcespage.R"
 
 libraries:
   - "shinythemes"
@@ -18,6 +35,13 @@ libraries:
   - "survival"
   - "survminer"
   - "googlesheets"
+  - "feather"
+  - "shinydashboard"
+  - "ggmosaic"
+  - "DT"
+ 
+bq_remote: false # set data as remote (BigQuery) or local (on disk)
+gs_remote: false
   
 cell_content_local:
   - "leukocyte_fraction"
@@ -47,3 +71,8 @@ immunomodulator_groups:
   - "Super_Category"
   - "Immune_Checkpoint"
   - "Function"
+  
+immune_groups:
+  - "Subtype_Immune_Model_Based"
+  - "Subtype_Curated_Malta_Noushmehr_et_al"
+  - "Study"    
