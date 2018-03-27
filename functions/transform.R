@@ -1,12 +1,30 @@
 # panimmune df subset ---------------------------------------------------------
 
-subset_panimmune_df <- function(study_col, study_subtypes){
-    print(study_col)
-    print(study_subtypes)
-    let(
-        alias = c(COL = study_col),
-        panimmune_data$df %>%
-            filter(COL %in% study_subtypes))
+subset_panimmune_df <- function(group_col, study_subtype) {
+    print(group_col)
+    print(study_subtype)
+    if (!(group_col == "Subtype_Curated_Malta_Noushmehr_et_al")) {
+        return(panimmune_data$df)
+    } else {
+        let(
+            alias = c(COL = group_col), {
+                # panimmune_data$df %>%
+                #     filter(COL %in% study_subtypes)
+                
+                sample_groups <- panimmune_data$df %>% 
+                    select(COL) %>% 
+                    distinct() %>% 
+                    mutate(study = str_extract(COL, ".*(?=\\.)")) %>% 
+                    mutate(study = str_split(study, "_")) %>% 
+                    unnest(study) %>% 
+                    filter(study %in% study_subtype) %>% 
+                    extract2(group_col)
+                
+                panimmune_data$df %>% 
+                    filter(COL %in% sample_groups)
+            }
+        )
+    }
 }
 
 # dataframe builders
