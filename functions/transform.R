@@ -27,6 +27,35 @@ subset_panimmune_df <- function(group_col, study_subtype) {
     }
 }
 
+# tumor content df ------------------------------------------------------------
+
+create_tumor_content_df <- function(subset_df, sampgroup, cellcontent) {
+    subset_df %>%
+        select(sampgroup, cellcontent) %>%
+        .[complete.cases(.), ]
+}
+
+# immune interface df ---------------------------------------------------------
+
+create_immuneinterface_df <- function(subset_df, sample_group, diversity_vars) {
+    plot_df <- subset_df %>%
+        select(sample_group, diversity_vars) %>%
+        .[complete.cases(.), ] %>%
+        gather(metric, diversity, -1) %>%
+        separate(metric, into = c("receptor", "metric"), sep = "_")
+}
+
+ztransform_df <- function(df) {
+    df %>%
+        group_by(receptor, metric) %>%
+        mutate(
+            div_mean = mean(diversity),
+            div_sd = sd(diversity)
+        ) %>%
+        ungroup() %>%
+        mutate(diversity = (diversity - div_mean) / div_sd)
+}
+
 # dataframe builders
 
 build_scatterplot_df <- function(

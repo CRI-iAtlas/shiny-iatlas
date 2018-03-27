@@ -106,36 +106,3 @@ get_immunomodulator_df_from_bq <- function(direct_relationship_modulators) {
   )
   query_exec(query, project = "isb-cgc-01-0008", max_pages = Inf)
 }
-
-
-# immuneinterface helpers -----------------------------------------------------
-create_immuneinterface_df <- function(sample_group, diversity_vars) {
-  if (USE_REMOTE_BQ) {
-    df <- create_immuneinterface_df_from_bq(sample_group, diversity_vars)
-  } else {
-    df <- create_immuneinterface_df_from_local(sample_group, diversity_vars)
-  }
-  return(df)
-}
-
-create_immuneinterface_df_from_bq <- function(sample_group, diversity_vars) {
-  query <- glue::glue(
-      "\n
-       SELECT {samples}, {vars} \\\n
-       FROM [isb-cgc-01-0007:Feature_Matrix.PanImmune_FMx] \\\n
-       where {samples} is not null \\\n
-       and {vars} is not null \\\n
-      ",
-      samples = sample_group,
-      vars = diversity_vars
-  )
-  df <- query_exec(query, project = "isb-cgc-01-0007")
-}
-
-create_immuneinterface_df_from_local <- function(sample_group, diversity_vars) {
-  panimmune_data$df %>%
-    select(sample_group, diversity_vars) %>%
-    .[complete.cases(.), ] %>%
-    gather(metric, diversity, -1) %>%
-    separate(metric, into = c("receptor", "metric"), sep = "_")
-}
