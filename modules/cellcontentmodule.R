@@ -35,11 +35,11 @@ cellcontent_UI <- function(id) {
   )
 }
 
-cellcontent <- function(input, output, session, ss_choice) {
+cellcontent <- function(input, output, session, ss_choice, subset_df) {
   output$distPlot <- renderPlot({
     ss_group <- get_variable_internal_name(ss_choice())
     cc_group <- get_variable_internal_name(input$cc_choice)
-    plot_df <- create_cellcontent_df(ss_group, cc_group)
+    plot_df <- create_cellcontent_df(subset_df(), ss_group, cc_group)
     plot_colors <- decide_plot_colors(panimmune_data, ss_group)
     plot <- create_boxplot(
       plot_df,
@@ -53,3 +53,52 @@ cellcontent <- function(input, output, session, ss_choice) {
     print(plot)
   })
 }
+
+# cellcontent module helpers --------------------------------------------------
+
+create_cellcontent_df <- function(subset_df, sampgroup, cellcontent) {
+    subset_df %>%
+        select(sampgroup, cellcontent) %>%
+        .[complete.cases(.), ]
+}
+
+
+
+# create_cellcontent_df <- function(sampgroup, cellcontent) {
+#     if (USE_REMOTE_BQ) {
+#         df <- create_cellcontent_df_from_bq(sampgroup, cellcontent)
+#     } else {
+#         df <- create_cellcontent_df_from_local(sampgroup, cellcontent)
+#     }
+#     return(df)
+# }
+# 
+# create_cellcontent_df_from_bq <- function(sampgroup, cellcontent) {
+#     query <- paste(
+#         "SELECT ",
+#         sampgroup,
+#         " , ",
+#         cellcontent,
+#         " FROM [isb-cgc-01-0007:Feature_Matrix.PanImmune_FMx]",
+#         " where ",
+#         cellcontent,
+#         " is not null and ",
+#         sampgroup,
+#         " is not null"
+#     )
+#     query_exec(query, project = "isb-cgc-01-0007")
+# }
+# 
+# 
+
+
+
+
+
+
+
+
+
+
+
+

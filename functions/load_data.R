@@ -108,38 +108,6 @@ get_immunomodulator_df_from_bq <- function(direct_relationship_modulators) {
 }
 
 
-# cellcontent module helpers --------------------------------------------------
-create_cellcontent_df <- function(sampgroup, cellcontent) {
-  if (USE_REMOTE_BQ) {
-    df <- create_cellcontent_df_from_bq(sampgroup, cellcontent)
-  } else {
-    df <- create_cellcontent_df_from_local(sampgroup, cellcontent)
-  }
-  return(df)
-}
-
-create_cellcontent_df_from_bq <- function(sampgroup, cellcontent) {
-  query <- paste(
-    "SELECT ",
-    sampgroup,
-    " , ",
-    cellcontent,
-    " FROM [isb-cgc-01-0007:Feature_Matrix.PanImmune_FMx]",
-    " where ",
-    cellcontent,
-    " is not null and ",
-    sampgroup,
-    " is not null"
-  )
-  query_exec(query, project = "isb-cgc-01-0007")
-}
-
-create_cellcontent_df_from_local <- function(sampgroup, cellcontent) {
-  panimmune_data$df %>%
-    select(sampgroup, cellcontent) %>%
-    .[complete.cases(.), ]
-}
-
 # immuneinterface helpers -----------------------------------------------------
 create_immuneinterface_df <- function(sample_group, diversity_vars) {
   if (USE_REMOTE_BQ) {

@@ -13,6 +13,7 @@ explorepage <- dashboardPage(
         ),
         selected = "Immune Subtype"
       ),
+      uiOutput("study_subset_UI"),
       menuItem("Analysis Modules",   
                icon = icon("bar-chart"), startExpanded = TRUE,
                menuSubItem(

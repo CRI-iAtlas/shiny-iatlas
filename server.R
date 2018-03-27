@@ -11,7 +11,7 @@ options(shiny.maxRequestSize = 100 * 1024^2)
 shinyServer(function(input, output, session) {
 
   # Cell content
-  callModule(cellcontent, "module1", reactive(input$ss_choice))
+  callModule(cellcontent, "module1", reactive(input$ss_choice), reactive(subset_df()))
   # Clonal diversity
   callModule(immuneinterface, "module2", reactive(input$ss_choice))
   # Correlation heatmaps
@@ -43,6 +43,22 @@ shinyServer(function(input, output, session) {
   observeEvent(input$link_to_module5, {
     shinydashboard::updateTabItems(session, "explorertabs", "immunomodulators")
   })
+  
+  output$study_subset_UI <- renderUI({
+      choices <- panimmune_data$df %>%
+          extract2(get_variable_internal_name(input$ss_choice)) %>% 
+          unique %>% 
+          sort
+      checkboxGroupInput("study_subset_selections", 
+                         "Choose subset:",
+                         choices = choices,
+                         selected = choices)
+  })
+  
+  subset_df <- reactive(subset_panimmune_df(
+      get_variable_internal_name(input$ss_choice), 
+      input$study_subset_selections))
+  
 
 })
 ################################################################################

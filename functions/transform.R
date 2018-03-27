@@ -1,3 +1,14 @@
+# panimmune df subset ---------------------------------------------------------
+
+subset_panimmune_df <- function(study_col, study_subtypes){
+    print(study_col)
+    print(study_subtypes)
+    let(
+        alias = c(COL = study_col),
+        panimmune_data$df %>%
+            filter(COL %in% study_subtypes))
+}
+
 # dataframe builders
 
 build_scatterplot_df <- function(
