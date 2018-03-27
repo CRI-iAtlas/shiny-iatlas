@@ -31,6 +31,27 @@ plot
 
 
 ```{r}
-ggplotly(plot)
+ggplotly(plot) %>% 
+    layout(hovermode = "closest")
+```
+
+```{r}
+packageVersion('plotly')
+```
+
+```{r}
+plot_df %>% 
+    plot_ly(
+        x = ~Subtype_Immune_Model_Based,
+        y = ~leukocyte_fraction,
+        split = ~Subtype_Immune_Model_Based,
+        type = 'violin',
+        box = list(
+            visible = T
+        ),
+        meanline = list(
+            visible = T
+        )
+    )
 ```
 
