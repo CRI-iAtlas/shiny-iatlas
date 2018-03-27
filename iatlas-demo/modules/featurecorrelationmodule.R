@@ -22,14 +22,6 @@ featurecorrelation_UI <- function(id) {
         ),
         
         selectInput(
-            ns("heatmap_x"),
-            "Select heatmap x variable",
-            choices = purrr::map(config_yaml$immune_groups,
-                                 get_variable_display_name),
-            selected = "Immune Subtypes"
-        ),
-        
-        selectInput(
           ns("heatmap_y"),
           "Select heatmap y variable",
           c(
@@ -41,14 +33,6 @@ featurecorrelation_UI <- function(id) {
             "Stemness Score RNA" = "StemnessScoreRNA"
           ),
           selected = "Leukocyte Fraction"
-        ),
-        
-        selectInput(
-            ns("violin_x"),
-            "Select violin x variable",
-            choices = purrr::map(config_yaml$immune_groups,
-                                 get_variable_display_name),
-            selected = "Immune Subtypes"
         ),
         
         selectInput(
@@ -88,12 +72,13 @@ featurecorrelation_UI <- function(id) {
   )
 }
 
-featurecorrelation <- function(input, output, session) {
+featurecorrelation <- function(input, output, session, ss_choice) {
     
-    hm_display_x  <- reactive(input$heatmap_x)
+    hm_display_x  <- reactive(ss_choice())
     hm_internal_x <- reactive(get_variable_internal_name(hm_display_x()))
     hm_categories <- reactive(get_category_group(hm_internal_x()))
     hm_variables  <- reactive(as.character(get_variable_group(input$heatmap_values)))
+    
     
     df_by_selections <- reactive(filter_data_by_selections(
         input$heatmap_y,
@@ -144,7 +129,7 @@ featurecorrelation <- function(input, output, session) {
     
     output$violinPlot <- renderPlot({
         
-        display_x  <- input$violin_x
+        display_x  <- ss_choice()
         display_y  <- input$violin_y
         internal_x <- get_variable_internal_name(display_x)
         internal_y <- get_variable_internal_name(display_y)
@@ -169,19 +154,13 @@ featurecorrelation <- function(input, output, session) {
         
         display_x  <- input$mosaic_x
         display_y  <- input$mosaic_y
-        print(display_x)
-        print(display_y)
         
         internal_x <- get_variable_internal_name(display_x)
         internal_y <- get_variable_internal_name(display_y)
-        print(internal_y)
-        print(internal_x)
         
         plot_df <- panimmune_data$df %>% 
             select_(.dots = c(internal_x, internal_y)) %>% 
             .[complete.cases(.),]
-        
-        print(names(plot_df))
         
         plot <- create_mosaicplot(
             plot_df,

@@ -15,7 +15,7 @@ shinyServer(function(input, output, session) {
   # Clonal diversity
   callModule(immuneinterface, "module2")
   # Correlation heatmaps
-  callModule(featurecorrelation, "module3")
+  callModule(featurecorrelation, "module3", reactive(input$ss_choice))
   # Survival curves
   callModule(survival, "module4")
   # immunomodulators
