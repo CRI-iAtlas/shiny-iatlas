@@ -26,15 +26,15 @@ explorepage <- dashboardPage(
                  icon = icon("chevron-circle-right")),
                menuSubItem(
                  "Clinical Outcomes",
-                 tabName = "survival_curves", 
+                 tabName = "survival_curves",
                  icon = icon("chevron-circle-right")),
-               menuSubItem(
-                 "Genomic State", 
-                 icon = icon("chevron-circle-right")),
-               menuSubItem(
-                 "Immune Interface",    
-                 tabName = "clonal_diversity", 
-                 icon = icon("chevron-circle-right")),
+               # menuSubItem(
+               #   "Genomic State", 
+               #   icon = icon("chevron-circle-right")),
+               # menuSubItem(
+               #   "Immune Interface",    
+               #   tabName = "clonal_diversity", 
+               #   icon = icon("chevron-circle-right")),
                menuSubItem(
                  "Immunomodulators",
                  tabName = "immunomodulators", 
@@ -104,24 +104,24 @@ explorepage <- dashboardPage(
                   boxText = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
                   linkText = "Open Module"
                 ),
-                imgLinkBox(
-                  width = 6,
-                  linkId = "#",
-                  title = "Genomic State",
-                  imgSrc = "images/cell_content.png",
-                  boxText = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
-                  linkText = "Open Module"
-                )
-              ),
-              fluidRow(
-                imgLinkBox(
-                  width = 6,
-                  linkId = "link_to_module2",
-                  title = "Immune Interface",
-                  imgSrc = "images/cell_content.png",
-                  boxText = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
-                  linkText = "Open Module"
-                ),
+              #   imgLinkBox(
+              #     width = 6,
+              #     linkId = "#",
+              #     title = "Genomic State",
+              #     imgSrc = "images/cell_content.png",
+              #     boxText = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
+              #     linkText = "Open Module"
+              #   )
+              # ),
+              # fluidRow(
+              #   imgLinkBox(
+              #     width = 6,
+              #     linkId = "link_to_module2",
+              #     title = "Immune Interface",
+              #     imgSrc = "images/cell_content.png",
+              #     boxText = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
+              #     linkText = "Open Module"
+              #   ),
                 imgLinkBox(
                   width = 6,
                   title = "Immunomodulators",
