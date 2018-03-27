@@ -1,70 +1,70 @@
-featurecorrelation_UI <- function(id) {
+groupsoverview_UI <- function(id) {
   ns <- NS(id)
   
   tagList(
-    titleBox("Immune Feature Correlation Heatmap"),
-    fluidRow(
-      optionsBox(width = 4,
-        selectInput(
-          ns("heatmap_values"),
-          "Select heatmap values",
-          c(
-            "Core Expression Signature",
-            "DNA Alteration",
-            "Adaptive Receptor",
-            "T Helper Cell Score",
-            "Immune Cell Proportion - Original",
-            "Immune Cell Proportion - Aggregate 1",
-            "Immune Cell Proportion - Aggregate 2",
-            "Immune Cell Proportion - Aggregate 3"
+      titleBox("Sample Groups Overview"),
+      fluidRow(
+          optionsBox(width = 4,
+                     selectInput(
+                         ns("heatmap_values"),
+                         "Select heatmap values",
+                         c(
+                             "Core Expression Signature",
+                             "DNA Alteration",
+                             "Adaptive Receptor",
+                             "T Helper Cell Score",
+                             "Immune Cell Proportion - Original",
+                             "Immune Cell Proportion - Aggregate 1",
+                             "Immune Cell Proportion - Aggregate 2",
+                             "Immune Cell Proportion - Aggregate 3"
+                         ),
+                         selected = "Immune Cell Proportion - Aggregate 2"
+                     ),
+                     
+                     selectInput(
+                         ns("heatmap_y"),
+                         "Select heatmap y variable",
+                         c(
+                             "Leukocyte Fraction" = "leukocyte_fraction",
+                             "OS Time" = "OS_time",
+                             "Mutation Rate, Non-Silent" = "mutationrate_nonsilent_per_Mb",
+                             "Indel Neoantigens" = "indel_neoantigen_num",
+                             "SNV Neoantigens" = "numberOfImmunogenicMutation",
+                             "Stemness Score RNA" = "StemnessScoreRNA"
+                         ),
+                         selected = "Leukocyte Fraction"
+                     ),
+                     
+                     selectInput(
+                         ns("violin_y"),
+                         "Select violin plot y variable",
+                         choices = get_friendly_numeric_columns(),
+                         selected = "leukocyte_fraction" 
+                     ),
+                     
+                     selectInput(
+                         ns("mosaic_y"),
+                         "Select mosaic y variable",
+                         as.character(
+                             panimmune_data$sample_selection_choices),
+                         selected = "TCGA Study"
+                     )
+                     
           ),
-          selected = "Immune Cell Proportion - Aggregate 2"
-        ),
-        
-        selectInput(
-          ns("heatmap_y"),
-          "Select heatmap y variable",
-          c(
-            "Leukocyte Fraction" = "leukocyte_fraction",
-            "OS Time" = "OS_time",
-            "Mutation Rate, Non-Silent" = "mutationrate_nonsilent_per_Mb",
-            "Indel Neoantigens" = "indel_neoantigen_num",
-            "SNV Neoantigens" = "numberOfImmunogenicMutation",
-            "Stemness Score RNA" = "StemnessScoreRNA"
-          ),
-          selected = "Leukocyte Fraction"
-        ),
-        
-        selectInput(
-            ns("violin_y"),
-            "Select violin plot y variable",
-            choices = get_friendly_numeric_columns(),
-            selected = "leukocyte_fraction" 
-        ),
-        
-        selectInput(
-            ns("mosaic_y"),
-            "Select mosaic y variable",
-            as.character(
-                panimmune_data$sample_selection_choices),
-            selected = "TCGA Study"
-        )
-
-      ),
-      
-      plotBox(
-          width = 8,
-          plotlyOutput(ns("corrPlot")),
-          plotlyOutput(ns("scatterPlot")),
-          plotOutput(ns("violinPlot")),
-          plotOutput(ns("mosaicPlot")),
-          HTML("<br><br><br>")
+          
+          plotBox(
+              width = 8,
+              plotlyOutput(ns("corrPlot")),
+              plotlyOutput(ns("scatterPlot")),
+              plotOutput(ns("violinPlot")),
+              plotOutput(ns("mosaicPlot")),
+              HTML("<br><br><br>")
+          )
       )
-    )
   )
 }
 
-featurecorrelation <- function(input, output, session, ss_choice, subset_df) {
+groupsoverview <- function(input, output, session, ss_choice, subset_df) {
     
     hm_display_x  <- reactive(ss_choice())
     hm_internal_x <- reactive(get_variable_internal_name(hm_display_x()))

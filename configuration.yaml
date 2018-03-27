@@ -2,7 +2,7 @@ module_files:
   - "modules/dashboardmodule.R"
   - "modules/cellcontentmodule.R"
   - "modules/immuneinterfacemodule.R"
-  - "modules/featurecorrelationmodule.R"
+  - "modules/groupsoverviewmodule.R"
   - "modules/survivalmodule.R"
   - "modules/immunomodulatormodule.R"
   - "modules/datainfomodule.R"

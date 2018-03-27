@@ -24,7 +24,7 @@ shinyServer(function(input, output, session) {
       reactive(subset_df()))
   # Correlation heatmaps
   callModule(
-      featurecorrelation,
+      groupsoverview,
       "module3",
       reactive(input$ss_choice),
       reactive(subset_df()))
