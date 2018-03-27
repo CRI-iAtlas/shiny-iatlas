@@ -157,6 +157,8 @@ featurecorrelation <- function(input, output, session, ss_choice, subset_df) {
             subset_df() %>% 
                 select(COLX, COLY) %>% 
                 .[complete.cases(.),] %>% 
+                mutate(COLX = as.character(COLX)) %>% 
+                mutate(COLY = as.character(COLY)) %>% 
                 mutate(COLX = as.factor(COLX)) %>% 
                 mutate(COLY = as.factor(COLY)))
         
