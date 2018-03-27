@@ -72,7 +72,7 @@ featurecorrelation_UI <- function(id) {
   )
 }
 
-featurecorrelation <- function(input, output, session, ss_choice) {
+featurecorrelation <- function(input, output, session, ss_choice, subset_df) {
     
     hm_display_x  <- reactive(ss_choice())
     hm_internal_x <- reactive(get_variable_internal_name(hm_display_x()))
@@ -80,7 +80,8 @@ featurecorrelation <- function(input, output, session, ss_choice) {
     hm_variables  <- reactive(as.character(get_variable_group(input$heatmap_values)))
     
     
-    df_by_selections <- reactive(filter_data_by_selections(
+    intermediate_corr_df <- reactive(create_intermediate_corr_df(
+        subset_df(),
         input$heatmap_y,
         hm_internal_x(),
         hm_categories(),
@@ -88,15 +89,15 @@ featurecorrelation <- function(input, output, session, ss_choice) {
     ))
     
     output$corrPlot <- renderPlotly({
-        corr_matrix <- build_correlation_mat(
-            df_by_selections(),
+        heatmap_corr_matrix <- create_heatmap_corr_matrix(
+            intermediate_corr_df(),
             input$heatmap_y,
             hm_internal_x(),
             hm_categories(),
             hm_variables()
         )
         
-        heatmap_plot <- create_plotly_heatmap(corr_matrix)
+        heatmap_plot <- create_plotly_heatmap(heatmap_corr_matrix)
     })
     
     output$scatterPlot <- renderPlotly({
@@ -106,10 +107,10 @@ featurecorrelation <- function(input, output, session, ss_choice) {
         internal_variable_name <-
             eventdata$y[[1]] %>%
             get_variable_internal_name() %>%
-            .[. %in% colnames(df_by_selections())]
-        
-        plot_df <- build_scatterplot_df(
-            df_by_selections(),
+            .[. %in% colnames(intermediate_corr_df())]
+
+        plot_df <- create_scatterplot_df(
+            intermediate_corr_df(),
             hm_internal_x(),
             eventdata$x[[1]],
             internal_variable_name,
@@ -134,7 +135,7 @@ featurecorrelation <- function(input, output, session, ss_choice) {
         internal_x <- get_variable_internal_name(display_x)
         internal_y <- get_variable_internal_name(display_y)
 
-        plot_df <- panimmune_data$df %>% 
+        plot_df <- subset_df() %>% 
             select_(.dots = c(internal_x, internal_y)) %>% 
             .[complete.cases(.),]
         

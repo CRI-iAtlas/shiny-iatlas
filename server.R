@@ -23,7 +23,11 @@ shinyServer(function(input, output, session) {
       reactive(input$ss_choice),
       reactive(subset_df()))
   # Correlation heatmaps
-  callModule(featurecorrelation, "module3", reactive(input$ss_choice))
+  callModule(
+      featurecorrelation,
+      "module3",
+      reactive(input$ss_choice),
+      reactive(subset_df()))
   # Survival curves
   callModule(survival, "module4", reactive(input$ss_choice))
   # immunomodulators

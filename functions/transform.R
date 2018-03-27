@@ -7,7 +7,7 @@ subset_panimmune_df <- function(study_col, study_subtypes){
             filter(COL %in% study_subtypes))
 }
 
-# tumor content df ------------------------------------------------------------
+# tumor content ---------------------------------------------------------------
 
 create_tumor_content_df <- function(subset_df, sampgroup, cellcontent) {
     subset_df %>%
@@ -15,7 +15,7 @@ create_tumor_content_df <- function(subset_df, sampgroup, cellcontent) {
         .[complete.cases(.), ]
 }
 
-# immune interface df ---------------------------------------------------------
+# immune interface ------------------------------------------------------------
 
 create_immuneinterface_df <- function(subset_df, sample_group, diversity_vars) {
     plot_df <- subset_df %>%
@@ -36,16 +36,62 @@ ztransform_df <- function(df) {
         mutate(diversity = (diversity - div_mean) / div_sd)
 }
 
+# sample groups ---------------------------------------------------------------
+
+create_intermediate_corr_df <- function(subset_df, var2, catx, cats, vars) {
+    subset_df %>%
+        as_data_frame() %>%
+        filter(UQ(as.name(catx)) %in% cats) %>%
+        select_(.dots = c(catx, var2, vars))
+}
+
+create_heatmap_corr_matrix <- function(dat, var2, catx, cats, vars) {
+    
+    get_correlation <- function(var1, var2, df) {
+        cor(select_(df, var1),
+            select_(df, var2),
+            method = "spearman",
+            use = "pairwise.complete.obs"
+        )
+    }
+    
+    cormat <- matrix(
+        data = 0,
+        ncol = length(cats),
+        nrow = length(vars)
+    )
+    rownames(cormat) <- vars
+    colnames(cormat) <- cats
+    # for each factor in catx
+    for (ci in cats) {
+        # subset dat
+        subdat <- dat[dat[, catx] == ci, ]
+        # compute correlation
+        for (var in vars) {
+            cormat[var, ci] <- get_correlation(var, var2, subdat)
+        }
+    }
+    # give it nice names
+    rownames(cormat) <- sapply(rownames(cormat), get_variable_display_name)
+    cormat[is.na(cormat)] <- 0
+    return(cormat)
+}
+
+create_scatterplot_df <- function(
+    df, category_column, category_plot_selection, internal_variable_name,
+    variable2_selection ) {
+    
+    plot_df <- df %>%
+        filter(UQ(as.name(category_column)) == category_plot_selection) %>%
+        select_(.dots = variable2_selection, internal_variable_name)
+}
+
+
+
+
 # dataframe builders
 
-build_scatterplot_df <- function(
-  df, category_column, category_plot_selection, internal_variable_name,
-  variable2_selection
-) {
-  plot_df <- df %>%
-    filter(UQ(as.name(category_column)) == category_plot_selection) %>%
-    select_(.dots = variable2_selection, internal_variable_name)
-}
+
 
 build_survival_df <- function(dat, var1, timevar, divk) {
   getCats <- function(dat, var1, divk) {
@@ -95,46 +141,8 @@ build_boxplot_df <- function(im_choice, ss_group) {
 
 # matrix builders
 
-build_correlation_mat <- function(dat, var2, catx, cats, vars) {
-  
-  get_correlation <- function(var1, var2, df) {
-    cor(select_(df, var1),
-        select_(df, var2),
-        method = "spearman",
-        use = "pairwise.complete.obs"
-    )
-  }
-  
-  cormat <- matrix(
-    data = 0,
-    ncol = length(cats),
-    nrow = length(vars)
-  )
-  rownames(cormat) <- vars
-  colnames(cormat) <- cats
-  # for each factor in catx
-  for (ci in cats) {
-    # subset dat
-    subdat <- dat[dat[, catx] == ci, ]
-    # compute correlation
-    for (var in vars) {
-      cormat[var, ci] <- get_correlation(var, var2, subdat)
-    }
-  }
-  # give it nice names
-  rownames(cormat) <- sapply(rownames(cormat), get_variable_display_name)
-  cormat[is.na(cormat)] <- 0
-  return(cormat)
-}
 
 
-# dataframe operations
 
-filter_data_by_selections <- function(var2, catx, cats, vars) {
-  panimmune_data$df %>%
-    as_data_frame() %>%
-    filter(UQ(as.name(catx)) %in% cats) %>%
-    select_(.dots = c(catx, var2, vars))
-}
 
 
