@@ -57,20 +57,28 @@ shinyServer(function(input, output, session) {
   })
   
   output$study_subset_UI <- renderUI({
-      choices <- panimmune_data$df %>%
-          extract2(get_variable_internal_name(input$ss_choice)) %>% 
-          unique %>% 
-          sort
-      checkboxGroupInput("study_subset_selections", 
-                         "Choose subset:",
-                         choices = choices,
-                         selected = choices)
+      if (input$ss_choice == "TCGA Subtype") {
+          choices <- panimmune_data$df %>%
+              filter_at(
+                  vars(get_variable_internal_name(input$ss_choice)), 
+                  all_vars(!is.na(.))
+              ) %>% 
+              distinct(Study) %>%
+              extract2("Study")
+              
+          selectInput("study_subset_selection", 
+                      "Choose study subset:",
+                      choices = choices,
+                      selected = NULL)
+      }
   })
   
-  subset_df <- reactive(subset_panimmune_df(
-      get_variable_internal_name(input$ss_choice), 
-      input$study_subset_selections))
+  subset_df <- reactive(
+      subset_panimmune_df(
+          get_variable_internal_name(input$ss_choice), 
+          input$study_subset_selection
+      )
+  )
   
-
 })
 ################################################################################
