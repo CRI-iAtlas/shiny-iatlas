@@ -1,0 +1,36 @@
+---
+title: "Testing various plot functions"
+output: html_notebook
+---
+
+```{r}
+source("global.R")
+```
+
+```{r}
+display_x  <- panimmune_data$sample_selection_choices[1]
+display_y  <- panimmune_data$cell_content_choices[1]
+internal_x <- get_variable_internal_name(display_x)
+internal_y <- get_variable_internal_name(display_y)
+
+plot_df <- panimmune_data$df %>% 
+    select_(.dots = c(internal_x, internal_y)) %>% 
+    .[complete.cases(.),]
+
+plot <- create_violinplot(
+    plot_df,
+    internal_x,
+    internal_y,
+    internal_x,
+    xlab = display_x,
+    ylab = display_y,
+    fill_colors = decide_plot_colors(panimmune_data, internal_x)
+)
+plot
+```
+
+
+```{r}
+ggplotly(plot)
+```
+
