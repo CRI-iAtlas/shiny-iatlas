@@ -7,12 +7,12 @@ immunomodulator_UI <- function(id) {
     fluidRow(
       optionsBox(width = 4,
         # Drop-down selected sample groups
-        selectInput(
-          inputId = ns("ss_choice"),
-          label = "Select Sample Groups",
-          choices = as.character(
-            panimmune_data$sample_selection_choices),
-          selected = "Immune Subtype"),
+        # selectInput(
+          # inputId = ns("ss_choice"),
+          # label = "Select Sample Groups",
+          # choices = as.character(
+          #   panimmune_data$sample_selection_choices),
+          # selected = "Immune Subtype"),
         
         # Drop-down selected immuno modulator
         selectInput(
@@ -30,9 +30,9 @@ immunomodulator_UI <- function(id) {
   )
 }
 
-immunomodulator <- function(input, output, session){
+immunomodulator <- function(input, output, session, ss_choice){
   
-  ss_group <- reactive(get_variable_internal_name(input$ss_choice))
+  ss_group <- reactive(get_variable_internal_name(ss_choice()))
   boxplot_df <- reactive(build_boxplot_df(input$im_choice, ss_group()))
   
   output$boxPlot <- renderPlotly({
@@ -42,7 +42,7 @@ immunomodulator <- function(input, output, session){
       x = ss_group(), 
       y = "log_count", 
       fill_factor = ss_group(), 
-      x_label = input$ss_choice, 
+      x_label = ss_choice(), 
       y_label = "Log10 (Count + 1)",
       fill_colors = plot_colors,
       title = get_modulator_display_name(input$im_choice))

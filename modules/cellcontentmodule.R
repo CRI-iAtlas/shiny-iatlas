@@ -15,17 +15,7 @@ cellcontent_UI <- function(id) {
     ),
     fluidRow(
       optionsBox(
-        width = 4, 
-        # Drop-down selected sample groups
-        selectInput(
-          inputId = ns("ss_choice"),
-          label = "Select Sample Groups",
-          choices = as.character(
-            panimmune_data$sample_selection_choices
-          ),
-          selected = "Immune Subtype"
-        ),
-        
+        width = 4,
         # Drop-down selected cell content
         selectInput(
           inputId = ns("cc_choice"),
@@ -45,9 +35,9 @@ cellcontent_UI <- function(id) {
   )
 }
 
-cellcontent <- function(input, output, session) {
+cellcontent <- function(input, output, session, ss_choice) {
   output$distPlot <- renderPlot({
-    ss_group <- get_variable_internal_name(input$ss_choice)
+    ss_group <- get_variable_internal_name(ss_choice())
     cc_group <- get_variable_internal_name(input$cc_choice)
     plot_df <- create_cellcontent_df(ss_group, cc_group)
     plot_colors <- decide_plot_colors(panimmune_data, ss_group)
@@ -56,7 +46,7 @@ cellcontent <- function(input, output, session) {
       x = ss_group,
       y = cc_group,
       fill_factor = ss_group,
-      x_label = input$ss_choice,
+      x_label = ss_choice(),
       y_label = input$cc_choice,
       fill_colors = plot_colors
     )

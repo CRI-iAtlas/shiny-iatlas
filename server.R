@@ -11,15 +11,15 @@ options(shiny.maxRequestSize = 100 * 1024^2)
 shinyServer(function(input, output, session) {
 
   # Cell content
-  callModule(cellcontent, "module1")
+  callModule(cellcontent, "module1", reactive(input$ss_choice))
   # Clonal diversity
-  callModule(immuneinterface, "module2")
+  callModule(immuneinterface, "module2", reactive(input$ss_choice))
   # Correlation heatmaps
   callModule(featurecorrelation, "module3", reactive(input$ss_choice))
   # Survival curves
-  callModule(survival, "module4")
+  callModule(survival, "module4", reactive(input$ss_choice))
   # immunomodulators
-  callModule(immunomodulator, "module5")
+  callModule(immunomodulator, "module5", reactive(input$ss_choice))
   
   # Data info
   callModule(datainfo, "moduleX")

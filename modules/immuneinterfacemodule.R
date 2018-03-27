@@ -5,14 +5,7 @@ immuneinterface_UI <- function(id) {
     titleBox("Clonal Diversity by Sample Group"),
     fluidRow(
       optionsBox(width = 4,
-        # Drop-down selected sample groups
-        selectInput(
-          inputId = ns("selection_choice"),
-          label = "Select Sample Groups",
-          choices = as.character(panimmune_data$sample_selection_choices),
-          selected = "Immune Subtype"
-        ),
-        
+
         # Drop-down selected diversity metrics
         selectInput(
           inputId = ns("diversity_metric_choice"),
@@ -46,9 +39,9 @@ immuneinterface_UI <- function(id) {
   )
 }
 
-immuneinterface <- function(input, output, session) {
+immuneinterface <- function(input, output, session, ss_choice) {
   output$diversityPlot <- renderPlot({
-    sample_group_label <- get_variable_internal_name(input$selection_choice)
+    sample_group_label <- get_variable_internal_name(ss_choice())
     diversity_metric <- input$diversity_metric_choice
     receptor_types <- input$receptor_type_choices
     

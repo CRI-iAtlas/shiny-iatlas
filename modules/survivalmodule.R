@@ -44,7 +44,7 @@ survival_UI <- function(id) {
   )
 }
 
-survival <- function(input, output, session) {
+survival <- function(input, output, session, ss_choice) {
   output$survPlot <- renderPlot({
     df <- build_survival_df(panimmune_data$df, input$var1_surv, input$timevar, input$divk)
     fit <- survfit(Surv(Time, Status) ~ Variable, data = df)
