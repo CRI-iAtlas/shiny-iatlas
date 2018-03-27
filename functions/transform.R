@@ -1,8 +1,6 @@
 # panimmune df subset ---------------------------------------------------------
 
 subset_panimmune_df <- function(group_col, study_subtype) {
-    print(group_col)
-    print(study_subtype)
     if (!(group_col == "Subtype_Curated_Malta_Noushmehr_et_al")) {
         return(panimmune_data$df)
     } else {
@@ -65,6 +63,7 @@ create_intermediate_corr_df <- function(subset_df, var2, catx, cats, vars) {
         select_(.dots = c(catx, var2, vars))
 }
 
+
 create_heatmap_corr_matrix <- function(dat, var2, catx, cats, vars) {
     
     get_correlation <- function(var1, var2, df) {
@@ -75,6 +74,7 @@ create_heatmap_corr_matrix <- function(dat, var2, catx, cats, vars) {
         )
     }
     
+    cats <- cats[cats %in% extract2(dat, catx)]
     cormat <- matrix(
         data = 0,
         ncol = length(cats),
@@ -104,6 +104,8 @@ create_scatterplot_df <- function(
     plot_df <- df %>%
         filter(UQ(as.name(category_column)) == category_plot_selection) %>%
         select_(.dots = variable2_selection, internal_variable_name)
+    print(plot_df)
+    return(plot_df)
 }
 
 
