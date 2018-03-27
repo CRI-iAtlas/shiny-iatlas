@@ -39,10 +39,10 @@ immuneinterface_UI <- function(id) {
   )
 }
 
-immuneinterface <- function(input, output, session, ss_choice) {
+immuneinterface <- function(input, output, session, ss_choice, subset_df) {
   output$diversityPlot <- renderPlot({
     sample_group_label <- get_variable_internal_name(ss_choice())
-    diversity_metric <- input$diversity_metric_choice
+    diversity_metric   <- input$diversity_metric_choice
     receptor_types <- input$receptor_type_choices
     
     diversity_vars <- stringr::str_c(receptor_types, diversity_metric,
@@ -51,7 +51,7 @@ immuneinterface <- function(input, output, session, ss_choice) {
     
     ## create dfp, the data frame for plotting, based on choices
     
-    plot_df <- create_immuneinterface_df(sample_group_label, diversity_vars)
+    plot_df <- create_immuneinterface_df(subset_df(), sample_group_label, diversity_vars)
     
     
     ## adjust scales
@@ -86,15 +86,3 @@ immuneinterface <- function(input, output, session, ss_choice) {
   })
 }
 
-# helper functions ------------------------------------------------------------
-
-ztransform_df <- function(df) {
-  df %>%
-    group_by(receptor, metric) %>%
-    mutate(
-      div_mean = mean(diversity),
-      div_sd = sd(diversity)
-    ) %>%
-    ungroup() %>%
-    mutate(diversity = (diversity - div_mean) / div_sd)
-}
