@@ -1,12 +1,18 @@
 # panimmune df subset ---------------------------------------------------------
 
 subset_panimmune_df <- function(study_col, study_subtypes){
-    print(study_col)
-    print(study_subtypes)
     let(
         alias = c(COL = study_col),
         panimmune_data$df %>%
             filter(COL %in% study_subtypes))
+}
+
+# tumor content df ------------------------------------------------------------
+
+create_tumor_content_df <- function(subset_df, sampgroup, cellcontent) {
+    subset_df %>%
+        select(sampgroup, cellcontent) %>%
+        .[complete.cases(.), ]
 }
 
 # dataframe builders

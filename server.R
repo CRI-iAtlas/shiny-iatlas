@@ -11,7 +11,11 @@ options(shiny.maxRequestSize = 100 * 1024^2)
 shinyServer(function(input, output, session) {
 
   # Cell content
-  callModule(cellcontent, "module1", reactive(input$ss_choice), reactive(subset_df()))
+  callModule(
+      cellcontent, 
+      "module1", 
+      reactive(input$ss_choice), 
+      reactive(subset_df()))
   # Clonal diversity
   callModule(immuneinterface, "module2", reactive(input$ss_choice))
   # Correlation heatmaps
