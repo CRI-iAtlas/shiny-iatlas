@@ -6,14 +6,7 @@ immunomodulator_UI <- function(id) {
     titleBox("Immunomodulators"),
     fluidRow(
       optionsBox(width = 4,
-        # Drop-down selected sample groups
-        # selectInput(
-          # inputId = ns("ss_choice"),
-          # label = "Select Sample Groups",
-          # choices = as.character(
-          #   panimmune_data$sample_selection_choices),
-          # selected = "Immune Subtype"),
-        
+                 
         # Drop-down selected immuno modulator
         selectInput(
           inputId = ns("im_choice"),
@@ -30,10 +23,10 @@ immunomodulator_UI <- function(id) {
   )
 }
 
-immunomodulator <- function(input, output, session, ss_choice){
+immunomodulator <- function(input, output, session, ss_choice, subset_df){
   
   ss_group <- reactive(get_variable_internal_name(ss_choice()))
-  boxplot_df <- reactive(build_boxplot_df(input$im_choice, ss_group()))
+  boxplot_df <- reactive(build_boxplot_df(subset_df(), input$im_choice, ss_group()))
   
   output$boxPlot <- renderPlotly({
     plot_colors <- decide_plot_colors(panimmune_data, ss_group())

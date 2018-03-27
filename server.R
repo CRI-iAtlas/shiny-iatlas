@@ -31,7 +31,11 @@ shinyServer(function(input, output, session) {
   # Survival curves
   callModule(survival, "module4", reactive(input$ss_choice))
   # immunomodulators
-  callModule(immunomodulator, "module5", reactive(input$ss_choice))
+  callModule(
+      immunomodulator, 
+      "module5", 
+      reactive(input$ss_choice),
+      reactive(subset_df()))
   
   # Data info
   callModule(datainfo, "moduleX")

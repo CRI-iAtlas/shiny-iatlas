@@ -6,9 +6,6 @@ subset_panimmune_df <- function(group_col, study_subtype) {
     } else {
         let(
             alias = c(COL = group_col), {
-                # panimmune_data$df %>%
-                #     filter(COL %in% study_subtypes)
-                
                 sample_groups <- panimmune_data$df %>% 
                     select(COL) %>% 
                     distinct() %>% 
@@ -108,8 +105,24 @@ create_scatterplot_df <- function(
     return(plot_df)
 }
 
+# immunomodulators ------------------------------------------------------------
 
+build_boxplot_df <- function(subset_df, im_choice, ss_group) {
+    panimmune_data$immunomodulator_df %>%
+        filter(Symbol == im_choice) %>%
+        left_join(subset_df) %>%
+        mutate(log_count = log10(normalized_count + 1)) %>%
+        select(ss_group, log_count) %>%
+        .[complete.cases(.), ]
+}
 
+build_histogram_df <- function(
+    boxplot_df, boxplot_column, boxplot_selected_group) {
+
+    plot_df <- boxplot_df %>% 
+        filter(UQ(as.name(boxplot_column)) == boxplot_selected_group)
+
+}
 
 # dataframe builders
 
@@ -145,25 +158,6 @@ build_survival_df <- function(dat, var1, timevar, divk) {
   df <- na.omit(df)
   df
 }
-
-build_histogram_df <- function(
-  boxplot_df, boxplot_column, boxplot_selected_group
-) {
-  filter(boxplot_df, UQ(as.name(boxplot_column)) == boxplot_selected_group)
-}
-
-build_boxplot_df <- function(im_choice, ss_group) {
-  panimmune_data$immunomodulator_df %>%
-    filter(Symbol == im_choice) %>%
-    left_join(panimmune_data$df) %>%
-    mutate(log_count = log10(normalized_count + 1)) %>%
-    select(ss_group, log_count) %>%
-    .[complete.cases(.), ]
-}
-
-# matrix builders
-
-
 
 
 
