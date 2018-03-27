@@ -43,30 +43,22 @@ featurecorrelation_UI <- function(id) {
         ),
         
         selectInput(
-            ns("mosaic_x"),
-            "Select mosaic x variable",
-            choices = purrr::map(config_yaml$immune_groups,
-                                 get_variable_display_name),
-            selected = "TCGA Study"
-        ),
-        
-        selectInput(
             ns("mosaic_y"),
             "Select mosaic y variable",
-            choices = purrr::map(config_yaml$immune_groups,
-                                 get_variable_display_name),
-            selected = "Immune Subtypes"
+            as.character(
+                panimmune_data$sample_selection_choices),
+            selected = "TCGA Study"
         )
-        
 
       ),
       
-      plotBox(width = 8,
-        plotlyOutput(ns("corrPlot")),
-        plotlyOutput(ns("scatterPlot")),
-        plotOutput(ns("violinPlot")),
-        plotOutput(ns("mosaicPlot")),
-        HTML("<br><br><br>")
+      plotBox(
+          width = 8,
+          plotlyOutput(ns("corrPlot")),
+          plotlyOutput(ns("scatterPlot")),
+          plotOutput(ns("violinPlot")),
+          plotOutput(ns("mosaicPlot")),
+          HTML("<br><br><br>")
       )
     )
   )
@@ -153,15 +145,20 @@ featurecorrelation <- function(input, output, session, ss_choice, subset_df) {
     
     output$mosaicPlot <- renderPlot({
         
-        display_x  <- input$mosaic_x
+        display_x  <- ss_choice()
         display_y  <- input$mosaic_y
         
         internal_x <- get_variable_internal_name(display_x)
         internal_y <- get_variable_internal_name(display_y)
         
-        plot_df <- panimmune_data$df %>% 
-            select_(.dots = c(internal_x, internal_y)) %>% 
-            .[complete.cases(.),]
+        plot_df <- let(
+            alias = c(COLX = internal_x,
+                      COLY = internal_y),
+            subset_df() %>% 
+                select(COLX, COLY) %>% 
+                .[complete.cases(.),] %>% 
+                mutate(COLX = as.factor(COLX)) %>% 
+                mutate(COLY = as.factor(COLY)))
         
         plot <- create_mosaicplot(
             plot_df,

@@ -25,3 +25,4 @@ create_mosaicplot <- function(
     }
     return(plot)
 }
+
