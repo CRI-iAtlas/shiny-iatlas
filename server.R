@@ -24,7 +24,7 @@ shinyServer(function(input, output, session) {
       reactive(subset_df()))
   # Correlation heatmaps
   callModule(
-      featurecorrelation,
+      groupsoverview,
       "module3",
       reactive(input$ss_choice),
       reactive(subset_df()))
@@ -79,8 +79,8 @@ shinyServer(function(input, output, session) {
   
   subset_df <- reactive(
       subset_panimmune_df(
-          get_variable_internal_name(input$ss_choice), 
-          input$study_subset_selection
+          group_col = get_variable_internal_name(input$ss_choice), 
+          study_subtype = input$study_subset_selection
       )
   )
   

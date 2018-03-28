@@ -141,7 +141,7 @@ explorepage <- dashboardPage(
               immuneinterface_UI("module2")
       ),
       tabItem(tabName = "feature_correlations",
-              featurecorrelation_UI("module3")
+              groupsoverview_UI("module3")
       ),
       tabItem(tabName = "survival_curves",
               survival_UI("module4")

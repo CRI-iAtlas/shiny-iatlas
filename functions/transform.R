@@ -1,22 +1,25 @@
 # panimmune df subset ---------------------------------------------------------
 
-subset_panimmune_df <- function(group_col, study_subtype) {
+subset_panimmune_df <- function(
+    df = panimmune_data$df, group_col, study_subtype
+) {
     if (!(group_col == "Subtype_Curated_Malta_Noushmehr_et_al")) {
-        return(panimmune_data$df)
+        return(df)
     } else {
         let(
             alias = c(COL = group_col), {
-                sample_groups <- panimmune_data$df %>% 
+                sample_groups <- df %>% 
                     select(COL) %>% 
                     distinct() %>% 
-                    mutate(study = str_extract(COL, ".*(?=\\.)")) %>% 
-                    mutate(study = str_split(study, "_")) %>% 
+                    mutate(study = str_extract(COL, ".*(?=\\.)"),
+                           study = str_split(study, "_")) %>% 
                     unnest(study) %>% 
                     filter(study %in% study_subtype) %>% 
                     extract2(group_col)
                 
                 panimmune_data$df %>% 
-                    filter(COL %in% sample_groups)
+                    filter(COL %in% sample_groups) %>% 
+                    mutate(COL = fct_drop(COL))
             }
         )
     }
@@ -53,15 +56,19 @@ ztransform_df <- function(df) {
 
 # sample groups ---------------------------------------------------------------
 
-create_intermediate_corr_df <- function(subset_df, var2, catx, cats, vars) {
+create_intermediate_corr_df <- function(
+    subset_df, dep_var, facet_selection, facet_groups, indep_vars
+) {
     subset_df %>%
         as_data_frame() %>%
-        filter(UQ(as.name(catx)) %in% cats) %>%
-        select_(.dots = c(catx, var2, vars))
+        filter(UQ(as.name(facet_selection)) %in% facet_groups) %>%
+        select_(.dots = c(facet_selection, dep_var, indep_vars))
 }
 
 
-create_heatmap_corr_matrix <- function(dat, var2, catx, cats, vars) {
+create_heatmap_corr_mat <- function(
+    df, dep_var, facet_selection, facet_groups, indep_vars
+) {
     
     get_correlation <- function(var1, var2, df) {
         cor(select_(df, var1),
@@ -71,21 +78,21 @@ create_heatmap_corr_matrix <- function(dat, var2, catx, cats, vars) {
         )
     }
     
-    cats <- cats[cats %in% extract2(dat, catx)]
+    facet_groups <- facet_groups[facet_groups %in% extract2(df, facet_selection)]
     cormat <- matrix(
         data = 0,
-        ncol = length(cats),
-        nrow = length(vars)
+        ncol = length(facet_groups),
+        nrow = length(indep_vars)
     )
-    rownames(cormat) <- vars
-    colnames(cormat) <- cats
-    # for each factor in catx
-    for (ci in cats) {
-        # subset dat
-        subdat <- dat[dat[, catx] == ci, ]
+    rownames(cormat) <- indep_vars
+    colnames(cormat) <- facet_groups
+    # for each factor in facet_groups
+    for (ci in facet_groups) {
+        # subset df
+        subdat <- df[df[, facet_selection] == ci, ]
         # compute correlation
-        for (var in vars) {
-            cormat[var, ci] <- get_correlation(var, var2, subdat)
+        for (var in indep_vars) {
+            cormat[var, ci] <- get_correlation(var, dep_var, subdat)
         }
     }
     # give it nice names
@@ -101,7 +108,6 @@ create_scatterplot_df <- function(
     plot_df <- df %>%
         filter(UQ(as.name(category_column)) == category_plot_selection) %>%
         select_(.dots = variable2_selection, internal_variable_name)
-    print(plot_df)
     return(plot_df)
 }
 

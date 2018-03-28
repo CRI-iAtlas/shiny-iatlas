@@ -2,7 +2,7 @@ module_files:
   - "modules/dashboardmodule.R"
   - "modules/cellcontentmodule.R"
   - "modules/immuneinterfacemodule.R"
-  - "modules/featurecorrelationmodule.R"
+  - "modules/groupsoverviewmodule.R"
   - "modules/survivalmodule.R"
   - "modules/immunomodulatormodule.R"
   - "modules/datainfomodule.R"
@@ -40,6 +40,7 @@ libraries:
   - "ggmosaic"
   - "DT"
   - "wrapr"
+  - "forcats"
  
 bq_remote: false # set data as remote (BigQuery) or local (on disk)
 gs_remote: false

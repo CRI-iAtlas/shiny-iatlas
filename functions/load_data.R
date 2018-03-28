@@ -21,6 +21,7 @@ load_data <- function() {
     df = df,
     tcga_colors = create_tcga_colors(),
     subtype_colors = create_subtype_colors(),
+    tcga_subtype_colors = create_tcga_subtype_colors(df),
     sample_selection_groups = sample_selection_groups,
     sample_selection_choices = map_chr(sample_selection_groups, get_variable_display_name),
     cell_content_groups = cell_content_groups,
@@ -52,7 +53,7 @@ load_modulators <- function() {
 
 ## Color Maps for Display of Immune Subtypes and TCGA tumors
 create_subtype_colors <- function() {
-  c("red", "yellow", "green", "cyan", "blue", "magenta") %>%
+  c("#FF0000", "#FFFF00", "#00FF00", "#00FFFF", "#0000FF", "#FF00FF") %>%
     purrr::set_names(paste0("C", seq(1, 6)))
 }
 
@@ -62,6 +63,27 @@ create_tcga_colors <- function() {
     mutate(`Hex Colors` = paste0("#", `Hex Colors`))
   tcga_colors <- tcga_colors_df$`Hex Colors` %>%
     purrr::set_names(tcga_colors_df$`Study Abbreviation`)
+}
+
+create_tcga_subtype_colors <- function(df) {
+    tcga_subtypes <- panimmune_data$df %>% 
+        distinct(Subtype_Curated_Malta_Noushmehr_et_al) %>% 
+        mutate_all(as.character) %>% 
+        filter_all(all_vars(!is.na(.))) %>% 
+        mutate(
+            study = str_extract(Subtype_Curated_Malta_Noushmehr_et_al, 
+                                ".*(?=\\.)"), 
+            study = str_split(study, "_")
+        ) %>% 
+        unnest(study) %>% 
+        arrange(study) %>% 
+        group_by(study) %>% 
+        mutate(
+            subtype_cols = viridis(length(Subtype_Curated_Malta_Noushmehr_et_al))
+        )
+
+    tcga_subtype_colors <- tcga_subtypes$subtype_cols %>% 
+        set_names(tcga_subtypes$Subtype_Curated_Malta_Noushmehr_et_al)
 }
 
 ## selection choices for the dropdown menu of sample groups

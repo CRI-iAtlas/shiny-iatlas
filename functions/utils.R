@@ -66,11 +66,15 @@ get_modulator_internal_name <- function(name) {
 decide_plot_colors <- function(data_obj, sample_group_label) {
   color_mapping <- c(
     "Study" = "tcga_colors",
-    "Subtype_Immune_Model_Based" = "subtype_colors"
+    "Subtype_Immune_Model_Based" = "subtype_colors",
+    "Subtype_Curated_Malta_Noushmehr_et_al" = "tcga_subtype_colors"
   )
-  if (!sample_group_label %in% names(color_mapping)) return(NA)
-  color_item <- magrittr::extract2(color_mapping, sample_group_label)
-  plot_colors <- magrittr::extract2(data_obj, color_item)
+  if (sample_group_label %in% names(color_mapping)) {
+      color_item <- magrittr::extract2(color_mapping, sample_group_label)
+      plot_colors <- magrittr::extract2(data_obj, color_item)
+  } else {
+      return(NA)
+  }
 }
 
 get_friendly_numeric_columns <- function(){
