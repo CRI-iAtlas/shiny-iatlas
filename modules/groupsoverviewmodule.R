@@ -52,7 +52,7 @@ groupsoverview_UI <- function(id) {
                       fluidRow(
                           plotBox(
                               width = 12,
-                              plotOutput(ns("violinPlot"))
+                              plotlyOutput(ns("violinPlot"))
                           )
                       )
                   ),
@@ -228,7 +228,7 @@ groupsoverview <- function(input, output, session, ss_choice, subset_df) {
         plot
     })
 
-    output$violinPlot <- renderPlot({
+    output$violinPlot <- renderPlotly({
         
         display_x  <- ss_choice()
         display_y  <- input$violin_y
@@ -238,18 +238,16 @@ groupsoverview <- function(input, output, session, ss_choice, subset_df) {
         plot_df <- subset_df() %>%
             select_(.dots = c(internal_x, internal_y)) %>%
             .[complete.cases(.),]
-        print(plot_df)
-        
-        plot <- create_violinplot(
-            plot_df,
-            internal_x,
-            internal_y,
-            internal_x,
-            xlab = display_x,
-            ylab = display_y,
-            fill_colors = decide_plot_colors(panimmune_data, internal_x)
-        )
-        plot
+
+        plot_df %>% 
+            create_violinplot(
+                internal_x,
+                internal_y,
+                internal_x,
+                xlab = display_x,
+                ylab = display_y,
+                fill_colors = decide_plot_colors(panimmune_data, internal_x)
+            )
     })
     
     hm_variables  <- reactive(
@@ -283,10 +281,6 @@ groupsoverview <- function(input, output, session, ss_choice, subset_df) {
             get_variable_internal_name() %>%
             .[. %in% colnames(intermediate_corr_df())]
         
-        print(paste("cat_col:", ss_internal()))
-        print(paste("cat_plot_sel:", eventdata$x[[1]]))
-        print(paste("int_var_name:", internal_variable_name))
-        print(paste("var2_sel:", input$heatmap_values))
         plot_df <- create_scatterplot_df(
             intermediate_corr_df(),
             ss_internal(),
@@ -295,11 +289,6 @@ groupsoverview <- function(input, output, session, ss_choice, subset_df) {
             input$heatmap_values
         )
         
-        print(paste("x:", input$heatmap_values))
-        print(paste("y:", internal_variable_name))
-        print(paste("xlab:", get_variable_display_name(input$heatmap_values)))
-        print(paste("ylab:", eventdata$y[[1]]))
-        print(paste("title:", eventdata$x[[1]]))
         plot_df %>%
             create_scatterplot(
                 input$heatmap_values,

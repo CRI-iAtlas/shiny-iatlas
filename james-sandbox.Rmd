@@ -30,18 +30,17 @@ plot
 ```
 
 
-```{r}
-ggplotly(plot) %>% 
-    layout(hovermode = "closest")
-```
 
 
 ```{r}
+pal <- c(C1 = "red", C2 = "yellow", C3 = "green", C4 = "cyan", C5 = "blue", C6 = "magenta")
 plot_df %>% 
     plot_ly(
         x = ~Subtype_Immune_Model_Based,
         y = ~leukocyte_fraction,
         split = ~Subtype_Immune_Model_Based,
+        color = ~Subtype_Immune_Model_Based,
+        colors = pal,
         type = 'violin',
         box = list(
             visible = T
