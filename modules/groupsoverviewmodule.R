@@ -27,7 +27,7 @@ groupsoverview_UI <- function(id) {
           fluidRow(
               plotBox(
                   width = 12,
-                  plotOutput(ns("mosaicPlot"))
+                  plotlyOutput(ns("mosaicPlot"), height = "600px")
               )
           )
       ),
@@ -192,7 +192,7 @@ groupsoverview <- function(input, output, session, ss_choice, subset_df) {
         }
     })
     
-    output$mosaicPlot <- renderPlot({
+    output$mosaicPlot <- renderPlotly({
         
         req(input$sample_mosaic_group, input$study_subset_selection,
             cancelOutput = T)
@@ -216,7 +216,7 @@ groupsoverview <- function(input, output, session, ss_choice, subset_df) {
                 mutate(COLX = as.factor(COLX)) %>%
                 mutate(COLY = as.factor(COLY)))
 
-        plot <- create_mosaicplot(
+        create_mosaicplot(
             plot_df,
             internal_x,
             internal_y,
@@ -224,8 +224,8 @@ groupsoverview <- function(input, output, session, ss_choice, subset_df) {
             xlab = display_x,
             ylab = display_y,
             fill_colors = decide_plot_colors(panimmune_data, internal_y)
-        )
-        plot
+        ) %>% 
+            layout(autosize = FALSE, height = 600)
     })
 
     output$violinPlot <- renderPlotly({
