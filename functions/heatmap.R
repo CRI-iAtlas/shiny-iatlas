@@ -6,11 +6,4 @@ create_plotly_heatmap <- function(matrix){
         type = "heatmap",
         source = "heatplot",
         colors = colorRamp(c("blue", "white", "red")))
-        # layout(margin = list(
-        #     l = 250,
-        #     r = 10,
-        #     b = 100,
-        #     t = 10,
-        #     pad = 2
-        # ))
 }
