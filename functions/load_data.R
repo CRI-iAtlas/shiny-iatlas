@@ -66,7 +66,7 @@ create_tcga_colors <- function() {
 }
 
 create_tcga_subtype_colors <- function(df) {
-    tcga_subtypes <- panimmune_data$df %>% 
+    tcga_subtypes <- df %>% 
         distinct(Subtype_Curated_Malta_Noushmehr_et_al) %>% 
         mutate_all(as.character) %>% 
         filter_all(all_vars(!is.na(.))) %>% 
