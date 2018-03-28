@@ -21,6 +21,7 @@ load_data <- function() {
     df = df,
     tcga_colors = create_tcga_colors(),
     subtype_colors = create_subtype_colors(),
+    tcga_subtype_colors = create_tcga_subtype_colors(df),
     sample_selection_groups = sample_selection_groups,
     sample_selection_choices = map_chr(sample_selection_groups, get_variable_display_name),
     cell_content_groups = cell_content_groups,
@@ -62,6 +63,16 @@ create_tcga_colors <- function() {
     mutate(`Hex Colors` = paste0("#", `Hex Colors`))
   tcga_colors <- tcga_colors_df$`Hex Colors` %>%
     purrr::set_names(tcga_colors_df$`Study Abbreviation`)
+}
+
+create_tcga_subtype_colors <- function(df) {
+    tcga_subtypes <- df$Subtype_Curated_Malta_Noushmehr_et_al %>%
+        unique() %>% 
+        na.omit()
+    print(length(tcga_subtypes))
+    tcga_subtype_colors <- viridis(length(tcga_subtypes)) %>% 
+        set_names(tcga_subtypes)
+    print(tcga_subtype_colors)
 }
 
 ## selection choices for the dropdown menu of sample groups
