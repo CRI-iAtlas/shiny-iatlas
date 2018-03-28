@@ -2,35 +2,28 @@ cellcontent_UI <- function(id) {
   ns <- NS(id)
   
   tagList(
-    titleBox("Immune Cell Content by Sample Group"),
-    fluidRow(
-      textBox(
-        width = 12,
-        p("`textBox` elements can be used to contain explanatory or descriptive text, in paragraph form.")
-      ),
-      messageBox(
-        width = 12,
-        p("`messageBox` elements can be used for highlighting certain points or providing an aside/note.")
-      )
-    ),
-    fluidRow(
-      optionsBox(
-        width = 4,
-        # Drop-down selected cell content
-        selectInput(
-          inputId = ns("cc_choice"),
-          label = "Select Cellular Content",
-          choices = as.character(
-            panimmune_data$cell_content_choices
-          ),
-          selected = "Leukocyte Fraction"
+    titleBox("Tumor Composition"),
+    sectionBox(
+        title = "Overall Proportions",
+        fluidRow(
+            optionsBox(
+                width = 8,
+                selectInput(
+                    inputId = ns("cc_choice"),
+                    label = "Select Cellular Content",
+                    choices = as.character(
+                        panimmune_data$cell_content_choices
+                    ),
+                    selected = "Leukocyte Fraction"
+                )
+            )
+        ),
+        fluidRow(
+            plotBox(width = 12,
+                    # Show a plot of the generated distribution
+                    plotOutput(ns("distPlot"))
+            )
         )
-      ),
-      
-      plotBox(width = 8,
-          # Show a plot of the generated distribution
-          plotOutput(ns("distPlot"))
-      )
     )
   )
 }
