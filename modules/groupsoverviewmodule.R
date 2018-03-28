@@ -125,13 +125,16 @@ groupsoverview <- function(input, output, session, ss_choice, subset_df) {
     })
     
     output$sample_group_table <- DT::renderDataTable({
+        
         sample_group_colors <- decide_plot_colors(
             panimmune_data, ss_internal()
         )
         group_color_df <- sample_group_colors %>% 
-            as.data.frame() %>% 
+            tibble() %>% 
             set_names("Color") %>% 
-            rownames_to_column("Sample Group") %>% 
+            mutate(`Sample Group` = names(sample_group_colors)) %>% 
+            distinct() %>% 
+            filter(`Sample Group` %in% subset_df()[[ss_internal()]]) %>% 
             mutate(`Group Size` = "?") %>% 
             select(one_of("Sample Group", "Group Size", "Color")) %>% 
             datatable(
@@ -149,10 +152,7 @@ groupsoverview <- function(input, output, session, ss_choice, subset_df) {
                 backgroundColor = styleEqual(
                     sample_group_colors, 
                     sample_group_colors
-                ),
-                backgroundSize = '50% 50%',
-                backgroundRepeat = 'no-repeat',
-                backgroundPosition = 'center'
+                )
             )
     })
     
