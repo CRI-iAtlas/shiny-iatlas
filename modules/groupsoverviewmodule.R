@@ -3,8 +3,16 @@ groupsoverview_UI <- function(id) {
   
   tagList(
       titleBox("Sample Groups Overview"),
+      textBox(
+          width = 12,
+          p("Some overview/summary text describing this module and the data presented within.")  
+      ),
       sectionBox(
           title = "Group Key",
+          messageBox(
+              width = 12,
+              p("Brief instructional message about this section, what to do in it, and the available options.")  
+          ),
           fluidRow(
               tableBox(
                   width = 12,
@@ -17,6 +25,10 @@ groupsoverview_UI <- function(id) {
       ),
       sectionBox(
           title = "Group Overlap",
+          messageBox(
+              width = 12,
+              p("Brief instructional message about this section, what to do in it, and the available options.")  
+          ),
           fluidRow(
               optionsBox(
                   width = 8,
@@ -33,6 +45,10 @@ groupsoverview_UI <- function(id) {
       ),
       sectionBox(
           title = "Feature Trends",
+          messageBox(
+              width = 12,
+              p("Brief instructional message about this section, what to do in it, and the available options.")  
+          ),
           fluidRow(
               tabBox(
                   width = 12,
