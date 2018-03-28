@@ -170,6 +170,9 @@ groupsoverview <- function(input, output, session, ss_choice, subset_df) {
     })
     
     output$study_subset_select <- renderUI({
+        
+        req(input$sample_mosaic_group, cancelOutput = TRUE)
+        
         if (input$sample_mosaic_group == "TCGA Subtype") {
             choices <- panimmune_data$df %>%
                 filter_at(
@@ -190,6 +193,9 @@ groupsoverview <- function(input, output, session, ss_choice, subset_df) {
     })
     
     output$mosaicPlot <- renderPlot({
+        
+        req(input$sample_mosaic_group, input$study_subset_selection,
+            cancelOutput = T)
         
         display_x  <- input$sample_mosaic_group
         display_y  <- ss_choice()
