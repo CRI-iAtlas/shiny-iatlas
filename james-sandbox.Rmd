@@ -35,9 +35,6 @@ ggplotly(plot) %>%
     layout(hovermode = "closest")
 ```
 
-```{r}
-packageVersion('plotly')
-```
 
 ```{r}
 plot_df %>% 
@@ -53,5 +50,36 @@ plot_df %>%
             visible = T
         )
     )
+```
+
+```{r}
+plot_df <- panimmune_data$df %>% 
+    create_scatterplot_df(
+        "Subtype_Immune_Model_Based",
+        "C4",
+        "Dendritic_cells.Aggregate2",
+        "leukocyte_fraction"
+    )
+
+head(plot_df)
+```
+
+```{r}
+let(
+   alias = c(
+       xvar = "leukocyte_fraction",
+       yvar = "Dendritic_cells.Aggregate2"
+   ),
+    plot_df %>% 
+        plot_ly(
+            x = ~xvar,
+            y = ~yvar
+    ) %>% 
+       layout(
+           title = "C6",
+           xaxis = list(title = "Leukocyte Fraction"),
+           yaxis = list(title = "Macrophages")
+       )
+)
 ```
 

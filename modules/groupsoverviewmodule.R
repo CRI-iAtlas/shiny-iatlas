@@ -283,6 +283,10 @@ groupsoverview <- function(input, output, session, ss_choice, subset_df) {
             get_variable_internal_name() %>%
             .[. %in% colnames(intermediate_corr_df())]
         
+        print(paste("cat_col:", ss_internal()))
+        print(paste("cat_plot_sel:", eventdata$x[[1]]))
+        print(paste("int_var_name:", internal_variable_name))
+        print(paste("var2_sel:", input$heatmap_values))
         plot_df <- create_scatterplot_df(
             intermediate_corr_df(),
             ss_internal(),
@@ -290,15 +294,19 @@ groupsoverview <- function(input, output, session, ss_choice, subset_df) {
             internal_variable_name,
             input$heatmap_values
         )
-
+        
+        print(paste("x:", input$heatmap_values))
+        print(paste("y:", internal_variable_name))
+        print(paste("xlab:", get_variable_display_name(input$heatmap_values)))
+        print(paste("ylab:", eventdata$y[[1]]))
+        print(paste("title:", eventdata$x[[1]]))
         plot_df %>%
-            create_gg_scatterplot(
+            create_scatterplot(
                 input$heatmap_values,
                 internal_variable_name,
-                get_variable_display_name(input$heatmap_y),
+                get_variable_display_name(input$heatmap_values),
                 eventdata$y[[1]],
-                eventdata$x[[1]]) %>%
-            create_plotly_scatterplot()
+                eventdata$x[[1]])
     })
 }
 
