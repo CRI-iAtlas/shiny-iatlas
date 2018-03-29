@@ -47,14 +47,12 @@ bq_remote: false # set data as remote (BigQuery) or local (on disk)
 gs_remote: false
   
 cell_content_local:
-  - "leukocyte_fraction"
   - "Lymphocytes.Aggregate1"
   - "T.cells.CD8"
   - "T_cells_CD4.Aggregate2"
   - "Macrophage.Aggregate1"
 
 cell_content_bq:
-  - "leukocyte_fraction"
   - "Lymphocytes.Aggregate1"
   - "T_cells_CD8"
   - "T_cells_CD4_Aggregate2"

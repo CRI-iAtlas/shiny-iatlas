@@ -4,10 +4,18 @@ cellcontent_UI <- function(id) {
     
     tagList(
         titleBox("Tumor Composition"),
+        textBox(
+            width = 12,
+            p("Some overview/summary text describing this module and the data presented within.")  
+        ),
         
         # Overall proportions section ----
         sectionBox(
             title = "Overall Cell Proportions",
+            messageBox(
+                width = 12,
+                p("Brief instructional message about this section, what to do in it, and the available options.")  
+            ),
             fluidRow(
                 
                 # ** Overall proportions bar plot ----
@@ -15,6 +23,10 @@ cellcontent_UI <- function(id) {
                     width = 12,
                     plotlyOutput(ns("overall_props_barplot"))
                 )
+            ),
+            messageBox(
+                width = 12,
+                p("Click on the bars for a sample group (x-axis) to view correlation between leukocyte fraction and other components.")  
             ),
             fluidRow(
                 
@@ -37,25 +49,27 @@ cellcontent_UI <- function(id) {
         # Cell fractions section ----
         sectionBox(
             title = "Cell Type Fractions",
+            messageBox(
+                width = 12,
+                p("Brief instructional message about this section, what to do in it, and the available options.")  
+            ),
             fluidRow(
-                # optionsBox(
-                #     width = 8,
-                #     selectInput(
-                #         inputId = ns("cc_choice"),
-                #         label = "Select Cellular Content",
-                #         choices = as.character(
-                #             panimmune_data$cell_content_choices
-                #         ),
-                #         selected = "Leukocyte Fraction"
-                #     )
-                # )
+                optionsBox(
+                    width = 8,
+                    selectInput(
+                        inputId = ns("cf_choice"),
+                        label = "Select Cell Fraction Type",
+                        choices = c("Aggregate"),
+                        selected = "Aggregate"
+                    )
+                )
             ),
             fluidRow(
                 
                 # ** Cell fractions bar plot ----
                 plotBox(
-                    width = 12
-                    # plotOutput(ns("distPlot"))
+                    width = 12,
+                    plotlyOutput(ns("cell_frac_barplot"))
                 )
             )
         )
@@ -138,19 +152,28 @@ cellcontent <- function(input, output, session, ss_choice, subset_df) {
     # Cell fractions logic ----
     
     # ** Cell fractions bar plot render ----
-    # output$distPlot <- renderPlot({
-    #     cc_group <- get_variable_internal_name(input$cc_choice)
-    #     plot_df <- create_tumor_content_df(subset_df(), ss_group(), cc_group)
-    #    
-    #     plot <- create_boxplot(
-    #         plot_df,
-    #         x = ss_group(),
-    #         y = cc_group,
-    #         fill_factor = ss_group(),
-    #         x_label = ss_choice(),
-    #         y_label = input$cc_choice,
-    #         fill_colors = plot_colors()
-    #     )
-    #     print(plot)
-    # })
+    output$cell_frac_barplot <- renderPlotly({
+        cell_fractions <- switch(input$cf_choice,
+            Aggregate = panimmune_data$cell_content_groups
+        )
+        subset_df() %>%
+            create_cell_fraction_df(
+                group_column = ss_group(), 
+                cell_fraction_columns = cell_fractions
+            ) %>%
+            create_barplot_df(
+                value_column = "fraction",
+                group_column = "fraction_name",
+                subgroup_column = ss_group(),
+                operations = c("mean", "sd")
+            ) %>%
+            create_barplot(
+                x_column = ss_group(),
+                y_column = "mean",
+                color_column = "fraction_name",
+                error_column = "sd",
+                x_lab = "Fraction type by group",
+                y_lab = "Fraction mean"
+            )
+    })
 }

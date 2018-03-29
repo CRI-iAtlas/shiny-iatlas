@@ -135,10 +135,18 @@ create_heatmap_corr_mat <- function(
 
 # ** Tumor composition module ----
 
-create_cell_fraction_df <- function(subset_df, sampgroup, cellcontent) {
-    subset_df %>%
-        select(sampgroup, cellcontent) %>%
-        .[complete.cases(.), ]
+create_cell_fraction_df <- function(
+    subset_df, group_column, cell_fraction_columns
+) {
+    let(
+        alias = c(group_col = group_column),
+        subset_df %>%
+            select(one_of(c(group_column, cell_fraction_columns))) %>%
+            .[complete.cases(.), ] %>% 
+            gather(fraction_name, fraction, -group_col) #%>% 
+            # TODO: this is really slow... need to fix
+            # mutate(fraction_name = map_chr(fraction_name, get_variable_display_name))
+    )
 }
 
 create_tumor_content_df <- function(subset_df, group_column) {
