@@ -297,21 +297,21 @@ groupsoverview <- function(input, output, session, ss_choice, subset_df) {
             get_variable_internal_name() %>%
             .[. %in% colnames(intermediate_corr_df())]
         
-        plot_df <- create_scatterplot_df(
-            intermediate_corr_df(),
-            ss_internal(),
-            eventdata$x[[1]],
-            internal_variable_name,
-            input$heatmap_values
-        )
+        plot_df <- intermediate_corr_df() %>% 
+            create_scatterplot_df(
+                filter_column = ss_internal(),
+                filter_value = eventdata$x[[1]],
+                x_column = internal_variable_name,
+                y_column = input$heatmap_values
+            )
         
         plot_df %>%
             create_scatterplot(
-                input$heatmap_values,
-                internal_variable_name,
-                get_variable_display_name(input$heatmap_values),
-                eventdata$y[[1]],
-                eventdata$x[[1]])
+                x_column = internal_variable_name,
+                y_column = input$heatmap_values,
+                x_lab = eventdata$y[[1]],
+                y_lab = get_variable_display_name(input$heatmap_values),
+                title = eventdata$x[[1]])
     })
 }
 

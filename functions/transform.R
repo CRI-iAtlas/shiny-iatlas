@@ -62,6 +62,29 @@ create_barplot_df <- function(
         summarise_at(value_column, .funs = operations)
 }
 
+#' Format a dataframe for plotting values of one column versus values of a
+#' second column as points in a scatter plot
+#'
+#' @param df a tidy dataframe
+#' @param filter_column string name of column on which to filter values to 
+#'     subset rows
+#' @param filter_value string representing value by which to filter rows 
+#' @param x_column string name of column to use for x-axis
+#' @param y_column string name of column to use for y-axis
+#'
+#' @return
+#' @export
+#'
+#' @examples
+create_scatterplot_df <- function(
+    df, filter_column, filter_value, x_column, y_column
+) {
+    df %>%
+        filter(UQ(as.name(filter_column)) == filter_value) %>%
+        select_(.dots = x_column, y_column)
+    
+}
+
 # Module specific data transform ----
 
 # ** Sample groups overview module ----
@@ -109,16 +132,6 @@ create_heatmap_corr_mat <- function(
     rownames(cormat) <- sapply(rownames(cormat), get_variable_display_name)
     cormat[is.na(cormat)] <- 0
     return(cormat)
-}
-
-create_scatterplot_df <- function(
-    df, category_column, category_plot_selection, internal_variable_name,
-    variable2_selection ) {
-    
-    plot_df <- df %>%
-        filter(UQ(as.name(category_column)) == category_plot_selection) %>%
-        select_(.dots = variable2_selection, internal_variable_name)
-    return(plot_df)
 }
 
 # ** Tumor composition module ----
