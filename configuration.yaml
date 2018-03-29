@@ -5,6 +5,7 @@ module_files:
   - "modules/groupsoverviewmodule.R"
   - "modules/survivalmodule.R"
   - "modules/immunomodulatormodule.R"
+  - "modules/immunefeaturesmodule.R"
   - "modules/datainfomodule.R"
   
 function_files:
