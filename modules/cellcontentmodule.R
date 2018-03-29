@@ -13,8 +13,23 @@ cellcontent_UI <- function(id) {
                 # ** Overall proportions bar plot ----
                 plotBox(
                     width = 12,
-                    # Show a plot of the generated distribution
-                    plotlyOutput(ns("barPlot"))
+                    plotlyOutput(ns("overall_props_barplot"))
+                )
+            ),
+            fluidRow(
+                
+                # ** Overall proportions correlation plots ----
+                plotBox(
+                    width = 12,
+                    column(
+                        width = 6,
+                        
+                        plotlyOutput(ns("lf_sf_corr_scatterplot"))
+                    ),
+                    column(
+                        width = 6,
+                        plotlyOutput(ns("lf_tf_corr_scatterplot"))
+                    )
                 )
             )
         ),
@@ -56,7 +71,7 @@ cellcontent <- function(input, output, session, ss_choice, subset_df) {
     plot_colors <- reactive(decide_plot_colors(panimmune_data, ss_group()))
     
     # ** Overall proportions bar plot render ----
-    output$barPlot <- renderPlotly({
+    output$overall_props_barplot <- renderPlotly({
         subset_df() %>% 
         create_tumor_content_df(group_column = ss_group()) %>% 
             create_barplot_df(
@@ -75,7 +90,50 @@ cellcontent <- function(input, output, session, ss_choice, subset_df) {
             )
     })
     
-    # ** Overall proportions scatter plot render ----
+    # ** Overall proportions scatter plot renders ----
+    output$lf_sf_corr_scatterplot <- renderPlotly({
+        # eventdata <- event_data(
+        #     "plotly_click", source = "overall_props_barplot"
+        # )
+        # validate(need(!is.null(eventdata), "Click bar plot"))
+
+        subset_df() %>%
+            create_scatterplot_df(
+                filter_column = "Subtype_Immune_Model_Based", # ss_internal(),
+                filter_value = "C1", # eventdata$x[[1]],
+                x_column = "leukocyte_fraction",
+                y_column = "Stromal_Fraction"
+            ) %>%
+            create_scatterplot(
+                x_column = "leukocyte_fraction",
+                y_column = "Stromal_Fraction",
+                x_lab = "Leukocyte Fraction",
+                y_lab = "Stromal Fraction",
+                title = "C1" # eventdata$x[[1]]
+            )
+    })
+    
+    output$lf_tf_corr_scatterplot <- renderPlotly({
+        # eventdata <- event_data(
+        #     "plotly_click", source = "overall_props_barplot"
+        # )
+
+        subset_df() %>%
+            mutate(Tumor_Fraction = 1 - Stromal_Fraction) %>% 
+            create_scatterplot_df(
+                filter_column = "Subtype_Immune_Model_Based", # ss_internal(),
+                filter_value = "C1", # eventdata$x[[1]],
+                x_column = "leukocyte_fraction",
+                y_column = "Tumor_Fraction"
+            ) %>%
+            create_scatterplot(
+                x_column = "leukocyte_fraction",
+                y_column = "Tumor_Fraction",
+                x_lab = "Leukocyte Fraction",
+                y_lab = "Tumor Fraction",
+                title = "C1" # eventdata$x[[1]]
+            )
+    })
     
     # Cell fractions logic ----
     
