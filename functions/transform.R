@@ -104,12 +104,11 @@ create_cell_fraction_df <- function(subset_df, group_column) {
         subset_df %>% 
             select(group_col, Stromal_Fraction, leukocyte_fraction) %>% 
             .[complete.cases(.),] %>% 
-            mutate(other = 1 - (Stromal_Fraction + leukocyte_fraction)) %>% 
-            mutate(other = ifelse(other < 0, 0, other)) %>% 
-            gather(fraction_name, fraction, Stromal_Fraction:other) %>% 
+            mutate(Tumor_Fraction = 1 - Stromal_Fraction) %>% 
+            gather(fraction_name, fraction, -group_col) %>% 
             mutate(fraction_name = str_replace(fraction_name, "Stromal_Fraction", "Stromal Fraction")) %>% 
             mutate(fraction_name = str_replace(fraction_name, "leukocyte_fraction", "Leukocyte Fraction")) %>% 
-            mutate(fraction_name = str_replace(fraction_name, "other", "Other Fraction")) %>% 
+            mutate(fraction_name = str_replace(fraction_name, "Tumor_Fraction", "Tumor Fraction")) %>% 
             group_by(group_col, fraction_name) %>% 
             summarise(mean_fraction = mean(fraction), sd_fraction = sd(fraction)) %>% 
             mutate(group = str_c(fraction_name, group_col, sep = ":"))
