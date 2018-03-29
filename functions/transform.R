@@ -82,7 +82,6 @@ create_scatterplot_df <- function(
     df %>%
         filter(UQ(as.name(filter_column)) == filter_value) %>%
         select_(.dots = x_column, y_column)
-    
 }
 
 # Module specific data transform ----
