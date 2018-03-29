@@ -33,6 +33,23 @@ create_tumor_content_df <- function(subset_df, sampgroup, cellcontent) {
         .[complete.cases(.), ]
 }
 
+create_cell_fraction_df <- function(subset_df, group_column){
+    let(
+        alias = c(group_col = group_column),
+        subset_df %>% 
+            select(group_col, Stromal_Fraction, leukocyte_fraction) %>% 
+            .[complete.cases(.),] %>% 
+            mutate(other = 1 - (Stromal_Fraction + leukocyte_fraction)) %>% 
+            mutate(other = ifelse(other < 0, 0, other)) %>% 
+            gather(fraction_name, fraction, Stromal_Fraction:other) %>% 
+            mutate(fraction_name = str_replace(fraction_name, "Stromal_Fraction", "Stromal Fraction")) %>% 
+            mutate(fraction_name = str_replace(fraction_name, "leukocyte_fraction", "Leukocyte Fraction")) %>% 
+            mutate(fraction_name = str_replace(fraction_name, "other", "Other Fraction")) %>% 
+            group_by(group_col, fraction_name) %>% 
+            summarise(mean_fraction = mean(fraction), sd_fraction = sd(fraction)) %>% 
+            mutate(group = str_c(fraction_name, group_col, sep = ":")))
+}
+
 # immune interface ------------------------------------------------------------
 
 create_immuneinterface_df <- function(subset_df, sample_group, diversity_vars) {

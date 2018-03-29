@@ -1,0 +1,22 @@
+create_barplot <- function(
+    df, x_var, y_var, color_var, sd_var, xlab, ylab, bar_colors) {
+    let(
+        alias = c(xvar = x_var, 
+                  yvar = y_var, 
+                  colorvar = color_var,
+                  sdvar = sd_var),
+        df %>% 
+            plot_ly(
+                x = ~xvar,
+                y = ~yvar,
+                color = ~colorvar,
+                type = 'bar',
+                colors = bar_colors,
+                error_y = list(value = ~sdvar, color = 'black')) %>% 
+            layout(
+                xaxis = list(title = xlab),
+                yaxis = list(title = ylab)
+            )
+    )
+}
+

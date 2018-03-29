@@ -20,6 +20,7 @@ function_files:
   - "functions/scatterplot.R"
   - "functions/violinplot.R"
   - "functions/mosaicplot.R"
+  - "functions/barplot.R"
 
 page_files:
   - "pages/aboutpage.R"
