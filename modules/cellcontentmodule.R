@@ -66,13 +66,12 @@ cellcontent <- function(input, output, session, ss_choice, subset_df) {
                 operations = c("mean", "sd")
             ) %>% 
             create_barplot(
-                x_column = "fraction_name",
+                x_column = ss_group(),
                 y_column = "mean", 
-                color_column = ss_group(),
+                color_column = "fraction_name",
                 error_column = "sd",
                 x_lab = "Fraction type by group",
-                y_lab = "Fraction mean",
-                bar_colors = plot_colors()
+                y_lab = "Fraction mean"
             )
     })
     
