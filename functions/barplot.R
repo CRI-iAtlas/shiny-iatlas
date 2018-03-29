@@ -2,7 +2,7 @@
 
 create_barplot <- function(
     df, x_column, y_column, color_column, error_column, x_lab, y_lab, 
-    bar_colors = NULL
+    source_name, bar_colors = NULL
 ) {
     let(
         alias = c(xvar = x_column, 
@@ -15,6 +15,7 @@ create_barplot <- function(
                 y = ~yvar,
                 color = ~colorvar,
                 type = 'bar',
+                source = source_name,
                 colors = bar_colors,
                 error_y = list(array = ~errorvar, color = 'black', 
                                thickness = 1)) %>% 

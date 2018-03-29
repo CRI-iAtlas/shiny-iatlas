@@ -79,42 +79,44 @@ cellcontent_UI <- function(id) {
 # Server ----
 cellcontent <- function(input, output, session, ss_choice, subset_df) {
     
-    ss_group <- reactive(get_variable_internal_name(ss_choice()))
+    ss_internal <- reactive(get_variable_internal_name(ss_choice()))
     
     # Overall proportions logic ----
-    plot_colors <- reactive(decide_plot_colors(panimmune_data, ss_group()))
+    plot_colors <- reactive(decide_plot_colors(panimmune_data, ss_internal()))
     
     # ** Overall proportions bar plot render ----
     output$overall_props_barplot <- renderPlotly({
         subset_df() %>% 
-        create_tumor_content_df(group_column = ss_group()) %>% 
+        create_tumor_content_df(group_column = ss_internal()) %>% 
             create_barplot_df(
                 value_column = "fraction",
                 group_column = "fraction_name",
-                subgroup_column = ss_group(),
+                subgroup_column = ss_internal(),
                 operations = c("mean", "sd")
             ) %>% 
             create_barplot(
-                x_column = ss_group(),
+                x_column = ss_internal(),
                 y_column = "mean", 
                 color_column = "fraction_name",
                 error_column = "sd",
                 x_lab = "Fraction type by group",
-                y_lab = "Fraction mean"
+                y_lab = "Fraction mean",
+                source_name = "overall_props_barplot"
             )
     })
     
     # ** Overall proportions scatter plot renders ----
     output$lf_sf_corr_scatterplot <- renderPlotly({
-        # eventdata <- event_data(
-        #     "plotly_click", source = "overall_props_barplot"
-        # )
-        # validate(need(!is.null(eventdata), "Click bar plot"))
+        eventdata <- event_data(
+            "plotly_click", source = "overall_props_barplot"
+        )
+        validate(need(!is.null(eventdata), "Click bar plot"))
+        selected_plot_subgroup <- eventdata$x[[1]]
 
         subset_df() %>%
             create_scatterplot_df(
-                filter_column = "Subtype_Immune_Model_Based", # ss_internal(),
-                filter_value = "C1", # eventdata$x[[1]],
+                filter_column = ss_internal(),
+                filter_value = selected_plot_subgroup,
                 x_column = "leukocyte_fraction",
                 y_column = "Stromal_Fraction"
             ) %>%
@@ -123,20 +125,22 @@ cellcontent <- function(input, output, session, ss_choice, subset_df) {
                 y_column = "Stromal_Fraction",
                 x_lab = "Leukocyte Fraction",
                 y_lab = "Stromal Fraction",
-                title = "C1" # eventdata$x[[1]]
+                title = selected_plot_subgroup
             )
     })
     
     output$lf_tf_corr_scatterplot <- renderPlotly({
-        # eventdata <- event_data(
-        #     "plotly_click", source = "overall_props_barplot"
-        # )
+        eventdata <- event_data(
+            "plotly_click", source = "overall_props_barplot"
+        )
+        validate(need(!is.null(eventdata), "Click bar plot"))
+        selected_plot_subgroup <- eventdata$x[[1]]
 
         subset_df() %>%
             mutate(Tumor_Fraction = 1 - Stromal_Fraction) %>% 
             create_scatterplot_df(
-                filter_column = "Subtype_Immune_Model_Based", # ss_internal(),
-                filter_value = "C1", # eventdata$x[[1]],
+                filter_column = ss_internal(),
+                filter_value = selected_plot_subgroup,
                 x_column = "leukocyte_fraction",
                 y_column = "Tumor_Fraction"
             ) %>%
@@ -145,7 +149,7 @@ cellcontent <- function(input, output, session, ss_choice, subset_df) {
                 y_column = "Tumor_Fraction",
                 x_lab = "Leukocyte Fraction",
                 y_lab = "Tumor Fraction",
-                title = "C1" # eventdata$x[[1]]
+                title = selected_plot_subgroup
             )
     })
     

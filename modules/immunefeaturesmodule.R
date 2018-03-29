@@ -138,7 +138,7 @@ immunefeatures <- function(input, output, session, ss_choice, subset_df) {
             hm_variables()
         )
         
-        create_plotly_heatmap(heatmap_corr_mat)
+        create_plotly_heatmap(heatmap_corr_mat, "heatplot")
     })
     
     output$scatterPlot <- renderPlotly({
