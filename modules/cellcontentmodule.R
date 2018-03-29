@@ -1,10 +1,27 @@
+# UI ----
 cellcontent_UI <- function(id) {
     ns <- NS(id)
     
     tagList(
         titleBox("Tumor Composition"),
+        
+        # Overall proportions section ----
         sectionBox(
-            title = "Fraction Proportions",
+            title = "Overall Cell Proportions",
+            fluidRow(
+                
+                # ** Overall proportions bar plot ----
+                plotBox(
+                    width = 12,
+                    # Show a plot of the generated distribution
+                    plotlyOutput(ns("barPlot"))
+                )
+            )
+        ),
+        
+        # Cell fractions section ----
+        sectionBox(
+            title = "Cell Type Fractions",
             fluidRow(
                 # optionsBox(
                 #     width = 8,
@@ -19,33 +36,45 @@ cellcontent_UI <- function(id) {
                 # )
             ),
             fluidRow(
-                plotBox(width = 12,
-                        # Show a plot of the generated distribution
-                        plotlyOutput(ns("barPlot"))
-                        # plotOutput(ns("distPlot"))
+                
+                # ** Cell fractions bar plot ----
+                plotBox(
+                    width = 12
+                    # plotOutput(ns("distPlot"))
                 )
             )
         )
     )
 }
 
+# Server ----
 cellcontent <- function(input, output, session, ss_choice, subset_df) {
     
     ss_group <- reactive(get_variable_internal_name(ss_choice()))
+    
+    # Overall proportions logic ----
     plot_colors <- reactive(decide_plot_colors(panimmune_data, ss_group()))
     
-    
+    # ** Overall proportions bar plot render ----
     output$barPlot <- renderPlotly({
-        create_cell_fraction_df(subset_df(), ss_group()) %>% 
-            create_barplot("group",
-                           "mean_fraction", 
-                           ss_group(),
-                           "sd_fraction",
-                           "Fraction type by group",
-                           "Fraction mean",
-                           plot_colors())
+        subset_df() %>% 
+        create_cell_fraction_df(ss_group()) %>% 
+            create_barplot(
+                "group",
+                "mean_fraction", 
+                ss_group(),
+                "sd_fraction",
+                "Fraction type by group",
+                "Fraction mean",
+                plot_colors()
+            )
     })
     
+    # ** Overall proportions scatter plot render ----
+    
+    # Cell fractions logic ----
+    
+    # ** Cell fractions bar plot render ----
     output$distPlot <- renderPlot({
         cc_group <- get_variable_internal_name(input$cc_choice)
         plot_df <- create_tumor_content_df(subset_df(), ss_group(), cc_group)
