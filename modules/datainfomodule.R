@@ -3,31 +3,43 @@ datainfo_UI <- function(id) {
   
   tagList(
     titleBox("Data Description"),
-    fluidRow(
-      textBox(
+    textBox(
+      width = 12,
+      p("Some overview/summary text describing this module and the data presented within.")  
+    ),
+    sectionBox(
+      title = "PanImmune Features",
+      messageBox(
         width = 12,
         p("Select a row in the feature table to view more details about variables in the same class.")
-      )
-    ),
-    fluidRow(
-      tableBox(
-        width = 12,
-        div(style = 'overflow-x: scroll', 
-            DT::dataTableOutput(ns('feature_table'))
+      ),
+      fluidRow(
+        tableBox(
+          width = 12,
+          div(style = 'overflow-x: scroll', 
+              DT::dataTableOutput(ns('feature_table'))
+          )
         )
       )
     ),
-    fluidRow(
-      tableBox(
+    sectionBox(
+      title = "Variable Class Details",
+      messageBox(
         width = 12,
-        tableOutput(ns('variable_class_table'))
+        p("This is some information about the features in the variable class you clicked.")
+      ),
+      fluidRow(
+        tableBox(
+          width = 10,
+          tableOutput(ns('variable_class_table'))
+        ),
+        actionButton(ns("show_methods"), "Show Methods")
       )
     )
   )
 }
 
 datainfo <- function(input, output, session) {
-  # TODO: add renderDataTable function
   output$feature_table <- DT::renderDT({
     feature_table %>% 
       select(
@@ -50,6 +62,14 @@ datainfo <- function(input, output, session) {
       )
   }, server = FALSE
   )
+  
+  observeEvent(input$show_methods, {
+    showModal(modalDialog(
+      title = "Methods",
+      includeMarkdown("data/MethodsText/Methods_BCR.txt"),
+      size = "l", easyClose = TRUE
+    ))
+  })
   
   observeEvent(input$feature_table_rows_selected, {
     output$variable_class_table <- renderTable({
