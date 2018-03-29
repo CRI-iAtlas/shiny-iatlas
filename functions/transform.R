@@ -92,13 +92,13 @@ create_scatterplot_df <- function(
 
 # ** Tumor composition module ----
 
-create_tumor_content_df <- function(subset_df, sampgroup, cellcontent) {
+create_cell_fraction_df <- function(subset_df, sampgroup, cellcontent) {
     subset_df %>%
         select(sampgroup, cellcontent) %>%
         .[complete.cases(.), ]
 }
 
-create_cell_fraction_df <- function(subset_df, group_column) {
+create_tumor_content_df <- function(subset_df, group_column) {
     let(
         alias = c(group_col = group_column),
         subset_df %>% 

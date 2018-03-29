@@ -58,7 +58,7 @@ cellcontent <- function(input, output, session, ss_choice, subset_df) {
     # ** Overall proportions bar plot render ----
     output$barPlot <- renderPlotly({
         subset_df() %>% 
-        create_cell_fraction_df(ss_group()) %>% 
+        create_tumor_content_df(ss_group()) %>% 
             create_barplot(
                 "group",
                 "mean_fraction", 
@@ -75,19 +75,19 @@ cellcontent <- function(input, output, session, ss_choice, subset_df) {
     # Cell fractions logic ----
     
     # ** Cell fractions bar plot render ----
-    output$distPlot <- renderPlot({
-        cc_group <- get_variable_internal_name(input$cc_choice)
-        plot_df <- create_tumor_content_df(subset_df(), ss_group(), cc_group)
-       
-        plot <- create_boxplot(
-            plot_df,
-            x = ss_group(),
-            y = cc_group,
-            fill_factor = ss_group(),
-            x_label = ss_choice(),
-            y_label = input$cc_choice,
-            fill_colors = plot_colors()
-        )
-        print(plot)
-    })
+    # output$distPlot <- renderPlot({
+    #     cc_group <- get_variable_internal_name(input$cc_choice)
+    #     plot_df <- create_tumor_content_df(subset_df(), ss_group(), cc_group)
+    #    
+    #     plot <- create_boxplot(
+    #         plot_df,
+    #         x = ss_group(),
+    #         y = cc_group,
+    #         fill_factor = ss_group(),
+    #         x_label = ss_choice(),
+    #         y_label = input$cc_choice,
+    #         fill_colors = plot_colors()
+    #     )
+    #     print(plot)
+    # })
 }
