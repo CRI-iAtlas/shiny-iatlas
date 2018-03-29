@@ -1,13 +1,14 @@
 ## Create a bar plot with standard error bars using plotly
 
 create_barplot <- function(
-    df, x, y, color_var, sd_var, xlab, ylab, bar_colors
+    df, x_column, y_column, color_column, error_column, x_lab, y_lab, 
+    bar_colors = NULL
 ) {
     let(
-        alias = c(xvar = x, 
-                  yvar = y, 
-                  colorvar = color_var,
-                  sdvar = sd_var),
+        alias = c(xvar = x_column, 
+                  yvar = y_column, 
+                  colorvar = color_column,
+                  errorvar = error_column),
         df %>% 
             plot_ly(
                 x = ~xvar,
@@ -15,10 +16,10 @@ create_barplot <- function(
                 color = ~colorvar,
                 type = 'bar',
                 colors = bar_colors,
-                error_y = list(value = ~sdvar, color = 'black')) %>% 
+                error_y = list(value = ~errorvar, color = 'black')) %>% 
             layout(
-                xaxis = list(title = xlab),
-                yaxis = list(title = ylab)
+                xaxis = list(title = x_lab),
+                yaxis = list(title = y_lab)
             )
     )
 }
