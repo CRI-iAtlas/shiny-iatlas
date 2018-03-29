@@ -1,6 +1,8 @@
-create_scatterplot <- function(df, x, y, xlab = "", ylab = "", title = "") {
+create_scatterplot <- function(
+    df, x_column, y_column, x_lab = "", y_lab = "", title = ""
+) {
     let(
-        alias = c(xvar = x, yvar = y),
+        alias = c(xvar = x_column, yvar = y_column),
         df %>%
             plot_ly(
                 x = ~xvar,
@@ -8,8 +10,8 @@ create_scatterplot <- function(df, x, y, xlab = "", ylab = "", title = "") {
             ) %>% 
             layout(
                 title = title,
-                xaxis = list(title = xlab), 
-                yaxis = list(title = ylab)
+                xaxis = list(title = x_lab), 
+                yaxis = list(title = y_lab)
             )
     )
 }

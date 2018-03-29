@@ -1,4 +1,10 @@
-# panimmune df subset ---------------------------------------------------------
+## Transform functions are used globally and within individual modules to
+## subset, arrange, or otherwise modify data prior to visualization with tables
+## or plots
+
+# Global data transform ----
+
+# ** PanImmune data subsetting ----
 
 subset_panimmune_df <- function(
     df = panimmune_data$df, group_col, study_subtype
@@ -25,36 +31,62 @@ subset_panimmune_df <- function(
     }
 }
 
-# tumor content ---------------------------------------------------------------
+# Generic plot data transform ----
 
-create_tumor_content_df <- function(subset_df, sampgroup, cellcontent) {
-    subset_df %>%
-        select(sampgroup, cellcontent) %>%
-        .[complete.cases(.), ]
+#' Format a dataframe for plotting summary values (count, sum, mean, etc.) for
+#' different groups with bar plots; grouping is allowed at one to three levels:
+#' group (required), subgroup, and facet
+#'
+#' @param df a tidy dataframe
+#' @param group_column string name of column containing values to summarize; 
+#'     will correspond to size of bars in the plot
+#' @param group_column string name of top level column by which to group; will
+#'     correspond to x- or y-axis ticks in plot
+#' @param subgroup_column string name of second level column by which to group;
+#'     will correspond to fill colors of individual bars/segments
+#' @param facet_column string name of third level column by which to group;
+#'     will correspond to subplots
+#' @param operation string or vector of strings indicating which summary 
+#'     statistic(s) to calculate
+#'
+#' @return
+#' @export
+#'
+#' @examples
+create_barplot_df <- function(
+    df, value_column, group_column, subgroup_column = NULL, 
+    facet_column = NULL, operations = c("sum", "mean", "sd"), add_label = FALSE
+) {
+    df %>% 
+        group_by(.dots = c(group_column, subgroup_column, facet_column)) %>% 
+        summarise_at(value_column, .funs = operations)
 }
 
-# immune interface ------------------------------------------------------------
-
-create_immuneinterface_df <- function(subset_df, sample_group, diversity_vars) {
-    plot_df <- subset_df %>%
-        select(sample_group, diversity_vars) %>%
-        .[complete.cases(.), ] %>%
-        gather(metric, diversity, -1) %>%
-        separate(metric, into = c("receptor", "metric"), sep = "_")
-}
-
-ztransform_df <- function(df) {
+#' Format a dataframe for plotting values of one column versus values of a
+#' second column as points in a scatter plot
+#'
+#' @param df a tidy dataframe
+#' @param filter_column string name of column on which to filter values to 
+#'     subset rows
+#' @param filter_value string representing value by which to filter rows 
+#' @param x_column string name of column to use for x-axis
+#' @param y_column string name of column to use for y-axis
+#'
+#' @return
+#' @export
+#'
+#' @examples
+create_scatterplot_df <- function(
+    df, filter_column, filter_value, x_column, y_column
+) {
     df %>%
-        group_by(receptor, metric) %>%
-        mutate(
-            div_mean = mean(diversity),
-            div_sd = sd(diversity)
-        ) %>%
-        ungroup() %>%
-        mutate(diversity = (diversity - div_mean) / div_sd)
+        filter(UQ(as.name(filter_column)) == filter_value) %>%
+        select_(.dots = x_column, y_column)
 }
 
-# sample groups ---------------------------------------------------------------
+# Module specific data transform ----
+
+# ** Sample groups overview module ----
 
 create_intermediate_corr_df <- function(
     subset_df, dep_var, facet_selection, facet_groups, indep_vars
@@ -101,17 +133,91 @@ create_heatmap_corr_mat <- function(
     return(cormat)
 }
 
-create_scatterplot_df <- function(
-    df, category_column, category_plot_selection, internal_variable_name,
-    variable2_selection ) {
-    
-    plot_df <- df %>%
-        filter(UQ(as.name(category_column)) == category_plot_selection) %>%
-        select_(.dots = variable2_selection, internal_variable_name)
-    return(plot_df)
+# ** Tumor composition module ----
+
+create_cell_fraction_df <- function(
+    subset_df, group_column, cell_fraction_columns
+) {
+    let(
+        alias = c(group_col = group_column),
+        subset_df %>%
+            select(one_of(c(group_column, cell_fraction_columns))) %>%
+            .[complete.cases(.), ] %>% 
+            gather(fraction_name, fraction, -group_col) #%>% 
+            # TODO: this is really slow... need to fix
+            # mutate(fraction_name = map_chr(fraction_name, get_variable_display_name))
+    )
 }
 
-# immunomodulators ------------------------------------------------------------
+create_tumor_content_df <- function(subset_df, group_column) {
+    let(
+        alias = c(group_col = group_column),
+        subset_df %>% 
+            select(group_col, Stromal_Fraction, leukocyte_fraction) %>% 
+            .[complete.cases(.),] %>% 
+            mutate(Tumor_Fraction = 1 - Stromal_Fraction) %>% 
+            gather(fraction_name, fraction, -group_col) %>% 
+            mutate(fraction_name = str_replace(fraction_name, "Stromal_Fraction", "Stromal Fraction")) %>% 
+            mutate(fraction_name = str_replace(fraction_name, "leukocyte_fraction", "Leukocyte Fraction")) %>% 
+            mutate(fraction_name = str_replace(fraction_name, "Tumor_Fraction", "Tumor Fraction"))
+    )
+}
+
+# ** Clinical outcomes module ----
+
+build_survival_df <- function(dat, var1, timevar, divk) {
+    getCats <- function(dat, var1, divk) {
+        if (var1 %in% c("Subtype_Immune_Model_Based")) {
+            # then we don't need to produce catagories.
+            cats <- as.character(dat[, var1])
+        }
+        else {
+            cats <- as.character(cut(dat[, var1], divk, ordered_result = T))
+        }
+        cats
+    }
+    
+    # get the vectors associated with each term
+    # if var1 is already a catagory, just use that.
+    # otherwise it needs to be divided into divk catagories.
+    cats <- getCats(dat, var1, divk)
+    
+    if (timevar == "OS_time") {
+        timevar2 <- "OS"
+    } else {
+        timevar2 <- "PFI_1"
+    }
+    
+    df <- data.frame(
+        Status = dat[, timevar2], Time = dat[, timevar],
+        Variable = cats, Measure = dat[, var1]
+    )
+    df <- na.omit(df)
+    df
+}
+
+# ** Immune interface module ----
+
+create_immuneinterface_df <- function(subset_df, sample_group, diversity_vars) {
+    plot_df <- subset_df %>%
+        select(sample_group, diversity_vars) %>%
+        .[complete.cases(.), ] %>%
+        gather(metric, diversity, -1) %>%
+        separate(metric, into = c("receptor", "metric"), sep = "_")
+}
+
+ztransform_df <- function(df) {
+    df %>%
+        group_by(receptor, metric) %>%
+        mutate(
+            div_mean = mean(diversity),
+            div_sd = sd(diversity)
+        ) %>%
+        ungroup() %>%
+        mutate(diversity = (diversity - div_mean) / div_sd)
+}
+
+# ** Immunomodulators module ----
 
 build_boxplot_df <- function(subset_df, im_choice, ss_group) {
     panimmune_data$immunomodulator_df %>%
@@ -130,40 +236,7 @@ build_histogram_df <- function(
 
 }
 
-# dataframe builders
 
-
-
-build_survival_df <- function(dat, var1, timevar, divk) {
-  getCats <- function(dat, var1, divk) {
-    if (var1 %in% c("Subtype_Immune_Model_Based")) {
-      # then we don't need to produce catagories.
-      cats <- as.character(dat[, var1])
-    }
-    else {
-      cats <- as.character(cut(dat[, var1], divk, ordered_result = T))
-    }
-    cats
-  }
-  
-  # get the vectors associated with each term
-  # if var1 is already a catagory, just use that.
-  # otherwise it needs to be divided into divk catagories.
-  cats <- getCats(dat, var1, divk)
-  
-  if (timevar == "OS_time") {
-    timevar2 <- "OS"
-  } else {
-    timevar2 <- "PFI_1"
-  }
-  
-  df <- data.frame(
-    Status = dat[, timevar2], Time = dat[, timevar],
-    Variable = cats, Measure = dat[, var1]
-  )
-  df <- na.omit(df)
-  df
-}
 
 
 
