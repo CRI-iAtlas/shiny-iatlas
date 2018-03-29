@@ -1,8 +1,11 @@
+## Create a bar plot with standard error bars using plotly
+
 create_barplot <- function(
-    df, x_var, y_var, color_var, sd_var, xlab, ylab, bar_colors) {
+    df, x, y, color_var, sd_var, xlab, ylab, bar_colors
+) {
     let(
-        alias = c(xvar = x_var, 
-                  yvar = y_var, 
+        alias = c(xvar = x, 
+                  yvar = y, 
                   colorvar = color_var,
                   sdvar = sd_var),
         df %>% 

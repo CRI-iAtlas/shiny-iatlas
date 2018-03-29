@@ -31,6 +31,37 @@ subset_panimmune_df <- function(
     }
 }
 
+# Generic plot data transform ----
+
+#' Format a dataframe for plotting summary values (count, sum, mean, etc.) for
+#' different groups with bar plots; grouping is allowed at one to three levels:
+#' group (required), subgroup, and facet
+#'
+#' @param df a tidy dataframe
+#' @param group_column string name of column containing values to summarize; 
+#'     will correspond to size of bars in the plot
+#' @param group_column string name of top level column by which to group; will
+#'     correspond to x- or y-axis ticks in plot
+#' @param subgroup_column string name of second level column by which to group;
+#'     will correspond to fill colors of individual bars/segments
+#' @param facet_column string name of third level column by which to group;
+#'     will correspond to subplots
+#' @param operation string or vector of strings indicating which summary 
+#'     statistic(s) to calculate
+#'
+#' @return
+#' @export
+#'
+#' @examples
+create_barplot_df <- function(
+    df, value_column, group_column, subgroup_column = NULL, 
+    facet_column = NULL, operations = c("sum", "mean", "sd"), add_label = FALSE
+) {
+    df %>% 
+        group_by(.dots = c(group_column, subgroup_column, facet_column)) %>% 
+        summarise_at(value_column, .funs = operations)
+}
+
 # Module specific data transform ----
 
 # ** Sample groups overview module ----
@@ -108,10 +139,7 @@ create_tumor_content_df <- function(subset_df, group_column) {
             gather(fraction_name, fraction, -group_col) %>% 
             mutate(fraction_name = str_replace(fraction_name, "Stromal_Fraction", "Stromal Fraction")) %>% 
             mutate(fraction_name = str_replace(fraction_name, "leukocyte_fraction", "Leukocyte Fraction")) %>% 
-            mutate(fraction_name = str_replace(fraction_name, "Tumor_Fraction", "Tumor Fraction")) %>% 
-            group_by(group_col, fraction_name) %>% 
-            summarise(mean_fraction = mean(fraction), sd_fraction = sd(fraction)) %>% 
-            mutate(group = str_c(fraction_name, group_col, sep = ":"))
+            mutate(fraction_name = str_replace(fraction_name, "Tumor_Fraction", "Tumor Fraction"))
     )
 }
 

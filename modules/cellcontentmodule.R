@@ -58,15 +58,21 @@ cellcontent <- function(input, output, session, ss_choice, subset_df) {
     # ** Overall proportions bar plot render ----
     output$barPlot <- renderPlotly({
         subset_df() %>% 
-        create_tumor_content_df(ss_group()) %>% 
+        create_tumor_content_df(group_column = ss_group()) %>% 
+            create_barplot_df(
+                value_column = "fraction",
+                group_column = "fraction_name",
+                subgroup_column = ss_group(),
+                operations = c("mean", "sd")
+            ) %>% 
             create_barplot(
-                "group",
-                "mean_fraction", 
-                ss_group(),
-                "sd_fraction",
-                "Fraction type by group",
-                "Fraction mean",
-                plot_colors()
+                x = "fraction_name",
+                y = "mean", 
+                color_var = ss_group(),
+                sd_var = "sd",
+                xlab = "Fraction type by group",
+                ylab = "Fraction mean",
+                bar_colors = plot_colors()
             )
     })
     
