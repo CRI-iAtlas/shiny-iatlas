@@ -1,65 +1,185 @@
+# UI ----
 cellcontent_UI <- function(id) {
-  ns <- NS(id)
-  
-  tagList(
-    titleBox("Immune Cell Content by Sample Group"),
-    fluidRow(
-      textBox(
-        width = 12,
-        p("`textBox` elements can be used to contain explanatory or descriptive text, in paragraph form.")
-      ),
-      messageBox(
-        width = 12,
-        p("`messageBox` elements can be used for highlighting certain points or providing an aside/note.")
-      )
-    ),
-    fluidRow(
-      optionsBox(
-        width = 4, 
-        # Drop-down selected sample groups
-        selectInput(
-          inputId = ns("ss_choice"),
-          label = "Select Sample Groups",
-          choices = as.character(
-            panimmune_data$sample_selection_choices
-          ),
-          selected = "Immune Subtype"
+    ns <- NS(id)
+    
+    tagList(
+        titleBox("Tumor Composition"),
+        textBox(
+            width = 12,
+            p("Some overview/summary text describing this module and the data presented within.")  
         ),
         
-        # Drop-down selected cell content
-        selectInput(
-          inputId = ns("cc_choice"),
-          label = "Select Cellular Content",
-          choices = as.character(
-            panimmune_data$cell_content_choices
-          ),
-          selected = "Leukocyte Fraction"
+        # Overall proportions section ----
+        sectionBox(
+            title = "Overall Cell Proportions",
+            messageBox(
+                width = 12,
+                p("Brief instructional message about this section, what to do in it, and the available options.")  
+            ),
+            fluidRow(
+                
+                # ** Overall proportions bar plot ----
+                plotBox(
+                    width = 12,
+                    plotlyOutput(ns("overall_props_barplot"))
+                )
+            ),
+            messageBox(
+                width = 12,
+                p("Click on the bars for a sample group (x-axis) to view correlation between leukocyte fraction and other components.")  
+            ),
+            fluidRow(
+                
+                # ** Overall proportions correlation plots ----
+                plotBox(
+                    width = 12,
+                    column(
+                        width = 6,
+                        
+                        plotlyOutput(ns("lf_sf_corr_scatterplot"))
+                    ),
+                    column(
+                        width = 6,
+                        plotlyOutput(ns("lf_tf_corr_scatterplot"))
+                    )
+                )
+            )
+        ),
+        
+        # Cell fractions section ----
+        sectionBox(
+            title = "Cell Type Fractions",
+            messageBox(
+                width = 12,
+                p("Brief instructional message about this section, what to do in it, and the available options.")  
+            ),
+            fluidRow(
+                optionsBox(
+                    width = 8,
+                    selectInput(
+                        inputId = ns("cf_choice"),
+                        label = "Select Cell Fraction Type",
+                        choices = config_yaml$cell_type_aggregates,
+                        selected = config_yaml$cell_type_aggregates[[1]]
+                    )
+                )
+            ),
+            fluidRow(
+                
+                # ** Cell fractions bar plot ----
+                plotBox(
+                    width = 12,
+                    plotlyOutput(ns("cell_frac_barplot"))
+                )
+            )
         )
-      ),
-      
-      plotBox(width = 8,
-          # Show a plot of the generated distribution
-          plotOutput(ns("distPlot"))
-      )
     )
-  )
 }
 
-cellcontent <- function(input, output, session) {
-  output$distPlot <- renderPlot({
-    ss_group <- get_variable_internal_name(input$ss_choice)
-    cc_group <- get_variable_internal_name(input$cc_choice)
-    plot_df <- create_cellcontent_df(ss_group, cc_group)
-    plot_colors <- decide_plot_colors(panimmune_data, ss_group)
-    plot <- create_boxplot(
-      plot_df,
-      x = ss_group,
-      y = cc_group,
-      fill_factor = ss_group,
-      x_label = input$ss_choice,
-      y_label = input$cc_choice,
-      fill_colors = plot_colors
-    )
-    print(plot)
-  })
+# Server ----
+cellcontent <- function(input, output, session, ss_choice, subset_df) {
+    
+    ss_internal <- reactive(get_variable_internal_name(ss_choice()))
+    
+    # Overall proportions logic ----
+    plot_colors <- reactive(decide_plot_colors(panimmune_data, ss_internal()))
+    
+    # ** Overall proportions bar plot render ----
+    output$overall_props_barplot <- renderPlotly({
+        subset_df() %>% 
+        create_tumor_content_df(group_column = ss_internal()) %>% 
+            create_barplot_df(
+                value_column = "fraction",
+                group_column = "fraction_name",
+                subgroup_column = ss_internal(),
+                operations = c("mean", "sd")
+            ) %>% 
+            create_barplot(
+                x_column = ss_internal(),
+                y_column = "mean", 
+                color_column = "fraction_name",
+                error_column = "sd",
+                x_lab = "Fraction type by group",
+                y_lab = "Fraction mean",
+                source_name = "overall_props_barplot"
+            )
+    })
+    
+    # ** Overall proportions scatter plot renders ----
+    output$lf_sf_corr_scatterplot <- renderPlotly({
+        eventdata <- event_data(
+            "plotly_click", source = "overall_props_barplot"
+        )
+        validate(need(!is.null(eventdata), "Click bar plot"))
+        selected_plot_subgroup <- eventdata$x[[1]]
+
+        subset_df() %>%
+            create_scatterplot_df(
+                filter_column = ss_internal(),
+                filter_value = selected_plot_subgroup,
+                x_column = "leukocyte_fraction",
+                y_column = "Stromal_Fraction"
+            ) %>%
+            create_scatterplot(
+                x_column = "leukocyte_fraction",
+                y_column = "Stromal_Fraction",
+                x_lab = "Leukocyte Fraction",
+                y_lab = "Stromal Fraction",
+                title = selected_plot_subgroup
+            )
+    })
+    
+    output$lf_tf_corr_scatterplot <- renderPlotly({
+        eventdata <- event_data(
+            "plotly_click", source = "overall_props_barplot"
+        )
+        validate(need(!is.null(eventdata), "Click bar plot"))
+        selected_plot_subgroup <- eventdata$x[[1]]
+
+        subset_df() %>%
+            mutate(Tumor_Fraction = 1 - Stromal_Fraction) %>% 
+            create_scatterplot_df(
+                filter_column = ss_internal(),
+                filter_value = selected_plot_subgroup,
+                x_column = "leukocyte_fraction",
+                y_column = "Tumor_Fraction"
+            ) %>%
+            create_scatterplot(
+                x_column = "leukocyte_fraction",
+                y_column = "Tumor_Fraction",
+                x_lab = "Leukocyte Fraction",
+                y_lab = "Tumor Fraction",
+                title = selected_plot_subgroup
+            )
+    })
+    
+    # Cell fractions logic ----
+    
+    # ** Cell fractions bar plot render ----
+    output$cell_frac_barplot <- renderPlotly({
+        
+        cell_fractions <- as.character(get_variable_group(input$cf_choice))
+        print(cell_fractions)
+        subset_df() %>%
+            create_cell_fraction_df(
+                group_column = ss_internal(), 
+                cell_fraction_columns = cell_fractions
+            ) %>%
+            create_barplot_df(
+                value_column = "fraction",
+                group_column = "fraction_name",
+                subgroup_column = ss_internal(),
+                operations = c("mean", "sd")
+            ) %>%
+            create_barplot(
+                x_column = ss_internal(),
+                y_column = "mean",
+                color_column = "fraction_name",
+                error_column = "sd",
+                x_lab = "Fraction type by group",
+                y_lab = "Fraction mean",
+                source_name = "cell_frac_barplot"
+            )
+    })
 }
+

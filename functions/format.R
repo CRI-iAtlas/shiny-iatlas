@@ -8,6 +8,25 @@ titleBox <- function(title) {
   )
 }
 
+subTitleBox <- function(title) {
+    fluidRow(
+        box(width = 12,
+            span(strong(title),
+                 style = "font-size:16px")
+        )
+    )
+}
+
+sectionBox <- function(..., title) {
+    fluidRow(
+        box(...,
+            width = 12,
+            title = title,
+            solidHeader = TRUE, status = "warning", collapsible = TRUE
+        )
+    )
+}
+
 optionsBox <- function(...) {
   box(..., background = "navy")
 }

@@ -21,6 +21,7 @@ load_data <- function() {
     df = df,
     tcga_colors = create_tcga_colors(),
     subtype_colors = create_subtype_colors(),
+    tcga_subtype_colors = create_tcga_subtype_colors(df),
     sample_selection_groups = sample_selection_groups,
     sample_selection_choices = map_chr(sample_selection_groups, get_variable_display_name),
     cell_content_groups = cell_content_groups,
@@ -52,7 +53,7 @@ load_modulators <- function() {
 
 ## Color Maps for Display of Immune Subtypes and TCGA tumors
 create_subtype_colors <- function() {
-  c("red", "yellow", "green", "cyan", "blue", "magenta") %>%
+  c("#FF0000", "#FFFF00", "#00FF00", "#00FFFF", "#0000FF", "#FF00FF") %>%
     purrr::set_names(paste0("C", seq(1, 6)))
 }
 
@@ -62,6 +63,27 @@ create_tcga_colors <- function() {
     mutate(`Hex Colors` = paste0("#", `Hex Colors`))
   tcga_colors <- tcga_colors_df$`Hex Colors` %>%
     purrr::set_names(tcga_colors_df$`Study Abbreviation`)
+}
+
+create_tcga_subtype_colors <- function(df) {
+    tcga_subtypes <- df %>% 
+        distinct(Subtype_Curated_Malta_Noushmehr_et_al) %>% 
+        mutate_all(as.character) %>% 
+        filter_all(all_vars(!is.na(.))) %>% 
+        mutate(
+            study = str_extract(Subtype_Curated_Malta_Noushmehr_et_al, 
+                                ".*(?=\\.)"), 
+            study = str_split(study, "_")
+        ) %>% 
+        unnest(study) %>% 
+        arrange(study) %>% 
+        group_by(study) %>% 
+        mutate(
+            subtype_cols = viridis(length(Subtype_Curated_Malta_Noushmehr_et_al))
+        )
+
+    tcga_subtype_colors <- tcga_subtypes$subtype_cols %>% 
+        set_names(tcga_subtypes$Subtype_Curated_Malta_Noushmehr_et_al)
 }
 
 ## selection choices for the dropdown menu of sample groups
@@ -105,69 +127,4 @@ get_immunomodulator_df_from_bq <- function(direct_relationship_modulators) {
     gene_string
   )
   query_exec(query, project = "isb-cgc-01-0008", max_pages = Inf)
-}
-
-
-# cellcontent module helpers --------------------------------------------------
-create_cellcontent_df <- function(sampgroup, cellcontent) {
-  if (USE_REMOTE_BQ) {
-    df <- create_cellcontent_df_from_bq(sampgroup, cellcontent)
-  } else {
-    df <- create_cellcontent_df_from_local(sampgroup, cellcontent)
-  }
-  return(df)
-}
-
-create_cellcontent_df_from_bq <- function(sampgroup, cellcontent) {
-  query <- paste(
-    "SELECT ",
-    sampgroup,
-    " , ",
-    cellcontent,
-    " FROM [isb-cgc-01-0007:Feature_Matrix.PanImmune_FMx]",
-    " where ",
-    cellcontent,
-    " is not null and ",
-    sampgroup,
-    " is not null"
-  )
-  query_exec(query, project = "isb-cgc-01-0007")
-}
-
-create_cellcontent_df_from_local <- function(sampgroup, cellcontent) {
-  panimmune_data$df %>%
-    select(sampgroup, cellcontent) %>%
-    .[complete.cases(.), ]
-}
-
-# immuneinterface helpers -----------------------------------------------------
-create_immuneinterface_df <- function(sample_group, diversity_vars) {
-  if (USE_REMOTE_BQ) {
-    df <- create_immuneinterface_df_from_bq(sample_group, diversity_vars)
-  } else {
-    df <- create_immuneinterface_df_from_local(sample_group, diversity_vars)
-  }
-  return(df)
-}
-
-create_immuneinterface_df_from_bq <- function(sample_group, diversity_vars) {
-  query <- glue::glue(
-      "\n
-       SELECT {samples}, {vars} \\\n
-       FROM [isb-cgc-01-0007:Feature_Matrix.PanImmune_FMx] \\\n
-       where {samples} is not null \\\n
-       and {vars} is not null \\\n
-      ",
-      samples = sample_group,
-      vars = diversity_vars
-  )
-  df <- query_exec(query, project = "isb-cgc-01-0007")
-}
-
-create_immuneinterface_df_from_local <- function(sample_group, diversity_vars) {
-  panimmune_data$df %>%
-    select(sample_group, diversity_vars) %>%
-    .[complete.cases(.), ] %>%
-    gather(metric, diversity, -1) %>%
-    separate(metric, into = c("receptor", "metric"), sep = "_")
 }

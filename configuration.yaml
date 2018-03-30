@@ -2,9 +2,10 @@ module_files:
   - "modules/dashboardmodule.R"
   - "modules/cellcontentmodule.R"
   - "modules/immuneinterfacemodule.R"
-  - "modules/featurecorrelationmodule.R"
+  - "modules/groupsoverviewmodule.R"
   - "modules/survivalmodule.R"
   - "modules/immunomodulatormodule.R"
+  - "modules/immunefeaturesmodule.R"
   - "modules/datainfomodule.R"
   
 function_files:
@@ -20,6 +21,7 @@ function_files:
   - "functions/scatterplot.R"
   - "functions/violinplot.R"
   - "functions/mosaicplot.R"
+  - "functions/barplot.R"
 
 page_files:
   - "pages/aboutpage.R"
@@ -39,19 +41,19 @@ libraries:
   - "shinydashboard"
   - "ggmosaic"
   - "DT"
+  - "wrapr"
+  - "forcats"
  
 bq_remote: false # set data as remote (BigQuery) or local (on disk)
 gs_remote: false
   
 cell_content_local:
-  - "leukocyte_fraction"
   - "Lymphocytes.Aggregate1"
   - "T.cells.CD8"
   - "T_cells_CD4.Aggregate2"
   - "Macrophage.Aggregate1"
 
 cell_content_bq:
-  - "leukocyte_fraction"
   - "Lymphocytes.Aggregate1"
   - "T_cells_CD8"
   - "T_cells_CD4_Aggregate2"
@@ -76,3 +78,9 @@ immune_groups:
   - "Subtype_Immune_Model_Based"
   - "Subtype_Curated_Malta_Noushmehr_et_al"
   - "Study"    
+  
+cell_type_aggregates:
+  - "Immune Cell Proportion - Original"
+  - "Immune Cell Proportion - Aggregate 1"
+  - "Immune Cell Proportion - Aggregate 2"
+  - "Immune Cell Proportion - Aggregate 3"

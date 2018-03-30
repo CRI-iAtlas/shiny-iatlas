@@ -11,15 +11,37 @@ options(shiny.maxRequestSize = 100 * 1024^2)
 shinyServer(function(input, output, session) {
 
   # Cell content
-  callModule(cellcontent, "module1")
+  callModule(
+      cellcontent, 
+      "module1", 
+      reactive(input$ss_choice), 
+      reactive(subset_df()))
   # Clonal diversity
-  callModule(immuneinterface, "module2")
+  callModule(
+      immuneinterface,
+      "module2",
+      reactive(input$ss_choice),
+      reactive(subset_df()))
   # Correlation heatmaps
-  callModule(featurecorrelation, "module3", reactive(input$ss_choice))
+  callModule(
+      groupsoverview,
+      "module3",
+      reactive(input$ss_choice),
+      reactive(subset_df()))
   # Survival curves
-  callModule(survival, "module4")
-  # immunomodulators
-  callModule(immunomodulator, "module5")
+  callModule(survival, "module4", reactive(input$ss_choice))
+  # Immunomodulators
+  callModule(
+      immunomodulator, 
+      "module5", 
+      reactive(input$ss_choice),
+      reactive(subset_df()))
+  # Immune features
+  callModule(
+      immunefeatures, 
+      "module6", 
+      reactive(input$ss_choice),
+      reactive(subset_df()))
   
   # Data info
   callModule(datainfo, "moduleX")
@@ -43,6 +65,30 @@ shinyServer(function(input, output, session) {
   observeEvent(input$link_to_module5, {
     shinydashboard::updateTabItems(session, "explorertabs", "immunomodulators")
   })
-
+  
+  output$study_subset_UI <- renderUI({
+      if (input$ss_choice == "TCGA Subtype") {
+          choices <- panimmune_data$df %>%
+              filter_at(
+                  vars(get_variable_internal_name(input$ss_choice)), 
+                  all_vars(!is.na(.))
+              ) %>% 
+              distinct(Study) %>%
+              extract2("Study")
+              
+          selectInput("study_subset_selection", 
+                      "Choose study subset:",
+                      choices = choices,
+                      selected = NULL)
+      }
+  })
+  
+  subset_df <- reactive(
+      subset_panimmune_df(
+          group_col = get_variable_internal_name(input$ss_choice), 
+          study_subtype = input$study_subset_selection
+      )
+  )
+  
 })
 ################################################################################
