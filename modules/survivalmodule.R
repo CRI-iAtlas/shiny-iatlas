@@ -16,10 +16,7 @@ survival_UI <- function(id) {
         width = 12,
         p("Brief instructional message about this section, what to do in it, and the available options.")  
       ),
-      
-      
       fluidRow(
-        
         optionsBox(
           width = 4,
           selectInput(
@@ -61,10 +58,20 @@ survival_UI <- function(id) {
           plotOutput(ns("survPlot"), height = 600)
         )
       )
+    ),
+    
+    # Survival comparison section ----
+    sectionBox(
+      title = "Concordance Index",
+      messageBox(
+        width = 12,
+        p("Brief instructional message about this section, what to do in it, and the available options.")  
+      )
     )
   )
 }
 
+# Server ----
 survival <- function(input, output, session, ss_choice) {
   output$survPlot <- renderPlot({
     
@@ -75,7 +82,7 @@ survival <- function(input, output, session, ss_choice) {
           k = input$divk
         )
     
-    fit <- survfit(Surv(Time, Status) ~ Variable, data = survival_df)
+    fit <- survfit(Surv(time, status) ~ variable, data = survival_df)
     title <- get_variable_display_name(input$var1_surv)
     
     create_kmplot(fit, survival_df, input$confint, input$risktable, title)

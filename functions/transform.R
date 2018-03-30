@@ -206,10 +206,10 @@ build_survival_df <- function(df, group_column, time_column, k) {
   get_groups <- function(df, group_column, k) {
     if (group_column %in% c("Subtype_Immune_Model_Based")) {
       # then we don't need to produce catagories.
-      as.character(df[, group_column])
+      as.character(df[[group_column]])
     }
     else {
-      as.character(cut(df[, group_column], k, ordered_result = T))
+      as.character(cut(df[[group_column]], k, ordered_result = T))
     }
   }
   
@@ -225,13 +225,19 @@ build_survival_df <- function(df, group_column, time_column, k) {
   }
   
   data.frame(
-    Status = pluck(df, status_column), 
-    Time = pluck(df, time_column),
-    Variable = groups, 
-    Measure = pluck(df, group_column)
+    status = pluck(df, status_column), 
+    time = pluck(df, time_column),
+    variable = groups, 
+    measure = pluck(df, group_column)
   ) %>% 
     na.omit()
 }
+
+panimmune_data$fmx_df %>% head(100) %>% 
+  build_survival_df(
+    group_column = "Subtype_Immune_Model_Based", 
+    time_column = "OS_time"
+  ) 
 
 # ** Immune interface module ----
 
