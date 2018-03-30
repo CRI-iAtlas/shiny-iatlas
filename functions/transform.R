@@ -55,12 +55,15 @@ subset_panimmune_df <- function(
 #' @examples
 create_barplot_df <- function(
   df, value_column, group_column, subgroup_column = NULL, 
-  facet_column = NULL, operations = c("sum", "mean", "sd"), add_label = FALSE
+  facet_column = NULL, operations = c("sum", "mean", "sd", "se"), 
+  add_label = FALSE
 ) {
-    df %>% 
-        group_by(.dots = c(group_column, subgroup_column, facet_column)) %>% 
-        summarise_at(value_column, .funs = operations) %>% 
-        ungroup
+  se <- function(x) { mean(x) / sqrt(length(x)) }
+  
+  df %>% 
+    group_by(.dots = c(group_column, subgroup_column, facet_column)) %>% 
+    summarise_at(value_column, .funs = operations) %>% 
+    ungroup
 }
 
 #' Format a dataframe for plotting values of one column versus values of a
@@ -88,6 +91,41 @@ create_scatterplot_df <- function(
 # Module specific data transform ----
 
 # ** Sample groups overview module ----
+
+build_sample_group_key_df <- function(df, sample_group_option) {
+  decide_plot_colors(panimmune_data, sample_group_option) %>% 
+    enframe() %>% 
+    filter(name %in% df[[sample_group_option]]) %>% 
+    left_join(
+      panimmune_data$sample_group_df, 
+      by = c("name" = "FeatureValue")
+    ) %>% 
+    distinct() %>% 
+    mutate(
+      `Group Size` = map_int(
+        name, ~ sum(df[, sample_group_option] == ., na.rm = TRUE)
+      )
+    ) %>% 
+    select(`Sample Group` = name, `Group Name` = FeatureName,
+           `Group Size`, Characteristics, `Plot Color` = value)
+}
+
+build_mosaic_plot_df <- function(df, x_column, y_column, study_value) {
+  let(
+    alias = c(xvar = x_column,
+              yvar = y_column),
+    df %>%
+      subset_panimmune_df(
+        group_col = x_column, 
+        study_subtype = study_value
+      ) %>% 
+      select(xvar, yvar) %>%
+      .[complete.cases(.),] %>%
+      mutate(xvar = as.factor(xvar)) %>%
+      mutate(yvar = as.factor(yvar)))
+}
+
+# ** Immune feature trends module ----
 
 create_intermediate_corr_df <- function(
   subset_df, dep_var, facet_selection, facet_groups, indep_vars
@@ -139,13 +177,13 @@ create_heatmap_corr_mat <- function(
 create_cell_fraction_df <- function(
   subset_df, group_column, cell_fraction_columns
 ) {
-    let(
-        alias = c(group_col = group_column),
-        panimmune_data$df %>%
-            select(group_col, cell_fraction_columns) %>%
-            .[complete.cases(.), ] %>% 
-            gather(fraction_name, fraction, -group_col)
-    )
+  let(
+    alias = c(group_col = group_column),
+    panimmune_data$fmx_df %>%
+      select(group_col, cell_fraction_columns) %>%
+      .[complete.cases(.), ] %>% 
+      gather(fraction_name, fraction, -group_col)
+  )
 }
 
 create_tumor_content_df <- function(subset_df, group_column) {
@@ -164,36 +202,37 @@ create_tumor_content_df <- function(subset_df, group_column) {
 
 # ** Clinical outcomes module ----
 
-build_survival_df <- function(dat, var1, timevar, divk) {
-  getCats <- function(dat, var1, divk) {
-    if (var1 %in% c("Subtype_Immune_Model_Based")) {
+build_survival_df <- function(df, group_column, time_column, k) {
+  get_groups <- function(df, group_column, k) {
+    if (group_column %in% c("Subtype_Immune_Model_Based")) {
       # then we don't need to produce catagories.
-      cats <- as.character(dat[, var1])
+      as.character(df[[group_column]])
     }
     else {
-      cats <- as.character(cut(dat[, var1], divk, ordered_result = T))
+      as.character(cut(df[[group_column]], k, ordered_result = T))
     }
-    cats
   }
   
   # get the vectors associated with each term
-  # if var1 is already a catagory, just use that.
-  # otherwise it needs to be divided into divk catagories.
-  cats <- getCats(dat, var1, divk)
+  # if facet_column is already a catagory, just use that.
+  # otherwise it needs to be divided into k catagories.
+  groups <- get_groups(df, group_column, k)
   
-  if (timevar == "OS_time") {
-    timevar2 <- "OS"
+  if (time_column == "OS_time") {
+    status_column <- "OS"
   } else {
-    timevar2 <- "PFI_1"
+    status_column <- "PFI_1"
   }
   
-  df <- data.frame(
-    Status = dat[, timevar2], Time = dat[, timevar],
-    Variable = cats, Measure = dat[, var1]
-  )
-  df <- na.omit(df)
-  df
+  data.frame(
+    status = pluck(df, status_column), 
+    time = pluck(df, time_column),
+    variable = groups, 
+    measure = pluck(df, group_column)
+  ) %>% 
+    na.omit()
 }
+
 
 # ** Immune interface module ----
 
@@ -218,20 +257,18 @@ ztransform_df <- function(df) {
 
 # ** Immunomodulators module ----
 
-build_boxplot_df <- function(subset_df, im_choice, ss_group) {
+build_im_expr_plot_df <- function(df, im_option, sample_group_option) {
   panimmune_data$im_expr_df %>%
-    filter(Symbol == im_choice) %>%
-    left_join(subset_df) %>%
+    filter(Symbol == im_option) %>%
+    left_join(df) %>%
     mutate(log_count = log10(normalized_count + 1)) %>%
-    select(ss_group, log_count) %>%
+    select(sample_group_option, log_count) %>%
     .[complete.cases(.), ]
 }
 
-build_histogram_df <- function(
-  boxplot_df, boxplot_column, boxplot_selected_group) {
-  
-  plot_df <- boxplot_df %>% 
-    filter(UQ(as.name(boxplot_column)) == boxplot_selected_group)
+build_histogram_df <- function(df, filter_column, filter_value) {
+  df %>%
+    filter(UQ(as.name(filter_column)) == filter_value)
   
 }
 

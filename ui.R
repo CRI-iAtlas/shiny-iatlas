@@ -29,7 +29,20 @@ ui <- navbarPage(
   header = headerTagList,	
   footer = footerTagList,
   collapsible = TRUE,	inverse = TRUE,
-  windowTitle = "CRI iAtlas Portal"	
+  windowTitle = "CRI iAtlas Portal"	,
+  tags$head(tags$script('
+                        var dimension = [0, 0];
+                        $(document).on("shiny:connected", function(e) {
+                        dimension[0] = window.innerWidth;
+                        dimension[1] = window.innerHeight;
+                        Shiny.onInputChange("dimension", dimension);
+                        });
+                        $(window).resize(function(e) {
+                        dimension[0] = window.innerWidth;
+                        dimension[1] = window.innerHeight;
+                        Shiny.onInputChange("dimension", dimension);
+                        });
+                        '))
 )	
 
 shinyUI(ui)

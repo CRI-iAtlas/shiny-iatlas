@@ -3,7 +3,7 @@ explorepage <- dashboardPage(
   dashboardSidebar(
     sidebarMenu(
       id = "explorertabs",
-      menuItem("iAtlas Explorer",
+      menuItem("CRI iAtlas Explorer",
         tabName = "dashboard",
         icon = icon("dashboard")
       ),
@@ -19,12 +19,12 @@ explorepage <- dashboardPage(
       menuItem("Analysis Modules",
         icon = icon("bar-chart"), startExpanded = TRUE,
         menuSubItem(
-          "Sample Groups Overview",
+          "Sample Group Overview",
           tabName = "feature_correlations",
           icon = icon("chevron-circle-right")
         ),
         menuSubItem(
-          "Tumor Composition",
+          "Tumor Microenvironment",
           tabName = "cell_content",
           icon = icon("chevron-circle-right")
         ),
@@ -66,11 +66,11 @@ explorepage <- dashboardPage(
     tabItems(
       tabItem(
         tabName = "dashboard",
-        titleBox("Welcome to the iAtlas Explorer!"),
+        titleBox("Welcome to the CRI iAtlas Explorer!"),
         fluidRow(
           box(
             width = 12,
-            p("Here, you can explore iAtlas data through interactive visualizations and detailed descriptions of individual features.")
+            p("Here you can explore CRI iAtlas data through interactive visualizations and detailed descriptions of individual features.")
           )
         ),
         fluidRow(
@@ -89,22 +89,22 @@ explorepage <- dashboardPage(
             width = 12,
             title = "Analysis Modules",
             solidHeader = TRUE, status = "warning",
-            p("Select module to explore data."),
+            p("Select a module to explore data. You can organize the data by choosing how to divide tumor samples: by TCGA tumor projects, by TCGA molecular subtypes, or by immune subtypes that span multiple tumor types.  Start by  making your selection with the dropdown selection box on the upper left. Use the Data Description to learn which immune readouts are available. "),
             fluidRow(
               imgLinkBox(
                 width = 6,
                 linkId = "link_to_module3",
-                title = "Sample Groups Overview",
+                title = "Sample Group Overview",
                 imgSrc = "images/cell_content.png",
-                boxText = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
+                boxText = "This module provides short summaries of your selected groups, and allows you to see how they overlap with other groups.",
                 linkText = "Open Module"
               ),
               imgLinkBox(
                 width = 6,
                 linkId = "link_to_module1",
-                title = "Tumor Composition",
+                title = "Tumor Microenvironment",
                 imgSrc = "images/cell_content.png",
-                boxText = "Check out the Cell Content module for some box plots of cell types in different sample groups and stuff.",
+                boxText = "Explore the immune cell proportions in your sample groups.",
                 linkText = "Open Module"
               )
             ),
@@ -114,7 +114,7 @@ explorepage <- dashboardPage(
                     title = "Immune Feature Trends",
                     linkId = "link_to_module6",
                     imgSrc = "images/cell_content.png",
-                    boxText = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
+                    boxText = "This module allows you to see how immune readouts vary across your groups, and how they relate to one another.",
                     linkText = "Open Module"
                 ),
               imgLinkBox(
@@ -122,7 +122,7 @@ explorepage <- dashboardPage(
                 linkId = "link_to_module4",
                 title = "Clinical Outcomes",
                 imgSrc = "images/cell_content.png",
-                boxText = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
+                boxText = "Plot survival curves based on immune characteristics and identify variables associated with outcome.",
                 linkText = "Open Module"
               )
               #   imgLinkBox(
@@ -151,7 +151,7 @@ explorepage <- dashboardPage(
                       title = "Immunomodulators",
                       linkId = "link_to_module5",
                       imgSrc = "images/cell_content.png",
-                      boxText = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
+                      boxText = "Explore the expression of genes that code for immunomodulating proteins, including checkpoint proteins.",
                       linkText = "Open Module"
                   )
               )

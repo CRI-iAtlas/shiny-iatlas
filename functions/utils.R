@@ -66,7 +66,7 @@ get_im_display_name <- function(name, df = NULL) {
   )
 }
 
-get_modulator_internal_name <- function(name) {
+get_im_internal_name <- function(name) {
   switch_names(
     panimmune_data$direct_relationship_modulators,
     name,
@@ -83,7 +83,7 @@ decide_plot_colors <- function(data_obj, sample_group_label) {
   )
   if (sample_group_label %in% names(color_mapping)) {
       color_item <- magrittr::extract2(color_mapping, sample_group_label)
-      plot_colors <- magrittr::extract2(data_obj, color_item)
+      magrittr::extract2(data_obj, color_item)
   } else {
       return(NA)
   }
@@ -92,16 +92,16 @@ decide_plot_colors <- function(data_obj, sample_group_label) {
 get_friendly_numeric_columns <- function(){
     get_numeric_columns() %>% 
         purrr::map(get_variable_display_name) %>% 
-        compact %>% 
-        unlist %>% 
-        discard(is.na(.))
+        compact() %>% 
+        unlist() %>% 
+        discard(~is.na(.))
         
 }
 
 get_numeric_columns <- function(){
     panimmune_data$fmx_df %>% 
         select_if(is.numeric) %>% 
-        colnames
+        colnames()
 }
 
 

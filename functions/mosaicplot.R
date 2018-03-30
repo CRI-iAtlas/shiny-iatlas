@@ -4,7 +4,8 @@ create_mosaicplot <- function(
     ylab = NULL, 
     title = NULL, 
     fill_colors = NA, 
-    facet = NA){
+    facet = NA,
+    width = 1500){
     
     
     plot <- df %>%
@@ -23,6 +24,6 @@ create_mosaicplot <- function(
     if (!is.na(facet)) {
         plot <- plot + facet_grid(facet)
     }
-    ggplotly(plot)
+    ggplotly(plot, height = 600, width = width)
 }
 

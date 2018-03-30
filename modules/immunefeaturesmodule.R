@@ -5,13 +5,14 @@ immunefeatures_UI <- function(id) {
         titleBox("Immune Feature Trends"),
         textBox(
             width = 12,
-            p("Some overview/summary text describing this module and the data presented within.")  
+            p("This module allows you to see how immune readouts vary across your groups, and how they relate to one another.")  
         ),
         sectionBox(
             title = "Distributions",
             messageBox(
                 width = 12,
-                p("Brief instructional message about this section, what to do in it, and the available options.")  
+                p("This displays the value of immune readouts by sample group. Select a variable class to see the distribution of variables within that class displayed as as violin plot."),
+                p("Manuscript context: This allows you to display distributions such as those shown in Figures 1C and 1D.")
             ),
             fluidRow(
               optionsBox(
@@ -35,7 +36,9 @@ immunefeatures_UI <- function(id) {
           title = "Correlations",
           messageBox(
             width = 12,
-            p("Brief instructional message about this section, what to do in it, and the available options.")  
+            p("Here, you can look at correlation of a response variable with other variables, within each sample group.  Select the response variable on the right. Select a variable class on the left to specify which other variable you would like to correlate the response variable with. The result will be a heatmap, with positive correlation shown with a red scale, absence of correlation in white, and negative correlation in blue.  Click on any cell in the heatmap to see the underlying data as a scatterplot. In the scatterplot, each point represents a tumor sample, the response variable is shown on the Y-axis and the row variable is shown on the X-axis.
+"),
+            p("Manuscript context:  Select “Leukocyte Fraction” as the response variable “DNA Alteration” as the variable class. This will correspond to Figure 4A if you are looking at immune subtypes as your sample grouping.")
           ),
           fluidRow(
             optionsBox(
@@ -44,7 +47,7 @@ immunefeatures_UI <- function(id) {
                 width = 8,
                 selectInput(
                   ns("heatmap_y"),
-                  "Select heatmap y variable",
+                  "Select Variable Class",
                   c(
                     "Core Expression Signature",
                     "DNA Alteration",
@@ -62,7 +65,7 @@ immunefeatures_UI <- function(id) {
                 width = 4,
                 selectInput(
                   ns("heatmap_values"),
-                  "Select heatmap values",
+                  "Select response variable",
                   c(
                     "Leukocyte Fraction" = "leukocyte_fraction",
                     "OS Time" = "OS_time",
@@ -106,6 +109,7 @@ immunefeatures <- function(input, output, session, ss_choice, subset_df) {
         plot_df <- subset_df() %>%
             select_(.dots = c(internal_x, internal_y)) %>%
             .[complete.cases(.),]
+        print(plot_df)
         
         plot_df %>% 
             create_violinplot(
