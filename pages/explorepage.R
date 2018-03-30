@@ -11,7 +11,7 @@ explorepage <- dashboardPage(
         inputId = "ss_choice",
         label = "Select Sample Groups",
         choices = as.character(
-          panimmune_data$sample_selection_choices
+          panimmune_data$sample_group_names
         ),
         selected = "Immune Subtype"
       ),
