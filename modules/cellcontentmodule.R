@@ -159,7 +159,6 @@ cellcontent <- function(input, output, session, ss_choice, subset_df) {
     output$cell_frac_barplot <- renderPlotly({
         
         cell_fractions <- as.character(get_variable_group(input$cf_choice))
-        print(cell_fractions)
         subset_df() %>%
             create_cell_fraction_df(
                 group_column = ss_internal(), 
@@ -170,7 +169,8 @@ cellcontent <- function(input, output, session, ss_choice, subset_df) {
                 group_column = "fraction_name",
                 subgroup_column = ss_internal(),
                 operations = c("mean", "sd")
-            ) %>%
+            ) %>% 
+            mutate(fraction_name =  map_chr(fraction_name, get_variable_display_name)) %>% 
             create_barplot(
                 x_column = ss_internal(),
                 y_column = "mean",

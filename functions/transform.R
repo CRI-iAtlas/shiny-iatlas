@@ -59,7 +59,8 @@ create_barplot_df <- function(
 ) {
     df %>% 
         group_by(.dots = c(group_column, subgroup_column, facet_column)) %>% 
-        summarise_at(value_column, .funs = operations)
+        summarise_at(value_column, .funs = operations) %>% 
+        ungroup
 }
 
 #' Format a dataframe for plotting values of one column versus values of a
@@ -143,9 +144,7 @@ create_cell_fraction_df <- function(
         panimmune_data$df %>%
             select(group_col, cell_fraction_columns) %>%
             .[complete.cases(.), ] %>% 
-            gather(fraction_name, fraction, -group_col) #%>% 
-            # TODO: this is really slow... need to fix
-            # mutate(fraction_name = map_chr(fraction_name, get_variable_display_name))
+            gather(fraction_name, fraction, -group_col)
     )
 }
 
