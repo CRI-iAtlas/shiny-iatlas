@@ -17,7 +17,8 @@ create_barplot <- function(
                 type = 'bar',
                 source = source_name,
                 colors = bar_colors,
-                error_y = list(array = ~errorvar, color = 'black', 
+                error_y = list(array = ~errorvar, 
+                               color = 'black', 
                                thickness = 1)) %>% 
             layout(
                 legend = list(orientation = 'h', x = 0, y = 1),

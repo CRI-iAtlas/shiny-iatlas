@@ -57,9 +57,10 @@ create_barplot_df <- function(
   df, value_column, group_column, subgroup_column = NULL, 
   facet_column = NULL, operations = c("sum", "mean", "sd"), add_label = FALSE
 ) {
-  df %>% 
-    group_by(.dots = c(group_column, subgroup_column, facet_column)) %>% 
-    summarise_at(value_column, .funs = operations)
+    df %>% 
+        group_by(.dots = c(group_column, subgroup_column, facet_column)) %>% 
+        summarise_at(value_column, .funs = operations) %>% 
+        ungroup
 }
 
 #' Format a dataframe for plotting values of one column versus values of a
@@ -138,15 +139,13 @@ create_heatmap_corr_mat <- function(
 create_cell_fraction_df <- function(
   subset_df, group_column, cell_fraction_columns
 ) {
-  let(
-    alias = c(group_col = group_column),
-    panimmune_data$fmx_df %>%
-      select(group_col, cell_fraction_columns) %>%
-      .[complete.cases(.), ] %>% 
-      gather(fraction_name, fraction, -group_col) #%>% 
-    # TODO: this is really slow... need to fix
-    # mutate(fraction_name = map_chr(fraction_name, get_variable_display_name))
-  )
+    let(
+        alias = c(group_col = group_column),
+        panimmune_data$df %>%
+            select(group_col, cell_fraction_columns) %>%
+            .[complete.cases(.), ] %>% 
+            gather(fraction_name, fraction, -group_col)
+    )
 }
 
 create_tumor_content_df <- function(subset_df, group_column) {
