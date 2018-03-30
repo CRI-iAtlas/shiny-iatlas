@@ -55,12 +55,15 @@ subset_panimmune_df <- function(
 #' @examples
 create_barplot_df <- function(
   df, value_column, group_column, subgroup_column = NULL, 
-  facet_column = NULL, operations = c("sum", "mean", "sd"), add_label = FALSE
+  facet_column = NULL, operations = c("sum", "mean", "sd", "se"), 
+  add_label = FALSE
 ) {
-    df %>% 
-        group_by(.dots = c(group_column, subgroup_column, facet_column)) %>% 
-        summarise_at(value_column, .funs = operations) %>% 
-        ungroup
+  se <- function(x) { mean(x) / sqrt(length(x)) }
+  
+  df %>% 
+    group_by(.dots = c(group_column, subgroup_column, facet_column)) %>% 
+    summarise_at(value_column, .funs = operations) %>% 
+    ungroup
 }
 
 #' Format a dataframe for plotting values of one column versus values of a
@@ -88,6 +91,41 @@ create_scatterplot_df <- function(
 # Module specific data transform ----
 
 # ** Sample groups overview module ----
+
+build_sample_group_key_df <- function(df, sample_group_option) {
+  decide_plot_colors(panimmune_data, sample_group_option) %>% 
+    enframe() %>% 
+    filter(name %in% df[[sample_group_option]]) %>% 
+    left_join(
+      panimmune_data$sample_group_df, 
+      by = c("name" = "FeatureValue")
+    ) %>% 
+    distinct() %>% 
+    mutate(
+      `Group Size` = map_int(
+        name, ~ sum(df[, sample_group_option] == ., na.rm = TRUE)
+      )
+    ) %>% 
+    select(`Sample Group` = name, `Group Name` = FeatureName,
+           `Group Size`, Characteristics, `Plot Color` = value)
+}
+
+build_mosaic_plot_df <- function(df, x_column, y_column, study_value) {
+  let(
+    alias = c(xvar = x_column,
+              yvar = y_column),
+    df %>%
+      subset_panimmune_df(
+        group_col = x_column, 
+        study_subtype = study_value
+      ) %>% 
+      select(xvar, yvar) %>%
+      .[complete.cases(.),] %>%
+      mutate(xvar = as.factor(xvar)) %>%
+      mutate(yvar = as.factor(yvar)))
+}
+
+# ** Immune feature trends module ----
 
 create_intermediate_corr_df <- function(
   subset_df, dep_var, facet_selection, facet_groups, indep_vars
@@ -139,13 +177,13 @@ create_heatmap_corr_mat <- function(
 create_cell_fraction_df <- function(
   subset_df, group_column, cell_fraction_columns
 ) {
-    let(
-        alias = c(group_col = group_column),
-        panimmune_data$df %>%
-            select(group_col, cell_fraction_columns) %>%
-            .[complete.cases(.), ] %>% 
-            gather(fraction_name, fraction, -group_col)
-    )
+  let(
+    alias = c(group_col = group_column),
+    panimmune_data$fmx_df %>%
+      select(group_col, cell_fraction_columns) %>%
+      .[complete.cases(.), ] %>% 
+      gather(fraction_name, fraction, -group_col)
+  )
 }
 
 create_tumor_content_df <- function(subset_df, group_column) {
