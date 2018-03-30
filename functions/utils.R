@@ -83,7 +83,7 @@ decide_plot_colors <- function(data_obj, sample_group_label) {
   )
   if (sample_group_label %in% names(color_mapping)) {
       color_item <- magrittr::extract2(color_mapping, sample_group_label)
-      plot_colors <- magrittr::extract2(data_obj, color_item)
+      magrittr::extract2(data_obj, color_item)
   } else {
       return(NA)
   }

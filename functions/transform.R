@@ -89,6 +89,26 @@ create_scatterplot_df <- function(
 
 # ** Sample groups overview module ----
 
+build_sample_group_key_df <- function(df, sample_group_option) {
+  decide_plot_colors(panimmune_data, sample_group_option) %>% 
+    enframe() %>% 
+    filter(name %in% df[[sample_group_option]]) %>% 
+    left_join(
+      panimmune_data$sample_group_df, 
+      by = c("name" = "FeatureValue")
+    ) %>% 
+    distinct() %>% 
+    mutate(
+      `Group Size` = map_int(
+        name, ~ sum(df[, sample_group_option] == ., na.rm = TRUE)
+      )
+    ) %>% 
+    select(`Sample Group` = name, `Group Name` = FeatureName,
+           `Group Size`, Characteristics, `Plot Color` = value)
+}
+
+# ** Immune feature trends module ----
+
 create_intermediate_corr_df <- function(
   subset_df, dep_var, facet_selection, facet_groups, indep_vars
 ) {
