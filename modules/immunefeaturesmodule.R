@@ -109,6 +109,7 @@ immunefeatures <- function(input, output, session, ss_choice, subset_df) {
         plot_df <- subset_df() %>%
             select_(.dots = c(internal_x, internal_y)) %>%
             .[complete.cases(.),]
+        print(plot_df)
         
         plot_df %>% 
             create_violinplot(
