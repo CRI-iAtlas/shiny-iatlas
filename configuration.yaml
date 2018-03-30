@@ -78,3 +78,9 @@ immune_groups:
   - "Subtype_Immune_Model_Based"
   - "Subtype_Curated_Malta_Noushmehr_et_al"
   - "Study"    
+  
+cell_type_aggregates:
+  - "Immune Cell Proportion - Original"
+  - "Immune Cell Proportion - Aggregate 1"
+  - "Immune Cell Proportion - Aggregate 2"
+  - "Immune Cell Proportion - Aggregate 3"

@@ -140,8 +140,8 @@ create_cell_fraction_df <- function(
 ) {
     let(
         alias = c(group_col = group_column),
-        subset_df %>%
-            select(one_of(c(group_column, cell_fraction_columns))) %>%
+        panimmune_data$df %>%
+            select(group_col, cell_fraction_columns) %>%
             .[complete.cases(.), ] %>% 
             gather(fraction_name, fraction, -group_col) #%>% 
             # TODO: this is really slow... need to fix

@@ -59,8 +59,8 @@ cellcontent_UI <- function(id) {
                     selectInput(
                         inputId = ns("cf_choice"),
                         label = "Select Cell Fraction Type",
-                        choices = c("Aggregate"),
-                        selected = "Aggregate"
+                        choices = config_yaml$cell_type_aggregates,
+                        selected = config_yaml$cell_type_aggregates[[1]]
                     )
                 )
             ),
@@ -157,27 +157,53 @@ cellcontent <- function(input, output, session, ss_choice, subset_df) {
     
     # ** Cell fractions bar plot render ----
     output$cell_frac_barplot <- renderPlotly({
-        cell_fractions <- switch(input$cf_choice,
-            Aggregate = panimmune_data$cell_content_groups
-        )
+        
+        cell_fractions <- as.character(get_cell_content_group(input$cf_choice))
+        print(cell_fractions)
         subset_df() %>%
             create_cell_fraction_df(
-                group_column = ss_group(), 
+                group_column = ss_internal(), 
                 cell_fraction_columns = cell_fractions
             ) %>%
             create_barplot_df(
                 value_column = "fraction",
                 group_column = "fraction_name",
-                subgroup_column = ss_group(),
+                subgroup_column = ss_internal(),
                 operations = c("mean", "sd")
             ) %>%
             create_barplot(
-                x_column = ss_group(),
+                x_column = ss_internal(),
                 y_column = "mean",
                 color_column = "fraction_name",
                 error_column = "sd",
                 x_lab = "Fraction type by group",
-                y_lab = "Fraction mean"
+                y_lab = "Fraction mean",
+                source_name = "cell_frac_barplot"
             )
     })
 }
+
+# df <- panimmune_data$df %>%
+#     create_cell_fraction_df(
+#         group_column = "Subtype_Immune_Model_Based",
+#         cell_fraction_columns = as.character(get_cell_content_group("Immune Cell Proportion - Original"))
+#         ) %>% 
+#     create_barplot_df(
+#         value_column = "fraction",
+#         group_column = "fraction_name",
+#         subgroup_column = "Subtype_Immune_Model_Based",
+#         operations = c("mean", "sd"))
+    
+# 
+# 
+# x <- let(
+#     alias = c(group_col = "Subtype_Immune_Model_Based"),
+#     panimmune_data$df %>%
+#         select(group_col, cell_fraction_columns) %>%
+#         .[complete.cases(.), ] %>% 
+#         gather(fraction_name, fraction, -group_col)) #%>% 
+#     # TODO: this is really slow... need to fix
+#     # mutate(fraction_name = map_chr(fraction_name, get_variable_display_name))
+# )
+#     
+
