@@ -27,7 +27,8 @@ shinyServer(function(input, output, session) {
       groupsoverview,
       "module3",
       reactive(input$ss_choice),
-      reactive(subset_df()))
+      reactive(subset_df()),
+      reactive(width()))
   # Survival curves
   callModule(survival, "module4", reactive(input$ss_choice))
   # Immunomodulators
@@ -65,6 +66,11 @@ shinyServer(function(input, output, session) {
   observeEvent(input$link_to_module5, {
     shinydashboard::updateTabItems(session, "explorertabs", "immunomodulators")
   })
+  
+  width <- reactive({
+      as.numeric(input$dimension[1])
+  })
+  
   
   output$study_subset_UI <- renderUI({
       if (input$ss_choice == "TCGA Subtype") {

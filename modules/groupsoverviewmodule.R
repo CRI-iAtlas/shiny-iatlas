@@ -49,7 +49,7 @@ groupsoverview_UI <- function(id) {
   )
 }
 
-groupsoverview <- function(input, output, session, ss_choice, subset_df) {
+groupsoverview <- function(input, output, session, ss_choice, subset_df, width) {
   ns <- session$ns
   
   ss_internal <- reactive(get_variable_internal_name(ss_choice()))
@@ -126,6 +126,7 @@ groupsoverview <- function(input, output, session, ss_choice, subset_df) {
   })
   
   output$mosaicPlot <- renderPlotly({
+      print(width())
     
     req(input$sample_mosaic_group, input$study_subset_selection,
         cancelOutput = T)
@@ -148,9 +149,9 @@ groupsoverview <- function(input, output, session, ss_choice, subset_df) {
         fill_factor = internal_y,
         xlab = display_x,
         ylab = display_y,
-        fill_colors = decide_plot_colors(panimmune_data, internal_y)
-      ) %>% 
-      layout(autosize = TRUE)
+        fill_colors = decide_plot_colors(panimmune_data, internal_y),
+        width = (3 * width() )/ 4
+      ) 
   })
   
 }
