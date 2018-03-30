@@ -22,24 +22,13 @@ datainfo_UI <- function(id) {
         )
       )
     ),
-    sectionBox(
-      title = "Variable Class Details",
-      messageBox(
-        width = 12,
-        p("This is some information about the features in the variable class you clicked.")
-      ),
-      fluidRow(
-        tableBox(
-          width = 10,
-          tableOutput(ns('variable_class_table'))
-        ),
-        actionButton(ns("show_methods"), "Show Methods")
-      )
-    )
+    uiOutput(ns("variable_details_section"))
   )
 }
 
 datainfo <- function(input, output, session) {
+  ns <- session$ns
+  
   output$feature_table <- DT::renderDT({
     feature_table %>% 
       select(
@@ -71,20 +60,37 @@ datainfo <- function(input, output, session) {
     ))
   })
   
+  output$variable_class_table <- renderTable({
+    feature_row <- input$feature_table_rows_selected
+    selected_class <- feature_table[[feature_row, "Variable Class"]]
+    feature_table %>% 
+      filter(`Variable Class` == selected_class) %>% 
+      select(
+        `Variable Class Order`,
+        FriendlyLabel, 
+        Unit, 
+        VariableType,
+        Origin
+      ) %>% 
+      arrange(`Variable Class Order`, FriendlyLabel)
+  })
+  
   observeEvent(input$feature_table_rows_selected, {
-    output$variable_class_table <- renderTable({
-      feature_row <- input$feature_table_rows_selected
-      selected_class <- feature_table[[feature_row, "Variable Class"]]
-      feature_table %>% 
-        filter(`Variable Class` == selected_class) %>% 
-        select(
-          `Variable Class Order`,
-          FriendlyLabel, 
-          Unit, 
-          VariableType,
-          Origin
-        ) %>% 
-        arrange(`Variable Class Order`, FriendlyLabel)
+    output$variable_details_section <- renderUI({
+      sectionBox(
+        title = "Variable Class Details",
+        messageBox(
+          width = 12,
+          p("This is some information about the features in the variable class you clicked.")
+        ),
+        fluidRow(
+          tableBox(
+            width = 10,
+            tableOutput(ns('variable_class_table'))
+          ),
+          actionButton(ns("show_methods"), "Show Methods")
+        )
+      )
     })
   })
 }
