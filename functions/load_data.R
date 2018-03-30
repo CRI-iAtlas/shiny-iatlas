@@ -140,7 +140,7 @@ load_data <- function() {
             manifest_data$sample_group_df
         ),
         cell_fraction_options = cell_fraction_options,
-        cell_content_choices = map_chr(
+        cell_fraction_names = map_chr(
             cell_fraction_options, get_variable_display_name
         ),
         # diversity_metric_choices = set_names_to_self(
