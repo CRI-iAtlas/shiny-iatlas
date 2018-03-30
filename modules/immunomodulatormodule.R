@@ -4,23 +4,50 @@ immunomodulator_UI <- function(id) {
   
   tagList(
     titleBox("Immunomodulators"),
-    fluidRow(
-      optionsBox(width = 4,
-                 
-        # Drop-down selected immuno modulator
-        selectInput(
-          inputId = ns("im_choice"),
-          label = "Select Immunomodulator Gene",
-          choices = panimmune_data$im_direct_relationships[["HGNC Symbol"]]
-        )
+    textBox(
+      width = 12,
+      p("Some overview/summary text describing this module and the data presented within.")  
+    ),
+    
+    # Immunomodulator distributions section ----
+    sectionBox(
+      title = "Immunomodulator Distributions",
+      messageBox(
+        width = 12,
+        p("Brief instructional message about this section, what to do in it, and the available options.")  
       ),
-      
-      plotBox(width = 8,
-        # Show a plot of the generated distribution
-        plotlyOutput(ns("boxPlot")),
-        plotlyOutput(ns("histPlot"))
+      fluidRow(
+        optionsBox(width = 4,
+                   
+                   # Drop-down selected immuno modulator
+                   selectInput(
+                     inputId = ns("im_choice"),
+                     label = "Select Immunomodulator Gene",
+                     choices = panimmune_data$im_direct_relationships[["HGNC Symbol"]]
+                   )
+        ),
+        
+        plotBox(width = 8,
+                # Show a plot of the generated distribution
+                plotlyOutput(ns("boxPlot")),
+                plotlyOutput(ns("histPlot"))
+        )
       )
-    )    
+    ),
+    
+    # Immunomodulator annotations section ----
+    sectionBox(
+      title = "Immunomodulator Annotations",
+      messageBox(
+        width = 12,
+        p("Brief instructional message about this section, what to do in it, and the available options.")  
+      ),
+      fluidRow(
+        tableBox(
+          width = 12
+        )
+      )
+    )
   )
 }
 
