@@ -90,7 +90,7 @@ groupsoverview <- function(input, output, session, ss_choice, subset_df) {
     
     output$mosaic_group_select <- renderUI({
         choices <- as.character(
-            panimmune_data$sample_selection_choices
+            panimmune_data$sample_group_names
         ) %>% 
             setdiff(ss_choice())
             
@@ -104,9 +104,10 @@ groupsoverview <- function(input, output, session, ss_choice, subset_df) {
     output$study_subset_select <- renderUI({
         
         req(input$sample_mosaic_group, cancelOutput = TRUE)
+      print(input$sample_mosaic_group == "TCGA Subtype")
         
         if (input$sample_mosaic_group == "TCGA Subtype") {
-            choices <- panimmune_data$df %>%
+            choices <- panimmune_data$fmx_df %>%
                 filter_at(
                     vars(get_variable_internal_name(input$sample_mosaic_group)), 
                     all_vars(!is.na(.))

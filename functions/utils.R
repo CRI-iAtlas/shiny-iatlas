@@ -2,8 +2,11 @@ set_names_to_self <- function(lst) {
   set_names(lst, lst)
 }
 
-get_variable_group <- function(name) {
-  df <- feature_table %>%
+get_variable_group <- function(name, df = NULL) {
+  if (is.null(df)) {
+    df <- panimmune_data$feature_df
+  }
+  df <- df %>%
     select(`Variable Class`, FeatureMatrixLabelTSV, `Variable Class Order`) %>%
     filter(`Variable Class` == name) %>%
     .[complete.cases(.), ] %>%
@@ -12,7 +15,7 @@ get_variable_group <- function(name) {
 }
 
 get_category_group <- function(category) {
-  panimmune_data$df %>%
+  panimmune_data$fmx_df %>%
     extract2(category) %>%
     na.omit() %>%
     unique() %>%
@@ -27,29 +30,38 @@ switch_names <- function(df, name, old_col, new_col) {
     extract2(new_col)
 }
 
-get_variable_display_name <- function(name) {
+get_variable_display_name <- function(name, df = NULL) {
+  if (is.null(df)) {
+    df <- panimmune_data$feature_df
+  }
   switch_names(
-    feature_table,
+    df,
     name,
     "FeatureMatrixLabelTSV",
     "FriendlyLabel"
   )
 }
 
-get_variable_internal_name <- function(name) {
+get_variable_internal_name <- function(name, df = NULL) {
+  if (is.null(df)) {
+    df <- panimmune_data$feature_df
+  }
   switch_names(
-    feature_table,
+    df,
     name,
     "FriendlyLabel",
     "FeatureMatrixLabelTSV"
   )
 }
 
-get_modulator_display_name <- function(name) {
+get_im_display_name <- function(name, df = NULL) {
+  if (is.null(df)) {
+    df <- panimmune_data$im_direct_relationships
+  }
   switch_names(
-    panimmune_data$direct_relationship_modulators,
+    df,
     name,
-    "HGNC_Symbol",
+    "HGNC Symbol",
     "Gene"
   )
 }
@@ -59,14 +71,14 @@ get_modulator_internal_name <- function(name) {
     panimmune_data$direct_relationship_modulators,
     name,
     "Gene",
-    "HGNC_Symbol"
+    "HGNC Symbol"
   )
 }
 
 decide_plot_colors <- function(data_obj, sample_group_label) {
   color_mapping <- c(
-    "Study" = "tcga_colors",
-    "Subtype_Immune_Model_Based" = "subtype_colors",
+    "Study" = "tcga_study_colors",
+    "Subtype_Immune_Model_Based" = "immune_subtype_colors",
     "Subtype_Curated_Malta_Noushmehr_et_al" = "tcga_subtype_colors"
   )
   if (sample_group_label %in% names(color_mapping)) {
@@ -87,7 +99,7 @@ get_friendly_numeric_columns <- function(){
 }
 
 get_numeric_columns <- function(){
-    panimmune_data$df %>% 
+    panimmune_data$fmx_df %>% 
         select_if(is.numeric) %>% 
         colnames
 }

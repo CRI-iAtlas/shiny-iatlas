@@ -25,7 +25,7 @@ fetch_manifest <- function() {
   )
 }
 
-fetch_feature_mat <- function() {
+fetch_feature_matrix <- function() {
   data_syn_id <- "syn11187757"
   data_file <- synGet(data_syn_id)
   load(data_file$path)
@@ -46,21 +46,21 @@ fetch_im_annotations <- function() {
   )
 }
 
-# fetch_im_expression <- function(im_direct_relationships) {
-#   gene_string <- im_direct_relationships %>%
-#     use_series("HGNC Symbol") %>%
-#     unique() %>%
-#     discard(is.na(.)) %>%
-#     str_c(collapse = "', '") %>%
-#     str_c("('", ., "')")
-#   query <- str_c(
-#     "SELECT ParticipantBarcode, Symbol, normalized_count FROM [isb-cgc-01-0008:Filtered.EBpp_AdjustPANCAN_RNASeqV2_filtered] WHERE Symbol IN ",
-#     gene_string
-#   )
-#   list(
-#     im_expr_df = query_exec(query, project = "isb-cgc-01-0008", max_pages = Inf)
-#   )
-# }
+fetch_im_expression <- function(im_direct_relationships) {
+  gene_string <- im_direct_relationships %>%
+    use_series("HGNC Symbol") %>%
+    unique() %>%
+    discard(is.na(.)) %>%
+    str_c(collapse = "', '") %>%
+    str_c("('", ., "')")
+  query <- str_c(
+    "SELECT ParticipantBarcode, Symbol, normalized_count FROM [isb-cgc-01-0008:Filtered.EBpp_AdjustPANCAN_RNASeqV2_filtered] WHERE Symbol IN ",
+    gene_string
+  )
+  list(
+    im_expr_df = query_exec(query, project = "isb-cgc-01-0008", max_pages = Inf)
+  )
+}
 
 # Format data ----
 
@@ -80,11 +80,16 @@ format_manifest <- function(manifest_data) {
       bind_rows(manifest_data$immune_subtype_df %>% 
                   mutate(sample_group = "immune_subtype")) %>% 
       bind_rows(manifest_data$tcga_subtype_df %>% 
-                  mutate(sample_group = "tcga_subtype"))
+                  mutate(sample_group = "tcga_subtype")) %>% 
+      mutate(
+        FeatureHex = ifelse(!is.na(FeatureHex),
+                            str_c("#", FeatureHex),
+                            FeatureHex)
+      )
   )
 }
 
-format_feature_mat <- function(feature_mat_data) {
+format_feature_matrix <- function(feature_mat_data) {
   list(
     fmx_df = feature_mat_data$fmx_df %>% 
       mutate_at(
