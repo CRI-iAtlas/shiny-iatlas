@@ -66,7 +66,7 @@ get_im_display_name <- function(name, df = NULL) {
   )
 }
 
-get_modulator_internal_name <- function(name) {
+get_im_internal_name <- function(name) {
   switch_names(
     panimmune_data$direct_relationship_modulators,
     name,
