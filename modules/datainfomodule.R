@@ -30,7 +30,7 @@ datainfo <- function(input, output, session) {
   ns <- session$ns
   
   output$feature_table <- DT::renderDT({
-    feature_table %>% 
+    panimmune_data$feature_df %>% 
       select(
         FriendlyLabel, 
         `Variable Class`, 
@@ -62,8 +62,8 @@ datainfo <- function(input, output, session) {
   
   output$variable_class_table <- renderTable({
     feature_row <- input$feature_table_rows_selected
-    selected_class <- feature_table[[feature_row, "Variable Class"]]
-    feature_table %>% 
+    selected_class <- panimmune_data$feature_df[[feature_row, "Variable Class"]]
+    panimmune_data$feature_df %>% 
       filter(`Variable Class` == selected_class) %>% 
       select(
         `Variable Class Order`,

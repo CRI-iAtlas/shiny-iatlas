@@ -68,7 +68,7 @@ shinyServer(function(input, output, session) {
   
   output$study_subset_UI <- renderUI({
       if (input$ss_choice == "TCGA Subtype") {
-          choices <- panimmune_data$df %>%
+          choices <- panimmune_data$fmx_df %>%
               filter_at(
                   vars(get_variable_internal_name(input$ss_choice)), 
                   all_vars(!is.na(.))
