@@ -89,12 +89,11 @@ immunomodulator <- function(input, output, session, ss_choice, subset_df){
       violinplot_selected_group
     )
     
-    plot <- create_histogram(
-      histplot_df,
-      x = "log_count",
-      x_label = "Log10 (Count + 1)",
-      title = violinplot_selected_group)
-    
-    print(ggplotly(plot))
+    histplot_df %>% 
+      create_histogram(
+        x_column  = "log_count",
+        x_lab = "log10(count + 1)",
+        title = violinplot_selected_group
+      )
   })
 }
