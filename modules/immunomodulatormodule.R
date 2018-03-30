@@ -11,7 +11,8 @@ immunomodulator_UI <- function(id) {
         selectInput(
           inputId = ns("im_choice"),
           label = "Select Immunomodulator Gene",
-          choices = as.character(panimmune_data$direct_relationship_modulators$HGNC_Symbol))
+          choices = panimmune_data$im_direct_relationships[["HGNC Symbol"]]
+        )
       ),
       
       plotBox(width = 8,
@@ -29,6 +30,7 @@ immunomodulator <- function(input, output, session, ss_choice, subset_df){
   boxplot_df <- reactive(build_boxplot_df(subset_df(), input$im_choice, ss_group()))
   
   output$boxPlot <- renderPlotly({
+    print(input$im_choice)
     plot_colors <- decide_plot_colors(panimmune_data, ss_group())
     plot <- create_boxplot(
       boxplot_df(), 
