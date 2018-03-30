@@ -136,28 +136,20 @@ groupsoverview <- function(input, output, session, ss_choice, subset_df) {
     internal_x <- get_variable_internal_name(display_x)
     internal_y <- get_variable_internal_name(display_y)
     
-    plot_df <- let(
-      alias = c(COLX = internal_x,
-                COLY = internal_y),
-      subset_df() %>%
-        subset_panimmune_df(
-          internal_x, 
-          input$study_subset_selection
-        ) %>% 
-        select(COLX, COLY) %>%
-        .[complete.cases(.),] %>%
-        mutate(COLX = as.factor(COLX)) %>%
-        mutate(COLY = as.factor(COLY)))
-    
-    create_mosaicplot(
-      plot_df,
-      internal_x,
-      internal_y,
-      internal_y,
-      xlab = display_x,
-      ylab = display_y,
-      fill_colors = decide_plot_colors(panimmune_data, internal_y)
-    ) %>% 
+    subset_df() %>% 
+      build_mosaic_plot_df(
+        x_column = internal_x,
+        y_column = internal_y,
+        study_value = input$study_subset_selection
+      ) %>% 
+      create_mosaicplot(
+        x = internal_x,
+        y = internal_y,
+        fill_factor = internal_y,
+        xlab = display_x,
+        ylab = display_y,
+        fill_colors = decide_plot_colors(panimmune_data, internal_y)
+      ) %>% 
       layout(autosize = TRUE)
   })
   

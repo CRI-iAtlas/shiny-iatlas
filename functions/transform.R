@@ -107,6 +107,21 @@ build_sample_group_key_df <- function(df, sample_group_option) {
            `Group Size`, Characteristics, `Plot Color` = value)
 }
 
+build_mosaic_plot_df <- function(df, x_column, y_column, study_value) {
+  let(
+    alias = c(xvar = x_column,
+              yvar = y_column),
+    df %>%
+      subset_panimmune_df(
+        group_col = x_column, 
+        study_subtype = study_value
+      ) %>% 
+      select(xvar, yvar) %>%
+      .[complete.cases(.),] %>%
+      mutate(xvar = as.factor(xvar)) %>%
+      mutate(yvar = as.factor(yvar)))
+}
+
 # ** Immune feature trends module ----
 
 create_intermediate_corr_df <- function(
