@@ -11,16 +11,6 @@ get_variable_group <- function(name) {
   factor(df$FeatureMatrixLabelTSV, levels = df$FeatureMatrixLabelTSV)
 }
 
-get_cell_content_group <- function(name) {
-    df <- feature_table %>%
-        select(`Variable Class`, BigQueryLabel, `Variable Class Order`) %>%
-        filter(`Variable Class` == name) %>%
-        .[complete.cases(.), ] %>%
-        arrange(`Variable Class Order`)
-    factor(df$BigQueryLabel, levels = df$BigQueryLabel)
-}
-
-
 get_category_group <- function(category) {
   panimmune_data$df %>%
     extract2(category) %>%

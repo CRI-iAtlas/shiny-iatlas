@@ -158,7 +158,7 @@ cellcontent <- function(input, output, session, ss_choice, subset_df) {
     # ** Cell fractions bar plot render ----
     output$cell_frac_barplot <- renderPlotly({
         
-        cell_fractions <- as.character(get_cell_content_group(input$cf_choice))
+        cell_fractions <- as.character(get_variable_group(input$cf_choice))
         print(cell_fractions)
         subset_df() %>%
             create_cell_fraction_df(
@@ -182,28 +182,4 @@ cellcontent <- function(input, output, session, ss_choice, subset_df) {
             )
     })
 }
-
-# df <- panimmune_data$df %>%
-#     create_cell_fraction_df(
-#         group_column = "Subtype_Immune_Model_Based",
-#         cell_fraction_columns = as.character(get_cell_content_group("Immune Cell Proportion - Original"))
-#         ) %>% 
-#     create_barplot_df(
-#         value_column = "fraction",
-#         group_column = "fraction_name",
-#         subgroup_column = "Subtype_Immune_Model_Based",
-#         operations = c("mean", "sd"))
-    
-# 
-# 
-# x <- let(
-#     alias = c(group_col = "Subtype_Immune_Model_Based"),
-#     panimmune_data$df %>%
-#         select(group_col, cell_fraction_columns) %>%
-#         .[complete.cases(.), ] %>% 
-#         gather(fraction_name, fraction, -group_col)) #%>% 
-#     # TODO: this is really slow... need to fix
-#     # mutate(fraction_name = map_chr(fraction_name, get_variable_display_name))
-# )
-#     
 
