@@ -6,15 +6,15 @@ cellcontent_UI <- function(id) {
         titleBox("Tumor Composition"),
         textBox(
             width = 12,
-            p("Explore the immune cell proportions in your sample groups.")  
+            p("Some overview/summary text describing this module and the data presented within.")  
         ),
-        
+
         # Overall proportions section ----
         sectionBox(
             title = "Overall Cell Proportions",
             messageBox(
                 width = 12,
-                p("The barplots show the mean proportion of the tumor fraction, overall stromal fraction (one minus tumor fractions) and the leukocyte fraction of samples with each group.  Error bars show standard error of the mean.")
+                p("Brief instructional message about this section, what to do in it, and the available options.")  
             ),
             fluidRow(
                 
@@ -26,8 +26,7 @@ cellcontent_UI <- function(id) {
             ),
             messageBox(
                 width = 12,
-                p("Click on the bars for a sample group and you will get generate a scatter plot, showing leukocyte fraction on the Y-axis and stromal fraction on the X-axis. Points near the diagonal correspond to tumor samples in which non-tumor stromal cells are nearly all immune cells, and points away from the diagonal correspond to a more mixed or a non-immune stromal tumor microenvironment.  Points in the upper-left triangle of the plot are estimation artifacts."),
-                p("Manuscript context:  Looking at TCGA tumor types, select PRAD and then SKCM and you will get what corresponds to Figure 2C.")
+                p("Click on the bars for a sample group (x-axis) to view correlation between leukocyte fraction and other components.")  
             ),
             fluidRow(
                 

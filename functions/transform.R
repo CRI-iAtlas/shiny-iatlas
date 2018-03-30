@@ -233,11 +233,6 @@ build_survival_df <- function(df, group_column, time_column, k) {
     na.omit()
 }
 
-panimmune_data$fmx_df %>% head(100) %>% 
-  build_survival_df(
-    group_column = "Subtype_Immune_Model_Based", 
-    time_column = "OS_time"
-  ) 
 
 # ** Immune interface module ----
 
