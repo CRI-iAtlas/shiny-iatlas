@@ -202,35 +202,35 @@ create_tumor_content_df <- function(subset_df, group_column) {
 
 # ** Clinical outcomes module ----
 
-build_survival_df <- function(dat, var1, timevar, divk) {
-  getCats <- function(dat, var1, divk) {
-    if (var1 %in% c("Subtype_Immune_Model_Based")) {
+build_survival_df <- function(df, group_column, time_column, k) {
+  get_groups <- function(df, group_column, k) {
+    if (group_column %in% c("Subtype_Immune_Model_Based")) {
       # then we don't need to produce catagories.
-      cats <- as.character(dat[, var1])
+      as.character(df[, group_column])
     }
     else {
-      cats <- as.character(cut(dat[, var1], divk, ordered_result = T))
+      as.character(cut(df[, group_column], k, ordered_result = T))
     }
-    cats
   }
   
   # get the vectors associated with each term
-  # if var1 is already a catagory, just use that.
-  # otherwise it needs to be divided into divk catagories.
-  cats <- getCats(dat, var1, divk)
+  # if facet_column is already a catagory, just use that.
+  # otherwise it needs to be divided into k catagories.
+  groups <- get_groups(df, group_column, k)
   
-  if (timevar == "OS_time") {
-    timevar2 <- "OS"
+  if (time_column == "OS_time") {
+    status_column <- "OS"
   } else {
-    timevar2 <- "PFI_1"
+    status_column <- "PFI_1"
   }
   
-  df <- data.frame(
-    Status = dat[, timevar2], Time = dat[, timevar],
-    Variable = cats, Measure = dat[, var1]
-  )
-  df <- na.omit(df)
-  df
+  data.frame(
+    Status = pluck(df, status_column), 
+    Time = pluck(df, time_column),
+    Variable = groups, 
+    Measure = pluck(df, group_column)
+  ) %>% 
+    na.omit()
 }
 
 # ** Immune interface module ----
