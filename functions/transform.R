@@ -257,20 +257,18 @@ ztransform_df <- function(df) {
 
 # ** Immunomodulators module ----
 
-build_boxplot_df <- function(subset_df, im_choice, ss_group) {
+build_im_expr_plot_df <- function(df, im_option, sample_group_option) {
   panimmune_data$im_expr_df %>%
-    filter(Symbol == im_choice) %>%
-    left_join(subset_df) %>%
+    filter(Symbol == im_option) %>%
+    left_join(df) %>%
     mutate(log_count = log10(normalized_count + 1)) %>%
-    select(ss_group, log_count) %>%
+    select(sample_group_option, log_count) %>%
     .[complete.cases(.), ]
 }
 
-build_histogram_df <- function(
-  boxplot_df, boxplot_column, boxplot_selected_group) {
-  
-  plot_df <- boxplot_df %>% 
-    filter(UQ(as.name(boxplot_column)) == boxplot_selected_group)
+build_histogram_df <- function(df, filter_column, filter_value) {
+  df %>%
+    filter(UQ(as.name(filter_column)) == filter_value)
   
 }
 
