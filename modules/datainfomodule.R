@@ -5,7 +5,7 @@ datainfo_UI <- function(id) {
     titleBox("Data Description"),
     textBox(
       width = 12,
-      p("Some overview/summary text describing this module and the data presented within.")  
+      p("Each row in the table corresponds to a variable for which data are available for exploration in CRI iAtlas. Variables are organized into classes, as displayed in the second column.")  
     ),
     sectionBox(
       title = "PanImmune Features",

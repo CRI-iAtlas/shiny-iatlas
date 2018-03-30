@@ -113,7 +113,7 @@ create_cell_fraction_options <- function() {
 load_data <- function() {
 
     manifest_data <- load_manifest()
-    feature_marix_data <- load_feature_matrix()
+    feature_matrix_data <- load_feature_matrix()
     im_annotations_data <- load_im_annotations()
     im_expression_data <- load_im_expression()
     sample_group_options <- create_sample_group_options(
