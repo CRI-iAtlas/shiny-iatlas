@@ -23,6 +23,6 @@ create_mosaicplot <- function(
     if (!is.na(facet)) {
         plot <- plot + facet_grid(facet)
     }
-    ggplotly(plot)
+    ggplotly(plot, height = 600)
 }
 

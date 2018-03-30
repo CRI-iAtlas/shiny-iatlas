@@ -40,7 +40,7 @@ immunomodulator <- function(input, output, session, ss_choice, subset_df){
       x_label = ss_choice(), 
       y_label = "Log10 (Count + 1)",
       fill_colors = plot_colors,
-      title = get_modulator_display_name(input$im_choice))
+      title = get_im_display_name(input$im_choice))
     print(ggplotly(plot, source = "select"))
   })
   
