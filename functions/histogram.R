@@ -7,11 +7,12 @@ create_histogram <- function(
       plot_ly(
         x = ~xvar
       ) %>% 
-      add_histogram() %>% 
+      add_histogram(alpha = 0.8) %>% 
       layout(
         title = title,
         xaxis = list(title = x_lab) 
-      )
+      ) %>% 
+      format_plotly()
   )
   # plot <- df %>%
   #   ggplot(aes_string(x)) +

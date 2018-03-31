@@ -25,11 +25,17 @@ immunomodulator_UI <- function(id) {
             label = "Select Immunomodulator Gene",
             choices = panimmune_data$im_direct_relationships[["HGNC Symbol"]]
           )
-        ),
-        
+        )
+      ),
+      fluidRow(
         plotBox(
-          width = 8,
-          plotlyOutput(ns("violinPlot")),
+          width = 12,
+          plotlyOutput(ns("violinPlot"))
+        )
+      ),
+      fluidRow(
+        plotBox(
+          width = 12,
           plotlyOutput(ns("histPlot"))
         )
       )
@@ -44,7 +50,10 @@ immunomodulator_UI <- function(id) {
       ),
       fluidRow(
         tableBox(
-          width = 12
+          width = 12,
+          div(style = "overflow-x: scroll",
+              DT::dataTableOutput(ns("im_annotations_table"))
+          )
         )
       )
     )
@@ -76,14 +85,12 @@ immunomodulator <- function(input, output, session, ss_choice, subset_df){
     
     eventdata <- event_data("plotly_click", source = "select")
     validate(need(!is.null(eventdata), "Click violin plot"))
-    print(eventdata[["x"]])
     violinplot_selected_group <- im_expr_plot_df() %>% 
       get_selected_group_from_violinplot(
         ss_group(), 
         eventdata
       )
-    print(violinplot_selected_group)
-    
+
     histplot_df <- build_histogram_df(
       im_expr_plot_df(), 
       ss_group(),
@@ -95,6 +102,19 @@ immunomodulator <- function(input, output, session, ss_choice, subset_df){
         x_column  = "log_count",
         x_lab = "log10(count + 1)",
         title = violinplot_selected_group
+      )
+  })
+  
+  output$im_annotations_table <- DT::renderDT({
+
+    panimmune_data$im_direct_relationships %>% 
+      select(-X10, -Notes) %>% 
+      datatable(
+        options = list(
+          dom = "tip",
+          pageLength = 10
+        ),
+        rownames = FALSE
       )
   })
 }

@@ -85,7 +85,8 @@ create_tcga_subtype_colors <- function(sample_group_df) {
     arrange(study) %>% 
     group_by(study) %>% 
     mutate(
-      FeatureHex = viridis::viridis(length(FeatureValue))
+      FeatureHex = RColorBrewer::brewer.pal(length(FeatureValue), "Set1") %>% 
+        .[1:length(FeatureValue)]
     ) %>% 
     ungroup() %>% 
     select(-study) %>% 
