@@ -5,7 +5,7 @@ create_barplot <- function(
   source_name, bar_colors = NULL
 ) {
   if (is.null(bar_colors)) {
-    bar_colors <- viridis_pal(option = "D")(n_distinct(df[[color_column]]))
+    bar_colors <- viridis::viridis_pal(option = "D")(n_distinct(df[[color_column]]))
   }
   let(
     alias = c(xvar = x_column, 
