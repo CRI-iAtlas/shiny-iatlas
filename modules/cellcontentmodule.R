@@ -115,15 +115,16 @@ cellcontent <- function(input, output, session, ss_choice, subset_df) {
             create_scatterplot_df(
                 filter_column = ss_internal(),
                 filter_value = selected_plot_subgroup,
-                x_column = "leukocyte_fraction",
-                y_column = "Stromal_Fraction"
+                x_column = "Stromal_Fraction",
+                y_column = "leukocyte_fraction"
             ) %>%
             create_scatterplot(
-                x_column = "leukocyte_fraction",
-                y_column = "Stromal_Fraction",
-                x_lab = "Leukocyte Fraction",
-                y_lab = "Stromal Fraction",
-                title = selected_plot_subgroup
+                x_column = "Stromal_Fraction",
+                y_column = "leukocyte_fraction",
+                x_lab = "Stromal Fraction",
+                y_lab = "Leukocyte Fraction",
+                title = selected_plot_subgroup,
+                corrplot = TRUE
             )
     })
     

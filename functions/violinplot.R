@@ -23,6 +23,7 @@ create_violinplot <- function(
       layout(
         xaxis = list(title = xlab),
         yaxis = list(title = ylab)
-      )
+      ) %>% 
+      format_plotly()
   )
 }

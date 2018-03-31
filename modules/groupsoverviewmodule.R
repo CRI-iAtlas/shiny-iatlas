@@ -105,8 +105,7 @@ groupsoverview <- function(input, output, session, ss_choice, subset_df, width) 
   output$study_subset_select <- renderUI({
     
     req(input$sample_mosaic_group, cancelOutput = TRUE)
-    print(input$sample_mosaic_group == "TCGA Subtype")
-    
+
     if (input$sample_mosaic_group == "TCGA Subtype") {
       choices <- panimmune_data$fmx_df %>%
         filter_at(
@@ -127,8 +126,7 @@ groupsoverview <- function(input, output, session, ss_choice, subset_df, width) 
   })
   
   output$mosaicPlot <- renderPlotly({
-    print(width())
-    
+
     req(input$sample_mosaic_group, input$study_subset_selection,
         cancelOutput = T)
     
@@ -151,7 +149,7 @@ groupsoverview <- function(input, output, session, ss_choice, subset_df, width) 
         xlab = display_x,
         ylab = display_y,
         fill_colors = decide_plot_colors(panimmune_data, internal_y),
-        width = (3 * width() )/ 4
+        width = (3 * width()) / 4 - 60
       ) 
   })
   
