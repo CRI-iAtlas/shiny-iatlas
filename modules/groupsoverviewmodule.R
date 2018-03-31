@@ -60,7 +60,7 @@ groupsoverview <- function(input, output, session, ss_choice, subset_df, width) 
     paste(ss_choice(), "Groups")
   })
   
-  output$sample_group_table <- DT::renderDataTable({
+  output$sample_group_table <- DT::renderDT({
     
     sample_group_colors <- decide_plot_colors(
       panimmune_data, ss_internal()

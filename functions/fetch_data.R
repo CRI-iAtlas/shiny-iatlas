@@ -1,11 +1,7 @@
-library(synapser)
-library(googlesheets)
-library(tidyverse)
-
 # Fetch data ----
 
 fetch_manifest <- function() {
-  manifest_gs <- gs_title("IRWG data manifest")
+  manifest_gs <- googlesheets::gs_title("IRWG data manifest")
   list(
     feature_df = gs_read(
       ss = manifest_gs, ws = "Features"
@@ -58,7 +54,9 @@ fetch_im_expression <- function(im_direct_relationships) {
     gene_string
   )
   list(
-    im_expr_df = query_exec(query, project = "isb-cgc-01-0008", max_pages = Inf)
+    im_expr_df = bigrquery::query_exec(
+      query, project = "isb-cgc-01-0008", max_pages = Inf
+    )
   )
 }
 
@@ -87,7 +85,7 @@ format_manifest <- function(manifest_data) {
                             FeatureHex)
       )
   )
-%>% %>% %>% <- %>% %>% %>% %>% <- %>% %>% %>% %>% %>% %>% %>% %>% %>% %>% %>% %>% %>% %>% %>% %>% <- %>% %>% %>% <- %>% %>% %>% %>% %>% <- %>% %>% %>% <- <- %>% %>% %>% %>% %>% <- %>% %>% %>% %>% %>% %>% <- %>% %>% %>% %>% %>% %>% %>% }
+}
 
 format_feature_matrix <- function(feature_mat_data) {
   list(

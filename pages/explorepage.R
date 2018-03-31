@@ -55,7 +55,7 @@ explorepage <- dashboardPage(
         icon = icon("th-list"),
         tabName = "datainfo"
       ),
-      hr(),
+      shiny::hr(),
       wellPanel(
         strong("Selected groups:"),
         textOutput("ss_choice")

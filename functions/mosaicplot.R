@@ -10,7 +10,7 @@ create_mosaicplot <- function(
     
     plot <- df %>%
         ggplot(aes_string(x = str_c("product(", y, ",", x, ")")  )) +
-        geom_mosaic(aes_string(fill = y)) +
+        ggmosaic::geom_mosaic(aes_string(fill = y)) +
         theme_bw() +
         theme_1012 +
         xlab(xlab) +

@@ -4,7 +4,7 @@ create_scatterplot <- function(
     let(
         alias = c(xvar = x_column, yvar = y_column),
         df %>%
-            plot_ly(
+            plotly::plot_ly(
                 x = ~xvar,
                 y = ~yvar
             ) %>% 

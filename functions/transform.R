@@ -12,7 +12,7 @@ subset_panimmune_df <- function(
   if (!(group_col == "Subtype_Curated_Malta_Noushmehr_et_al")) {
     return(df)
   } else {
-    let(
+    wrapr::let(
       alias = c(COL = group_col), {
         sample_groups <- df %>% 
           select(COL) %>% 
