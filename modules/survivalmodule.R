@@ -6,7 +6,7 @@ survival_UI <- function(id) {
     titleBox("Clinical Outcomes"),
     textBox(
       width = 12,
-      p("Some overview/summary text describing this module and the data presented within.")  
+      p("Plot survival curves based on immune characteristics and identify variables associated with outcome.")  
     ),
     
     # Survival comparison section ----
@@ -14,7 +14,8 @@ survival_UI <- function(id) {
       title = "Sample Group Survival",
       messageBox(
         width = 12,
-        p("Brief instructional message about this section, what to do in it, and the available options.")  
+        p("Select variable, and survival either as overall survival (OS) or progression-free interval (PFI) to get a Kaplan-Meier plot. For a continuous (numeric) variable the slider can be used to select quantile for dichotomizing data."),
+        p("For immune subtypes Figure 3A can be generated (OS), and Figure S3A for (PFI).")
       ),
       fluidRow(
         optionsBox(
@@ -65,7 +66,8 @@ survival_UI <- function(id) {
       title = "Concordance Index",
       messageBox(
         width = 12,
-        p("Brief instructional message about this section, what to do in it, and the available options.")  
+        p("For your sample groups, you can explore which variables correlate with improved or lessened survival. Select a variable class, and you will get a heatmap. Red denotes decreased survival, and blue increased survival as the variable is increased."),
+        p("Manuscript context:  Selecting variable class “Core Expression Signature”, you can generate Figure 3B. Figures 3C, and Figures S3B, S3C, and S3C can also be generated with different selection options.")
       )
     )
   )

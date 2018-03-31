@@ -6,7 +6,7 @@ immunomodulator_UI <- function(id) {
     titleBox("Immunomodulators"),
     textBox(
       width = 12,
-      p("Some overview/summary text describing this module and the data presented within.")  
+      p("Explore the expression of genes that code for immunomodulating proteins, including checkpoint proteins.")  
     ),
     
     # Immunomodulator distributions section ----
@@ -14,7 +14,8 @@ immunomodulator_UI <- function(id) {
       title = "Immunomodulator Distributions",
       messageBox(
         width = 12,
-        p("Brief instructional message about this section, what to do in it, and the available options.")  
+        p("Select an immumodulator gene to see its expression over sample groups."),
+        p("Manuscript context:  If you are looking at immune subtypes, select EDNRB or CXCL10 to get figure 6B.")
       ),
       fluidRow(
         optionsBox(width = 4,
