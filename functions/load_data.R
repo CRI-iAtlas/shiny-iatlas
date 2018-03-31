@@ -3,7 +3,7 @@
 load_manifest <- function() {
   if (!USE_REMOTE_GS) {
     list(
-      feature_df = read_feather("data/feature_df.feather"),
+      feature_df = feather::read_feather("data/feature_df.feather"),
       feature_method_df = read_feather("data/feature_method_df.feather"),
       sample_group_df = read_feather("data/sample_group_df.feather")
     )
@@ -85,7 +85,8 @@ create_tcga_subtype_colors <- function(sample_group_df) {
     arrange(study) %>% 
     group_by(study) %>% 
     mutate(
-      FeatureHex = viridis(length(FeatureValue))
+      FeatureHex = RColorBrewer::brewer.pal(length(FeatureValue), "Set1") %>% 
+        .[1:length(FeatureValue)]
     ) %>% 
     ungroup() %>% 
     select(-study) %>% 

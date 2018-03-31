@@ -12,7 +12,7 @@ subset_panimmune_df <- function(
   if (!(group_col == "Subtype_Curated_Malta_Noushmehr_et_al")) {
     return(df)
   } else {
-    let(
+    wrapr::let(
       alias = c(COL = group_col), {
         sample_groups <- df %>% 
           select(COL) %>% 
@@ -175,11 +175,11 @@ create_heatmap_corr_mat <- function(
 # ** Tumor composition module ----
 
 create_cell_fraction_df <- function(
-  subset_df, group_column, cell_fraction_columns
+  df, group_column, cell_fraction_columns
 ) {
   let(
     alias = c(group_col = group_column),
-    panimmune_data$fmx_df %>%
+    df %>%
       select(group_col, cell_fraction_columns) %>%
       .[complete.cases(.), ] %>% 
       gather(fraction_name, fraction, -group_col)

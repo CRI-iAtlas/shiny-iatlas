@@ -3,12 +3,12 @@ cellcontent_UI <- function(id) {
     ns <- NS(id)
     
     tagList(
-        titleBox("Tumor Microenvironment"),
+        titleBox("Tumor Composition"),
         textBox(
-          width = 12,
-          p("Explore the immune cell proportions in your sample groups.")  
+            width = 12,
+            p("Explore the immune cell proportions in your sample groups.")  
         ),
-    
+        
         # Overall proportions section ----
         sectionBox(
             title = "Overall Cell Proportions",
@@ -38,6 +38,10 @@ cellcontent_UI <- function(id) {
                         width = 6,
                         
                         plotlyOutput(ns("lf_sf_corr_scatterplot"))
+                    ),
+                    column(
+                        width = 6,
+                        plotlyOutput(ns("lf_tf_corr_scatterplot"))
                     )
                 )
             )
@@ -48,8 +52,7 @@ cellcontent_UI <- function(id) {
             title = "Cell Type Fractions",
             messageBox(
                 width = 12,
-                p("This allows you to draw barplots for the proportion of immune different immune cells in the immune compartment.  The values are estimated by CIBERSORT (“Original” fraction), and various combinations of those estimates are provided, for example “Aggregate 1” corresponding to broader categories of cells, and “Aggregate 2” and “Aggregate 3” to finer categories."), 
-                p("Manuscript context:  These bargraphs are similar to Figure 2A, and Figure S2A, but with a different arrangement of bars.")
+                p("Brief instructional message about this section, what to do in it, and the available options.")  
             ),
             fluidRow(
                 optionsBox(
@@ -90,13 +93,13 @@ cellcontent <- function(input, output, session, ss_choice, subset_df) {
                 value_column = "fraction",
                 group_column = "fraction_name",
                 subgroup_column = ss_internal(),
-                operations = c("mean", "se")
+                operations = c("mean", "sd")
             ) %>% 
             create_barplot(
                 x_column = ss_internal(),
                 y_column = "mean", 
                 color_column = "fraction_name",
-                error_column = "se",
+                error_column = "sd",
                 x_lab = "Fraction type by group",
                 y_lab = "Fraction mean",
                 source_name = "overall_props_barplot"
@@ -115,16 +118,39 @@ cellcontent <- function(input, output, session, ss_choice, subset_df) {
             create_scatterplot_df(
                 filter_column = ss_internal(),
                 filter_value = selected_plot_subgroup,
-                x_column = "Stromal_Fraction",
-                y_column = "leukocyte_fraction"
+                x_column = "leukocyte_fraction",
+                y_column = "Stromal_Fraction"
             ) %>%
             create_scatterplot(
-                x_column = "Stromal_Fraction",
-                y_column = "leukocyte_fraction",
-                x_lab = "Stromal Fraction",
-                y_lab = "Leukocyte Fraction",
-                title = selected_plot_subgroup,
-                corrplot = TRUE
+                x_column = "leukocyte_fraction",
+                y_column = "Stromal_Fraction",
+                x_lab = "Leukocyte Fraction",
+                y_lab = "Stromal Fraction",
+                title = selected_plot_subgroup
+            )
+    })
+    
+    output$lf_tf_corr_scatterplot <- renderPlotly({
+        eventdata <- event_data(
+            "plotly_click", source = "overall_props_barplot"
+        )
+        validate(need(!is.null(eventdata), "Click bar plot"))
+        selected_plot_subgroup <- eventdata$x[[1]]
+
+        subset_df() %>%
+            mutate(Tumor_Fraction = 1 - Stromal_Fraction) %>% 
+            create_scatterplot_df(
+                filter_column = ss_internal(),
+                filter_value = selected_plot_subgroup,
+                x_column = "leukocyte_fraction",
+                y_column = "Tumor_Fraction"
+            ) %>%
+            create_scatterplot(
+                x_column = "leukocyte_fraction",
+                y_column = "Tumor_Fraction",
+                x_lab = "Leukocyte Fraction",
+                y_lab = "Tumor Fraction",
+                title = selected_plot_subgroup
             )
     })
     
@@ -143,14 +169,14 @@ cellcontent <- function(input, output, session, ss_choice, subset_df) {
                 value_column = "fraction",
                 group_column = "fraction_name",
                 subgroup_column = ss_internal(),
-                operations = c("mean", "se")
+                operations = c("mean", "sd")
             ) %>% 
             mutate(fraction_name =  map_chr(fraction_name, get_variable_display_name)) %>% 
             create_barplot(
                 x_column = ss_internal(),
                 y_column = "mean",
                 color_column = "fraction_name",
-                error_column = "se",
+                error_column = "sd",
                 x_lab = "Fraction type by group",
                 y_lab = "Fraction mean",
                 source_name = "cell_frac_barplot"

@@ -4,3 +4,4 @@ shiny-prototyping.Rproj
 .httr-oauth
 *~
 .DS_Store
+rsconnect

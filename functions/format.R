@@ -76,3 +76,57 @@ theme_1012 <- theme(
   title = element_text(face = "bold", size = 14, color = "black"),
   legend.text = element_text(face = "bold", size = 8, color = "black")
 )
+
+get_margins <- function(p) {
+  if (length(p$x$layout$xaxis$title) > 0) {
+    xlabbuffer <- p$x$layout$xaxis$titlefont$size * 3  %>% 
+      ceiling()
+  } else {
+    xlabbuffer <- 0
+  }
+  
+  xlabs <- p$x$layout$xaxis$categoryarray
+  xlabangle <- p$x$layout$xaxis$tickangle
+  xlabmax <- xlabs %>% 
+    map_int(str_length) %>% 
+    max(na.rm = TRUE)
+  xlabfontsize <- p$x$layout$xaxis$tickfont$size
+  xmultiplier <- abs(sin(xlabangle * pi/180))
+  
+  if (length(p$x$layout$yaxis$title) > 0) {
+    ylabbuffer <- p$x$layout$yaxis$titlefont$size * 3  %>% 
+      ceiling()
+  } else {
+    ylabbuffer <- 0
+  }
+
+  ylabs <- p$x$layout$yaxis$categoryarray
+  ylabangle <- p$x$layout$yaxis$tickangle
+  ylabmax <- ylabs %>% 
+    map_int(str_length) %>% 
+    max(na.rm = TRUE)
+  ylabfontsize <- p$x$layout$yaxis$tickfont$size
+  ymultiplier <- abs(cos(ylabangle * pi/180))
+  
+  list(
+    b = xlabbuffer %>% 
+      magrittr::add(
+        max(xlabfontsize, xlabfontsize * (xlabmax * xmultiplier))
+      ) %>% 
+      ceiling(),
+    l = ylabbuffer %>% 
+      magrittr::add(
+        max(ylabfontsize, ylabfontsize * (ylabmax * ymultiplier))
+      ) %>% 
+      ceiling()
+  )
+}
+
+format_plotly <- function(p) {
+  p %>% 
+    plotly::layout(
+      font = list(family = "Roboto, Open Sans, sans-serif"),
+      margin = get_margins(p)
+    ) %>% 
+    plotly::config(displayModeBar = F)
+}

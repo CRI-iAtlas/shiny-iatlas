@@ -30,10 +30,8 @@ page_files:
   - "pages/resourcespage.R"
 
 libraries:
-  - "shinythemes"
   - "bigrquery"
   - "plotly"
-  - "heatmaply"
   - "survival"
   - "survminer"
   - "googlesheets"
