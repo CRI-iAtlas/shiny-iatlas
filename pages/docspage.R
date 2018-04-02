@@ -2,8 +2,9 @@ docspage <- fluidPage(
   br(),
   titleBox("Documentation"),
   fluidRow(
-    column(12,
-           "iAtlas is cool."
+    column(
+      width = 12,
+      includeMarkdown("www/md/doc.md")
     )
   )
 )

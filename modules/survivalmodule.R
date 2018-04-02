@@ -56,7 +56,8 @@ survival_UI <- function(id) {
         # ** Survival Kaplan-Meier plot ----
         plotBox(
           width = 8,
-          plotOutput(ns("survPlot"), height = 600)
+          plotOutput(ns("survPlot"), height = 600) %>% 
+            shinycssloaders::withSpinner()
         )
       )
     ),

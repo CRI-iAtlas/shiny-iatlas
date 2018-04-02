@@ -21,7 +21,8 @@ cellcontent_UI <- function(id) {
                 # ** Overall proportions bar plot ----
                 plotBox(
                     width = 12,
-                    plotlyOutput(ns("overall_props_barplot"))
+                    plotlyOutput(ns("overall_props_barplot")) %>% 
+                      shinycssloaders::withSpinner()
                 )
             ),
             messageBox(
@@ -37,7 +38,8 @@ cellcontent_UI <- function(id) {
                     column(
                         width = 6,
                         
-                        plotlyOutput(ns("lf_sf_corr_scatterplot"))
+                        plotlyOutput(ns("lf_sf_corr_scatterplot")) %>% 
+                          shinycssloaders::withSpinner()
                     )
                 )
             )
@@ -67,7 +69,8 @@ cellcontent_UI <- function(id) {
                 # ** Cell fractions bar plot ----
                 plotBox(
                     width = 12,
-                    plotlyOutput(ns("cell_frac_barplot"))
+                    plotlyOutput(ns("cell_frac_barplot")) %>% 
+                      shinycssloaders::withSpinner()
                 )
             )
         )
