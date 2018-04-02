@@ -1,0 +1,8 @@
+Package: concordanceIndex
+Version: 0.1
+Date: 2017
+Title: Concordance Index
+Author: Tai-Hsien, Ou Yang <to2232@columbia.edu>
+Depends: R (>= 3.3.1)
+Description: Evaluating the concordance index of a feature and the corresponding censored survival
+Archs: i386, x64
