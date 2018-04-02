@@ -1,0 +1,4 @@
+useDynLib(concordanceIndex)
+export(
+	concordanceIndex
+)
