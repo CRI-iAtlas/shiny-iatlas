@@ -56,7 +56,7 @@ create_label <- function(
         )
       ) %>% 
       group_by(label) %>% 
-      mutate(value_label = str_c(value_label, collapse = ", ")) %>% 
+      mutate(value_label = str_c(value_label, collapse = "</br>")) %>% 
       ungroup() %>% 
       spread(value_name, value) %>% 
       unite(label, label, value_label, sep = "</br></br>")
@@ -122,11 +122,18 @@ create_barplot_df <- function(
 #'
 #' @examples
 create_scatterplot_df <- function(
-  df, filter_column, filter_value, x_column, y_column
+  df, filter_column, filter_value, x_column, y_column, 
+  id_column = "ParticipantBarcode"
 ) {
   df %>%
     filter(UQ(as.name(filter_column)) == filter_value) %>%
-    select_(.dots = x_column, y_column)
+    create_label(
+      title = id_column, 
+      name_column = id_column, 
+      group_column = filter_column, 
+      value_columns = c(x_column, y_column)
+    ) %>% 
+    select_(.dots = id_column, x_column, y_column, "label")
 }
 
 # Module specific data transform ----
