@@ -28,7 +28,8 @@ immunefeatures_UI <- function(id) {
             fluidRow(
               plotBox(
                 width = 12,
-                plotlyOutput(ns("violinPlot"))
+                plotlyOutput(ns("violinPlot")) %>% 
+                  shinycssloaders::withSpinner()
               )
             )
         ),
@@ -82,11 +83,13 @@ immunefeatures_UI <- function(id) {
           fluidRow(
             plotBox(
               width = 6,
-              plotlyOutput(ns("corrPlot"))
+              plotlyOutput(ns("corrPlot")) %>% 
+                shinycssloaders::withSpinner()
             ),
             plotBox(
               width = 6,
-              plotlyOutput(ns("scatterPlot"))
+              plotlyOutput(ns("scatterPlot")) %>% 
+                shinycssloaders::withSpinner()
             )
           )
         )

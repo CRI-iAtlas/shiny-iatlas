@@ -30,13 +30,15 @@ immunomodulator_UI <- function(id) {
       fluidRow(
         plotBox(
           width = 12,
-          plotlyOutput(ns("violinPlot"))
+          plotlyOutput(ns("violinPlot")) %>% 
+            shinycssloaders::withSpinner()
         )
       ),
       fluidRow(
         plotBox(
           width = 12,
-          plotlyOutput(ns("histPlot"))
+          plotlyOutput(ns("histPlot")) %>% 
+            shinycssloaders::withSpinner()
         )
       )
     ),
@@ -52,7 +54,8 @@ immunomodulator_UI <- function(id) {
         tableBox(
           width = 12,
           div(style = "overflow-x: scroll",
-              DT::dataTableOutput(ns("im_annotations_table"))
+              DT::dataTableOutput(ns("im_annotations_table")) %>% 
+                shinycssloaders::withSpinner()
           )
         )
       )

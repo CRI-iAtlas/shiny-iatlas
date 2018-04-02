@@ -22,7 +22,8 @@ datainfo_UI <- function(id) {
         )
       )
     ),
-    uiOutput(ns("variable_details_section"))
+    uiOutput(ns("variable_details_section")) %>% 
+      shinycssloaders::withSpinner()
   )
 }
 

@@ -18,7 +18,8 @@ groupsoverview_UI <- function(id) {
           width = 12,
           title = textOutput(ns("sample_group_name")),
           div(style = "overflow-x: scroll",
-              DT::dataTableOutput(ns("sample_group_table"))
+              DT::dataTableOutput(ns("sample_group_table")) %>% 
+                shinycssloaders::withSpinner()
           )
         )
       )
@@ -42,7 +43,8 @@ groupsoverview_UI <- function(id) {
           width = 12,
           column(
             width = 12,
-            plotlyOutput(ns("mosaicPlot"), height = "600px")
+            plotlyOutput(ns("mosaicPlot"), height = "600px") %>% 
+              shinycssloaders::withSpinner()
           )
         )
       )
