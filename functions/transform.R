@@ -176,12 +176,13 @@ build_mosaic_plot_df <- function(df, x_column, y_column, study_value) {
 # ** Immune feature trends module ----
 
 create_intermediate_corr_df <- function(
-  subset_df, dep_var, facet_selection, facet_groups, indep_vars
+  subset_df, dep_var, facet_selection, facet_groups, indep_vars, 
+  id_column = "ParticipantBarcode" 
 ) {
   subset_df %>%
     as_data_frame() %>%
     filter(UQ(as.name(facet_selection)) %in% facet_groups) %>%
-    select_(.dots = c(facet_selection, dep_var, indep_vars))
+    select_(.dots = c(id_column, facet_selection, dep_var, indep_vars))
 }
 
 
