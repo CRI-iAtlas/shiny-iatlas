@@ -20,7 +20,8 @@ create_scatterplot <- function(
       add_markers(
         alpha = 0.5,
         hoverinfo = 'text',
-        text = ~labelvar
+        text = ~labelvar,
+        textposition = 'top left'
       )
     )
   if (corrplot) {
