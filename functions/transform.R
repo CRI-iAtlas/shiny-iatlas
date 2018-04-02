@@ -33,6 +33,36 @@ subset_panimmune_df <- function(
 
 # Generic plot data transform ----
 
+create_label <- function(
+  df, title, name_column, group_column, value_columns
+) {
+  
+  let(
+    alias = c(namevar = name_column, groupvar = group_column),
+    df %>%
+      mutate(
+        label = str_glue(
+          "<b>{title}:</b> {name} ({group})", 
+          title = title,
+          name = namevar, 
+          group = groupvar
+        )) %>% 
+      gather(value_name, value, one_of(value_columns)) %>% 
+      mutate(
+        value_label = str_glue(
+          "{name}: {value}", 
+          name = str_to_upper(value_name), 
+          value = sprintf("%0.3f", value)
+        )
+      ) %>% 
+      group_by(label) %>% 
+      mutate(value_label = str_c(value_label, collapse = ", ")) %>% 
+      ungroup() %>% 
+      spread(value_name, value) %>% 
+      unite(label, label, value_label, sep = "</br></br>")
+  )
+}
+
 #' Format a dataframe for plotting summary values (count, sum, mean, etc.) for
 #' different groups with bar plots; grouping is allowed at one to three levels:
 #' group (required), subgroup, and facet
@@ -60,10 +90,21 @@ create_barplot_df <- function(
 ) {
   se <- function(x) { mean(x) / sqrt(length(x)) }
   
-  df %>% 
+  df <- df %>% 
     group_by(.dots = c(group_column, subgroup_column, facet_column)) %>% 
     summarise_at(value_column, .funs = operations) %>% 
-    ungroup
+    ungroup()
+  if (add_label) {
+    df %>%
+      create_label(
+        title = str_to_title(value_column),
+        name_column = group_column,
+        group_column = subgroup_column,
+        value_columns = operations
+      )
+  } else {
+    df
+  }
 }
 
 #' Format a dataframe for plotting values of one column versus values of a
@@ -182,7 +223,7 @@ create_cell_fraction_df <- function(
     df %>%
       select(group_col, cell_fraction_columns) %>%
       .[complete.cases(.), ] %>% 
-      gather(fraction_name, fraction, -group_col)
+      gather(fraction_type, fraction, -group_col)
   )
 }
 
@@ -193,10 +234,10 @@ create_tumor_content_df <- function(subset_df, group_column) {
       select(group_col, Stromal_Fraction, leukocyte_fraction) %>% 
       .[complete.cases(.),] %>% 
       mutate(Tumor_Fraction = 1 - Stromal_Fraction) %>% 
-      gather(fraction_name, fraction, -group_col) %>% 
-      mutate(fraction_name = str_replace(fraction_name, "Stromal_Fraction", "Stromal Fraction")) %>% 
-      mutate(fraction_name = str_replace(fraction_name, "leukocyte_fraction", "Leukocyte Fraction")) %>% 
-      mutate(fraction_name = str_replace(fraction_name, "Tumor_Fraction", "Tumor Fraction"))
+      gather(fraction_type, fraction, -group_col) %>% 
+      mutate(fraction_type = str_replace(fraction_type, "Stromal_Fraction", "Stromal Fraction")) %>% 
+      mutate(fraction_type = str_replace(fraction_type, "leukocyte_fraction", "Leukocyte Fraction")) %>% 
+      mutate(fraction_type = str_replace(fraction_type, "Tumor_Fraction", "Tumor Fraction"))
   )
 }
 
