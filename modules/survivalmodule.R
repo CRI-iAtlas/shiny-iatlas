@@ -14,7 +14,7 @@ survival_UI <- function(id) {
       title = "Sample Group Survival",
       messageBox(
         width = 12,
-        p("Select variable, and outcome in terms of either overall survival (OS) or progression-free interval (PFI) to generate a Kaplan-Meier plot. For a continuous (numeric) variable the slider can be used to select to designate splits. The value 2 corresponds to a median split to dichotomize the data, 3 to tertiles for three sample categories, 4 to quartiles, 5 to quintiles and so on."),
+        p("Select the variable, and outcome in terms of either overall survival (OS) or progression-free interval (PFI) endpoints to generate a Kaplan-Meier plot. For a continuous (numeric) variable, the slider can be used to specify how the range of values of that variable is split.  Selecting 2 splits the values by the middle of the range, 3 splits the range into three even intervals and so on."),
         p("For immune subtypes Figure 3A can be generated (OS), and Figure S3A for (PFI).")
       ),
       fluidRow(
@@ -36,15 +36,15 @@ survival_UI <- function(id) {
           
           selectInput(
             ns("timevar"),
-            "Time Varible",
-            c("OS Time" = "OS_time", "PFI Time" = "PFI_time_1"),
+            "Survival endpoint",
+            c("OS" = "OS_time", "PFI" = "PFI_time_1"),
             selected = "OS_time"
           ),
           
           sliderInput(
             ns("divk"),
-            "Divider",
-            min = 0,
+            "Value Range Divisions",
+            min = 2,
             max = 10,
             value = 2
           ),
