@@ -172,5 +172,5 @@ get_concordance <- function(df, feature_col, time_col, status_col){
             .[complete.cases(.),] %>% 
             as.data.frame %>% 
             as.matrix)
-    concordanceIndex(matrix[,1], matrix[,-1])
+    concordanceIndex::concordanceIndex(matrix[,1], matrix[,-1])
 }

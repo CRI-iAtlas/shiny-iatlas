@@ -1,4 +1,0 @@
-useDynLib(concordanceIndex)
-export(
-	concordanceIndex
-)
