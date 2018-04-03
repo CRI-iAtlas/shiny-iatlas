@@ -66,9 +66,13 @@ immunomodulator_UI <- function(id) {
 immunomodulator <- function(input, output, session, ss_choice, subset_df){
   
   ss_group <- reactive(get_variable_internal_name(ss_choice()))
-  im_expr_plot_df <- reactive(build_im_expr_plot_df(
-    subset_df(), input$im_choice, ss_group()
-  ))
+  im_expr_plot_df <- reactive(
+    subset_df() %>% 
+      build_im_expr_plot_df(
+        filter_value = input$im_choice, 
+        group_option = ss_group()
+      )
+  )
   
   output$violinPlot <- renderPlotly({
     plot_colors <- decide_plot_colors(panimmune_data, ss_group())

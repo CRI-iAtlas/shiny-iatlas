@@ -133,44 +133,16 @@ survival <- function(input, output, session, ss_choice, subset_df) {
       features <- as.character(get_variable_group(input$survival_class))
       group_internal <- get_variable_internal_name(ss_choice())
       
-      ci_matrix <- create_ci_matrix(subset_df(), group_internal, features, time_col, status_col)
-      create_plotly_heatmap(ci_matrix, "ci")
+      ci_mat <- subset_df() %>% 
+        build_ci_mat(
+          group_column = group_internal, 
+          value_columns = features, 
+          time_column = time_col, 
+          status_column = status_col
+        )
+      create_heatmap(ci_mat, "ci")
   })
   
 }
 
-create_ci_matrix <- function(df, group_col, feature_cols, time_col, status_col){
-    feature_names <- map(feature_cols, get_variable_display_name)
-    group_v <- extract2(df, group_col) 
-    groups <- group_v %>% 
-        unique %>% 
-        discard(is.na(.)) %>% 
-        sort
-    df %>% 
-        split(group_v) %>% 
-        map(get_concordance_by_group, feature_cols, time_col, status_col) %>% 
-        unlist %>% 
-        unname %>% 
-        matrix(ncol = length(groups)) %>% 
-        set_rownames(feature_names) %>% 
-        set_colnames(groups)
-}
 
-get_concordance_by_group <- function(df, feature_cols, time_col, status_col){
-    feature_cols %>% 
-        map(function(f) get_concordance(df, f, time_col, status_col)) %>% 
-        set_names(feature_cols)
-}
-
-get_concordance <- function(df, feature_col, time_col, status_col){
-    matrix <- wrapr::let(
-        alias = c(FEATURE = feature_col,
-                  TIME = time_col,
-                  STATUS = status_col),
-        df %>% 
-            select(FEATURE, TIME, STATUS) %>% 
-            .[complete.cases(.),] %>% 
-            as.data.frame %>% 
-            as.matrix)
-    concordanceIndex::concordanceIndex(matrix[,1], matrix[,-1])
-}

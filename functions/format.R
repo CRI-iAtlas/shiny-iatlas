@@ -77,9 +77,58 @@ theme_1012 <- theme(
   legend.text = element_text(face = "bold", size = 8, color = "black")
 )
 
-get_margins <- function(p) {
-  if (length(p$x$layout$xaxis$title) > 0) {
-    xlabbuffer <- p$x$layout$xaxis$titlefont$size * 3  %>% 
+get_margins_plotly <- function(p, font_size = 12) {
+  
+  xlabbuffer <- 0
+  ylabbuffer <- 0
+  if ("layoutAttrs" %in% names(p$x)) {
+    p_layout_data <- p$x$layoutAttrs[[1]]
+    if (length(p_layout_data$xaxis$title) > 0) {
+      xlabbuffer <- font_size * 3  %>% 
+        ceiling()
+    }
+    if (length(p_layout_data$yaxis$title) > 0) {
+      ylabbuffer <- font_size * 3  %>% 
+        ceiling()
+    }
+  }
+
+  p_data <- p$x$attrs[[length(p$x$attrs)]]
+  
+  # xlabs <- p_data$x
+  # xlabmax <- xlabs %>% 
+  #   map_int(str_length) %>% 
+  #   max(na.rm = TRUE)
+  
+  if (p_data$type %in% c("heatmap")) {
+    ylabs <- p_data$y
+    ylabmax <- ylabs %>% 
+      map_int(str_length) %>% 
+      max(na.rm = TRUE)
+  } else {
+    ylabmax <- 1
+  }
+  
+  list(
+    b = xlabbuffer %>% 
+      magrittr::add(
+        font_size * 2
+      ) %>% 
+      ceiling(),
+    l = ylabbuffer %>% 
+      magrittr::add(
+        max(font_size - 6, (font_size - 6) * (ylabmax))
+      ) %>% 
+      ceiling()
+  )
+}
+
+get_margins <- function(p, font_size = 12) {
+  if (!("xaxis" %in% names(p$x$layout))) {
+    return(get_margins_plotly(p, font_size))
+  }
+  if (str_length(p$x$layout$xaxis$title) > 0) {
+    xlabbuffer <- (p$x$layout$xaxis$titlefont$size - 6) * 3  %>% 
       ceiling()
   } else {
     xlabbuffer <- 0
@@ -90,43 +139,55 @@ get_margins <- function(p) {
   xlabmax <- xlabs %>% 
     map_int(str_length) %>% 
     max(na.rm = TRUE)
-  xlabfontsize <- p$x$layout$xaxis$tickfont$size
+  xlabfontsize <- if_else(
+    !is.null(font_size), 
+    font_size,
+    p$x$layout$xaxis$tickfont$size
+  )
   xmultiplier <- abs(sin(xlabangle * pi/180))
   
-  if (length(p$x$layout$yaxis$title) > 0) {
-    ylabbuffer <- p$x$layout$yaxis$titlefont$size * 3  %>% 
+  if (str_length(p$x$layout$yaxis$title) > 0) {
+    ylabbuffer <- (p$x$layout$yaxis$titlefont$size - 6) * 3  %>% 
       ceiling()
   } else {
     ylabbuffer <- 0
   }
 
   ylabs <- p$x$layout$yaxis$categoryarray
+
   ylabangle <- p$x$layout$yaxis$tickangle
   ylabmax <- ylabs %>% 
     map_int(str_length) %>% 
     max(na.rm = TRUE)
-  ylabfontsize <- p$x$layout$yaxis$tickfont$size
+  ylabfontsize <- if_else(
+    !is.null(font_size), 
+    font_size,
+    p$x$layout$yaxis$tickfont$size
+  )
   ymultiplier <- abs(cos(ylabangle * pi/180))
   
   list(
     b = xlabbuffer %>% 
       magrittr::add(
-        max(xlabfontsize, xlabfontsize * (xlabmax * xmultiplier))
+        max(xlabfontsize - 2, (xlabfontsize - 2) * (xlabmax * xmultiplier))
       ) %>% 
       ceiling(),
     l = ylabbuffer %>% 
       magrittr::add(
-        max(ylabfontsize, ylabfontsize * (ylabmax * ymultiplier))
+        max(ylabfontsize - 2, (ylabfontsize - 2) * (ylabmax * ymultiplier))
       ) %>% 
       ceiling()
   )
 }
 
 format_plotly <- function(p) {
+  font_size <- 13
   p %>% 
     plotly::layout(
-      font = list(family = "Roboto, Open Sans, sans-serif"),
-      margin = get_margins(p)
+      font = list(
+        family = "Roboto, Open Sans, sans-serif",
+        size = font_size),
+      margin = get_margins(p, font_size)
     ) %>% 
     plotly::config(displayModeBar = F)
 }

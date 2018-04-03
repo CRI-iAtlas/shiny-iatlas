@@ -10,18 +10,10 @@ create_histogram <- function(
       add_histogram(alpha = 0.8) %>% 
       layout(
         title = title,
-        xaxis = list(title = x_lab) 
+        xaxis = list(title = x_lab),
+        yaxis = list(title = y_lab)
       ) %>% 
-      format_plotly()
+      format_plotly() %>% 
+      I
   )
-  # plot <- df %>%
-  #   ggplot(aes_string(x)) +
-  #   geom_histogram() +
-  #   ylab(y_label) +
-  #   xlab(x_label) +
-  #   theme_bw() +
-  #   theme_1012 +
-  #   theme(axis.text.x = element_text(angle = 90, vjust = 0.5)) +
-  #   labs(title = title)
-  # return(plot)
 }
