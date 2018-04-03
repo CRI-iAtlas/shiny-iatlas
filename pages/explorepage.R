@@ -95,7 +95,7 @@ explorepage <- dashboardPage(
                 width = 6,
                 linkId = "link_to_module3",
                 title = "Sample Group Overview",
-                imgSrc = "images/cell_content.png",
+                imgSrc = "images/groupsoverview.png",
                 boxText = "This module provides short summaries of your selected groups, and allows you to see how they overlap with other groups.",
                 linkText = "Open Module"
               ),
@@ -103,7 +103,7 @@ explorepage <- dashboardPage(
                 width = 6,
                 linkId = "link_to_module1",
                 title = "Tumor Microenvironment",
-                imgSrc = "images/cell_content.png",
+                imgSrc = "images/cellcontent.png",
                 boxText = "Explore the immune cell proportions in your sample groups.",
                 linkText = "Open Module"
               )
@@ -113,7 +113,7 @@ explorepage <- dashboardPage(
                     width = 6,
                     title = "Immune Feature Trends",
                     linkId = "link_to_module6",
-                    imgSrc = "images/cell_content.png",
+                    imgSrc = "images/immunefeatures.png",
                     boxText = "This module allows you to see how immune readouts vary across your groups, and how they relate to one another.",
                     linkText = "Open Module"
                 ),
@@ -121,7 +121,7 @@ explorepage <- dashboardPage(
                 width = 6,
                 linkId = "link_to_module4",
                 title = "Clinical Outcomes",
-                imgSrc = "images/cell_content.png",
+                imgSrc = "images/survival.png",
                 boxText = "Plot survival curves based on immune characteristics and identify variables associated with outcome.",
                 linkText = "Open Module"
               )
@@ -150,7 +150,7 @@ explorepage <- dashboardPage(
                       width = 6,
                       title = "Immunomodulators",
                       linkId = "link_to_module5",
-                      imgSrc = "images/cell_content.png",
+                      imgSrc = "images/immunomodulators.png",
                       boxText = "Explore the expression of genes that code for immunomodulating proteins, including checkpoint proteins.",
                       linkText = "Open Module"
                   )
