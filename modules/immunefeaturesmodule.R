@@ -152,14 +152,19 @@ immunefeatures <- function(input, output, session, ss_choice, subset_df) {
   
   output$scatterPlot <- renderPlotly({
     eventdata <- event_data("plotly_click", source = "heatplot")
-    validate(need(!is.null(eventdata), "Click heatmap"))
+    
+    validate(
+        need(!is.null(eventdata),
+             "Click heatmap"),
+        need(eventdata$x[[1]] %in% extract2(subset_df(), ss_internal()),
+             "Click heatmap"))
     
     internal_variable_name <- eventdata$y[[1]] %>%
       get_variable_internal_name() %>%
       .[. %in% colnames(intermediate_corr_df())]
     
     plot_df <- intermediate_corr_df() %>% 
-      create_scatterplot_df(
+      build_scatterplot_df(
         filter_column = ss_internal(),
         filter_value = eventdata$x[[1]],
         x_column = internal_variable_name,
