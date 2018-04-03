@@ -70,7 +70,7 @@ groupsoverview <- function(input, output, session, ss_choice, subset_df, width) 
     
     build_sample_group_key_df(
       df = subset_df(),
-      sample_group_option = ss_internal()
+      group_option = ss_internal()
     ) %>% 
       datatable(
         options = list(
@@ -142,14 +142,15 @@ groupsoverview <- function(input, output, session, ss_choice, subset_df, width) 
       build_mosaic_plot_df(
         x_column = internal_x,
         y_column = internal_y,
-        study_value = input$study_subset_selection
+        study_option = input$study_subset_selection
       ) %>% 
       create_mosaicplot(
         x = internal_x,
         y = internal_y,
         fill_factor = internal_y,
-        xlab = display_x,
-        ylab = display_y,
+        # xlab = display_x,
+        # ylab = display_y,
+        title = str_c(display_y, "by", display_x, sep = " "),
         fill_colors = decide_plot_colors(panimmune_data, internal_y),
         width = (3 * width()) / 4 - 60
       ) 

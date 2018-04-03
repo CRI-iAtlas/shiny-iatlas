@@ -30,6 +30,8 @@ create_mosaicplot <- function(
     plot <- plot + facet_grid(facet)
   }
   ggplotly(plot, height = 600, width = width) %>% 
-    format_plotly()
+    layout(title = title) %>% 
+    format_plotly() %>%
+    I
 }
 

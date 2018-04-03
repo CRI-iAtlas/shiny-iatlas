@@ -30,7 +30,11 @@ shinyServer(function(input, output, session) {
       reactive(subset_df()),
       reactive(width()))
   # Survival curves
-  callModule(survival, "module4", reactive(input$ss_choice))
+  callModule(
+      survival, 
+      "module4", 
+      reactive(input$ss_choice),
+      reactive(subset_df()))
   # Immunomodulators
   callModule(
       immunomodulator, 
@@ -91,8 +95,8 @@ shinyServer(function(input, output, session) {
   
   subset_df <- reactive(
       subset_panimmune_df(
-          group_col = get_variable_internal_name(input$ss_choice), 
-          study_subtype = input$study_subset_selection
+          group_column = get_variable_internal_name(input$ss_choice), 
+          study_option = input$study_subset_selection
       )
   )
   

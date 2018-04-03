@@ -24,6 +24,7 @@ create_violinplot <- function(
         xaxis = list(title = xlab),
         yaxis = list(title = ylab)
       ) %>% 
-      format_plotly()
+      format_plotly() %>%
+      I
   )
 }

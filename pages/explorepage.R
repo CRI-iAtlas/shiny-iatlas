@@ -89,13 +89,13 @@ explorepage <- dashboardPage(
             width = 12,
             title = "Analysis Modules",
             solidHeader = TRUE, status = "warning",
-            p("Select a module to explore data. You can organize the data by choosing how to divide tumor samples: by TCGA tumor projects, by TCGA molecular subtypes, or by immune subtypes that span multiple tumor types.  Start by  making your selection with the dropdown selection box on the upper left. Use the Data Description to learn which immune readouts are available. "),
+            p("Select a module to explore data. You can organize the data by choosing how to divide tumor samples, using “Select Sample Groups” at the top of the left navigation bar.  Divide the samples by TCGA tumor tumor type (TCGA Study), by TCGA molecular subtypes (TCGA Subtype), or by immune subtypes that span multiple tumor types (Immune Subtype).  Select “Data Description”  to learn which immune readouts are available."),
             fluidRow(
               imgLinkBox(
                 width = 6,
                 linkId = "link_to_module3",
                 title = "Sample Group Overview",
-                imgSrc = "images/cell_content.png",
+                imgSrc = "images/groupsoverview.png",
                 boxText = "This module provides short summaries of your selected groups, and allows you to see how they overlap with other groups.",
                 linkText = "Open Module"
               ),
@@ -103,7 +103,7 @@ explorepage <- dashboardPage(
                 width = 6,
                 linkId = "link_to_module1",
                 title = "Tumor Microenvironment",
-                imgSrc = "images/cell_content.png",
+                imgSrc = "images/cellcontent.png",
                 boxText = "Explore the immune cell proportions in your sample groups.",
                 linkText = "Open Module"
               )
@@ -113,7 +113,7 @@ explorepage <- dashboardPage(
                     width = 6,
                     title = "Immune Feature Trends",
                     linkId = "link_to_module6",
-                    imgSrc = "images/cell_content.png",
+                    imgSrc = "images/immunefeatures.png",
                     boxText = "This module allows you to see how immune readouts vary across your groups, and how they relate to one another.",
                     linkText = "Open Module"
                 ),
@@ -121,7 +121,7 @@ explorepage <- dashboardPage(
                 width = 6,
                 linkId = "link_to_module4",
                 title = "Clinical Outcomes",
-                imgSrc = "images/cell_content.png",
+                imgSrc = "images/survival.png",
                 boxText = "Plot survival curves based on immune characteristics and identify variables associated with outcome.",
                 linkText = "Open Module"
               )
@@ -150,7 +150,7 @@ explorepage <- dashboardPage(
                       width = 6,
                       title = "Immunomodulators",
                       linkId = "link_to_module5",
-                      imgSrc = "images/cell_content.png",
+                      imgSrc = "images/immunomodulators.png",
                       boxText = "Explore the expression of genes that code for immunomodulating proteins, including checkpoint proteins.",
                       linkText = "Open Module"
                   )

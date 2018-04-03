@@ -14,7 +14,7 @@ survival_UI <- function(id) {
       title = "Sample Group Survival",
       messageBox(
         width = 12,
-        p("Select variable, and survival either as overall survival (OS) or progression-free interval (PFI) to get a Kaplan-Meier plot. For a continuous (numeric) variable the slider can be used to select quantile for dichotomizing data."),
+        p("Select variable, and outcome in terms of either overall survival (OS) or progression-free interval (PFI) to generate a Kaplan-Meier plot. For a continuous (numeric) variable the slider can be used to select to designate splits. The value 2 corresponds to a median split to dichotomize the data, 3 to tertiles for three sample categories, 4 to quartiles, 5 to quintiles and so on."),
         p("For immune subtypes Figure 3A can be generated (OS), and Figure S3A for (PFI).")
       ),
       fluidRow(
@@ -69,13 +69,36 @@ survival_UI <- function(id) {
         width = 12,
         p("For your sample groups, you can explore which variables correlate with improved or lessened survival. Select a variable class, and you will get a heatmap. Red denotes decreased survival, and blue increased survival as the variable is increased."),
         p("Manuscript context:  Selecting variable class “Core Expression Signature”, you can generate Figure 3B. Figures 3C, and Figures S3B, S3C, and S3C can also be generated with different selection options.")
+      ),
+      fluidRow(
+          optionsBox(
+              width = 4,
+              radioButtons(
+                  ns("survival_type"), 
+                  "Select survival type",
+                  c("Progression-Free Interval" = "PFI",
+                    "Overall Survival" = "OS"
+                  ),
+                  selected = "PFI"
+              ),
+              selectInput(
+                  ns("survival_class"),
+                  "Select concordance variables class",
+                  choices = get_numeric_variable_classes(),
+                  selected = "T Helper Cell Score"
+              )
+          ),
+          plotBox(
+              plotlyOutput(ns("heatmapplot"), height = 600) %>%
+                  shinycssloaders::withSpinner()
+          )
       )
     )
   )
 }
 
 # Server ----
-survival <- function(input, output, session, ss_choice) {
+survival <- function(input, output, session, ss_choice, subset_df) {
   output$survPlot <- renderPlot({
     
       survival_df <- panimmune_data$fmx_df %>% 
@@ -90,4 +113,36 @@ survival <- function(input, output, session, ss_choice) {
     
     create_kmplot(fit, survival_df, input$confint, input$risktable, title)
   })
+  
+  
+  
+  output$heatmapplot <- renderPlotly({
+      # features <- as.character(get_variable_group("T Helper Cell Score"))
+      # group_internal <- "Subtype_Immune_Model_Based"
+      # time_col <- "OS_time"
+      # status_col <- "OS"
+      # subset_df <- panimmune_data$fmx_df
+      if(input$survival_type == "PFI"){
+          time_col <- "OS_time"
+          status_col <- "OS"
+      } else{
+          time_col <- "PFI_time_1"
+          status_col <- "PFI_1"
+      }
+      
+      features <- as.character(get_variable_group(input$survival_class))
+      group_internal <- get_variable_internal_name(ss_choice())
+      
+      ci_mat <- subset_df() %>% 
+        build_ci_mat(
+          group_column = group_internal, 
+          value_columns = features, 
+          time_column = time_col, 
+          status_column = status_col
+        )
+      create_heatmap(ci_mat, "ci")
+  })
+  
 }
+
+
