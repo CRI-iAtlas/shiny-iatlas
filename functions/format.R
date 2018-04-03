@@ -100,7 +100,7 @@ get_margins_plotly <- function(p, font_size = 12) {
   #   map_int(str_length) %>% 
   #   max(na.rm = TRUE)
   
-  if (!(p_data$type %in% c("violin", "bar", "scatter"))) {
+  if (p_data$type %in% c("heatmap")) {
     ylabs <- p_data$y
     ylabmax <- ylabs %>% 
       map_int(str_length) %>% 
