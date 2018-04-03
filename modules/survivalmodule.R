@@ -14,7 +14,7 @@ survival_UI <- function(id) {
       title = "Sample Group Survival",
       messageBox(
         width = 12,
-        p("Select variable, and survival either as overall survival (OS) or progression-free interval (PFI) to get a Kaplan-Meier plot. For a continuous (numeric) variable the slider can be used to select quantile for dichotomizing data."),
+        p("Select variable, and outcome in terms of either overall survival (OS) or progression-free interval (PFI) to generate a Kaplan-Meier plot. For a continuous (numeric) variable the slider can be used to select to designate splits. The value 2 corresponds to a median split to dichotomize the data, 3 to tertiles for three sample categories, 4 to quartiles, 5 to quintiles and so on."),
         p("For immune subtypes Figure 3A can be generated (OS), and Figure S3A for (PFI).")
       ),
       fluidRow(

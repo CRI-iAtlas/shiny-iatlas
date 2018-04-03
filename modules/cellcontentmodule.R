@@ -66,11 +66,34 @@ cellcontent_UI <- function(id) {
       ),
       fluidRow(
         
-        # ** Cell fractions bar plot ----
-        plotBox(
-          width = 12,
-          plotlyOutput(ns("cell_frac_barplot")) %>% 
-            shinycssloaders::withSpinner()
+        # Cell fractions section ----
+        sectionBox(
+            title = "Cell Type Fractions",
+            messageBox(
+                width = 12,
+                p("This allows you to draw barplots for the proportion of different immune cells in the immune compartment.  The proportions are estimated using CIBERSORT (select “Original” fraction to view). CIBERSORT estimates the relative proportions of 22 cell types. Various combinations (“Aggregates”) of those estimates are also provided. “Aggregate 1” corresponds to broader categories of cells, and “Aggregate 2” and “Aggregate 3” to finer categories."), 
+                p("Manuscript context:  Select “Aggregate 1” and immune cell types to get the values Figure 2A, but with a different arrangement of bars.  Figure S2A is for the original CIBERSORT values.")
+            ),
+            fluidRow(
+                optionsBox(
+                    width = 8,
+                    selectInput(
+                        inputId = ns("cf_choice"),
+                        label = "Select Cell Fraction Type",
+                        choices = config_yaml$cell_type_aggregates,
+                        selected = config_yaml$cell_type_aggregates[[1]]
+                    )
+                )
+            ),
+            fluidRow(
+                
+                # ** Cell fractions bar plot ----
+                plotBox(
+                    width = 12,
+                    plotlyOutput(ns("cell_frac_barplot")) %>% 
+                      shinycssloaders::withSpinner()
+                )
+            )
         )
       )
     )

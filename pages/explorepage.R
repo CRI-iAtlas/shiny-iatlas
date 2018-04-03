@@ -89,7 +89,7 @@ explorepage <- dashboardPage(
             width = 12,
             title = "Analysis Modules",
             solidHeader = TRUE, status = "warning",
-            p("Select a module to explore data. You can organize the data by choosing how to divide tumor samples: by TCGA tumor projects, by TCGA molecular subtypes, or by immune subtypes that span multiple tumor types.  Start by  making your selection with the dropdown selection box on the upper left. Use the Data Description to learn which immune readouts are available. "),
+            p("Select a module to explore data. You can organize the data by choosing how to divide tumor samples, using “Select Sample Groups” at the top of the left navigation bar.  Divide the samples by TCGA tumor tumor type (TCGA Study), by TCGA molecular subtypes (TCGA Subtype), or by immune subtypes that span multiple tumor types (Immune Subtype).  Select “Data Description”  to learn which immune readouts are available."),
             fluidRow(
               imgLinkBox(
                 width = 6,
