@@ -17,13 +17,13 @@ datainfo_UI <- function(id) {
         tableBox(
           width = 12,
           div(style = 'overflow-x: scroll', 
-              DT::dataTableOutput(ns('feature_table'))
+              DT::dataTableOutput(ns('feature_table')) %>% 
+                shinycssloaders::withSpinner()
           )
         )
       )
     ),
-    uiOutput(ns("variable_details_section")) %>% 
-      shinycssloaders::withSpinner()
+    uiOutput(ns("variable_details_section")) 
   )
 }
 
@@ -90,7 +90,6 @@ datainfo <- function(input, output, session) {
         )
       }) %>% 
       tagList()
-    print(tag_list)
     tag_list
   })
   
