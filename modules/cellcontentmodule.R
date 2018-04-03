@@ -116,7 +116,7 @@ cellcontent <- function(input, output, session, ss_choice, subset_df) {
     selected_plot_subgroup <- eventdata$x[[1]]
     
     subset_df() %>%
-      create_scatterplot_df(
+      build_scatterplot_df(
         filter_column = ss_internal(),
         filter_value = selected_plot_subgroup,
         x_column = "Stromal_Fraction",

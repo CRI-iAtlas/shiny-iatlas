@@ -120,7 +120,7 @@ build_barplot_df <- function(
 #' @export
 #'
 #' @examples
-create_scatterplot_df <- function(
+build_scatterplot_df <- function(
   df, filter_column, filter_value, x_column, y_column, 
   id_column = "ParticipantBarcode"
 ) {
@@ -175,14 +175,18 @@ build_mosaic_plot_df <- function(df, x_column, y_column, study_option) {
 # ** Immune feature trends module ----
 
 build_intermediate_corr_df <- function(
-  df, value_column, corr_value_columns, group_column, group_options,  
+  df, value_column, group_column, group_options, corr_value_columns,
   id_column = "ParticipantBarcode" 
 ) {
+  if (is.factor(corr_value_columns)) {
+    corr_value_columns <- levels(corr_value_columns)
+  }
+
   df %>%
     as_data_frame() %>%
     filter(UQ(as.name(group_column)) %in% group_options) %>%
-    select_(
-      .dots = c(id_column, group_column, value_column, corr_value_columns)
+    select(
+      one_of(c(id_column, group_column, value_column, corr_value_columns))
     )
 }
 

@@ -148,8 +148,8 @@ groupsoverview <- function(input, output, session, ss_choice, subset_df, width) 
         x = internal_x,
         y = internal_y,
         fill_factor = internal_y,
-        xlab = display_x,
-        ylab = display_y,
+        # xlab = display_x,
+        # ylab = display_y,
         fill_colors = decide_plot_colors(panimmune_data, internal_y),
         width = (3 * width()) / 4 - 60
       ) 

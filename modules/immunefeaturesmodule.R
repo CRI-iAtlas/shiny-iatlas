@@ -112,8 +112,7 @@ immunefeatures <- function(input, output, session, ss_choice, subset_df) {
     plot_df <- subset_df() %>%
       select_(.dots = c(internal_x, internal_y)) %>%
       .[complete.cases(.),]
-    print(plot_df)
-    
+
     plot_df %>% 
       create_violinplot(
         internal_x,
@@ -140,14 +139,14 @@ immunefeatures <- function(input, output, session, ss_choice, subset_df) {
   )
   
   output$corrPlot <- renderPlotly({
-    heatmap_corr_mat <- intermediate_corr_df() %>% 
+    heatmap_corr_mat <- intermediate_corr_df() %>%
       build_heatmap_corr_mat(
         value_column = input$heatmap_values,
         group_column = ss_internal(),
         group_options = sample_groups(),
         corr_value_columns = hm_variables()
       )
-    
+
     create_heatmap(heatmap_corr_mat, "heatplot")
   })
   

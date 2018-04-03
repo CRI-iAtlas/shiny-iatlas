@@ -6,6 +6,6 @@ create_heatmap <- function(corr_mat, source_name){
     type = "heatmap",
     source = source_name,
     colors = rev(RColorBrewer::brewer.pal(8, "RdBu"))) %>% 
-    # format_plotly() %>% 
+    format_plotly() %>%
     I
 }

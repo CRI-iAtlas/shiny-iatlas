@@ -24,18 +24,22 @@ create_scatterplot <- function(
         textposition = 'top left'
       )
     )
-  if (corrplot) {
     p <- p %>% 
       layout(
-        xaxis = list(range(0, 1)),
-        yaxis = list(range(0, 1))
+        title = title,
+        xaxis = list(title = x_lab), 
+        yaxis = list(title = y_lab)
       )
-  }
+  if (corrplot) {
   p %>% 
     layout(
-      title = title,
-      xaxis = list(title = x_lab), 
-      yaxis = list(title = y_lab)
+      xaxis = list(range(0, 1)),
+      yaxis = list(range(0, 1))
     ) %>% 
-    format_plotly()
+    format_plotly() %>%
+    I
+  } else {
+    p %>% 
+      format_plotly()
+  }
 }
