@@ -169,7 +169,9 @@ build_mosaic_plot_df <- function(df, x_column, y_column, study_option) {
       select(xvar, yvar) %>%
       .[complete.cases(.),] %>%
       mutate(xvar = as.factor(xvar)) %>%
-      mutate(yvar = as.factor(yvar)))
+      mutate(yvar = as.factor(yvar),
+             yvar = fct_rev(yvar))
+    )
 }
 
 # ** Immune feature trends module ----
