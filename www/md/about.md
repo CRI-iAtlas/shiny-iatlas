@@ -4,7 +4,9 @@ The **Cancer Research Institute (CRI) iAtlas** is an an interactive web-based pl
 
 ### TCGA PanCancerAtlas Immune Response Working Group
 
-The Immune Response Working Group (IRWG) is comprised of a diverse set of researchers devoted to exploring the relationship between tumors and the immune microenvironment and its impact on patient outcomes. Highlights of the Thorsson et al. study include the following:
+The Immune Response Working Group (IRWG) comprised a diverse set of researchers devoted to exploring the relationship between tumors and the immune microenvironment and its impact on patient outcomes.  This working group was one of many in the TCGA PanCancer Atlas initiative, each exploring a different aspect of cross-tumor type analysis. Each reported their findings in a  series of articles in Cell Press in April 2018.
+
+Highlights of the Thorsson et al. study include the following:
 
 + six identified immune subtypes span cancer tissue types and molecular subtypes;
 + immune subtypes differ by somatic aberrations, microenvironment and survival;
@@ -14,7 +16,7 @@ These analyses serve as a resource for exploring immunogenicity across cancer ty
 
 > Thorsson et al., **The Immune Landscape of Cancer**, Immunity (2018), https://doi.org/10.1016/j.immuni.2018.03.023
 
-### iAtlas Explorer
+### CRI iAtlas Explorer
 
 The main feature of the iAtlas web tool is the **iAtlas Explorer**, which provides several *Analysis Modules* to to explore and visualize results from the Thorsson et al. Immune Landscape study. Each module presents information organized by theme, with multiple views and interactive controls to enhance and extend the information included in the original paper figures.
 

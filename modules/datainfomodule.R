@@ -5,13 +5,13 @@ datainfo_UI <- function(id) {
     titleBox("Data Description"),
     textBox(
       width = 12,
-      p("Each row in the table corresponds to a variable for which data are available for exploration in CRI iAtlas. Variables are organized into classes, as displayed in the second column.")  
+      p("Each row in the table corresponds to a variable for which data are available for exploration in CRI iAtlas. Variables are organized into classes, as displayed in the Variable Class column.")  
     ),
     sectionBox(
-      title = "PanImmune Features",
+      title = "PanImmune Variables",
       messageBox(
         width = 12,
-        p("Select a row in the feature table to view more details about variables in the same class.")
+        p("Select a row in the table to view more details about variables in the same class.")
       ),
       fluidRow(
         tableBox(
@@ -116,7 +116,7 @@ datainfo <- function(input, output, session) {
         title = "Variable Class Details",
         messageBox(
           width = 12,
-          p("This is some information about the features in the variable class you clicked.")
+          p("Here is additional information about the variables in the Variable Class you selected. To the right you can access description of the methods used to obtain the variables.")
         ),
         fluidRow(
           tableBox(
