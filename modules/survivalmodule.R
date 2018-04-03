@@ -69,13 +69,36 @@ survival_UI <- function(id) {
         width = 12,
         p("For your sample groups, you can explore which variables correlate with improved or lessened survival. Select a variable class, and you will get a heatmap. Red denotes decreased survival, and blue increased survival as the variable is increased."),
         p("Manuscript context:  Selecting variable class “Core Expression Signature”, you can generate Figure 3B. Figures 3C, and Figures S3B, S3C, and S3C can also be generated with different selection options.")
+      ),
+      fluidRow(
+          optionsBox(
+              width = 4,
+              radioButtons(
+                  ns("survival_type"), 
+                  "Select survival type",
+                  c("Progression-Free Interval" = "PFI",
+                    "Overall Survival" = "OS"
+                  ),
+                  selected = "PFI"
+              ),
+              selectInput(
+                  ns("survival_class"),
+                  "Select concordance variables class",
+                  choices = get_numeric_variable_classes(),
+                  selected = "T Helper Cell Score"
+              )
+          ),
+          plotBox(
+              plotlyOutput(ns("heatmapplot"), height = 600) %>%
+                  shinycssloaders::withSpinner()
+          )
       )
     )
   )
 }
 
 # Server ----
-survival <- function(input, output, session, ss_choice) {
+survival <- function(input, output, session, ss_choice, subset_df) {
   output$survPlot <- renderPlot({
     
       survival_df <- panimmune_data$fmx_df %>% 
@@ -90,4 +113,64 @@ survival <- function(input, output, session, ss_choice) {
     
     create_kmplot(fit, survival_df, input$confint, input$risktable, title)
   })
+  
+  
+  
+  output$heatmapplot <- renderPlotly({
+      # features <- as.character(get_variable_group("T Helper Cell Score"))
+      # group_internal <- "Subtype_Immune_Model_Based"
+      # time_col <- "OS_time"
+      # status_col <- "OS"
+      # subset_df <- panimmune_data$fmx_df
+      if(input$survival_type == "PFI"){
+          time_col <- "OS_time"
+          status_col <- "OS"
+      } else{
+          time_col <- "PFI_time_1"
+          status_col <- "PFI_1"
+      }
+      
+      features <- as.character(get_variable_group(input$survival_class))
+      group_internal <- get_variable_internal_name(ss_choice())
+      
+      ci_matrix <- create_ci_matrix(subset_df(), group_internal, features, time_col, status_col)
+      create_plotly_heatmap(ci_matrix, "ci")
+  })
+  
+}
+
+create_ci_matrix <- function(df, group_col, feature_cols, time_col, status_col){
+    feature_names <- map(feature_cols, get_variable_display_name)
+    group_v <- extract2(df, group_col) 
+    groups <- group_v %>% 
+        unique %>% 
+        discard(is.na(.)) %>% 
+        sort
+    df %>% 
+        split(group_v) %>% 
+        map(get_concordance_by_group, feature_cols, time_col, status_col) %>% 
+        unlist %>% 
+        unname %>% 
+        matrix(ncol = length(groups)) %>% 
+        set_rownames(feature_names) %>% 
+        set_colnames(groups)
+}
+
+get_concordance_by_group <- function(df, feature_cols, time_col, status_col){
+    feature_cols %>% 
+        map(function(f) get_concordance(df, f, time_col, status_col)) %>% 
+        set_names(feature_cols)
+}
+
+get_concordance <- function(df, feature_col, time_col, status_col){
+    matrix <- wrapr::let(
+        alias = c(FEATURE = feature_col,
+                  TIME = time_col,
+                  STATUS = status_col),
+        df %>% 
+            select(FEATURE, TIME, STATUS) %>% 
+            .[complete.cases(.),] %>% 
+            as.data.frame %>% 
+            as.matrix)
+    concordanceIndex::concordanceIndex(matrix[,1], matrix[,-1])
 }

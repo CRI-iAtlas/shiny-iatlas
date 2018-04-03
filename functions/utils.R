@@ -104,4 +104,12 @@ get_numeric_columns <- function(){
         colnames()
 }
 
+get_numeric_variable_classes <- function(){
+    panimmune_data %>% 
+        extract2("feature_df") %>% 
+        filter(`VariableType` == "Numeric") %>% 
+        extract2("Variable Class") %>% 
+        unique %>% 
+        discard(is.na(.))
+}
 

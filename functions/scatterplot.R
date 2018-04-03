@@ -1,5 +1,6 @@
 create_scatterplot <- function(
-  df, x_column, y_column, x_lab = "", y_lab = "", title = "", corrplot = FALSE
+  df, x_column, y_column, label_column = "label",
+  x_lab = "", y_lab = "", title = "", corrplot = FALSE
 ) {
   if (corrplot) {
     axis_max <- max(
@@ -10,14 +11,17 @@ create_scatterplot <- function(
   }
   
   let(
-    alias = c(xvar = x_column, yvar = y_column),
+    alias = c(xvar = x_column, yvar = y_column, labelvar = label_column),
     p <- df %>%
       plotly::plot_ly(
         x = ~xvar,
         y = ~yvar
       ) %>% 
       add_markers(
-        alpha = 0.5
+        alpha = 0.5,
+        hoverinfo = 'text',
+        text = ~labelvar,
+        textposition = 'top left'
       )
     )
   if (corrplot) {
