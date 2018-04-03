@@ -88,11 +88,11 @@ cellcontent <- function(input, output, session, ss_choice, subset_df) {
   # ** Overall proportions bar plot render ----
   output$overall_props_barplot <- renderPlotly({
     subset_df() %>% 
-      create_tumor_content_df(group_column = ss_internal()) %>% 
-      create_barplot_df(
-        value_column = "fraction",
-        group_column = "fraction_type",
-        subgroup_column = ss_internal(),
+      build_tumor_content_df(group_column = ss_internal()) %>% 
+      build_barplot_df(
+        x_column = "fraction_type",
+        y_column = "fraction",
+        color_column = ss_internal(),
         operations = c("mean", "se"),
         add_label = TRUE
       ) %>% 
@@ -139,14 +139,14 @@ cellcontent <- function(input, output, session, ss_choice, subset_df) {
     
     cell_fractions <- as.character(get_variable_group(input$cf_choice))
     subset_df() %>%
-      create_cell_fraction_df(
+      build_cell_fraction_df(
         group_column = ss_internal(), 
-        cell_fraction_columns = cell_fractions
+        value_columns = cell_fractions
       ) %>%
-      create_barplot_df(
-        value_column = "fraction",
-        group_column = "fraction_type",
-        subgroup_column = ss_internal(),
+      build_barplot_df(
+        y_column = "fraction",
+        x_column = "fraction_type",
+        color_column = ss_internal(),
         operations = c("mean", "se"),
         add_label = TRUE
       ) %>% 

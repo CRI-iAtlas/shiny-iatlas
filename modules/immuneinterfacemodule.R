@@ -51,7 +51,8 @@ immuneinterface <- function(input, output, session, ss_choice, subset_df) {
     
     ## create dfp, the data frame for plotting, based on choices
     
-    plot_df <- create_immuneinterface_df(subset_df(), sample_group_label, diversity_vars)
+    plot_df <- subset_df() %>% 
+      build_immuneinterface_df(sample_group_label, diversity_vars)
     
     
     ## adjust scales

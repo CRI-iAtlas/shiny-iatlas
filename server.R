@@ -95,8 +95,8 @@ shinyServer(function(input, output, session) {
   
   subset_df <- reactive(
       subset_panimmune_df(
-          group_col = get_variable_internal_name(input$ss_choice), 
-          study_subtype = input$study_subset_selection
+          group_column = get_variable_internal_name(input$ss_choice), 
+          study_option = input$study_subset_selection
       )
   )
   
