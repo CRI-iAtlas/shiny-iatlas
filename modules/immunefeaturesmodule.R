@@ -154,10 +154,14 @@ immunefeatures <- function(input, output, session, ss_choice, subset_df) {
     eventdata <- event_data("plotly_click", source = "heatplot")
     
     validate(
-        need(!is.null(eventdata),
-             "Click heatmap"),
-        need(eventdata$x[[1]] %in% extract2(subset_df(), ss_internal()),
-             "Click heatmap"))
+        need({
+          !is.null(eventdata) %>% 
+               magrittr::and(
+                 eventdata$x[[1]] %in% extract2(subset_df(), ss_internal())
+               )
+        },
+        "Click heatmap")
+    )
     
     internal_variable_name <- eventdata$y[[1]] %>%
       get_variable_internal_name() %>%

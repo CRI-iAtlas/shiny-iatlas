@@ -114,10 +114,14 @@ cellcontent <- function(input, output, session, ss_choice, subset_df) {
     )
     selected_plot_subgroup <- eventdata$x[[1]]
     validate(
-        need(!is.null(eventdata),
-             "Click bar plot"),
-        need(selected_plot_subgroup %in% extract2(subset_df(), ss_internal()),
-             "Click bar plot"))
+      need({
+        !is.null(eventdata) %>% 
+          magrittr::and(
+            selected_plot_subgroup %in% extract2(subset_df(), ss_internal())
+          )
+      },
+      "Click heatmap")
+    )
     
     subset_df() %>%
       build_scatterplot_df(
@@ -132,7 +136,7 @@ cellcontent <- function(input, output, session, ss_choice, subset_df) {
         x_lab = "Stromal Fraction",
         y_lab = "Leukocyte Fraction",
         title = selected_plot_subgroup,
-        corrplot = TRUE
+        identity_line = TRUE
       )
   })
   
