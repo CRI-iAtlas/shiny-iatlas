@@ -4,8 +4,8 @@ create_mosaicplot <- function(
   ylab = NULL, 
   title = NULL, 
   fill_colors = NA, 
-  facet = NA,
-  width = 1500) {
+  facet = NA
+) {
   
   
   plot <- df %>%
@@ -29,10 +29,14 @@ create_mosaicplot <- function(
   if (!is.na(facet)) {
     plot <- plot + facet_grid(facet)
   }
-  ggplotly(plot, height = 600, width = width) %>% 
+  p <- plotly_build(plot) %>%
     layout(title = title,
            legend = list(traceorder = 'reversed')) %>% 
-    format_plotly() %>%
-    I
+    format_plotly()
+  p["width"] <- list(NULL)
+  p["height"] <- list(NULL)
+  p$x$layout["width"] <- list(NULL)
+  p$x$layout["height"] <- list(NULL)
+  p
 }
 

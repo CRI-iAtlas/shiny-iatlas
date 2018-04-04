@@ -71,11 +71,6 @@ shinyServer(function(input, output, session) {
     shinydashboard::updateTabItems(session, "explorertabs", "immunomodulators")
   })
   
-  width <- reactive({
-      as.numeric(input$dimension[1])
-  })
-  
-  
   output$study_subset_UI <- renderUI({
       if (input$ss_choice == "TCGA Subtype") {
           choices <- sample_group_df %>% 
