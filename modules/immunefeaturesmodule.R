@@ -19,7 +19,7 @@ immunefeatures_UI <- function(id) {
           width = 6,
           selectInput(
             ns("violin_y"),
-            "Select violin plot y variable",
+            "Select violin plot Y variable",
             choices = get_friendly_numeric_columns(),
             selected = "leukocyte_fraction"
           )
@@ -102,6 +102,7 @@ immunefeatures <- function(input, output, session, ss_choice, subset_df) {
   ss_internal <- reactive(get_variable_internal_name(ss_choice()))
   sample_groups <- reactive(get_category_group(ss_internal()))
   
+  
   output$violinPlot <- renderPlotly({
     
     display_x  <- ss_choice()
@@ -112,7 +113,7 @@ immunefeatures <- function(input, output, session, ss_choice, subset_df) {
     plot_df <- subset_df() %>%
       select_(.dots = c(internal_x, internal_y)) %>%
       .[complete.cases(.),]
-
+    
     plot_df %>% 
       create_violinplot(
         internal_x,
@@ -146,20 +147,25 @@ immunefeatures <- function(input, output, session, ss_choice, subset_df) {
         group_options = sample_groups(),
         corr_value_columns = hm_variables()
       )
-
+    
     create_heatmap(heatmap_corr_mat, "heatplot")
   })
   
   output$scatterPlot <- renderPlotly({
     eventdata <- event_data("plotly_click", source = "heatplot")
-    validate(need(!is.null(eventdata), "Click heatmap"))
+    
+    validate(need(
+      check_click_data(eventdata, subset_df(), ss_internal(), intermediate_corr_df()),
+      "Click heatmap"))
+    
     
     internal_variable_name <- eventdata$y[[1]] %>%
       get_variable_internal_name() %>%
       .[. %in% colnames(intermediate_corr_df())]
     
+    
     plot_df <- intermediate_corr_df() %>% 
-      create_scatterplot_df(
+      build_scatterplot_df(
         filter_column = ss_internal(),
         filter_value = eventdata$x[[1]],
         x_column = internal_variable_name,
@@ -174,5 +180,12 @@ immunefeatures <- function(input, output, session, ss_choice, subset_df) {
         y_lab = get_variable_display_name(input$heatmap_values),
         title = eventdata$x[[1]])
   })
+}
+
+
+check_click_data <- function(eventdata, subset_df, ss_internal, intermediate_corr_df){
+  if(is.null(eventdata)) return(FALSE)
+  all(eventdata$x[[1]] %in% extract2(subset_df, ss_internal),
+      any(get_variable_internal_name(eventdata$y[[1]]) %in% colnames(intermediate_corr_df)))
 }
 
