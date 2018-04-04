@@ -19,7 +19,7 @@ immunefeatures_UI <- function(id) {
           width = 6,
           selectInput(
             ns("violin_y"),
-            "Select violin plot y variable",
+            "Select violin plot Y variable",
             choices = get_friendly_numeric_columns(),
             selected = "leukocyte_fraction"
           )
@@ -152,7 +152,7 @@ immunefeatures <- function(input, output, session, ss_choice, subset_df) {
   
   output$scatterPlot <- renderPlotly({
     eventdata <- event_data("plotly_click", source = "heatplot")
-    validate(need(!is.null(eventdata), "Click heatmap"))
+    validate(need(!is.null(eventdata), "Click on a cell in the heatmap"))
     
     internal_variable_name <- eventdata$y[[1]] %>%
       get_variable_internal_name() %>%

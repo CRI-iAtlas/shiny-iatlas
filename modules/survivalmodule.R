@@ -14,7 +14,7 @@ survival_UI <- function(id) {
       title = "Sample Group Survival",
       messageBox(
         width = 12,
-        p("Select the variable, and outcome in terms of either overall survival (OS) or progression-free interval (PFI) endpoints to generate a Kaplan-Meier plot. For a continuous (numeric) variable, the slider can be used to specify how the range of values of that variable is split.  Selecting 2 splits the values by the middle of the range, 3 splits the range into three even intervals and so on."),
+        p("Select the variable, and outcome in terms of either overall survival (OS) or progression free interval (PFI) endpoints to generate a Kaplan-Meier plot. For a continuous (numeric) variable, the slider can be used to specify how the range of values of that variable is split.  Selecting 2 splits the values by the middle of the range, 3 splits the range into three even intervals and so on."),
         p("For immune subtypes Figure 3A can be generated (OS), and Figure S3A for (PFI).")
       ),
       fluidRow(
@@ -37,7 +37,7 @@ survival_UI <- function(id) {
           selectInput(
             ns("timevar"),
             "Survival endpoint",
-            c("OS" = "OS_time", "PFI" = "PFI_time_1"),
+            c("Overall Survival" = "OS_time", "Progression Free Interval" = "PFI_time_1"),
             selected = "OS_time"
           ),
           
@@ -67,7 +67,7 @@ survival_UI <- function(id) {
       title = "Concordance Index",
       messageBox(
         width = 12,
-        p("For your sample groups, you can explore which variables correlate with improved or lessened survival. Select a variable class, and you will get a heatmap. Red denotes decreased survival, and blue increased survival as the variable is increased."),
+        p("Here, you can explore which variables are associated with improved or diminished survival within your sample groups. Select a variable class, and you will get a heatmap, with one row for each variable in that class. For a given variable (row) and sample group (column) red denotes decreased survival, and blue increased survival as the variable is increased."),
         p("Manuscript context:  Selecting variable class “Core Expression Signature”, you can generate Figure 3B. Figures 3C, and Figures S3B, S3C, and S3C can also be generated with different selection options.")
       ),
       fluidRow(
@@ -75,15 +75,15 @@ survival_UI <- function(id) {
               width = 4,
               radioButtons(
                   ns("survival_type"), 
-                  "Select survival type",
-                  c("Progression-Free Interval" = "PFI",
+                  "Survival endpoint",
+                  c("Progression Free Interval" = "PFI",
                     "Overall Survival" = "OS"
                   ),
                   selected = "PFI"
               ),
               selectInput(
                   ns("survival_class"),
-                  "Select concordance variables class",
+                  "Select Variables Class (rows)",
                   choices = get_numeric_variable_classes(),
                   selected = "T Helper Cell Score"
               )
