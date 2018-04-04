@@ -91,11 +91,20 @@ decide_plot_colors <- function(data_obj, sample_group_label) {
 
 get_friendly_numeric_columns <- function(){
     get_numeric_columns() %>% 
-        purrr::map(get_variable_display_name) %>% 
+        purrr::map(get_variable_display_name) %>%
         compact() %>% 
         unlist() %>% 
         discard(~is.na(.))
-        
+}
+
+get_friendly_numeric_columns_by_group <- function(){
+    panimmune_data$feature_df %>% 
+        rename("Class" = `Variable Class`) %>% 
+        select(Class, FriendlyLabel) %>% 
+        filter(FriendlyLabel %in% get_friendly_numeric_columns()) %>% 
+        mutate(Class = ifelse(is.na(Class), "Other", Class)) %>% 
+        split(.$Class) %>% 
+        map(function(df) df$FriendlyLabel)
 }
 
 get_numeric_columns <- function(){
