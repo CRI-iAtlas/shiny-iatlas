@@ -20,8 +20,7 @@ immunefeatures_UI <- function(id) {
           selectInput(
             ns("violin_y"),
             "Select violin plot Y variable",
-            choices = get_friendly_numeric_columns(),
-            selected = "leukocyte_fraction"
+            choices = get_friendly_numeric_columns_by_group()
           )
         )
       ),
@@ -82,12 +81,14 @@ immunefeatures_UI <- function(id) {
       ),
       fluidRow(
         plotBox(
-          width = 6,
-          plotlyOutput(ns("corrPlot")) %>% 
-            shinycssloaders::withSpinner()
+          width = 7,
+          fluidRow(
+            plotlyOutput(ns("corrPlot")) %>% 
+              shinycssloaders::withSpinner()
+          )
         ),
         plotBox(
-          width = 6,
+          width = 5,
           plotlyOutput(ns("scatterPlot")) %>% 
             shinycssloaders::withSpinner()
         )

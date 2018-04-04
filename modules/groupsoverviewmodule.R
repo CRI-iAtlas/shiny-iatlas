@@ -109,13 +109,10 @@ groupsoverview <- function(input, output, session, ss_choice, subset_df, width) 
     req(input$sample_mosaic_group, cancelOutput = TRUE)
 
     if (input$sample_mosaic_group == "TCGA Subtype") {
-      choices <- panimmune_data$fmx_df %>%
-        filter_at(
-          vars(get_variable_internal_name(input$sample_mosaic_group)), 
-          all_vars(!is.na(.))
-        ) %>% 
-        distinct(Study) %>%
-        extract2("Study")
+      choices <- sample_group_df %>% 
+        filter(sample_group == "tcga_subtype", !is.na(FeatureValue)) %>% 
+        distinct(`TCGA Studies`) %>% 
+        extract2("TCGA Studies")
       
       optionsBox(
         width = 4,
@@ -151,8 +148,7 @@ groupsoverview <- function(input, output, session, ss_choice, subset_df, width) 
         # xlab = display_x,
         # ylab = display_y,
         title = str_c(display_y, "by", display_x, sep = " "),
-        fill_colors = decide_plot_colors(panimmune_data, internal_y),
-        width = (3 * width()) / 4 - 60
+        fill_colors = decide_plot_colors(panimmune_data, internal_y)
       ) 
   })
   

@@ -12,16 +12,13 @@ subset_panimmune_df <- function(
   if (!(group_column == "Subtype_Curated_Malta_Noushmehr_et_al")) {
     return(df)
   } else {
+    sample_groups <- panimmune_data$sample_group_df %>% 
+      filter(sample_group == "tcga_subtype", 
+             `TCGA Studies` %in% study_option) %>% 
+      extract2("FeatureValue")
+    
     wrapr::let(
       alias = c(COL = group_column), {
-        sample_groups <- df %>% 
-          select(COL) %>% 
-          distinct() %>% 
-          mutate(study = str_extract(COL, ".*(?=\\.)"),
-                 study = str_split(study, "_")) %>% 
-          unnest(study) %>% 
-          filter(study %in% study_option) %>% 
-          extract2(group_column)
         
         df %>% 
           filter(COL %in% sample_groups) %>% 

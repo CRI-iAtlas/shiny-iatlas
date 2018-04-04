@@ -71,20 +71,12 @@ shinyServer(function(input, output, session) {
     shinydashboard::updateTabItems(session, "explorertabs", "immunomodulators")
   })
   
-  width <- reactive({
-      as.numeric(input$dimension[1])
-  })
-  
-  
   output$study_subset_UI <- renderUI({
       if (input$ss_choice == "TCGA Subtype") {
-          choices <- panimmune_data$fmx_df %>%
-              filter_at(
-                  vars(get_variable_internal_name(input$ss_choice)), 
-                  all_vars(!is.na(.))
-              ) %>% 
-              distinct(Study) %>%
-              extract2("Study")
+          choices <- sample_group_df %>% 
+            filter(sample_group == "tcga_subtype", !is.na(FeatureValue)) %>% 
+            distinct(`TCGA Studies`) %>% 
+            extract2("TCGA Studies")
               
           selectInput("study_subset_selection", 
                       "Choose study subset:",

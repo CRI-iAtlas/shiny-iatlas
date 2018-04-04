@@ -25,21 +25,24 @@ cellcontent_UI <- function(id) {
             shinycssloaders::withSpinner()
         )
       ),
-      messageBox(
-        width = 12,
-        p("Click on the bars for a sample group and you will get generate a scatter plot, showing leukocyte fraction on the Y-axis and stromal fraction on the X-axis. Points near the diagonal correspond to tumor samples in which non-tumor stromal cells are nearly all immune cells, and points away from the diagonal correspond to a more mixed or a non-immune stromal tumor microenvironment.  Points in the upper-left triangle of the plot are estimation artifacts."),
-        p("Manuscript context:  Looking at TCGA tumor types, select PRAD and then SKCM and you will get what corresponds to Figure 2C.")
-      ),
       fluidRow(
         
         # ** Overall proportions correlation plots ----
         plotBox(
           width = 12,
+          messageBox(
+            width = 6,
+            p("Click on the bars for a sample group and you will get generate a scatter plot, showing leukocyte fraction on the Y-axis and stromal fraction on the X-axis. Points near the diagonal correspond to tumor samples in which non-tumor stromal cells are nearly all immune cells, and points away from the diagonal correspond to a more mixed or a non-immune stromal tumor microenvironment.  Points in the upper-left triangle of the plot are estimation artifacts."),
+            p("Manuscript context:  Looking at TCGA tumor types, select PRAD and then SKCM and you will get what corresponds to Figure 2C.")
+          ),
           column(
             width = 6,
-            
-            plotlyOutput(ns("lf_sf_corr_scatterplot")) %>% 
-              shinycssloaders::withSpinner()
+            br(),
+            fluidRow(
+              
+              plotlyOutput(ns("lf_sf_corr_scatterplot")) %>% 
+                shinycssloaders::withSpinner()
+            )
           )
         )
       )
@@ -119,7 +122,7 @@ cellcontent <- function(input, output, session, ss_choice, subset_df) {
         need(all(!is.null(eventdata),
                  selected_plot_subgroup %in% extract2(subset_df(), ss_internal())),
         "Click bar plot"))
-  
+    print(selected_plot_subgroup)
     subset_df() %>%
       build_scatterplot_df(
         filter_column = ss_internal(),
@@ -134,7 +137,8 @@ cellcontent <- function(input, output, session, ss_choice, subset_df) {
         y_lab = "Leukocyte Fraction",
         title = selected_plot_subgroup,
         identity_line = TRUE
-      )
+      ) %>% 
+      layout(margin = list(t = 39))
   })
   
   # Cell fractions logic ----

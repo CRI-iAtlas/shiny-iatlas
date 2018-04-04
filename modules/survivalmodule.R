@@ -89,8 +89,11 @@ survival_UI <- function(id) {
               )
           ),
           plotBox(
+            width = 8,
+            fluidRow(
               plotlyOutput(ns("heatmapplot"), height = 600) %>%
-                  shinycssloaders::withSpinner()
+              shinycssloaders::withSpinner()
+            )
           )
       )
     )
