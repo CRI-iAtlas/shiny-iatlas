@@ -112,6 +112,7 @@ cellcontent <- function(input, output, session, ss_choice, subset_df) {
     eventdata <- event_data(
       "plotly_click", source = "overall_props_barplot"
     )
+
     selected_plot_subgroup <- eventdata$x[[1]]
     validate(
 

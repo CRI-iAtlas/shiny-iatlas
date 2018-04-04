@@ -15,7 +15,7 @@ immunomodulator_UI <- function(id) {
       messageBox(
         width = 12,
         p("Select an immumodulator gene to see its expression over sample groups."),
-        p("Manuscript context:  If you are looking at immune subtypes, select EDNRB or CXCL10 to get figure 6B.")
+        p("Manuscript context:  If you are looking at immune subtypes, select EDNRB or CXCL10 to get figure 6B. You can view a histogram for an indvidual distributions by clicking on its violin.")
       ),
       fluidRow(
         optionsBox(
@@ -48,7 +48,7 @@ immunomodulator_UI <- function(id) {
       title = "Immunomodulator Annotations",
       messageBox(
         width = 12,
-        p("Brief instructional message about this section, what to do in it, and the available options.")  
+        p("The table shows annotations of the immumodulators, and source.")  
       ),
       fluidRow(
         tableBox(
@@ -91,7 +91,7 @@ immunomodulator <- function(input, output, session, ss_choice, subset_df){
   output$histPlot <- renderPlotly({
     
     eventdata <- event_data("plotly_click", source = "select")
-    validate(need(!is.null(eventdata), "Click violin plot"))
+    validate(need(!is.null(eventdata), "Click violin plot above"))
     violinplot_selected_group <- im_expr_plot_df() %>% 
       get_selected_group_from_violinplot(
         ss_group(), 
