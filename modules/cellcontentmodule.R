@@ -122,7 +122,6 @@ cellcontent <- function(input, output, session, ss_choice, subset_df) {
         need(all(!is.null(eventdata),
                  selected_plot_subgroup %in% extract2(subset_df(), ss_internal())),
         "Click bar plot"))
-    print(selected_plot_subgroup)
     subset_df() %>%
       build_scatterplot_df(
         filter_column = ss_internal(),

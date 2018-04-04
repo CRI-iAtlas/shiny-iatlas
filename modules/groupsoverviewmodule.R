@@ -109,7 +109,7 @@ groupsoverview <- function(input, output, session, ss_choice, subset_df, width) 
     req(input$sample_mosaic_group, cancelOutput = TRUE)
 
     if (input$sample_mosaic_group == "TCGA Subtype") {
-      choices <- sample_group_df %>% 
+      choices <- panimmune_data$sample_group_df %>% 
         filter(sample_group == "tcga_subtype", !is.na(FeatureValue)) %>% 
         distinct(`TCGA Studies`) %>% 
         extract2("TCGA Studies")

@@ -73,7 +73,7 @@ shinyServer(function(input, output, session) {
   
   output$study_subset_UI <- renderUI({
       if (input$ss_choice == "TCGA Subtype") {
-          choices <- sample_group_df %>% 
+          choices <- panimmune_data$sample_group_df %>% 
             filter(sample_group == "tcga_subtype", !is.na(FeatureValue)) %>% 
             distinct(`TCGA Studies`) %>% 
             extract2("TCGA Studies")
