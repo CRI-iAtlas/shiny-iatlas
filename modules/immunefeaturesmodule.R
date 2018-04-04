@@ -81,12 +81,14 @@ immunefeatures_UI <- function(id) {
       ),
       fluidRow(
         plotBox(
-          width = 6,
-          plotlyOutput(ns("corrPlot")) %>% 
-            shinycssloaders::withSpinner()
+          width = 7,
+          fluidRow(
+            plotlyOutput(ns("corrPlot")) %>% 
+              shinycssloaders::withSpinner()
+          )
         ),
         plotBox(
-          width = 6,
+          width = 5,
           plotlyOutput(ns("scatterPlot")) %>% 
             shinycssloaders::withSpinner()
         )
