@@ -224,6 +224,7 @@ build_heatmap_corr_mat <- function(
   # give it nice names
   rownames(corr_mat) <- sapply(rownames(corr_mat), get_variable_display_name)
   corr_mat[is.na(corr_mat)] <- 0
+  corr_mat <- corr_mat[rev(rownames(corr_mat)),]
   return(corr_mat)
 }
 
