@@ -147,7 +147,6 @@ immunefeatures <- function(input, output, session, ss_choice, subset_df) {
         group_options = sample_groups(),
         corr_value_columns = hm_variables()
       )
-    
     create_heatmap(heatmap_corr_mat, "heatplot")
   })
   
