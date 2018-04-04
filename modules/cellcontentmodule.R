@@ -112,9 +112,14 @@ cellcontent <- function(input, output, session, ss_choice, subset_df) {
     eventdata <- event_data(
       "plotly_click", source = "overall_props_barplot"
     )
-    validate(need(!is.null(eventdata), "Click bar plot above"))
+
     selected_plot_subgroup <- eventdata$x[[1]]
-    
+    validate(
+
+        need(all(!is.null(eventdata),
+                 selected_plot_subgroup %in% extract2(subset_df(), ss_internal())),
+        "Click bar plot"))
+  
     subset_df() %>%
       build_scatterplot_df(
         filter_column = ss_internal(),
@@ -128,7 +133,7 @@ cellcontent <- function(input, output, session, ss_choice, subset_df) {
         x_lab = "Stromal Fraction",
         y_lab = "Leukocyte Fraction",
         title = selected_plot_subgroup,
-        corrplot = TRUE
+        identity_line = TRUE
       )
   })
   

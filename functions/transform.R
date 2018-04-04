@@ -169,7 +169,9 @@ build_mosaic_plot_df <- function(df, x_column, y_column, study_option) {
       select(xvar, yvar) %>%
       .[complete.cases(.),] %>%
       mutate(xvar = as.factor(xvar)) %>%
-      mutate(yvar = as.factor(yvar)))
+      mutate(yvar = as.factor(yvar),
+             yvar = fct_rev(yvar))
+    )
 }
 
 # ** Immune feature trends module ----
@@ -187,7 +189,7 @@ build_intermediate_corr_df <- function(
     filter(UQ(as.name(group_column)) %in% group_options) %>%
     select(
       one_of(c(id_column, group_column, value_column, corr_value_columns))
-    )
+    ) 
 }
 
 
@@ -202,7 +204,6 @@ build_heatmap_corr_mat <- function(
         use = "pairwise.complete.obs"
     )
   }
-  
   group_options <- group_options[group_options %in% extract2(df, group_column)]
   corr_mat <- matrix(
     data = 0,

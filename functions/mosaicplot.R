@@ -30,7 +30,8 @@ create_mosaicplot <- function(
     plot <- plot + facet_grid(facet)
   }
   ggplotly(plot, height = 600, width = width) %>% 
-    layout(title = title) %>% 
+    layout(title = title,
+           legend = list(traceorder = 'reversed')) %>% 
     format_plotly() %>%
     I
 }
