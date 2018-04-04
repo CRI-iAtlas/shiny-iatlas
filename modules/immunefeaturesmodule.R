@@ -76,116 +76,116 @@ immunefeatures_UI <- function(id) {
                 "Stemness Score RNA" = "StemnessScoreRNA"
               ),
               selected = "Leukocyte Fraction"
-                        )
-                    )
-                )
-            ),
-            fluidRow(
-                plotBox(
-                    width = 6,
-                    plotlyOutput(ns("corrPlot")) %>% 
-                        shinycssloaders::withSpinner()
-                ),
-                plotBox(
-                    width = 6,
-                    plotlyOutput(ns("scatterPlot")) %>% 
-                        shinycssloaders::withSpinner()
-                )
             )
+          )
         )
+      ),
+      fluidRow(
+        plotBox(
+          width = 6,
+          plotlyOutput(ns("corrPlot")) %>% 
+            shinycssloaders::withSpinner()
+        ),
+        plotBox(
+          width = 6,
+          plotlyOutput(ns("scatterPlot")) %>% 
+            shinycssloaders::withSpinner()
+        )
+      )
     )
+  )
 }
 
 immunefeatures <- function(input, output, session, ss_choice, subset_df) {
-    ns <- session$ns
+  ns <- session$ns
+  
+  ss_internal <- reactive(get_variable_internal_name(ss_choice()))
+  sample_groups <- reactive(get_category_group(ss_internal()))
+  
+  
+  output$violinPlot <- renderPlotly({
     
-    ss_internal <- reactive(get_variable_internal_name(ss_choice()))
-    sample_groups <- reactive(get_category_group(ss_internal()))
+    display_x  <- ss_choice()
+    display_y  <- input$violin_y
+    internal_x <- get_variable_internal_name(display_x)
+    internal_y <- get_variable_internal_name(display_y)
     
-
-    output$violinPlot <- renderPlotly({
-        
-        display_x  <- ss_choice()
-        display_y  <- input$violin_y
-        internal_x <- get_variable_internal_name(display_x)
-        internal_y <- get_variable_internal_name(display_y)
-        
-        plot_df <- subset_df() %>%
-            select_(.dots = c(internal_x, internal_y)) %>%
-            .[complete.cases(.),]
-        
-        plot_df %>% 
-            create_violinplot(
-                internal_x,
-                internal_y,
-                internal_x,
-                xlab = display_x,
-                ylab = display_y,
-                fill_colors = decide_plot_colors(panimmune_data, internal_x)
-            )
-    })
+    plot_df <- subset_df() %>%
+      select_(.dots = c(internal_x, internal_y)) %>%
+      .[complete.cases(.),]
     
-    hm_variables  <- reactive(
-        as.character(get_variable_group(input$heatmap_y))
-    )
+    plot_df %>% 
+      create_violinplot(
+        internal_x,
+        internal_y,
+        internal_x,
+        xlab = display_x,
+        ylab = display_y,
+        fill_colors = decide_plot_colors(panimmune_data, internal_x)
+      )
+  })
+  
+  hm_variables  <- reactive(
+    as.character(get_variable_group(input$heatmap_y))
+  )
+  
+  intermediate_corr_df <- reactive(
+    subset_df() %>% 
+      build_intermediate_corr_df(
+        value_column = input$heatmap_values,
+        group_column = ss_internal(),
+        group_options = sample_groups(),
+        corr_value_columns = hm_variables()
+      )
+  )
+  
+  output$corrPlot <- renderPlotly({
+    heatmap_corr_mat <- intermediate_corr_df() %>%
+      build_heatmap_corr_mat(
+        value_column = input$heatmap_values,
+        group_column = ss_internal(),
+        group_options = sample_groups(),
+        corr_value_columns = hm_variables()
+      )
     
-    intermediate_corr_df <- reactive(
-        subset_df() %>% 
-            build_intermediate_corr_df(
-                value_column = input$heatmap_values,
-                group_column = ss_internal(),
-                group_options = sample_groups(),
-                corr_value_columns = hm_variables()
-            )
-    )
+    create_heatmap(heatmap_corr_mat, "heatplot")
+  })
+  
+  output$scatterPlot <- renderPlotly({
+    eventdata <- event_data("plotly_click", source = "heatplot")
     
-    output$corrPlot <- renderPlotly({
-        heatmap_corr_mat <- intermediate_corr_df() %>%
-            build_heatmap_corr_mat(
-                value_column = input$heatmap_values,
-                group_column = ss_internal(),
-                group_options = sample_groups(),
-                corr_value_columns = hm_variables()
-            )
-        
-        create_heatmap(heatmap_corr_mat, "heatplot")
-    })
+    validate(need(
+      check_click_data(eventdata, subset_df(), ss_internal(), intermediate_corr_df()),
+      "Click heatmap"))
     
-    output$scatterPlot <- renderPlotly({
-        eventdata <- event_data("plotly_click", source = "heatplot")
-        
-        validate(need(
-            check_click_data(eventdata, subset_df(), ss_internal(), intermediate_corr_df()),
-            "Click heatmap"))
-        
-        
-        internal_variable_name <- eventdata$y[[1]] %>%
-            get_variable_internal_name() %>%
-            .[. %in% colnames(intermediate_corr_df())]
-        
-        
-        plot_df <- intermediate_corr_df() %>% 
-            build_scatterplot_df(
-                filter_column = ss_internal(),
-                filter_value = eventdata$x[[1]],
-                x_column = internal_variable_name,
-                y_column = input$heatmap_values
-            )
-        
-        plot_df %>%
-            create_scatterplot(
-                x_column = internal_variable_name,
-                y_column = input$heatmap_values,
-                x_lab = eventdata$y[[1]],
-                y_lab = get_variable_display_name(input$heatmap_values),
-                title = eventdata$x[[1]])
-    })
+    
+    internal_variable_name <- eventdata$y[[1]] %>%
+      get_variable_internal_name() %>%
+      .[. %in% colnames(intermediate_corr_df())]
+    
+    
+    plot_df <- intermediate_corr_df() %>% 
+      build_scatterplot_df(
+        filter_column = ss_internal(),
+        filter_value = eventdata$x[[1]],
+        x_column = internal_variable_name,
+        y_column = input$heatmap_values
+      )
+    
+    plot_df %>%
+      create_scatterplot(
+        x_column = internal_variable_name,
+        y_column = input$heatmap_values,
+        x_lab = eventdata$y[[1]],
+        y_lab = get_variable_display_name(input$heatmap_values),
+        title = eventdata$x[[1]])
+  })
 }
 
 
 check_click_data <- function(eventdata, subset_df, ss_internal, intermediate_corr_df){
-    if(is.null(eventdata)) return(FALSE)
-    all(eventdata$x[[1]] %in% extract2(subset_df, ss_internal),
-        any(get_variable_internal_name(eventdata$y[[1]]) %in% colnames(intermediate_corr_df)))
+  if(is.null(eventdata)) return(FALSE)
+  all(eventdata$x[[1]] %in% extract2(subset_df, ss_internal),
+      any(get_variable_internal_name(eventdata$y[[1]]) %in% colnames(intermediate_corr_df)))
 }
 
