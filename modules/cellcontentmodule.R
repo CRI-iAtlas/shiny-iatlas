@@ -114,11 +114,10 @@ cellcontent <- function(input, output, session, ss_choice, subset_df) {
     )
     selected_plot_subgroup <- eventdata$x[[1]]
     validate(
-        need(!is.null(eventdata),
-             "Click bar plot"),
-        need(selected_plot_subgroup %in% extract2(subset_df(), ss_internal()),
-             "Click bar plot"))
-    
+        need(all(!is.null(eventdata),
+                 selected_plot_subgroup %in% extract2(subset_df(), ss_internal())),
+        "Click bar plot"))
+  
     subset_df() %>%
       build_scatterplot_df(
         filter_column = ss_internal(),
