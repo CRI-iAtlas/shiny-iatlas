@@ -74,11 +74,15 @@ format_manifest <- function(manifest_data) {
       group_by(FeatureValue) %>% 
       mutate(Characteristics = str_c(Characteristic, collapse = "; ")) %>% 
       select(-Characteristic) %>% 
+      ungroup() %>% 
       mutate(sample_group = "tcga_study") %>% 
       bind_rows(manifest_data$immune_subtype_df %>% 
                   mutate(sample_group = "immune_subtype")) %>% 
       bind_rows(manifest_data$tcga_subtype_df %>% 
-                  mutate(sample_group = "tcga_subtype")) %>% 
+                  mutate(sample_group = "tcga_subtype",
+                         `TCGA Studies` = str_replace_all(
+                           `TCGA Studies`, ",", "/"
+                         ))) %>% 
       mutate(
         FeatureHex = ifelse(!is.na(FeatureHex),
                             str_c("#", FeatureHex),

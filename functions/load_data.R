@@ -77,22 +77,14 @@ create_tcga_subtype_colors <- function(sample_group_df) {
   tcga_subtype_df <- sample_group_df %>%
     filter(sample_group == "tcga_subtype",
            !is.na(FeatureValue)) %>% 
-    mutate(
-      study = str_extract(FeatureValue, ".*(?=\\.)"), 
-      study = str_split(study, "_")
-    ) %>% 
-    unnest(study) %>% 
-    arrange(study) %>% 
-    group_by(study) %>% 
+    group_by(`TCGA Studies`) %>% 
     mutate(
       FeatureHex = suppressWarnings(
         RColorBrewer::brewer.pal(length(FeatureValue), "Set1") %>% 
         .[1:length(FeatureValue)]
       )
     ) %>% 
-    ungroup() %>% 
-    select(-study) %>% 
-    distinct() 
+    ungroup() 
   
   tcga_subtype_df$FeatureHex %>%
     set_names(tcga_subtype_df$FeatureValue)
