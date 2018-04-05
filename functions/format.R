@@ -1,9 +1,9 @@
 # Shiny layout elements
 titleBox <- function(title) {
   fluidRow(
-    box(width = 12, background = "black",
+    box(width = 12, background = "yellow",
         span(strong(title),
-             style = "font-size:18px")
+             style = "font-size:24px")
     )
   )
 }
@@ -50,7 +50,7 @@ messageBox <- function(...) {
 imgLinkBox <- function(..., linkId, title, imgSrc, boxText, linkText) {
   box(
     ...,
-    title = title,
+    title = span(title, style = "font-size:15px"),
     solidHeader = TRUE, status = "primary",
     fluidRow(
       column(
