@@ -3,40 +3,31 @@ explorepage <- dashboardPage(
   dashboardSidebar(
     sidebarMenu(
       id = "explorertabs",
-      menuItem("CRI iAtlas Explorer",
+      menuItem("iAtlas Explorer Home",
                tabName = "dashboard",
                icon = icon("dashboard")
       ),
-      selectInput(
-        inputId = "ss_choice",
-        label = "Select Sample Groups",
-        choices = as.character(
-          panimmune_data$sample_group_names
-        ),
-        selected = "Immune Subtype"
-      ),
-      uiOutput("study_subset_UI"),
       menuItem("Analysis Modules",
                icon = icon("bar-chart"), startExpanded = TRUE,
                menuSubItem(
                  "Sample Group Overview",
-                 tabName = "feature_correlations",
-                 icon = icon("chevron-circle-right")
+                 tabName = "groups_overview",
+                 icon = icon("cog")
                ),
                menuSubItem(
                  "Tumor Microenvironment",
                  tabName = "cell_content",
-                 icon = icon("chevron-circle-right")
+                 icon = icon("cog")
                ),
                menuSubItem(
                  "Immune Feature Trends",
                  tabName = "immune_features",
-                 icon = icon("chevron-circle-right")
+                 icon = icon("cog")
                ),
                menuSubItem(
                  "Clinical Outcomes",
                  tabName = "survival_curves",
-                 icon = icon("chevron-circle-right")
+                 icon = icon("cog")
                ),
                # menuSubItem(
                #   "Genomic State",
@@ -48,7 +39,7 @@ explorepage <- dashboardPage(
                menuSubItem(
                  "Immunomodulators",
                  tabName = "immunomodulators",
-                 icon = icon("chevron-circle-right")
+                 icon = icon("cog")
                )
       ),
       menuItem("Data Description",
@@ -56,9 +47,28 @@ explorepage <- dashboardPage(
                tabName = "datainfo"
       ),
       shiny::hr(),
+      span(h5(strong("Explorer Settings")), style = "text-align: center"),
       wellPanel(
-        strong("Selected groups:"),
-        textOutput("ss_choice")
+        fluidRow(
+          column(width = 12,
+                 p("Divide samples by TCGA tumor type",
+                   strong("(TCGA Study)"),
+                   ", TCGA molecular subtypes",
+                   strong("(TCGA Subtype)"),
+                   ", or by immune subtypes that span multiple tumor types",
+                   strong("(Immune Subtype)"), ".")
+          )
+        ),
+        selectInput(
+          inputId = "ss_choice",
+          label = strong("Select Sample Groups"),
+          choices = as.character(
+            panimmune_data$sample_group_names
+          ),
+          selected = "Immune Subtype"
+        ),
+        uiOutput("study_subset_UI"),
+        p("This is a global setting used in all modules and can be changed at any time to update results.")
       )
     )
   ),
@@ -66,26 +76,38 @@ explorepage <- dashboardPage(
     tabItems(
       tabItem(
         tabName = "dashboard",
-        titleBox("Welcome to the CRI iAtlas Explorer!"),
-        fluidRow(
-          textBox(
-            width = 12,
-            p("Here you can explore CRI iAtlas data through interactive visualizations.")
-          )
+        titleBox("iAtlas Explorer — Home"),
+        textBox(
+          width = 12,
+          p("Select a module to explore CRI iAtlas data through interactive visualizations. You can organize the data by choosing how to divide tumor samples using ",
+            strong("“Select Sample Groups”"), " on the left navigation bar.",  
+            "You can also select ",
+            strong("“Data Description”"), 
+            "on the left navigation bar to learn which immune readouts are available.")
         ),
         sectionBox(
           title = "What's Inside",
           fluidRow(
-            infoBox("Immune Readouts", 86, width = 4, color = "black", fill = TRUE),
-            infoBox("Classes of Readouts", 12, width = 4, color = "black", fill = TRUE),
-            infoBox("TCGA Cancers", 33, width = 4, color = "black", fill = TRUE)
+            infoBox("Immune Readouts:", 86, width = 3, color = "black", 
+                    fill = FALSE, icon = icon("search")),
+            infoBox("Classes of Readouts:", 12, width = 3, color = "black", 
+                    fill = FALSE, icon = icon("filter")),
+            infoBox("TCGA Cancers:", 33, width = 3, color = "black", 
+                    fill = FALSE, icon = icon("flask")),
+            infoBox("TCGA Samples:", "11,080", width = 3, color = "black", 
+                    fill = FALSE, icon = icon("users"))
           )
         ),
         sectionBox(
           title = "Analysis Modules",
-          p("Select a module to explore data. You can organize the data by choosing how to divide tumor samples, using “Select Sample Groups” at the top of the left navigation bar.  Divide the samples by TCGA tumor tumor type (TCGA Study), by TCGA molecular subtypes (TCGA Subtype), or by immune subtypes that span multiple tumor types (Immune Subtype)."),  
-          p("Select “Data Description” on the left navigation bar to learn which immune readouts are available."),
-          p("Within each module, you can find “Manuscript Context”, describing how that module can generate figures analogous to those in the manuscript Thorsson et al., The Immune Landscape of Cancer, Immunity (2018)."),
+          messageBox(
+            width = 12,
+            p("Each module presents information organized by theme, with multiple views and interactive controls.",
+              "Within each module, you can find ",
+              strong("“Manuscript Context”"), " describing how that module can generate figures analogous to those in the manuscript ", 
+              em("Thorsson et al., The Immune Landscape of Cancer, Immunity (2018).")
+            )
+          ),
           fluidRow(
             imgLinkBox(
               width = 6,
@@ -162,7 +184,7 @@ explorepage <- dashboardPage(
         immuneinterface_UI("module2")
       ),
       tabItem(
-        tabName = "feature_correlations",
+        tabName = "groups_overview",
         groupsoverview_UI("module3")
       ),
       tabItem(

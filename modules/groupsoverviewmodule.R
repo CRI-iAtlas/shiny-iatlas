@@ -2,7 +2,7 @@ groupsoverview_UI <- function(id) {
   ns <- NS(id)
   
   tagList(
-    titleBox("Sample Groups Overview"),
+    titleBox("iAtlas Explorer — Sample Groups Overview"),
     textBox(
       width = 12,
       p("This module provides short summaries of your selected groups, and allows you to see how they overlap with other groups.")  

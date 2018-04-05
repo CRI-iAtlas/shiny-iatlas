@@ -62,13 +62,16 @@ shinyServer(function(input, output, session) {
     shinydashboard::updateTabItems(session, "explorertabs", "clonal_diversity")
   })
   observeEvent(input$link_to_module3, {
-    shinydashboard::updateTabItems(session, "explorertabs", "feature_correlations")
+    shinydashboard::updateTabItems(session, "explorertabs", "groups_overview")
   })
   observeEvent(input$link_to_module4, {
     shinydashboard::updateTabItems(session, "explorertabs", "survival_curves")
   })
   observeEvent(input$link_to_module5, {
     shinydashboard::updateTabItems(session, "explorertabs", "immunomodulators")
+  })
+  observeEvent(input$link_to_module6, {
+    shinydashboard::updateTabItems(session, "explorertabs", "immune_features")
   })
   
   output$study_subset_UI <- renderUI({

@@ -2,13 +2,13 @@ datainfo_UI <- function(id) {
   ns <- NS(id)
   
   tagList(
-    titleBox("Data Description"),
+    titleBox("iAtlas Explorer — Data Description"),
     textBox(
       width = 12,
       p("Each row in the table corresponds to a variable for which data are available for exploration in CRI iAtlas. Variables are organized into classes, as displayed in the Variable Class column.")  
     ),
     sectionBox(
-      title = "PanImmune Variables",
+      title = "PanImmune Readouts",
       messageBox(
         width = 12,
         p("Select a row in the table to view more details about variables in the same class.")

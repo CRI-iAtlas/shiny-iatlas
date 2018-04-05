@@ -4,7 +4,10 @@ aboutpage <- fluidPage(
   fluidRow(
     column(
       width = 12,
-      includeMarkdown("www/md/about.md")     
+      column(
+        width = 12,
+        includeMarkdown("www/md/about.md")     
+      )
     )
   )
 )

@@ -3,7 +3,7 @@ cellcontent_UI <- function(id) {
   ns <- NS(id)
   
   tagList(
-    titleBox("Tumor Microenvironment"),
+    titleBox("iAtlas Explorer — Tumor Microenvironment"),
     textBox(
       width = 12,
       p("Explore the immune cell proportions in your sample groups.")  

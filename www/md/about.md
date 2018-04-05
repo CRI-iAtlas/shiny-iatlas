@@ -1,6 +1,6 @@
 ## About the CRI iAtlas
 
-The **Cancer Research Institute (CRI) iAtlas** is an interactive web-based platform and set of analytic tools for studying interactions between tumors and the immune microenvironment. These tools allow researchers to explore associations among a variety of immune characterizations as well as with genomic and clinical phenotypes. The initial version of CRI iAtlas is based on an analysis performed by the Cancer Genome Atlas (TCGA) Research Network on the TCGA data set comprising over 10,000 tumor samples and 33 tumor samples (Thorsson et al. Immunity, 2018). In this analysis, each tumor sample was scored for a variety of readouts for immune response, such as immune cell composition, adaptive cell receptor repertoire, neoantigen load, and expression of genes coding for immunomodulatory proteins. The web tool allows researchers to explore these data readouts, and the relation between them in TCGA tumor types and in overarching immune subtypes identified in the study. CRI iAtlas is made possible through a collaboration between the Cancer Research Institute, Sage Bionetworks and the Institute for Systems Biology.
+The **Cancer Research Institute (CRI) iAtlas** is an interactive web-based platform and set of analytic tools for studying interactions between tumors and the immune microenvironment. These tools allow researchers to explore associations among a variety of immune characterizations as well as with genomic and clinical phenotypes. The initial version of CRI iAtlas is based on an analysis performed by **The Cancer Genome Atlas (TCGA) Research Network** on the TCGA data set comprising over 10,000 tumor samples and 33 tumor types (Thorsson et al. Immunity, 2018). In this analysis, each tumor sample was scored for a variety of readouts for immune response, such as immune cell composition, adaptive cell receptor repertoire, neoantigen load, and expression of genes coding for immunomodulatory proteins. The web tool allows researchers to explore these data readouts, and the relation between them in TCGA tumor types and in overarching immune subtypes identified in the study. CRI iAtlas is made possible through a collaboration between the **Cancer Research Institute**, **Sage Bionetworks** and the **Institute for Systems Biology**.
 
 ### TCGA PanCancerAtlas Immune Response Working Group
 
@@ -18,7 +18,7 @@ These analyses serve as a resource for exploring immunogenicity across cancer ty
 
 ### CRI iAtlas Explorer
 
-The main feature of the iAtlas web tool is the **iAtlas Explorer**, which provides several *Analysis Modules* to to explore and visualize results from the Thorsson et al. Immune Landscape study. Each module presents information organized by theme, with multiple views and interactive controls to enhance and extend the information included in the original paper figures.
+The main feature of the iAtlas web tool is the **iAtlas Explorer**, which provides several *Analysis Modules* to explore and visualize results from the Thorsson et al. Immune Landscape study. Each module presents information organized by theme, with multiple views and interactive controls to enhance and extend the information included in the original paper figures.
 
 + **Sample Group Overview:** This module provides short summaries of your selected groups, and allows you to see how they overlap with other groups.
 + **Tumor Microenvironment:** Explore the immune cell proportions in your sample groups.
@@ -30,7 +30,8 @@ The main feature of the iAtlas web tool is the **iAtlas Explorer**, which provid
 
 ## About the Cancer Research Institute
 
-The Cancer Research Institute (CRI), established in 1953, is the world’s leading nonprofit organization dedicated exclusively to transforming cancer patient care by advancing scientific efforts to develop new and effective immune system-based strategies to prevent, diagnose, treat, and eventually cure all cancers. Guided by a world-renowned Scientific Advisory Council that includes three Nobel laureates and 26 members of the National Academy of Sciences, CRI has invested $336 million in support of research conducted by immunologists and tumor immunologists at the world’s leading medical centers and universities, and has contributed to many of the key scientific advances that demonstrate the potential for immunotherapy to change the face of cancer treatment. Learn more at www.cancerresearch.org.
+The Cancer Research Institute (CRI), established in 1953, is the world’s leading nonprofit organization dedicated exclusively to transforming cancer patient care by advancing scientific efforts to develop new and effective immune system-based strategies to prevent, diagnose, treat, and eventually cure all cancers. Guided by a world-renowned Scientific Advisory Council that includes three Nobel laureates and 26 members of the National Academy of Sciences, CRI has invested more than $350 million in support of research conducted by immunologists and tumor immunologists at the world’s leading medical centers and universities, and has contributed to many of the key scientific advances that demonstrate the potential for immunotherapy to change the face of cancer treatment. Learn more at www.cancerresearch.org.
+
 
 ## About Sage Bionetworks
 
