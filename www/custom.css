@@ -134,6 +134,7 @@ body {
   color: #000!important;
   background-color: rgba(0, 0, 0, 0)!important;
   border-bottom: 1px solid #888!important;
+  box-shadow: none;
 }
 
 .bg-black {
