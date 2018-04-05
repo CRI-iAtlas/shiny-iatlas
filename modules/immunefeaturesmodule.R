@@ -2,7 +2,7 @@ immunefeatures_UI <- function(id) {
   ns <- NS(id)
   
   tagList(
-    titleBox("Immune Feature Trends"),
+    titleBox("iAtlas Explorer — Immune Feature Trends"),
     textBox(
       width = 12,
       p("This module allows you to see how immune readouts vary across your groups, and how they relate to one another.")  
@@ -19,7 +19,7 @@ immunefeatures_UI <- function(id) {
           width = 6,
           selectInput(
             ns("violin_y"),
-            "Select violin plot Y variable",
+            "Select Violin Plot Y Variable",
             choices = get_friendly_numeric_columns_by_group()
           )
         )
@@ -65,7 +65,7 @@ immunefeatures_UI <- function(id) {
             width = 4,
             selectInput(
               ns("heatmap_values"),
-              "Select response variable",
+              "Select Response Variable",
               c(
                 "Leukocyte Fraction" = "leukocyte_fraction",
                 "OS Time" = "OS_time",
@@ -81,12 +81,14 @@ immunefeatures_UI <- function(id) {
       ),
       fluidRow(
         plotBox(
-          width = 6,
-          plotlyOutput(ns("corrPlot")) %>% 
-            shinycssloaders::withSpinner()
+          width = 7,
+          fluidRow(
+            plotlyOutput(ns("corrPlot")) %>% 
+              shinycssloaders::withSpinner()
+          )
         ),
         plotBox(
-          width = 6,
+          width = 5,
           plotlyOutput(ns("scatterPlot")) %>% 
             shinycssloaders::withSpinner()
         )
@@ -154,7 +156,7 @@ immunefeatures <- function(input, output, session, ss_choice, subset_df) {
     
     validate(need(
       check_click_data(eventdata, subset_df(), ss_internal(), intermediate_corr_df()),
-      "Click heatmap"))
+      "Click heatmap to the left"))
     
     
     internal_variable_name <- eventdata$y[[1]] %>%

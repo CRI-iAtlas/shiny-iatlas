@@ -62,7 +62,7 @@ shinyServer(function(input, output, session) {
     shinydashboard::updateTabItems(session, "explorertabs", "clonal_diversity")
   })
   observeEvent(input$link_to_module3, {
-    shinydashboard::updateTabItems(session, "explorertabs", "feature_correlations")
+    shinydashboard::updateTabItems(session, "explorertabs", "groups_overview")
   })
   observeEvent(input$link_to_module4, {
     shinydashboard::updateTabItems(session, "explorertabs", "survival_curves")
@@ -70,15 +70,13 @@ shinyServer(function(input, output, session) {
   observeEvent(input$link_to_module5, {
     shinydashboard::updateTabItems(session, "explorertabs", "immunomodulators")
   })
-  
-  width <- reactive({
-      as.numeric(input$dimension[1])
+  observeEvent(input$link_to_module6, {
+    shinydashboard::updateTabItems(session, "explorertabs", "immune_features")
   })
-  
   
   output$study_subset_UI <- renderUI({
       if (input$ss_choice == "TCGA Subtype") {
-          choices <- sample_group_df %>% 
+          choices <- panimmune_data$sample_group_df %>% 
             filter(sample_group == "tcga_subtype", !is.na(FeatureValue)) %>% 
             distinct(`TCGA Studies`) %>% 
             extract2("TCGA Studies")

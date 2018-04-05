@@ -2,7 +2,7 @@ groupsoverview_UI <- function(id) {
   ns <- NS(id)
   
   tagList(
-    titleBox("Sample Groups Overview"),
+    titleBox("iAtlas Explorer — Sample Groups Overview"),
     textBox(
       width = 12,
       p("This module provides short summaries of your selected groups, and allows you to see how they overlap with other groups.")  
@@ -109,7 +109,7 @@ groupsoverview <- function(input, output, session, ss_choice, subset_df, width) 
     req(input$sample_mosaic_group, cancelOutput = TRUE)
 
     if (input$sample_mosaic_group == "TCGA Subtype") {
-      choices <- sample_group_df %>% 
+      choices <- panimmune_data$sample_group_df %>% 
         filter(sample_group == "tcga_subtype", !is.na(FeatureValue)) %>% 
         distinct(`TCGA Studies`) %>% 
         extract2("TCGA Studies")
@@ -148,8 +148,7 @@ groupsoverview <- function(input, output, session, ss_choice, subset_df, width) 
         # xlab = display_x,
         # ylab = display_y,
         title = str_c(display_y, "by", display_x, sep = " "),
-        fill_colors = decide_plot_colors(panimmune_data, internal_y),
-        width = (3 * width()) / 4 - 60
+        fill_colors = decide_plot_colors(panimmune_data, internal_y)
       ) 
   })
   

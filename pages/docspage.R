@@ -1,7 +1,7 @@
 docspage <- fluidPage(
   br(),
   titleBox("Documentation"),
-  textBox(
+  messageBox(
     width = 12,
     p(
       "The current version of the", 
@@ -17,7 +17,10 @@ docspage <- fluidPage(
   fluidRow(
     column(
       width = 12,
+      column(
+        width = 12,
       includeMarkdown("README.md")
+      )
     )
   )
 )

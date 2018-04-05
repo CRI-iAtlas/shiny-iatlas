@@ -3,7 +3,7 @@ survival_UI <- function(id) {
   ns <- NS(id)
   
   tagList(
-    titleBox("Clinical Outcomes"),
+    titleBox("iAtlas Explorer — Clinical Outcomes"),
     textBox(
       width = 12,
       p("Plot survival curves based on immune characteristics and identify variables associated with outcome.")  
@@ -36,7 +36,7 @@ survival_UI <- function(id) {
           
           selectInput(
             ns("timevar"),
-            "Survival endpoint",
+            "Survival Endpoint",
             c("Overall Survival" = "OS_time", "Progression Free Interval" = "PFI_time_1"),
             selected = "OS_time"
           ),
@@ -75,7 +75,7 @@ survival_UI <- function(id) {
               width = 4,
               radioButtons(
                   ns("survival_type"), 
-                  "Survival endpoint",
+                  "Survival Endpoint",
                   c("Progression Free Interval" = "PFI",
                     "Overall Survival" = "OS"
                   ),
@@ -89,8 +89,11 @@ survival_UI <- function(id) {
               )
           ),
           plotBox(
+            width = 8,
+            fluidRow(
               plotlyOutput(ns("heatmapplot"), height = 600) %>%
-                  shinycssloaders::withSpinner()
+              shinycssloaders::withSpinner()
+            )
           )
       )
     )

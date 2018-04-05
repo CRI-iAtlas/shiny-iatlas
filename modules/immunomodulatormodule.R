@@ -3,7 +3,7 @@ immunomodulator_UI <- function(id) {
   ns <- NS(id)
   
   tagList(
-    titleBox("Immunomodulators"),
+    titleBox("iAtlas Explorer — Immunomodulators"),
     textBox(
       width = 12,
       p("Explore the expression of genes that code for immunomodulating proteins, including checkpoint proteins.")  
