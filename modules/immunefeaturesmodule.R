@@ -101,7 +101,7 @@ immunefeatures <- function(input, output, session, ss_choice, subset_df) {
   ns <- session$ns
   
   ss_internal <- reactive(get_variable_internal_name(ss_choice()))
-  sample_groups <- reactive(get_category_group(ss_internal()))
+  sample_groups <- reactive(get_category_group(ss_internal(), subset_df()))
   
   
   output$violinPlot <- renderPlotly({
@@ -122,7 +122,7 @@ immunefeatures <- function(input, output, session, ss_choice, subset_df) {
         internal_x,
         xlab = display_x,
         ylab = display_y,
-        fill_colors = decide_plot_colors(panimmune_data, internal_x)
+        fill_colors = decide_plot_colors(panimmune_data, internal_x, subset_df())
       )
   })
   
@@ -136,8 +136,7 @@ immunefeatures <- function(input, output, session, ss_choice, subset_df) {
         value_column = input$heatmap_values,
         group_column = ss_internal(),
         group_options = sample_groups(),
-        corr_value_columns = hm_variables()
-      )
+        corr_value_columns = hm_variables())
   )
   
   output$corrPlot <- renderPlotly({

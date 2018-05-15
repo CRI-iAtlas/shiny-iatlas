@@ -7,6 +7,7 @@ module_files:
   - "modules/immunomodulatormodule.R"
   - "modules/immunefeaturesmodule.R"
   - "modules/datainfomodule.R"
+  - "modules/creategroupmodule.R"
   
 function_files:
   - "functions/load_data.R"

@@ -40,6 +40,11 @@ explorepage <- dashboardPage(
                  "Immunomodulators",
                  tabName = "immunomodulators",
                  icon = icon("cog")
+               ),
+               menuSubItem(
+                   "Create Groups",
+                   tabName = "creategroups",
+                   icon = icon("cog")
                )
       ),
       menuItem("Data Description",
@@ -198,6 +203,10 @@ explorepage <- dashboardPage(
       tabItem(
         tabName = "immune_features",
         immunefeatures_UI("module6")
+      ),
+      tabItem(
+          tabName = "creategroups",
+          creategroups_UI("module7")
       ),
       tabItem(
         tabName = "datainfo",

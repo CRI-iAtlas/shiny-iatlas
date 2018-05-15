@@ -65,7 +65,7 @@ groupsoverview <- function(input, output, session, ss_choice, subset_df, width) 
   output$sample_group_table <- DT::renderDT({
     
     sample_group_colors <- decide_plot_colors(
-      panimmune_data, ss_internal()
+      panimmune_data, ss_internal(), subset_df()
     )
     
     build_sample_group_key_df(
