@@ -14,26 +14,14 @@ get_variable_group <- function(name, df = NULL) {
     factor(df$FeatureMatrixLabelTSV, levels = df$FeatureMatrixLabelTSV)
 }
 
+
 get_category_group <- function(category, subset_df = NULL){
     if(category == "user_supplied_groups") {
-        return(get_user_supplied_category_group(subset_df))
+        group_vector <- use_series(subset_df, "user_supplied_groups")
     } else {
-        return(get_predefined_category_group(category))
+        group_vector <- extract2(panimmune_data$fmx_df, category)
     }
-}
-
-get_predefined_category_group <- function(category) {
-    panimmune_data$fmx_df %>%
-        extract2(category) %>%
-        na.omit() %>%
-        unique() %>%
-        sort() %>%
-        as.character()
-}
-
-get_user_supplied_category_group <- function(subset_df) {
-    subset_df %>% 
-        use_series("user_supplied_groups") %>% 
+    group_vector %>% 
         na.omit() %>%
         unique() %>%
         sort() %>%
