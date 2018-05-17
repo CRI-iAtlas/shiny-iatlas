@@ -107,9 +107,9 @@ immunefeatures <- function(input, output, session, ss_choice, subset_df) {
   output$violinPlot <- renderPlotly({
     
     display_x  <- ss_choice()
-    display_y  <- input$violin_y
     internal_x <- get_variable_internal_name(display_x)
-    internal_y <- get_variable_internal_name(display_y)
+    internal_y <- input$violin_y
+    display_y  <- get_variable_display_name(internal_y)
     
     plot_df <- subset_df() %>%
       select_(.dots = c(internal_x, internal_y)) %>%
