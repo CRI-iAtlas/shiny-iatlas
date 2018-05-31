@@ -8,6 +8,29 @@ groupsoverview_UI <- function(id) {
       p("This module provides short summaries of your selected groups, and allows you to see how they overlap with other groups.")  
     ),
     sectionBox(
+        title = "Select groups",
+        messageBox(
+            width = 12,
+            p("Select groups here")  
+        ),
+        fluidRow(
+            optionsBox(
+                width = 8,
+                fileInput(
+                    ns("file1"),
+                    "Choose CSV File",
+                    multiple = FALSE,
+                    accept = c("text/csv",
+                               "text/comma-separated-values,text/plain",
+                               ".csv")
+                ),
+                DT::dataTableOutput(
+                    ns("user_group_df")),
+                style = "color:black"
+            )
+        )
+    ),
+    sectionBox(
       title = "Group Key",
       messageBox(
         width = 12,
@@ -151,6 +174,23 @@ groupsoverview <- function(input, output, session, ss_choice, subset_df, width) 
         fill_colors = decide_plot_colors(panimmune_data, internal_y)
       ) 
   })
+  
+  user_group_df <- reactive({
+      req(input$file1)
+      tryCatch(
+          {
+              df <- readr::read_csv(input$file1$datapath)
+          },
+          error = function(e) {
+              stop(safeError(e))
+          }
+      )
+      return(df)
+      
+  })
+
+  output$user_group_df <- DT::renderDataTable(user_group_df())
+  return(user_group_df)
   
 }
 

@@ -1,18 +1,18 @@
 # UI ----
 creategroups_UI <- function(id) {
     ns <- NS(id)
-    
+
     tagList(
         titleBox(""),
         textBox(
             width = 12,
-            p("")  
+            p("")
         ),
         sectionBox(
             title = "",
             messageBox(
                 width = 12,
-                p(""), 
+                p(""),
                 p("")
             ),
             fluidRow(
@@ -37,7 +37,7 @@ creategroups_UI <- function(id) {
 
 # Server ----
 creategroups <- function(input, output, session, ss_choice, subset_df) {
-  
+
     user_group_df <- reactive({
         req(input$file1)
         tryCatch(
@@ -50,9 +50,9 @@ creategroups <- function(input, output, session, ss_choice, subset_df) {
         )
         return(df)
     })
-    
+
     output$user_group_df <- DT::renderDataTable(user_group_df())
     return(user_group_df)
-    
+
 }
 

@@ -22,8 +22,8 @@ shinyServer(function(input, output, session) {
       "module2",
       reactive(input$ss_choice),
       reactive(subset_df()))
-  # Correlation heatmaps
-  callModule(
+  # Groups
+  user_group_df <- callModule(
       groupsoverview,
       "module3",
       reactive(input$ss_choice),
@@ -45,12 +45,6 @@ shinyServer(function(input, output, session) {
   callModule(
       immunefeatures, 
       "module6", 
-      reactive(input$ss_choice),
-      reactive(subset_df()))
-  # Create groups
-  user_group_df <- callModule(
-      creategroups, 
-      "module7", 
       reactive(input$ss_choice),
       reactive(subset_df()))
   
@@ -78,9 +72,6 @@ shinyServer(function(input, output, session) {
   })
   observeEvent(input$link_to_module6, {
     shinydashboard::updateTabItems(session, "explorertabs", "immune_features")
-  })
-  observeEvent(input$link_to_module7, {
-      shinydashboard::updateTabItems(session, "explorertabs", "creategroups")
   })
   
   output$study_subset_UI <- renderUI({
