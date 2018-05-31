@@ -14,14 +14,17 @@ shinyServer(function(input, output, session) {
   callModule(
       cellcontent, 
       "module1", 
-      reactive(input$ss_choice), 
+      reactive(input$ss_choice),
+      reactive(group_internal_choice()),
       reactive(subset_df()))
   # Clonal diversity
-  callModule(
-      immuneinterface,
-      "module2",
-      reactive(input$ss_choice),
-      reactive(subset_df()))
+  # callModule(
+  #     immuneinterface,
+  #     "module2",
+  #     reactive(input$ss_choice),
+  #     reactive(group_internal_choice()),
+  #     reactive(subset_df()),
+  #     reactive(plot_colors()))
   # Groups
   user_group_df <- callModule(
       groupsoverview,
@@ -29,6 +32,7 @@ shinyServer(function(input, output, session) {
       reactive(input$ss_choice),
       reactive(group_internal_choice()),
       reactive(subset_df()),
+      reactive(plot_colors()),
       reactive(group_options()),
       reactive(width()))
   # Survival curves
@@ -42,13 +46,17 @@ shinyServer(function(input, output, session) {
       immunomodulator, 
       "module5", 
       reactive(input$ss_choice),
-      reactive(subset_df()))
+      reactive(group_internal_choice()),
+      reactive(subset_df()),
+      reactive(plot_colors()))
   # Immune features
   callModule(
       immunefeatures, 
       "module6", 
       reactive(input$ss_choice),
-      reactive(subset_df()))
+      reactive(group_internal_choice()),
+      reactive(subset_df()),
+      reactive(plot_colors()))
   
   # Data info
   callModule(datainfo, "moduleX")
@@ -119,5 +127,8 @@ shinyServer(function(input, output, session) {
       )
   })
   
+  plot_colors <- reactive(decide_plot_colors(
+      panimmune_data, group_internal_choice(), subset_df()))
+  
 })
-################################################################################
+###############################################################################

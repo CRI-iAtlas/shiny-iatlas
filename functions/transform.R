@@ -201,17 +201,10 @@ build_mosaic_plot_df <- function(df, x_column, y_column, study_option, user_grou
 
 build_intermediate_corr_df <- function(
     df, value_column, group_column, group_options, corr_value_columns,
-    id_column = "ParticipantBarcode" 
-) {
+    id_column = "ParticipantBarcode" ) {
     if (is.factor(corr_value_columns)) {
         corr_value_columns <- levels(corr_value_columns)
     }
-    # print(colnames(df))
-    # print(value_column)
-    # print(group_column)
-    # print(group_options)
-    # print(corr_value_columns)
-    # print(id_column)
     
     df %>%
         as_data_frame() %>%

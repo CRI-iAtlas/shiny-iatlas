@@ -15,9 +15,9 @@ get_variable_group <- function(name, df = NULL) {
 }
 
 
-get_category_group <- function(category, subset_df = NULL){
-    group_vector <- extract2(panimmune_data$fmx_df, category)
-    group_vector %>% 
+get_category_group <- function(category, df){
+    df %>% 
+        extract2(category) %>% 
         na.omit() %>%
         unique() %>%
         sort() %>%
@@ -136,5 +136,12 @@ get_numeric_variable_classes <- function(){
         extract2("Variable Class") %>% 
         unique %>% 
         discard(is.na(.))
+}
+
+
+check_click_data <- function(eventdata, subset_df, group_internal_choice, intermediate_corr_df){
+    if(is.null(eventdata)) return(FALSE)
+    all(eventdata$x[[1]] %in% extract2(subset_df, group_internal_choice),
+        any(get_variable_internal_name(eventdata$y[[1]]) %in% colnames(intermediate_corr_df)))
 }
 

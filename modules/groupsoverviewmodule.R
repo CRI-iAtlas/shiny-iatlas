@@ -77,7 +77,7 @@ groupsoverview_UI <- function(id) {
 
 groupsoverview <- function(
     input, output, session, group_display_choice, group_internal_choice, 
-    subset_df, group_options, width) {
+    subset_df, plot_colors, group_options, width) {
     
     ns <- session$ns
     
@@ -88,10 +88,6 @@ groupsoverview <- function(
     })
     
     output$sample_group_table <- DT::renderDT({
-        
-        sample_group_colors <- decide_plot_colors(
-            panimmune_data, group_internal_choice(), subset_df()
-        )
         build_sample_group_key_df(
             df = subset_df(),
             group_option = group_internal_choice()
@@ -109,17 +105,13 @@ groupsoverview <- function(
             formatStyle(
                 "Plot Color",
                 backgroundColor = styleEqual(
-                    sample_group_colors, 
-                    sample_group_colors
+                    plot_colors(), 
+                    plot_colors()
                 )
             )
     })
     
     output$mosaic_group_select <- renderUI({
-        # choices <- as.character(
-        #   panimmune_data$sample_group_names
-        # ) %>% 
-        #   setdiff(group_display_choice())
         choices <- setdiff(group_options(), group_display_choice())
         
         
@@ -160,7 +152,6 @@ groupsoverview <- function(
         internal_x <- get_group_internal_name(display_x)
         internal_y <- group_internal_choice()
 
-        
         mosaic_df <- build_mosaic_plot_df(
             subset_df(),
             x_column = internal_x,
