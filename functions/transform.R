@@ -10,14 +10,14 @@ subset_panimmune_df <- function(
     df = panimmune_data$fmx_df, 
     group_column, 
     study_option,
-    user_group_df = NULL
-) {
+    user_group_df = NULL) {
+    
     if (group_column %in% c("Subtype_Immune_Model_Based", "Study")) {
         return(df)
     } else if (group_column == "Subtype_Curated_Malta_Noushmehr_et_al") {
         return(subset_panimmune_df_by_TCGA_subtype(df, group_column, study_option))
-    } else if (group_column == "user_supplied_groups") {
-        return(subset_panimmune_df_by_user_groups(df, user_group_df)) 
+    } else {
+        return(subset_panimmune_df_by_user_groups(df, user_group_df, group_column)) 
     }
 }
 
@@ -37,12 +37,18 @@ subset_panimmune_df_by_TCGA_subtype <- function(df, group_column, study_option){
     )
 }
 
-subset_panimmune_df_by_user_groups <- function(df, user_group_df){
-    df %>% 
-        select(- user_supplied_groups) %>% 
-        inner_join(user_group_df) %>% 
-        rename(user_supplied_groups = Group) %>% 
-        filter(!is.na(user_supplied_groups))
+subset_panimmune_df_by_user_groups <- function(df, user_group_df, group_column){
+    wrapr::let(
+        alias = c(
+            COL1 = colnames(user_group_df[1]),
+            COL2 = group_column), {
+                user_group_df %>% 
+                    select(COL1, COL2) %>% 
+                    rename("ParticipantBarcode" = COL1) %>% 
+                    inner_join(df) %>% 
+                    filter(!is.na(COL2))
+        }
+    )
 }
 
 
@@ -173,14 +179,15 @@ build_sample_group_key_df <- function(df, group_option) {
                `Group Size`, Characteristics, `Plot Color` = value)
 }
 
-build_mosaic_plot_df <- function(df, x_column, y_column, study_option) {
+build_mosaic_plot_df <- function(df, x_column, y_column, study_option, user_group_df = NULL) {
     let(
         alias = c(xvar = x_column,
                   yvar = y_column),
         df %>%
             subset_panimmune_df(
                 group_col = x_column, 
-                study_option = study_option
+                study_option = study_option,
+                user_group_df
             ) %>% 
             select(xvar, yvar) %>%
             .[complete.cases(.),] %>%

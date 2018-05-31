@@ -22,7 +22,6 @@ load_feature_matrix <- function() {
         fmx <- fetch_feature_matrix() %>% 
             format_feature_matrix()
     }
-    fmx$fmx_df$user_supplied_groups <- NA
     return(fmx)
 }
 
@@ -98,8 +97,7 @@ create_tcga_subtype_colors <- function(sample_group_df) {
 create_sample_group_options <- function(feature_df) {
     feature_df %>%
         filter(`Variable Class` == "Sample Category") %>%
-        use_series(FeatureMatrixLabelTSV) %>% 
-        c(., "user_supplied_groups")
+        use_series(FeatureMatrixLabelTSV) 
 }
 
 ## selection choices for the cell fractions.  Lots of other choices possible.
