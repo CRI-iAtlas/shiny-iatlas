@@ -47,7 +47,14 @@ shinyServer(function(input, output, session) {
       "module6", 
       reactive(input$ss_choice),
       reactive(subset_df()))
+  # TILmap features
+  callModule(
+    tilmap, 
+    "module7", 
+    reactive(input$ss_choice),
+    reactive(subset_tilmap_df()))
   
+    
   # Data info
   callModule(datainfo, "moduleX")
   
@@ -73,7 +80,11 @@ shinyServer(function(input, output, session) {
   observeEvent(input$link_to_module6, {
     shinydashboard::updateTabItems(session, "explorertabs", "immune_features")
   })
-  
+  observeEvent(input$link_to_module7, {
+    shinydashboard::updateTabItems(session, "explorertabs", "tilmap_features")
+  })
+
+    
   output$study_subset_UI <- renderUI({
       if (input$ss_choice == "TCGA Subtype") {
           choices <- panimmune_data$sample_group_df %>% 
@@ -94,6 +105,14 @@ shinyServer(function(input, output, session) {
           study_option = input$study_subset_selection
       )
   )
+
+  subset_tilmap_df <- reactive(
+    subset_panimmune_tilmap_df(
+      group_column = get_variable_internal_name(input$ss_choice), 
+      study_option = input$study_subset_selection
+    )
+  )
   
+    
 })
 ################################################################################

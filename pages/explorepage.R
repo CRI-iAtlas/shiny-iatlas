@@ -40,6 +40,11 @@ explorepage <- dashboardPage(
                  "Immunomodulators",
                  tabName = "immunomodulators",
                  icon = icon("cog")
+               ),
+               menuSubItem(
+                 "TIL Maps",
+                 tabName = "tilmap_features",
+                 icon = icon("cog")
                )
       ),
       menuItem("Data Description",
@@ -171,6 +176,14 @@ explorepage <- dashboardPage(
               imgSrc = "images/immunomodulators.png",
               boxText = "Explore the expression of genes that code for immunomodulating proteins, including checkpoint proteins.",
               linkText = "Open Module"
+            ),
+            imgLinkBox(
+              width = 6,
+              title = "TIL Maps",
+              linkId = "link_to_module7",
+              imgSrc = "images/TILmap.png",
+              boxText = "Explore the characteristics of TIL Maps.",
+              linkText = "Open Module"
             )
           )
         )
@@ -198,6 +211,10 @@ explorepage <- dashboardPage(
       tabItem(
         tabName = "immune_features",
         immunefeatures_UI("module6")
+      ),
+      tabItem(
+        tabName = "tilmap_features",
+        tilmap_UI("module7")
       ),
       tabItem(
         tabName = "datainfo",
