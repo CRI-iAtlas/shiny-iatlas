@@ -59,14 +59,7 @@ explorepage <- dashboardPage(
                    strong("(Immune Subtype)"), ".")
           )
         ),
-        selectInput(
-          inputId = "ss_choice",
-          label = strong("Select Sample Groups"),
-          choices = as.character(
-            panimmune_data$sample_group_names
-          ),
-          selected = "Immune Subtype"
-        ),
+        uiOutput("select_group_UI"),
         uiOutput("study_subset_UI"),
         p("This is a global setting used in all modules and can be changed at any time to update results.")
       )

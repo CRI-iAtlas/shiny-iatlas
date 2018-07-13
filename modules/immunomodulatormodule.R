@@ -63,65 +63,64 @@ immunomodulator_UI <- function(id) {
   )
 }
 
-immunomodulator <- function(input, output, session, ss_choice, subset_df){
-  
-  ss_group <- reactive(get_variable_internal_name(ss_choice()))
-  im_expr_plot_df <- reactive(
-    subset_df() %>% 
-      build_im_expr_plot_df(
-        filter_value = input$im_choice, 
-        group_option = ss_group()
-      )
-  )
-  
-  output$violinPlot <- renderPlotly({
-    plot_colors <- decide_plot_colors(panimmune_data, ss_group())
-    im_expr_plot_df() %>% 
-      create_violinplot(
-        x = ss_group(), 
-        y = "log_count", 
-        fill_factor = ss_group(), 
-        xlab = ss_choice(), 
-        ylab = "log10(count + 1)",
-        source_name = "select",
-        fill_colors = plot_colors,
-        title = get_im_display_name(input$im_choice))
-  })
-  
-  output$histPlot <- renderPlotly({
+immunomodulator <- function(
+    input, output, session, group_display_choice, group_internal_choice, 
+    subset_df, plot_colors) {
     
-    eventdata <- event_data("plotly_click", source = "select")
-    validate(need(!is.null(eventdata), "Click violin plot above"))
-    violinplot_selected_group <- im_expr_plot_df() %>% 
-      get_selected_group_from_violinplot(
-        ss_group(), 
-        eventdata
-      )
-
-    histplot_df <- build_histogram_df(
-      im_expr_plot_df(), 
-      ss_group(),
-      violinplot_selected_group
+    im_expr_plot_df <- reactive(
+        subset_df() %>% 
+            build_im_expr_plot_df(
+                filter_value = input$im_choice, 
+                group_option = group_internal_choice()
+            )
     )
     
-    histplot_df %>% 
-      create_histogram(
-        x_column  = "log_count",
-        x_lab = "log10(count + 1)",
-        title = violinplot_selected_group
-      )
-  })
-  
-  output$im_annotations_table <- DT::renderDT({
-
-    panimmune_data$im_direct_relationships %>% 
-      select(-X10, -Notes) %>% 
-      datatable(
-        options = list(
-          dom = "tip",
-          pageLength = 10
-        ),
-        rownames = FALSE
-      )
-  })
+    output$violinPlot <- renderPlotly(
+        create_violinplot(
+            im_expr_plot_df(),
+            x = group_internal_choice(), 
+            y = "log_count", 
+            fill_factor = group_internal_choice(), 
+            xlab = group_display_choice(), 
+            ylab = "log10(count + 1)",
+            source_name = "select",
+            fill_colors = plot_colors(),
+            title = get_im_display_name(input$im_choice)))
+    
+    output$histPlot <- renderPlotly({
+        
+        eventdata <- event_data("plotly_click", source = "select")
+        validate(need(!is.null(eventdata), "Click violin plot above"))
+        violinplot_selected_group <- im_expr_plot_df() %>% 
+            get_selected_group_from_violinplot(
+                group_internal_choice(), 
+                eventdata
+            )
+        
+        histplot_df <- build_histogram_df(
+            im_expr_plot_df(), 
+            group_internal_choice(),
+            violinplot_selected_group
+        )
+        
+        histplot_df %>% 
+            create_histogram(
+                x_column  = "log_count",
+                x_lab = "log10(count + 1)",
+                title = violinplot_selected_group
+            )
+    })
+    
+    output$im_annotations_table <- DT::renderDT({
+        
+        panimmune_data$im_direct_relationships %>% 
+            select(-X10, -Notes) %>% 
+            datatable(
+                options = list(
+                    dom = "tip",
+                    pageLength = 10
+                ),
+                rownames = FALSE
+            )
+    })
 }

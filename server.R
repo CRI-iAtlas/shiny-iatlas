@@ -14,20 +14,26 @@ shinyServer(function(input, output, session) {
   callModule(
       cellcontent, 
       "module1", 
-      reactive(input$ss_choice), 
+      reactive(input$ss_choice),
+      reactive(group_internal_choice()),
       reactive(subset_df()))
   # Clonal diversity
-  callModule(
-      immuneinterface,
-      "module2",
-      reactive(input$ss_choice),
-      reactive(subset_df()))
-  # Correlation heatmaps
-  callModule(
+  # callModule(
+  #     immuneinterface,
+  #     "module2",
+  #     reactive(input$ss_choice),
+  #     reactive(group_internal_choice()),
+  #     reactive(subset_df()),
+  #     reactive(plot_colors()))
+  # Groups
+  user_group_df <- callModule(
       groupsoverview,
       "module3",
       reactive(input$ss_choice),
+      reactive(group_internal_choice()),
       reactive(subset_df()),
+      reactive(plot_colors()),
+      reactive(group_options()),
       reactive(width()))
   # Survival curves
   callModule(
@@ -40,13 +46,17 @@ shinyServer(function(input, output, session) {
       immunomodulator, 
       "module5", 
       reactive(input$ss_choice),
-      reactive(subset_df()))
+      reactive(group_internal_choice()),
+      reactive(subset_df()),
+      reactive(plot_colors()))
   # Immune features
   callModule(
       immunefeatures, 
       "module6", 
       reactive(input$ss_choice),
-      reactive(subset_df()))
+      reactive(group_internal_choice()),
+      reactive(subset_df()),
+      reactive(plot_colors()))
   
   # Data info
   callModule(datainfo, "moduleX")
@@ -88,12 +98,37 @@ shinyServer(function(input, output, session) {
       }
   })
   
-  subset_df <- reactive(
-      subset_panimmune_df(
-          group_column = get_variable_internal_name(input$ss_choice), 
-          study_option = input$study_subset_selection
+  group_options <- reactive({
+      groups <-  panimmune_data$sample_group_names
+      user_groups <- try(colnames(user_group_df()))
+      if(is.vector(user_groups)) groups <- c(groups, user_groups[-1])
+      return(groups)
+  })
+  
+  output$select_group_UI <- renderUI({
+      
+      selectInput(
+          inputId = "ss_choice",
+          label = strong("Select Sample Groups"),
+          choices = as.character(
+              group_options()
+          ),
+          selected = "Immune Subtype"
       )
-  )
+  })
+  
+  group_internal_choice <- reactive(get_group_internal_name(input$ss_choice))
+  
+  subset_df <- reactive({
+      subset_panimmune_df(
+          group_column = group_internal_choice(), 
+          study_option = input$study_subset_selection,
+          user_group_df = user_group_df()
+      )
+  })
+  
+  plot_colors <- reactive(decide_plot_colors(
+      panimmune_data, group_internal_choice(), subset_df()))
   
 })
-################################################################################
+###############################################################################

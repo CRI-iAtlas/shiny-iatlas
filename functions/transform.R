@@ -7,57 +7,81 @@
 # ** PanImmune data subsetting ----
 
 subset_panimmune_df <- function(
-  df = panimmune_data$fmx_df, group_column, study_option
-) {
-  if (!(group_column == "Subtype_Curated_Malta_Noushmehr_et_al")) {
-    return(df)
-  } else {
+    df = panimmune_data$fmx_df, 
+    group_column, 
+    study_option,
+    user_group_df = NULL) {
+    
+    if (group_column %in% c("Subtype_Immune_Model_Based", "Study")) {
+        return(df)
+    } else if (group_column == "Subtype_Curated_Malta_Noushmehr_et_al") {
+        return(subset_panimmune_df_by_TCGA_subtype(df, group_column, study_option))
+    } else {
+        return(subset_panimmune_df_by_user_groups(df, user_group_df, group_column)) 
+    }
+}
+
+subset_panimmune_df_by_TCGA_subtype <- function(df, group_column, study_option){
     sample_groups <- panimmune_data$sample_group_df %>% 
-      filter(sample_group == "tcga_subtype", 
-             `TCGA Studies` %in% study_option) %>% 
-      extract2("FeatureValue")
+        filter(sample_group == "tcga_subtype", 
+               `TCGA Studies` %in% study_option) %>% 
+        extract2("FeatureValue")
     
     wrapr::let(
-      alias = c(COL = group_column), {
-        
-        df %>% 
-          filter(COL %in% sample_groups) %>% 
-          mutate(COL = fct_drop(COL))
-      }
+        alias = c(COL = group_column), {
+            
+            df %>% 
+                filter(COL %in% sample_groups) %>% 
+                mutate(COL = fct_drop(COL))
+        }
     )
-  }
 }
+
+subset_panimmune_df_by_user_groups <- function(df, user_group_df, group_column){
+    wrapr::let(
+        alias = c(
+            COL1 = colnames(user_group_df[1]),
+            COL2 = group_column), {
+                user_group_df %>% 
+                    select(COL1, COL2) %>% 
+                    rename("ParticipantBarcode" = COL1) %>% 
+                    inner_join(df) %>% 
+                    filter(!is.na(COL2))
+        }
+    )
+}
+
 
 # Generic plot data transform ----
 
 create_label <- function(
-  df, title, name_column, group_column, value_columns
+    df, title, name_column, group_column, value_columns
 ) {
-  
-  let(
-    alias = c(namevar = name_column, groupvar = group_column),
-    df %>%
-      mutate(
-        label = str_glue(
-          "<b>{title}:</b> {name} ({group})", 
-          title = title,
-          name = namevar, 
-          group = groupvar
-        )) %>% 
-      gather(value_name, value, one_of(value_columns)) %>% 
-      mutate(
-        value_label = str_glue(
-          "{name}: {value}", 
-          name = str_to_upper(value_name), 
-          value = sprintf("%0.3f", value)
-        )
-      ) %>% 
-      group_by(label) %>% 
-      mutate(value_label = str_c(value_label, collapse = "</br>")) %>% 
-      ungroup() %>% 
-      spread(value_name, value) %>% 
-      unite(label, label, value_label, sep = "</br></br>")
-  )
+    
+    let(
+        alias = c(namevar = name_column, groupvar = group_column),
+        df %>%
+            mutate(
+                label = str_glue(
+                    "<b>{title}:</b> {name} ({group})", 
+                    title = title,
+                    name = namevar, 
+                    group = groupvar
+                )) %>% 
+            gather(value_name, value, one_of(value_columns)) %>% 
+            mutate(
+                value_label = str_glue(
+                    "{name}: {value}", 
+                    name = str_to_upper(value_name), 
+                    value = sprintf("%0.3f", value)
+                )
+            ) %>% 
+            group_by(label) %>% 
+            mutate(value_label = str_c(value_label, collapse = "</br>")) %>% 
+            ungroup() %>% 
+            spread(value_name, value) %>% 
+            unite(label, label, value_label, sep = "</br></br>")
+    )
 }
 
 #' Format a dataframe for plotting summary values (count, sum, mean, etc.) for
@@ -81,26 +105,26 @@ create_label <- function(
 #'
 #' @examples
 build_barplot_df <- function(
-  df, x_column, y_column, color_column = NULL, facet_column = NULL, 
-  operations = c("sum", "mean", "sd", "se"), add_label = FALSE
+    df, x_column, y_column, color_column = NULL, facet_column = NULL, 
+    operations = c("sum", "mean", "sd", "se"), add_label = FALSE
 ) {
-  se <- function(x) { mean(x) / sqrt(length(x)) }
-  
-  df <- df %>% 
-    group_by(.dots = c(x_column, color_column, facet_column)) %>% 
-    summarise_at(y_column, .funs = operations) %>% 
-    ungroup()
-  if (add_label) {
-    df %>%
-      create_label(
-        title = str_to_title(y_column),
-        name_column = x_column,
-        group_column = color_column,
-        value_columns = operations
-      )
-  } else {
-    df
-  }
+    se <- function(x) { mean(x) / sqrt(length(x)) }
+    
+    df <- df %>% 
+        group_by(.dots = c(x_column, color_column, facet_column)) %>% 
+        summarise_at(y_column, .funs = operations) %>% 
+        ungroup()
+    if (add_label) {
+        df %>%
+            create_label(
+                title = str_to_title(y_column),
+                name_column = x_column,
+                group_column = color_column,
+                value_columns = operations
+            )
+    } else {
+        df
+    }
 }
 
 #' Format a dataframe for plotting values of one column versus values of a
@@ -118,18 +142,18 @@ build_barplot_df <- function(
 #'
 #' @examples
 build_scatterplot_df <- function(
-  df, filter_column, filter_value, x_column, y_column, 
-  id_column = "ParticipantBarcode"
+    df, filter_column, filter_value, x_column, y_column, 
+    id_column = "ParticipantBarcode"
 ) {
-  df %>%
-    filter(UQ(as.name(filter_column)) == filter_value) %>%
-    create_label(
-      title = id_column, 
-      name_column = id_column, 
-      group_column = filter_column, 
-      value_columns = c(x_column, y_column)
-    ) %>% 
-    select_(.dots = id_column, x_column, y_column, "label")
+    df %>%
+        filter(UQ(as.name(filter_column)) == filter_value) %>%
+        create_label(
+            title = id_column, 
+            name_column = id_column, 
+            group_column = filter_column, 
+            value_columns = c(x_column, y_column)
+        ) %>% 
+        select_(.dots = id_column, x_column, y_column, "label")
 }
 
 # Module specific data transform ----
@@ -137,248 +161,249 @@ build_scatterplot_df <- function(
 # ** Sample groups overview module ----
 
 build_sample_group_key_df <- function(df, group_option) {
-  decide_plot_colors(panimmune_data, group_option) %>% 
-    enframe() %>% 
-    filter(name %in% df[[group_option]]) %>% 
-    left_join(
-      panimmune_data$sample_group_df, 
-      by = c("name" = "FeatureValue")
-    ) %>% 
-    distinct() %>% 
-    mutate(
-      `Group Size` = map_int(
-        name, ~ sum(df[, group_option] == ., na.rm = TRUE)
-      )
-    ) %>% 
-    select(`Sample Group` = name, `Group Name` = FeatureName,
-           `Group Size`, Characteristics, `Plot Color` = value)
+    
+    decide_plot_colors(panimmune_data, group_option, df) %>% 
+        enframe() %>% 
+        filter(name %in% df[[group_option]]) %>% 
+        left_join(
+            panimmune_data$sample_group_df, 
+            by = c("name" = "FeatureValue")
+        ) %>% 
+        distinct() %>% 
+        mutate(
+            `Group Size` = map_int(
+                name, ~ sum(df[, group_option] == ., na.rm = TRUE)
+            )
+        ) %>% 
+        select(`Sample Group` = name, `Group Name` = FeatureName,
+               `Group Size`, Characteristics, `Plot Color` = value)
 }
 
-build_mosaic_plot_df <- function(df, x_column, y_column, study_option) {
-  let(
-    alias = c(xvar = x_column,
-              yvar = y_column),
-    df %>%
-      subset_panimmune_df(
-        group_col = x_column, 
-        study_option = study_option
-      ) %>% 
-      select(xvar, yvar) %>%
-      .[complete.cases(.),] %>%
-      mutate(xvar = as.factor(xvar)) %>%
-      mutate(yvar = as.factor(yvar),
-             yvar = fct_rev(yvar))
+build_mosaic_plot_df <- function(df, x_column, y_column, study_option, user_group_df = NULL) {
+    let(
+        alias = c(xvar = x_column,
+                  yvar = y_column),
+        df %>%
+            subset_panimmune_df(
+                group_col = x_column, 
+                study_option = study_option,
+                user_group_df
+            ) %>% 
+            select(xvar, yvar) %>%
+            .[complete.cases(.),] %>%
+            mutate(xvar = as.factor(xvar)) %>%
+            mutate(yvar = as.factor(yvar),
+                   yvar = fct_rev(yvar))
     )
 }
 
 # ** Immune feature trends module ----
 
 build_intermediate_corr_df <- function(
-  df, value_column, group_column, group_options, corr_value_columns,
-  id_column = "ParticipantBarcode" 
-) {
-  if (is.factor(corr_value_columns)) {
-    corr_value_columns <- levels(corr_value_columns)
-  }
-
-  df %>%
-    as_data_frame() %>%
-    filter(UQ(as.name(group_column)) %in% group_options) %>%
-    select(
-      one_of(c(id_column, group_column, value_column, corr_value_columns))
-    ) 
+    df, value_column, group_column, group_options, corr_value_columns,
+    id_column = "ParticipantBarcode" ) {
+    if (is.factor(corr_value_columns)) {
+        corr_value_columns <- levels(corr_value_columns)
+    }
+    
+    df %>%
+        as_data_frame() %>%
+        filter(UQ(as.name(group_column)) %in% group_options) %>%
+        select(
+            one_of(c(id_column, group_column, value_column, corr_value_columns))
+        ) 
 }
 
 
 build_heatmap_corr_mat <- function(
-  df, value_column, group_column, group_options, corr_value_columns
+    df, value_column, group_column, group_options, corr_value_columns
 ) {
-  
-  get_correlation <- function(var1, var2, df) {
-    cor(select_(df, var1),
-        select_(df, var2),
-        method = "spearman",
-        use = "pairwise.complete.obs"
-    )
-  }
-  group_options <- group_options[group_options %in% extract2(df, group_column)]
-  corr_mat <- matrix(
-    data = 0,
-    ncol = length(group_options),
-    nrow = length(corr_value_columns)
-  )
-  rownames(corr_mat) <- corr_value_columns
-  colnames(corr_mat) <- group_options
-  # for each factor in facet_groups
-  for (g in group_options) {
-    # subset df
-    sub_df <- df[df[, group_column] == g, ]
-    # compute correlation
-    for (var in corr_value_columns) {
-      corr_mat[var, g] <- get_correlation(var, value_column, sub_df)
+    
+    get_correlation <- function(var1, var2, df) {
+        cor(select_(df, var1),
+            select_(df, var2),
+            method = "spearman",
+            use = "pairwise.complete.obs"
+        )
     }
-  }
-  # give it nice names
-  rownames(corr_mat) <- sapply(rownames(corr_mat), get_variable_display_name)
-  corr_mat[is.na(corr_mat)] <- 0
-  corr_mat <- corr_mat[rev(rownames(corr_mat)),]
-  return(corr_mat)
+    group_options <- group_options[group_options %in% extract2(df, group_column)]
+    corr_mat <- matrix(
+        data = 0,
+        ncol = length(group_options),
+        nrow = length(corr_value_columns)
+    )
+    rownames(corr_mat) <- corr_value_columns
+    colnames(corr_mat) <- group_options
+    # for each factor in facet_groups
+    for (g in group_options) {
+        # subset df
+        sub_df <- df[df[, group_column] == g, ]
+        # compute correlation
+        for (var in corr_value_columns) {
+            corr_mat[var, g] <- get_correlation(var, value_column, sub_df)
+        }
+    }
+    # give it nice names
+    rownames(corr_mat) <- sapply(rownames(corr_mat), get_variable_display_name)
+    corr_mat[is.na(corr_mat)] <- 0
+    corr_mat <- corr_mat[rev(rownames(corr_mat)),]
+    return(corr_mat)
 }
 
 # ** Tumor composition module ----
 
 build_cell_fraction_df <- function(
-  df, group_column, value_columns
+    df, group_column, value_columns
 ) {
-  let(
-    alias = c(groupvar = group_column),
-    df %>%
-      select(groupvar, value_columns) %>%
-      .[complete.cases(.), ] %>% 
-      gather(fraction_type, fraction, -groupvar)
-  )
+    let(
+        alias = c(groupvar = group_column),
+        df %>%
+            select(groupvar, value_columns) %>%
+            .[complete.cases(.), ] %>% 
+            gather(fraction_type, fraction, -groupvar)
+    )
 }
 
 build_tumor_content_df <- function(df, group_column) {
-  let(
-    alias = c(groupvar = group_column),
-    df %>% 
-      select(groupvar, Stromal_Fraction, leukocyte_fraction) %>% 
-      .[complete.cases(.),] %>% 
-      mutate(Tumor_Fraction = 1 - Stromal_Fraction) %>% 
-      gather(fraction_type, fraction, -groupvar) %>% 
-      mutate(
-        fraction_type = str_replace(
-          fraction_type, "Stromal_Fraction", "Stromal Fraction"
-        ),
-        fraction_type = str_replace(
-          fraction_type, "leukocyte_fraction", "Leukocyte Fraction"
-        ),
-        fraction_type = str_replace(
-          fraction_type, "Tumor_Fraction", "Tumor Fraction"
-        )
-      )
-  )
+    let(
+        alias = c(groupvar = group_column),
+        df %>% 
+            select(groupvar, Stromal_Fraction, leukocyte_fraction) %>% 
+            .[complete.cases(.),] %>% 
+            mutate(Tumor_Fraction = 1 - Stromal_Fraction) %>% 
+            gather(fraction_type, fraction, -groupvar) %>% 
+            mutate(
+                fraction_type = str_replace(
+                    fraction_type, "Stromal_Fraction", "Stromal Fraction"
+                ),
+                fraction_type = str_replace(
+                    fraction_type, "leukocyte_fraction", "Leukocyte Fraction"
+                ),
+                fraction_type = str_replace(
+                    fraction_type, "Tumor_Fraction", "Tumor Fraction"
+                )
+            )
+    )
 }
 
 # ** Clinical outcomes module ----
 
 build_survival_df <- function(df, group_column, time_column, k) {
-  get_groups <- function(df, group_column, k) {
-    if (group_column %in% c("Subtype_Immune_Model_Based")) {
-      # then we don't need to produce catagories.
-      as.character(df[[group_column]])
+    get_groups <- function(df, group_column, k) {
+        if (group_column %in% c("Subtype_Immune_Model_Based")) {
+            # then we don't need to produce catagories.
+            as.character(df[[group_column]])
+        }
+        else {
+            as.character(cut(df[[group_column]], k, ordered_result = T))
+        }
     }
-    else {
-      as.character(cut(df[[group_column]], k, ordered_result = T))
+    
+    # get the vectors associated with each term
+    # if facet_column is already a catagory, just use that.
+    # otherwise it needs to be divided into k catagories.
+    groups <- get_groups(df, group_column, k)
+    
+    if (time_column == "OS_time") {
+        status_column <- "OS"
+    } else {
+        status_column <- "PFI_1"
     }
-  }
-  
-  # get the vectors associated with each term
-  # if facet_column is already a catagory, just use that.
-  # otherwise it needs to be divided into k catagories.
-  groups <- get_groups(df, group_column, k)
-  
-  if (time_column == "OS_time") {
-    status_column <- "OS"
-  } else {
-    status_column <- "PFI_1"
-  }
-  
-  data.frame(
-    status = pluck(df, status_column), 
-    time = pluck(df, time_column),
-    variable = groups, 
-    measure = pluck(df, group_column)
-  ) %>% 
-    na.omit()
+    
+    data.frame(
+        status = pluck(df, status_column), 
+        time = pluck(df, time_column),
+        variable = groups, 
+        measure = pluck(df, group_column)
+    ) %>% 
+        na.omit()
 }
 
 
 
 get_concordance <- function(
-  df, value_column, time_column, status_column
+    df, value_column, time_column, status_column
 ) {
-  wrapr::let(
-    alias = c(valuevar = value_column,
-              timevar = time_column,
-              statusvar = status_column),
-    mat <- df %>% 
-      select(valuevar, timevar, statusvar) %>% 
-      .[complete.cases(.),] %>% 
-      as.data.frame() %>% 
-      as.matrix()
-  )
-  
-  concordanceIndex::concordanceIndex(mat[,1], mat[,-1])
+    wrapr::let(
+        alias = c(valuevar = value_column,
+                  timevar = time_column,
+                  statusvar = status_column),
+        mat <- df %>% 
+            select(valuevar, timevar, statusvar) %>% 
+            .[complete.cases(.),] %>% 
+            as.data.frame() %>% 
+            as.matrix()
+    )
+    
+    concordanceIndex::concordanceIndex(mat[,1], mat[,-1])
 }
 
 get_concordance_by_group <- function(
-  df, value_columns, time_column, status_column
+    df, value_columns, time_column, status_column
 ) {
-  value_columns %>% 
-    map(function(f) get_concordance(df, f, time_column, status_column)) %>% 
-    set_names(value_columns)
+    value_columns %>% 
+        map(function(f) get_concordance(df, f, time_column, status_column)) %>% 
+        set_names(value_columns)
 }
 
 build_ci_mat <- function(
-  df, group_column, value_columns, time_column, status_column
+    df, group_column, value_columns, time_column, status_column
 ) {
-  value_names <- map(value_columns, get_variable_display_name)
-  group_v <- extract2(df, group_column) 
-  groups <- group_v %>% 
-    unique() %>% 
-    discard(is.na(.)) %>% 
-    sort()
-  
-  df %>% 
-    split(group_v) %>% 
-    map(get_concordance_by_group, value_columns, time_column, status_column) %>% 
-    unlist() %>% 
-    unname() %>% 
-    matrix(ncol = length(groups)) %>% 
-    set_rownames(value_names) %>% 
-    set_colnames(groups)
+    value_names <- map(value_columns, get_variable_display_name)
+    group_v <- extract2(df, group_column) 
+    groups <- group_v %>% 
+        unique() %>% 
+        discard(is.na(.)) %>% 
+        sort()
+    
+    df %>% 
+        split(group_v) %>% 
+        map(get_concordance_by_group, value_columns, time_column, status_column) %>% 
+        unlist() %>% 
+        unname() %>% 
+        matrix(ncol = length(groups)) %>% 
+        set_rownames(value_names) %>% 
+        set_colnames(groups)
 }
 
 # ** Immune interface module ----
 
 build_immuneinterface_df <- function(
-  build_df, sample_group, diversity_vars
+    build_df, sample_group, diversity_vars
 ) {
-  df %>%
-    select(sample_group, diversity_vars) %>%
-    .[complete.cases(.), ] %>%
-    gather(metric, diversity, -1) %>%
-    separate(metric, into = c("receptor", "metric"), sep = "_")
+    df %>%
+        select(sample_group, diversity_vars) %>%
+        .[complete.cases(.), ] %>%
+        gather(metric, diversity, -1) %>%
+        separate(metric, into = c("receptor", "metric"), sep = "_")
 }
 
 ztransform_df <- function(df) {
-  df %>%
-    group_by(receptor, metric) %>%
-    mutate(
-      div_mean = mean(diversity),
-      div_sd = sd(diversity)
-    ) %>%
-    ungroup() %>%
-    mutate(diversity = (diversity - div_mean) / div_sd)
+    df %>%
+        group_by(receptor, metric) %>%
+        mutate(
+            div_mean = mean(diversity),
+            div_sd = sd(diversity)
+        ) %>%
+        ungroup() %>%
+        mutate(diversity = (diversity - div_mean) / div_sd)
 }
 
 # ** Immunomodulators module ----
 
 build_im_expr_plot_df <- function(df, filter_value, group_option) {
-  panimmune_data$im_expr_df %>%
-    filter(Symbol == filter_value) %>%
-    left_join(df) %>%
-    mutate(log_count = log10(normalized_count + 1)) %>%
-    select(group_option, log_count) %>%
-    .[complete.cases(.), ]
+    panimmune_data$im_expr_df %>%
+        filter(Symbol == filter_value) %>%
+        left_join(df) %>%
+        mutate(log_count = log10(normalized_count + 1)) %>%
+        select(group_option, log_count) %>%
+        .[complete.cases(.), ]
 }
 
 build_histogram_df <- function(df, filter_column, filter_value) {
-  df %>%
-    filter(UQ(as.name(filter_column)) == filter_value)
-  
+    df %>%
+        filter(UQ(as.name(filter_column)) == filter_value)
+    
 }
 
 

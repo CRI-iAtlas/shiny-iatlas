@@ -81,26 +81,24 @@ cellcontent_UI <- function(id) {
 }
 
 # Server ----
-cellcontent <- function(input, output, session, ss_choice, subset_df) {
+cellcontent <- function(
+    input, output, session, group_display_choice, group_internal_choice, 
+    subset_df) {
   
-  ss_internal <- reactive(get_variable_internal_name(ss_choice()))
-  
-  # Overall proportions logic ----
-  plot_colors <- reactive(decide_plot_colors(panimmune_data, ss_internal()))
   
   # ** Overall proportions bar plot render ----
   output$overall_props_barplot <- renderPlotly({
     subset_df() %>% 
-      build_tumor_content_df(group_column = ss_internal()) %>% 
+      build_tumor_content_df(group_column = group_internal_choice()) %>% 
       build_barplot_df(
         x_column = "fraction_type",
         y_column = "fraction",
-        color_column = ss_internal(),
+        color_column = group_internal_choice(),
         operations = c("mean", "se"),
         add_label = TRUE
       ) %>% 
       create_barplot(
-        x_column = ss_internal(),
+        x_column = group_internal_choice(),
         y_column = "mean", 
         color_column = "fraction_type",
         error_column = "se",
@@ -120,11 +118,11 @@ cellcontent <- function(input, output, session, ss_choice, subset_df) {
     validate(
 
         need(all(!is.null(eventdata),
-                 selected_plot_subgroup %in% extract2(subset_df(), ss_internal())),
+                 selected_plot_subgroup %in% extract2(subset_df(), group_internal_choice())),
         "Click bar plot"))
     subset_df() %>%
       build_scatterplot_df(
-        filter_column = ss_internal(),
+        filter_column = group_internal_choice(),
         filter_value = selected_plot_subgroup,
         x_column = "Stromal_Fraction",
         y_column = "leukocyte_fraction"
@@ -148,13 +146,13 @@ cellcontent <- function(input, output, session, ss_choice, subset_df) {
     cell_fractions <- as.character(get_variable_group(input$cf_choice))
     subset_df() %>%
       build_cell_fraction_df(
-        group_column = ss_internal(), 
+        group_column = group_internal_choice(), 
         value_columns = cell_fractions
       ) %>%
       build_barplot_df(
         y_column = "fraction",
         x_column = "fraction_type",
-        color_column = ss_internal(),
+        color_column = group_internal_choice(),
         operations = c("mean", "se"),
         add_label = TRUE
       ) %>% 
@@ -164,7 +162,7 @@ cellcontent <- function(input, output, session, ss_choice, subset_df) {
         )
       ) %>% 
       create_barplot(
-        x_column = ss_internal(),
+        x_column = group_internal_choice(),
         y_column = "mean",
         color_column = "fraction_name",
         error_column = "se",

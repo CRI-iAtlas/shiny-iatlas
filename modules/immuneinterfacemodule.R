@@ -39,9 +39,11 @@ immuneinterface_UI <- function(id) {
   )
 }
 
-immuneinterface <- function(input, output, session, ss_choice, subset_df) {
+immuneinterface <- function(
+    input, output, session, group_display_choice, group_internal_choice, 
+    subset_df, plot_colors) {
+    
   output$diversityPlot <- renderPlot({
-    sample_group_label <- get_variable_internal_name(ss_choice())
     diversity_metric   <- input$diversity_metric_choice
     receptor_types <- input$receptor_type_choices
     
@@ -52,7 +54,7 @@ immuneinterface <- function(input, output, session, ss_choice, subset_df) {
     ## create dfp, the data frame for plotting, based on choices
     
     plot_df <- subset_df() %>% 
-      build_immuneinterface_df(sample_group_label, diversity_vars)
+      build_immuneinterface_df(group_internal_choice(), diversity_vars)
     
     
     ## adjust scales
@@ -72,15 +74,14 @@ immuneinterface <- function(input, output, session, ss_choice, subset_df) {
     }
     y_label <- glue::glue("Diversity [{label}]", label = scale_label)
     ## custom colors if available
-    plot_colors <- decide_plot_colors(panimmune_data, sample_group_label)
     plot <- create_boxplot(
       plot_df,
-      x = sample_group_label,
+      x = group_internal_choice(),
       y = "diversity",
-      fill_factor = sample_group_label,
+      fill_factor = group_internal_choice(),
       x_label = input$selection_choice,
       y_label = y_label,
-      fill_colors = plot_colors,
+      fill_colors = plot_colors(),
       facet = "receptor ~ ."
     )
     print(plot)
