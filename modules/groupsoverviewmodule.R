@@ -8,26 +8,37 @@ groupsoverview_UI <- function(id) {
             p("This module provides short summaries of your selected groups, and allows you to see how they overlap with other groups.")  
         ),
         sectionBox(
-            title = "Select groups",
+            title = "Custom Groups",
+            collapsed = TRUE,
             messageBox(
                 width = 12,
-                p("Select groups here")  
+                p("Upload a comma-separated table with your own sample/group assignments to use in iAtlas analysis modules.")  
             ),
             fluidRow(
-                optionsBox(
-                    width = 8,
-                    fileInput(
-                        ns("file1"),
-                        "Choose CSV File",
-                        multiple = FALSE,
-                        accept = c("text/csv",
-                                   "text/comma-separated-values,text/plain",
-                                   ".csv")
-                    ),
-                    DT::dataTableOutput(
-                        ns("user_group_df")),
-                    style = "color:black"
+              optionsBox(
+                width = 12,
+                actionButton("filehelp", " Formatting instructions",
+                             icon = icon("info-circle")),
+                actionButton("exfile", " Load example groups file",
+                             icon = icon("file"),
+                             style = "background-color:rgba(219, 174, 88, 1)"),
+                hr(),
+                fileInput(
+                  ns("file1"),
+                  "Choose CSV File",
+                  multiple = FALSE,
+                  accept = c("text/csv",
+                             "text/comma-separated-values,text/plain",
+                             ".csv")
                 )
+              )
+            ),
+            messageBox(
+              width = 12,
+              p("After uploading your file, the table below will show your defined groups."),
+              DT::dataTableOutput(
+                ns("user_group_df")
+              )
             )
         ),
         sectionBox(
