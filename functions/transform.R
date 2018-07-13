@@ -288,9 +288,9 @@ build_tumor_content_df <- function(df, group_column) {
 
 # ** Clinical outcomes module ----
 
-build_survival_df <- function(df, group_column, time_column, k) {
+build_survival_df <- function(df, group_column, group_options, time_column, k) {
     get_groups <- function(df, group_column, k) {
-        if (group_column %in% c("Subtype_Immune_Model_Based")) {
+        if (group_column %in% group_options) {
             # then we don't need to produce catagories.
             as.character(df[[group_column]])
         }

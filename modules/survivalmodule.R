@@ -20,19 +20,7 @@ survival_UI <- function(id) {
       fluidRow(
         optionsBox(
           width = 4,
-          selectInput(
-            ns("var1_surv"),
-            "Variable",
-            c(
-              "Immune Subtypes" = "Subtype_Immune_Model_Based",
-              "Leukocyte Fraction" = "leukocyte_fraction",
-              "Mutation Rate, Non-Silent" = "mutationrate_nonsilent_per_Mb",
-              "Indel Neoantigens" = "indel_neoantigen_num",
-              "SNV Neoantigens" = "numberOfImmunogenicMutation",
-              "Stemness Score RNA" = "StemnessScoreRNA"
-            ),
-            selected = "Subtype_Immune_Model_Based"
-          ),
+          uiOutput(ns("survplot_opts")),
           
           selectInput(
             ns("timevar"),
@@ -56,7 +44,7 @@ survival_UI <- function(id) {
         # ** Survival Kaplan-Meier plot ----
         plotBox(
           width = 8,
-          plotOutput(ns("survPlot"), height = 600) %>% 
+          plotOutput(ns("survPlot"), height = 600) %>%
             shinycssloaders::withSpinner()
         )
       )
@@ -74,7 +62,7 @@ survival_UI <- function(id) {
           optionsBox(
               width = 4,
               radioButtons(
-                  ns("survival_type"), 
+                  ns("survival_type"),
                   "Survival Endpoint",
                   c("Progression Free Interval" = "PFI",
                     "Overall Survival" = "OS"
@@ -101,15 +89,47 @@ survival_UI <- function(id) {
 }
 
 # Server ----
-survival <- function(input, output, session, ss_choice, subset_df) {
+survival <- function(input, output, session, ss_choice, group_internal_choice,
+                     group_options, subset_df)
+{
+  ns <- session$ns
+  
+  output$survplot_opts <- renderUI({
+    group_choice <- set_names(list(group_internal_choice()), ss_choice())
+    var_choices <- list(
+      "Current Sample Groups" = group_choice,
+      "Continuous Variables" = list(
+        "Leukocyte Fraction" = "leukocyte_fraction",
+        "Mutation Rate, Non-Silent" = "mutationrate_nonsilent_per_Mb",
+        "Indel Neoantigens" = "indel_neoantigen_num",
+        "SNV Neoantigens" = "numberOfImmunogenicMutation",
+        "Stemness Score RNA" = "StemnessScoreRNA"
+      )
+    )
+    selectInput(
+      ns("var1_surv"),
+      "Variable",
+      var_choices,
+      selected = group_internal_choice()
+    )
+  })
+  
   output$survPlot <- renderPlot({
-    
-      survival_df <- panimmune_data$fmx_df %>% 
-        build_survival_df(
-          group_column = input$var1_surv, 
-          time_column = input$timevar, 
-          k = input$divk
-        )
+    # req(input$var1_surv, cancelOutput = TRUE)
+    sample_groups <- get_category_group(group_internal_choice(), subset_df())
+    n_groups <- n_distinct(sample_groups)
+    validate(
+      need(input$var1_surv, "Waiting for input."),
+      need(n_distinct(sample_groups) <= 10, 
+           paste0("Too many sample groups (", n_groups, ") for KM plot."))
+    )
+    survival_df <- subset_df() %>%
+      build_survival_df(
+        group_column = input$var1_surv,
+        group_options = map(group_options(), get_group_internal_name),
+        time_column = input$timevar,
+        k = input$divk
+      )
     
     fit <- survival::survfit(Surv(time, status) ~ variable, data = survival_df)
     title <- get_variable_display_name(input$var1_surv)
@@ -118,32 +138,26 @@ survival <- function(input, output, session, ss_choice, subset_df) {
   })
   
   
-  
   output$heatmapplot <- renderPlotly({
-      # features <- as.character(get_variable_group("T Helper Cell Score"))
-      # group_internal <- "Subtype_Immune_Model_Based"
-      # time_col <- "OS_time"
-      # status_col <- "OS"
-      # subset_df <- panimmune_data$fmx_df
-      if(input$survival_type == "PFI"){
-          time_col <- "OS_time"
-          status_col <- "OS"
-      } else{
-          time_col <- "PFI_time_1"
-          status_col <- "PFI_1"
-      }
-      
-      features <- as.character(get_variable_group(input$survival_class))
-      group_internal <- get_variable_internal_name(ss_choice())
-      
-      ci_mat <- subset_df() %>% 
-        build_ci_mat(
-          group_column = group_internal, 
-          value_columns = features, 
-          time_column = time_col, 
-          status_column = status_col
-        )
-      create_heatmap(ci_mat, "ci")
+    if(input$survival_type == "PFI"){
+      time_col <- "OS_time"
+      status_col <- "OS"
+    } else{
+      time_col <- "PFI_time_1"
+      status_col <- "PFI_1"
+    }
+    
+    features <- as.character(get_variable_group(input$survival_class))
+    group_internal <- get_variable_internal_name(ss_choice())
+    
+    ci_mat <- subset_df() %>%
+      build_ci_mat(
+        group_column = group_internal,
+        value_columns = features,
+        time_column = time_col,
+        status_column = status_col
+      )
+    create_heatmap(ci_mat, "ci")
   })
   
 }
