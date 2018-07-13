@@ -67,14 +67,6 @@ immunefeatures_UI <- function(id) {
                         selectInput(
                             ns("heatmap_values"),
                             "Select Response Variable",
-                            # c(
-                            #     "Leukocyte Fraction" = "leukocyte_fraction",
-                            #     "OS Time" = "OS_time",
-                            #     "Mutation Rate, Non-Silent" = "mutationrate_nonsilent_per_Mb",
-                            #     "Indel Neoantigens" = "indel_neoantigen_num",
-                            #     "SNV Neoantigens" = "numberOfImmunogenicMutation",
-                            #     "Stemness Score RNA" = "StemnessScoreRNA"
-                            # ),
                             choices = get_friendly_numeric_columns_by_group(),
                             selected = "Leukocyte Fraction"
                         )
