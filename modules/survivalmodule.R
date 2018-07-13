@@ -90,7 +90,7 @@ survival_UI <- function(id) {
 
 # Server ----
 survival <- function(input, output, session, ss_choice, group_internal_choice,
-                     group_options, subset_df)
+                     group_options, subset_df, plot_colors)
 {
   ns <- session$ns
   
@@ -120,8 +120,9 @@ survival <- function(input, output, session, ss_choice, group_internal_choice,
     n_groups <- n_distinct(sample_groups)
     validate(
       need(input$var1_surv, "Waiting for input."),
-      need(n_distinct(sample_groups) <= 10, 
-           paste0("Too many sample groups (", n_groups, ") for KM plot."))
+      need(n_distinct(sample_groups) <= 10 | !input$var1_surv == group_internal_choice(), 
+           paste0("Too many sample groups (", n_groups, ") for KM plot; ",
+                  "choose a continuous variable or select different sample groups."))
     )
     survival_df <- subset_df() %>%
       build_survival_df(
@@ -133,8 +134,18 @@ survival <- function(input, output, session, ss_choice, group_internal_choice,
     
     fit <- survival::survfit(Surv(time, status) ~ variable, data = survival_df)
     title <- get_variable_display_name(input$var1_surv)
-    
-    create_kmplot(fit, survival_df, input$confint, input$risktable, title)
+    if (title %in% group_options()) {
+      group_colors <- plot_colors()
+    } else {
+      group_colors <- viridisLite::viridis(input$divk)
+    }
+    create_kmplot(
+      fit = fit, 
+      df = survival_df, 
+      confint = input$confint, 
+      risktable = input$risktable, 
+      title = title, 
+      group_colors = group_colors)
   })
   
   

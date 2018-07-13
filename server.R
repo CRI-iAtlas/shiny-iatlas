@@ -42,7 +42,8 @@ shinyServer(function(input, output, session) {
       reactive(input$ss_choice),
       reactive(group_internal_choice()),
       reactive(group_options()),
-      reactive(subset_df()))
+      reactive(subset_df()),
+      reactive(plot_colors()))
   # Immunomodulators
   callModule(
       immunomodulator, 
