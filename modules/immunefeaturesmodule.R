@@ -51,7 +51,8 @@ immunefeatures_UI <- function(id) {
                             c(
                                 "Core Expression Signature",
                                 "DNA Alteration",
-                                "Adaptive Receptor",
+                                "Adaptive Receptor - B cell",
+                                "Adaptive Receptor - T cell",
                                 "T Helper Cell Score",
                                 "Immune Cell Proportion - Original",
                                 "Immune Cell Proportion - Aggregate 1",
@@ -66,14 +67,7 @@ immunefeatures_UI <- function(id) {
                         selectInput(
                             ns("heatmap_values"),
                             "Select Response Variable",
-                            c(
-                                "Leukocyte Fraction" = "leukocyte_fraction",
-                                "OS Time" = "OS_time",
-                                "Mutation Rate, Non-Silent" = "mutationrate_nonsilent_per_Mb",
-                                "Indel Neoantigens" = "indel_neoantigen_num",
-                                "SNV Neoantigens" = "numberOfImmunogenicMutation",
-                                "Stemness Score RNA" = "StemnessScoreRNA"
-                            ),
+                            choices = get_friendly_numeric_columns_by_group(),
                             selected = "Leukocyte Fraction"
                         )
                     )
@@ -81,15 +75,17 @@ immunefeatures_UI <- function(id) {
             ),
             fluidRow(
                 plotBox(
-                    width = 7,
+                    width = 12,
                     fluidRow(
                         plotlyOutput(ns("corrPlot")) %>% 
                             shinycssloaders::withSpinner()
                     )
-                ),
+                )
+            ),
+            fluidRow(
                 plotBox(
-                    width = 5,
-                    plotlyOutput(ns("scatterPlot")) %>% 
+                    width = 12,
+                    plotlyOutput(ns("scatterPlot")) %>%
                         shinycssloaders::withSpinner()
                 )
             )
@@ -130,12 +126,13 @@ immunefeatures <- function(
     hm_variables  <- reactive(as.character(get_variable_group(input$heatmap_y)))
     
     intermediate_corr_df <- reactive({
-        subset_df() %>% 
+        df <- subset_df() %>% 
             build_intermediate_corr_df(
                 value_column = input$heatmap_values,
                 group_column = group_internal_choice(),
                 group_options = sample_groups(),
                 corr_value_columns = hm_variables())
+        return(df)
     })
     
     output$corrPlot <- renderPlotly({
@@ -154,7 +151,7 @@ immunefeatures <- function(
         
         validate(need(
             check_click_data(eventdata, subset_df(), group_internal_choice(), intermediate_corr_df()),
-            "Click heatmap to the left"))
+            "Click above heatmap"))
         
         
         internal_variable_name <- eventdata$y[[1]] %>%
