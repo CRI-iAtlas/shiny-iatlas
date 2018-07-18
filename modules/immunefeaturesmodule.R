@@ -100,7 +100,10 @@ immunefeatures <- function(
     
     ns <- session$ns
     
-    sample_groups <- reactive(get_category_group(group_internal_choice(), subset_df()))
+    sample_groups <- reactive(
+        get_unique_column_values(
+            group_internal_choice(), 
+            subset_df()))
     
     output$violinPlot <- renderPlotly({
         display_x  <- group_display_choice()

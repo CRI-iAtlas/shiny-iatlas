@@ -92,8 +92,6 @@ groupsoverview <- function(
     
     ns <- session$ns
     
-    sample_groups <- reactive(get_category_group(group_internal_choice()))
-    
     output$sample_group_name <- renderText({
         paste(group_display_choice(), "Groups")
     })

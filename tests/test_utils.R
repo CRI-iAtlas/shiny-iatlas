@@ -50,3 +50,26 @@ test_that("get_variable_group", {
         get_variable_group("", test_df),
         throws_error("group empty"))
 })   
+
+test_that("get_unique_column_values"){
+    test_df1 <- data_frame("col" = c("value1", "value2"))
+    test_df2 <- data_frame("col" = c("value1", "value1"))
+    test_df3 <- data_frame("col" = c("value1", NA))
+    test_df4 <- data_frame("col" = c(5, 6))
+    test_df5 <- data_frame("col" = c("value2", "value1"))
+    expect_that(
+        get_unique_column_values("col", test_df1),
+        is_identical_to(c("value1", "value2")))
+    expect_that(
+        get_unique_column_values("col", test_df2),
+        is_identical_to(c("value1")))
+    expect_that(
+        get_unique_column_values("col", test_df3),
+        is_identical_to(c("value1")))
+    expect_that(
+        get_unique_column_values("col", test_df4),
+        is_identical_to(c("5", "6")))
+    expect_that(
+        get_unique_column_values("col", test_df5),
+        is_identical_to(c("value1", "value2")))
+}
