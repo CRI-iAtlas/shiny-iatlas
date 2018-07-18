@@ -5,10 +5,7 @@ set_names_to_self <- function(lst) {
     set_names(lst, lst)
 }
 
-get_variable_group <- function(name, df = NULL) {
-    if (is.null(df)) {
-        df <- panimmune_data$feature_df
-    }
+get_variable_group <- function(name, df) {
     filtered_df <- df %>%
         select(`Variable Class`, FeatureMatrixLabelTSV, `Variable Class Order`) %>%
         filter(`Variable Class` == name) %>% 

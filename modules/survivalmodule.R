@@ -133,7 +133,8 @@ survival <- function(input, output, session, ss_choice, subset_df) {
           status_col <- "PFI_1"
       }
       
-      features <- as.character(get_variable_group(input$survival_class))
+      features <- get_variable_group(input$survival_class, panimmune_data$feature_df) %>% 
+          as.character
       group_internal <- get_variable_internal_name(ss_choice())
       
       ci_mat <- subset_df() %>% 

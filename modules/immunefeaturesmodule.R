@@ -123,7 +123,10 @@ immunefeatures <- function(
             )
     })
     
-    hm_variables  <- reactive(as.character(get_variable_group(input$heatmap_y)))
+    hm_variables  <- reactive({
+        get_variable_group(input$heatmap_y, panimmune_data$feature_df) %>% 
+            as.character
+    })
     
     intermediate_corr_df <- reactive({
         df <- subset_df() %>% 

@@ -143,7 +143,8 @@ cellcontent <- function(
   # ** Cell fractions bar plot render ----
   output$cell_frac_barplot <- renderPlotly({
     
-    cell_fractions <- as.character(get_variable_group(input$cf_choice))
+    cell_fractions <- get_variable_group(input$cf_choice, panimmune_data$feature_df) %>% 
+        as.character
     subset_df() %>%
       build_cell_fraction_df(
         group_column = group_internal_choice(), 
