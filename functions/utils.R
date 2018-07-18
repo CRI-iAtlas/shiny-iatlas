@@ -1,4 +1,7 @@
 set_names_to_self <- function(lst) {
+    if (length(lst) == 0){ 
+        stop("imput list/vector empty")
+    }
     set_names(lst, lst)
 }
 
@@ -6,12 +9,17 @@ get_variable_group <- function(name, df = NULL) {
     if (is.null(df)) {
         df <- panimmune_data$feature_df
     }
-    df <- df %>%
+    filtered_df <- df %>%
         select(`Variable Class`, FeatureMatrixLabelTSV, `Variable Class Order`) %>%
-        filter(`Variable Class` == name) %>%
-        .[complete.cases(.), ] %>%
-        arrange(`Variable Class Order`)
-    factor(df$FeatureMatrixLabelTSV, levels = df$FeatureMatrixLabelTSV)
+        filter(`Variable Class` == name) %>% 
+        .[complete.cases(.),] 
+    if (nrow(filtered_df) == 0) {
+        stop("group empty")
+    }
+    ordered_labels <- filtered_df %>% 
+        arrange(`Variable Class Order`) %>% 
+        use_series(FeatureMatrixLabelTSV)
+    factor(ordered_labels, levels = ordered_labels)
 }
 
 
