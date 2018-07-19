@@ -6,6 +6,32 @@ purrr::walk(config_yaml$libraries, library, character.only = T)
 
 source("../functions/utils.R")
 
+test_that("convert_value_between_columns", {
+    test_df1 <- data_frame("col1" = c("value1", "value2"),
+                           "col2" = c("A", "B"),
+                           "col3" = c("C", "C"))
+    expect_that(
+        convert_value_between_columns(test_df1, "value1", "col1", "col2"), 
+        is_identical_to("A"))
+    expect_that(
+        convert_value_between_columns(test_df1, "value2", "col1", "col2"), 
+        is_identical_to("B"))
+    expect_that(
+        convert_value_between_columns(test_df1, "value1", "col1", "col3"), 
+        is_identical_to("C"))
+    expect_that(
+        convert_value_between_columns(test_df1, "C", "col3", "col1"), 
+        is_identical_to(c("value1", "value2")))
+    expect_that(
+        convert_value_between_columns(test_df1, "value3", "col1", "col2"), 
+        is_identical_to(vector(mode = "character", length = 0)))
+    expect_that(
+        convert_value_between_columns(
+            test_df1, "value3", "col1", "col2", return_one_value= T), 
+        throws_error("value has no match in new column"))
+})
+
+
 test_that("set_names_to_self", {
     expect_that(
         set_names_to_self(list("A", "B")),

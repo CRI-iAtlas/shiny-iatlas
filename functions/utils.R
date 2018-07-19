@@ -1,3 +1,54 @@
+
+# these switch between internal name and display name -------------------------
+
+get_group_internal_name <- function(input_name){
+    internal_name <- get_variable_internal_name(input_name)
+    len <- length(internal_name)
+    result <- dplyr::case_when(
+        len == 0 ~ input_name, # user supplied group names
+        len == 1 ~ internal_name, # standard group names
+        len > 1 ~ stop("group name has multiple matches: ", input_name) 
+    )
+    return(result)
+}
+
+get_variable_display_name <- function(name, df = panimmune_data$feature_df){
+    convert_value_between_columns(
+        df, name, "FeatureMatrixLabelTSV", "FriendlyLabel")
+}
+
+get_variable_internal_name <- function(name, df = panimmune_data$feature_df){
+    convert_value_between_columns(
+        df, name, "FriendlyLabel", "FeatureMatrixLabelTSV")
+}
+
+get_im_display_name <- function(
+    name, df = panimmune_data$im_direct_relationships){
+    
+    convert_value_between_columns(df, name, "HGNC Symbol", "Gene")
+}
+
+convert_value_between_columns <- function(
+    df, value, old_col, new_col, return_one_value = F) {
+    
+    new_values <- wrapr::let(
+        alias = c(OLD_COL = old_col), 
+        expr  = {
+            df %>%
+                dplyr::filter(OLD_COL == value) %>%
+                magrittr::extract2(new_col)
+            }
+    )
+    if(length(new_values) == 0 && return_one_value){
+        stop("value has no match in new column: ", value)
+    } else if(length(new_values) > 1 && return_one_value){
+        stop("value has multiple matches in new column: ", value)
+    }
+    return(new_values)
+}
+
+# -----------------------------------------------------------------------------
+
 set_names_to_self <- function(lst) {
     if (length(lst) == 0){ 
         stop("imput list/vector empty")
@@ -33,67 +84,6 @@ get_unique_column_values <- function(category, df){
 }
 
 
-# these switch between internal name and display name -------------------------
-
-get_group_internal_name <- function(display_name){
-    internal_name <- get_variable_internal_name(display_name)
-    if (length(internal_name) != 1)  internal_name <- display_name
-    return(internal_name)
-}
-
-get_group_display_name <- function(internal_name){
-    display_name <- get_variable_display_name(internal_name)
-    if (length(display_name) != 1)   display_name <- internal_name
-    return(display_name)
-}
-
-
-get_variable_display_name <- function(name, df = panimmune_data$feature_df) {
-    switch_names(
-        df,
-        name,
-        "FeatureMatrixLabelTSV",
-        "FriendlyLabel"
-    )
-}
-
-get_variable_internal_name <- function(name, df = panimmune_data$feature_df) {
-    switch_names(
-        df,
-        name,
-        "FriendlyLabel",
-        "FeatureMatrixLabelTSV"
-    )
-    
-}
-
-get_im_display_name <- function(name, df = NULL) {
-    if (is.null(df)) {
-        df <- panimmune_data$im_direct_relationships
-    }
-    switch_names(
-        df,
-        name,
-        "HGNC Symbol",
-        "Gene"
-    )
-}
-
-get_im_internal_name <- function(name) {
-    switch_names(
-        panimmune_data$direct_relationship_modulators,
-        name,
-        "Gene",
-        "HGNC Symbol"
-    )
-}
-
-
-switch_names <- function(df, name, old_col, new_col) {
-    df %>%
-        filter(.data[[old_col]] == name) %>%
-        extract2(new_col)
-}
 
 decide_plot_colors <- function(data_obj, sample_group_label, subset_df = NULL) {
     color_mapping <- c(
