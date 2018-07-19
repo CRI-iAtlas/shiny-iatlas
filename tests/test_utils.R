@@ -31,22 +31,6 @@ test_that("convert_value_between_columns", {
         throws_error("value has no match in new column"))
 })
 
-
-test_that("set_names_to_self", {
-    expect_that(
-        set_names_to_self(list("A", "B")),
-        is_identical_to(list("A" = "A", "B" = "B")))
-    expect_that(
-        set_names_to_self(c("A", "B")),
-        is_identical_to(c("A" = "A", "B" = "B")))
-    expect_that(
-        set_names_to_self(list()),
-        throws_error("imput list/vector empty"))
-    expect_that(
-        set_names_to_self(c()),
-        throws_error("imput list/vector empty"))
-})
-
 test_that("get_variable_group", {
     test_df <- data_frame(
         "Variable Class" = c(

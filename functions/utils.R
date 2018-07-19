@@ -3,13 +3,16 @@
 
 get_group_internal_name <- function(input_name){
     internal_name <- get_variable_internal_name(input_name)
-    len <- length(internal_name)
-    result <- dplyr::case_when(
-        len == 0 ~ input_name, # user supplied group names
-        len == 1 ~ internal_name, # standard group names
-        len > 1 ~ stop("group name has multiple matches: ", input_name) 
-    )
-    return(result)
+    if (length(internal_name) == 0){
+        return(input_name) # user supplied group names
+    } else if (length(internal_name) == 1) {
+        return(internal_name) # standard group names
+    } else {
+        stop("group name has multiple matches: ", 
+             input_name, 
+             " matches: ", 
+             internal_name)
+    }
 }
 
 get_variable_display_name <- function(name, df = panimmune_data$feature_df){
@@ -48,13 +51,6 @@ convert_value_between_columns <- function(
 }
 
 # -----------------------------------------------------------------------------
-
-set_names_to_self <- function(lst) {
-    if (length(lst) == 0){ 
-        stop("imput list/vector empty")
-    }
-    magrittr::set_names(lst, lst)
-}
 
 get_variable_group <- function(name, df) {
     filtered_df <- df %>%
@@ -144,3 +140,9 @@ check_click_data <- function(eventdata, subset_df, group_internal_choice, interm
         any(get_variable_internal_name(eventdata$y[[1]]) %in% colnames(intermediate_corr_df)))
 }
 
+## selection choices for the dropdown menu of sample groups
+# create_sample_group_options <- function(feature_df) {
+#     feature_df %>%
+#         filter(`Variable Class` == "Sample Category") %>%
+#         use_series(FeatureMatrixLabelTSV) 
+# }
