@@ -56,7 +56,10 @@ explorepage <- dashboardPage(
                    ", TCGA molecular subtypes",
                    strong("(TCGA Subtype)"),
                    ", or by immune subtypes that span multiple tumor types",
-                   strong("(Immune Subtype)"), ".")
+                   strong("(Immune Subtype)"), ".",
+                   strong("Custom Sample Groups"),
+                   " can also be uploaded, via the Sample Groups Overview module."
+                   )
           )
         ),
         uiOutput("select_group_UI"),

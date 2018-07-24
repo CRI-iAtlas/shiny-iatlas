@@ -6,4 +6,7 @@ Scores for copy number burden, aneuploidy, loss of heterozygosity, and homologou
 
 Aneuploidy scores were calculated as the sum total of amplified or deleted (collectively altered) arms (Taylor et al., 2018). To call arm alterations, sample chromosome arms were first stratified by sample tumor type, type of alteration being tested (amplification or deletion), and chromosome arm (1p, 1q, etc.). The samples are then clustered using an n-component Gaussian Mixture Model fitted on that particular arms start coordinate, end coordinate, and percentage length of longest joined segment in that arm for each sample (segments were joined until the joined segment either encompassed the entire chromosome or achieved >20% contamination by segments not of that alteration type) for each sample. For each clustering, number of clusters n was chosen from 2-9 based on lowest Bayesian Information Criterion. Arms were designated as as altered if they belonged to a cluster of arms with mean fraction altered >=80%. Each segment was designated amplified, deleted, or neutral based on its copy number relative to the samples rounded ploidy.
 
+[Reference List](https://www.cell.com/immunity/references/S1074-7613\(18\)30121-3)
+
+
 **Contributors:** Galen Gao, Andrew Cherniack
