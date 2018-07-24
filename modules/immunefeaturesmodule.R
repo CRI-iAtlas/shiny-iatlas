@@ -127,7 +127,7 @@ immunefeatures <- function(
     })
     
     hm_variables  <- reactive({
-        get_variable_group(input$heatmap_y, panimmune_data$feature_df) %>% 
+        get_factored_variables_from_feature_df(input$heatmap_y) %>% 
             as.character
     })
     

@@ -1,8 +1,8 @@
 
 # these switch between internal name and display name -------------------------
 
-get_group_internal_name <- function(input_name){
-    internal_name <- get_variable_internal_name(input_name)
+get_group_internal_name <- function(input_name, df = panimmune_data$feature_df){
+    internal_name <- get_variable_internal_name(input_name, df)
     if (length(internal_name) == 0){
         return(input_name) # user supplied group names
     } else if (length(internal_name) == 1) {
@@ -11,7 +11,7 @@ get_group_internal_name <- function(input_name){
         stop("group name has multiple matches: ", 
              input_name, 
              " matches: ", 
-             internal_name)
+             str_c(internal_name, collapse = ", "))
     }
 }
 
@@ -34,7 +34,7 @@ get_im_display_name <- function(
 convert_value_between_columns <- function(
     df, value, old_col, new_col, return_one_value = F) {
     
-    new_values <- wrapr::let(
+    wrapr::let(
         alias = c(OLD_COL = old_col), 
         expr  = {
             df %>%
@@ -42,33 +42,69 @@ convert_value_between_columns <- function(
                 magrittr::extract2(new_col)
             }
     )
-    if(length(new_values) == 0 && return_one_value){
-        stop("value has no match in new column: ", value)
-    } else if(length(new_values) > 1 && return_one_value){
-        stop("value has multiple matches in new column: ", value)
+}
+
+# factor variables ------------------------------------------------------------
+
+get_factored_variables_from_feature_df <- function(class_name){
+    get_factored_variables_by_class(
+        class_name, 
+        df = panimmune_data$feature_df,
+        class_column = "Variable_Class",
+        variable_column = "FeatureMatrixLabelTSV",
+        order_column = "Variable_Class_Order" 
+    )
+}
+
+get_factored_variables_by_class <- function(
+    class_name, df, class_column, variable_column, order_column){
+    
+    class_df <- get_complete_class_df(
+        class_name, df, class_column, variable_column, order_column)
+    if (nrow(class_df) == 0) {
+        stop("empty class: ", class_name)
     }
-    return(new_values)
+    factor_variables_with_df(class_df, variable_column, order_column)
+}
+
+factor_variables_with_df <- function(df, variable_column, order_column){
+    result <- 
+        wrapr::let( 
+            alias = c(ORDER = order_column),
+            expr = dplyr::arrange(df, ORDER)) %>% 
+        magrittr::extract2(variable_column) %>% 
+        factor(., levels = .)
+}
+
+get_complete_class_df <- function(
+    class_name, df, class_column, variable_column, order_column){
+    
+
+    temp_df <- df %>% 
+        magrittr::set_colnames(stringr::str_replace_all(
+            colnames(.), 
+            " ", 
+            "_")) %>% 
+        get_complete_df_by_columns(c(
+            class_column, 
+            variable_column, 
+            order_column)) 
+    result_df <- 
+        wrapr::let( 
+            alias = c(CLASS = class_column),
+            expr = dplyr::filter(temp_df, CLASS == class_name)) %>% 
+        dplyr::select(variable_column, order_column)
+
+}
+
+
+get_complete_df_by_columns <- function(df, columns){
+    df %>%
+        dplyr::select(columns) %>%
+        .[complete.cases(.),] 
 }
 
 # -----------------------------------------------------------------------------
-
-get_variable_group <- function(name, df) {
-    filtered_df <- df %>%
-        dplyr::select(
-            `Variable Class`, 
-            FeatureMatrixLabelTSV, 
-            `Variable Class Order`) %>%
-        dplyr::filter(`Variable Class` == name) %>% 
-        .[complete.cases(.),] 
-    if (nrow(filtered_df) == 0) {
-        stop("group empty")
-    }
-    ordered_labels <- filtered_df %>% 
-        dplyr::arrange(`Variable Class Order`) %>% 
-        magrittr::use_series(FeatureMatrixLabelTSV)
-    factor(ordered_labels, levels = ordered_labels)
-}
-
 
 get_unique_column_values <- function(category, df){
     df %>% 

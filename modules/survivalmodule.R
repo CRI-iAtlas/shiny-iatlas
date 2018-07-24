@@ -120,7 +120,7 @@ survival <- function(input, output, session, ss_choice, subset_df) {
   
   
   output$heatmapplot <- renderPlotly({
-      # features <- as.character(get_variable_group("T Helper Cell Score"))
+      # features <- as.character(get_factored_variables_from_feature_df("T Helper Cell Score"))
       # group_internal <- "Subtype_Immune_Model_Based"
       # time_col <- "OS_time"
       # status_col <- "OS"
@@ -133,7 +133,8 @@ survival <- function(input, output, session, ss_choice, subset_df) {
           status_col <- "PFI_1"
       }
       
-      features <- get_variable_group(input$survival_class, panimmune_data$feature_df) %>% 
+      features <- get_factored_variables_from_feature_df(
+          input$survival_class) %>% 
           as.character
       group_internal <- get_variable_internal_name(ss_choice())
       
