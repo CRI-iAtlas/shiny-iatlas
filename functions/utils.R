@@ -104,6 +104,45 @@ get_complete_df_by_columns <- function(df, columns){
         .[complete.cases(.),] 
 }
 
+# colors for plotting groups --------------------------------------------------
+
+decide_plot_colors <- function(
+    sample_group_label, 
+    group_df = NULL, 
+    data_object = panimmune_data, 
+    config_list = config_yaml) {
+    
+    if (sample_group_label %in% config_list$immune_groups) {
+        return(get_study_plot_colors(sample_group_label, data_object, config_list))
+    } else {
+        return(create_user_group_colors(sample_group_label, group_df))
+    }
+}
+
+get_study_plot_colors <- function(
+    group_name, data_object = panimmune_data, config_list = config_yaml){
+    
+    color_group_name <- config_list$immune_group_colors[[group_name]]
+    if(is.null(color_group_name)){
+        stop("colors group name missing from config for: ", group_name)
+    }
+    color_group <- data_object[[color_group_name]]
+    if(is.null(color_group)){
+        stop("color group missing from data object for: ", group_name, " ", color_group_name)
+    }
+    return(color_group)
+}
+
+create_user_group_colors <- function(sample_group_label, group_df){
+    groups <- group_df %>% 
+        magrittr::extract2(sample_group_label) %>% 
+        unique %>% 
+        sort
+    colors <- RColorBrewer::brewer.pal(length(groups), "Set1")
+    magrittr::set_names(colors, groups)
+}
+
+
 # -----------------------------------------------------------------------------
 
 get_unique_column_values <- function(category, df){
@@ -115,26 +154,6 @@ get_unique_column_values <- function(category, df){
         as.character()
 }
 
-
-
-decide_plot_colors <- function(data_obj, sample_group_label, subset_df = NULL) {
-    color_mapping <- c(
-        "Study" = "tcga_study_colors",
-        "Subtype_Immune_Model_Based" = "immune_subtype_colors",
-        "Subtype_Curated_Malta_Noushmehr_et_al" = "tcga_subtype_colors"
-    )
-    if (sample_group_label %in% names(color_mapping)) {
-        color_item <- magrittr::extract2(color_mapping, sample_group_label)
-        magrittr::extract2(data_obj, color_item)
-    } else {
-        groups <- subset_df %>% 
-            magrittr::extract2(sample_group_label) %>% 
-            unique %>% 
-            sort
-        colors <- RColorBrewer::brewer.pal(length(groups), "Set1")
-        set_names(colors, groups)
-    } 
-}
 
 get_friendly_numeric_columns <- function(){
     get_numeric_columns() %>% 

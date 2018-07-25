@@ -162,7 +162,7 @@ build_scatterplot_df <- function(
 
 build_sample_group_key_df <- function(df, group_option) {
     
-    decide_plot_colors(panimmune_data, group_option, df) %>% 
+    decide_plot_colors(group_option, group_df = df) %>% 
         enframe() %>% 
         filter(name %in% df[[group_option]]) %>% 
         left_join(

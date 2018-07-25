@@ -131,7 +131,7 @@ shinyServer(function(input, output, session) {
   })
   
   plot_colors <- reactive(decide_plot_colors(
-      panimmune_data, group_internal_choice(), subset_df()))
+      group_internal_choice(), group_df = subset_df()))
   
 })
 ###############################################################################
