@@ -400,14 +400,3 @@ build_im_expr_plot_df <- function(df, filter_value, group_option) {
         .[complete.cases(.), ]
 }
 
-build_histogram_df <- function(df, filter_column, filter_value) {
-    df %>%
-        filter(UQ(as.name(filter_column)) == filter_value)
-    
-}
-
-
-
-
-
-

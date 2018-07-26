@@ -6,6 +6,85 @@ purrr::walk(config_yaml$libraries, library, character.only = T)
 
 source("../functions/utils.R")
 
+test_that("get_variable_classes", {
+    test_df <- data_frame(
+        "class" = c("class1", "class1", "class1", "class2", "class2", "class3",
+                    "class4", "class4", "class4"),
+        "type" = c("Numeric", "Numeric", "Numeric", "Factor", "Factor", 
+                   "Numeric", "Logical", "Logical", "Logical"))
+    expect_that(
+        get_variable_classes(
+            test_df, "class", "type", "Numeric"),
+        is_identical_to(c("class1", "class3")))
+})
+
+test_that("get_feature_df_nested_list", {
+    test_data_df <- data_frame(
+        "name1" = c(1L, 2L, 3L),
+        "name2" = c(1.1, 2.0, 3),
+        "name3" = c(1L, 2L, 3L),
+        "name4" = c(1.1, 2.0, 3),
+        "name5" = c(1L, 2L, 3L),
+        "name6" = c(1.1, 2.0, 3),
+        "name7" = c("A", "B", "C"),
+        "name8" = c(T, F, F),
+        "name9" = factor(c("A", "B", "C")))
+    test_feature_df <- data_frame(
+        "class_col" = c(
+            "class1", "class1", "class1", "class2", "class2", "class3",
+            "class4", "class4", "class4"),
+        "internal_col" = c(
+            "name1", "name2", "name3", "name4", "name5", "name6",
+            "name7", "name8", "name9"),
+        "display_col" = c(
+            "value1", "value2", "value3", "value4", "value5", "value6",
+            "value7", "value8", "value9"))
+    expect_that(
+        get_feature_df_nested_list(
+            test_feature_df, test_data_df, "class_col", "internal_col", "display_col"),
+        is_identical_to(list(
+            "class1" = c("value1" = "name1",
+                         "value2" = "name2",
+                         "value3" = "name3"),
+            "class2" = c("value4" = "name4",
+                         "value5" = "name5"),
+            "class3" = c("value6" = "name6"))))
+})
+
+test_that("df_to_nested_list", {
+    test_df1 <- data_frame(
+        "class_col" = c("class1", "class1", "class1", "class2", "class2", "class3"),
+        "internal_col" = c("name1", "name2", "name3", "name4", "name5", "name6"),
+        "display_col" = c("value1", "value2", "value3", "value4", "value5", "value6"))
+    expect_that(
+        df_to_nested_list(test_df1, "class_col", "internal_col", "display_col"),
+        is_identical_to(list(
+            "class1" = c("value1" = "name1",
+                         "value2" = "name2",
+                         "value3" = "name3"),
+            "class2" = c("value4" = "name4",
+                         "value5" = "name5"),
+            "class3" = c("value6" = "name6"))))
+})
+
+test_that("get_display_numeric_columns", {
+    test_df1 <- data_frame(
+        "col1" = c(1L, 2L, 3L),
+        "col2" = c(1.1, 2.0, 3),
+        "col3" = c("A", "B", "C"),
+        "col4" = c(T, F, F),
+        "col5" = factor(c("A", "B", "C")))
+    translation_df <- data_frame(
+        "internal_name" = c("col1", "col2", "col3", "col4", "col5"),
+        "display_name1" = c("int", "dbl", "chr", "lgl", "fct"),
+        "display_name2" = c("colA", "colB", "colC", "colD", "colF"))
+    expect_that(
+        get_display_numeric_columns(test_df1, translation_df, "internal_name", "display_name1"),
+        is_identical_to(c("int", "dbl")))
+    expect_that(
+        get_display_numeric_columns(test_df1, translation_df, "internal_name", "display_name2"),
+        is_identical_to(c("colA", "colB")))
+})
 
 test_that("decide_plot_colors", {
     test_group_df <- data_frame(
@@ -73,17 +152,17 @@ test_that("get_factored_variables_by_class", {
         "order col" = c(1,2,3,3,2,1))
     expect_that(
         get_factored_variables_by_class(
-            "class1", test_df, "class_col", "variable_col", "order_col"),
+            "class1", test_df, "class col", "variable col", "order col"),
         is_identical_to(
             factor(c("var1", "var2", "var3"), levels = c("var1", "var2", "var3"))))
     expect_that(
         get_factored_variables_by_class(
-            "class2", test_df, "class_col", "variable_col", "order_col"),
+            "class2", test_df, "class col", "variable col", "order col"),
         is_identical_to(
             factor(c("var6", "var5", "var4"),  levels = c("var6", "var5", "var4"))))
     expect_that(
         get_factored_variables_by_class(
-            "class3", test_df, "class_col", "variable_col", "order_col"),
+            "class3", test_df, "class col", "variable col", "order col"),
         throws_error("empty class: class3"))
 })
 
@@ -110,16 +189,16 @@ test_that("get_complete_class_df", {
         "variable col" = c("var1", "var2", "var3", "var4", "var5", "var6"),
         "order col" = c(1,2,3,3,2,1))
     result_df1 <- data_frame(
-        "variable_col" = c("var1", "var2", "var3"),
-        "order_col" = c(1,2,3))
+        "variable col" = c("var1", "var2", "var3"),
+        "order col" = c(1,2,3))
     result_df2 <- data_frame(
-        "variable_col" = c("var4", "var5", "var6"),
-        "order_col" = c(3,2,1))
+        "variable col" = c("var4", "var5", "var6"),
+        "order col" = c(3,2,1))
     expect_that(
-        get_complete_class_df("class1", test_df, "class_col", "variable_col", "order_col"),
+        get_complete_class_df("class1", test_df, "class col", "variable col", "order col"),
         is_identical_to(result_df1))
     expect_that(
-        get_complete_class_df("class2", test_df, "class_col", "variable_col", "order_col"),
+        get_complete_class_df("class2", test_df, "class col", "variable col", "order col"),
         is_identical_to(result_df2))
 })
 

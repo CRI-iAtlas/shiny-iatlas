@@ -72,7 +72,7 @@ survival_UI <- function(id) {
               selectInput(
                   ns("survival_class"),
                   "Select Variables Class (rows)",
-                  choices = get_numeric_variable_classes(),
+                  choices = get_numeric_classes_from_feature_df(),
                   selected = "T Helper Cell Score"
               )
           ),

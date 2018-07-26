@@ -20,7 +20,7 @@ immunefeatures_UI <- function(id) {
                     selectInput(
                         ns("violin_y"),
                         "Select Violin Plot Y Variable",
-                        choices = get_friendly_numeric_columns_by_group()
+                        choices = get_feature_df_nested_list()
                     )
                 )
             ),
@@ -67,7 +67,7 @@ immunefeatures_UI <- function(id) {
                         selectInput(
                             ns("heatmap_values"),
                             "Select Response Variable",
-                            choices = get_friendly_numeric_columns_by_group(),
+                            choices = get_feature_df_nested_list(),
                             selected = "Leukocyte Fraction"
                         )
                     )
@@ -156,7 +156,11 @@ immunefeatures <- function(
         eventdata <- event_data("plotly_click", source = "heatplot")
         
         validate(need(
-            check_click_data(eventdata, subset_df(), group_internal_choice(), intermediate_corr_df()),
+            check_immunefeatures_scatterplot_click_data(
+                eventdata, 
+                subset_df(), 
+                group_internal_choice(), 
+                intermediate_corr_df()),
             "Click above heatmap"))
         
         

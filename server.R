@@ -87,7 +87,20 @@ shinyServer(function(input, output, session) {
     shinydashboard::updateTabItems(session, "explorertabs", "immune_features")
   })
   
+  output$select_group_UI <- renderUI({
+      
+      selectInput(
+          inputId = "ss_choice",
+          label = strong("Select Sample Groups"),
+          choices = as.character(
+              group_options()
+          ),
+          selected = "Immune Subtype"
+      )
+  })
+  
   output$study_subset_UI <- renderUI({
+      req(input$ss_choice)
       if (input$ss_choice == "TCGA Subtype") {
           choices <- panimmune_data$sample_group_df %>% 
             filter(sample_group == "tcga_subtype", !is.na(FeatureValue)) %>% 
@@ -108,19 +121,11 @@ shinyServer(function(input, output, session) {
       return(groups)
   })
   
-  output$select_group_UI <- renderUI({
-      
-      selectInput(
-          inputId = "ss_choice",
-          label = strong("Select Sample Groups"),
-          choices = as.character(
-              group_options()
-          ),
-          selected = "Immune Subtype"
-      )
-  })
   
-  group_internal_choice <- reactive(get_group_internal_name(input$ss_choice))
+  group_internal_choice <- reactive({
+      req(input$ss_choice)
+      get_group_internal_name(input$ss_choice)
+  })
   
   subset_df <- reactive({
       subset_panimmune_df(
