@@ -160,7 +160,9 @@ build_scatterplot_df <- function(
 
 # ** Sample groups overview module ----
 
-build_sample_group_key_df <- function(subset_df, group_option, plot_colors) {
+build_sample_group_key_df <- function(
+    subset_df, group_option, plot_colors, 
+    feature_df = panimmune_data$sample_group_df) {
 
     color_df <- build_plot_color_df(plot_colors, subset_df[[group_option]]) 
     if(nrow(color_df) == 0){
@@ -169,22 +171,29 @@ build_sample_group_key_df <- function(subset_df, group_option, plot_colors) {
     
     group_size_df <- build_group_size_df(subset_df, group_option) 
     if(nrow(group_size_df) == 0){
-        stop("No groups group df column")
+        stop("Group column has no members")
     }
     
-    panimmune_data$sample_group_df %>% 
-        select(Group = FeatureValue,
-               FeatureName,
-               Characteristics) %>% 
-        inner_join(color_df, by = "Group") %>% 
-        inner_join(group_size_df, by = "Group") %>% 
-        distinct() %>% 
-        select(
+    feature_df <- dplyr::select(
+            feature_df,
+            Group = FeatureValue,
+            FeatureName,
+            Characteristics)
+    
+    key_df <- 
+        list(feature_df, color_df, group_size_df) %>% 
+        dplyr::reduce(dplyr::inner_join, by = "Group") %>% 
+        dplyr::distinct() %>% 
+        dplyr::select(
             `Sample Group` = Group, 
             `Group Name` = FeatureName,
             `Group Size` = Group_Size, 
             Characteristics, 
             `Plot Color` = Plot_Color)
+    
+    if(nrow(key_df) == 0){
+        stop("Result group key df is empty")
+    }
 }
 
 build_plot_color_df <- function(color_vector, groups){
@@ -197,28 +206,27 @@ build_plot_color_df <- function(color_vector, groups){
 build_group_size_df <- function(df, group_col){
     df %>% 
         dplyr::select(Group = group_col) %>% 
-        .[complete.cases(.),] %>% 
-        group_by(Group) %>% 
-        summarise(Group_Size = n()) 
+        tidyr::drop_na() %>% 
+        dplyr::group_by(Group) %>% 
+        dplyr::summarise(Group_Size = n()) 
 }
 
 
-build_mosaic_plot_df <- function(df, x_column, y_column, study_option, user_group_df = NULL) {
-    let(
-        alias = c(xvar = x_column,
-                  yvar = y_column),
-        df %>%
-            subset_panimmune_df(
-                group_col = x_column, 
-                study_option = study_option,
-                user_group_df
-            ) %>% 
-            select(xvar, yvar) %>%
-            .[complete.cases(.),] %>%
-            mutate(xvar = as.factor(xvar)) %>%
-            mutate(yvar = as.factor(yvar),
-                   yvar = fct_rev(yvar))
-    )
+build_mosaic_plot_df <- function(
+    df, x_column, y_column, study_option, user_group_df = NULL) {
+
+    df %>%
+        subset_panimmune_df(
+            group_col = x_column, 
+            study_option = study_option,
+            user_group_df) %>% 
+        dplyr::select(
+            x = x_column,
+            y = y_column) %>%
+        tidyr::drop_na() %>% 
+        dplyr::mutate(x = as.factor(x)) %>%
+        dplyr::mutate(y = forcats::fct_rev(as.factor(y))) %>% 
+        magrittr::set_colnames(c(x_column, y_column))
 }
 
 # ** Immune feature trends module ----
@@ -226,6 +234,7 @@ build_mosaic_plot_df <- function(df, x_column, y_column, study_option, user_grou
 build_intermediate_corr_df <- function(
     df, value_column, group_column, group_options, corr_value_columns,
     id_column = "ParticipantBarcode" ) {
+    
     if (is.factor(corr_value_columns)) {
         corr_value_columns <- levels(corr_value_columns)
     }

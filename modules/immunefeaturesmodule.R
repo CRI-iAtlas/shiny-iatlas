@@ -112,18 +112,18 @@ immunefeatures <- function(
         display_y  <- get_variable_display_name(internal_y)
         
         plot_df <- subset_df() %>%
-            select_(.dots = c(internal_x, internal_y)) %>%
-            .[complete.cases(.),]
+            dplyr::select(internal_x, internal_y) %>%
+            tidyr::drop_na()
         
-        plot_df %>% 
-            create_violinplot(
-                internal_x,
-                internal_y,
-                internal_x,
-                xlab = display_x,
-                ylab = display_y,
-                fill_colors = plot_colors()
-            )
+        create_violinplot(
+            plot_df,
+            internal_x,
+            internal_y,
+            internal_x,
+            xlab = display_x,
+            ylab = display_y,
+            fill_colors = plot_colors()
+        )
     })
     
     hm_variables  <- reactive({
@@ -132,13 +132,12 @@ immunefeatures <- function(
     })
     
     intermediate_corr_df <- reactive({
-        df <- subset_df() %>% 
-            build_intermediate_corr_df(
-                value_column = input$heatmap_values,
-                group_column = group_internal_choice(),
-                group_options = sample_groups(),
-                corr_value_columns = hm_variables())
-        return(df)
+        build_intermediate_corr_df(
+            subset_df(),
+            value_column = input$heatmap_values,
+            group_column = group_internal_choice(),
+            group_options = sample_groups(),
+            corr_value_columns = hm_variables())
     })
     
     output$corrPlot <- renderPlotly({
