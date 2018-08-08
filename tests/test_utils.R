@@ -1,5 +1,6 @@
 library(yaml)
 library(tidyverse)
+library(testthat)
 
 config_yaml <- yaml::read_yaml("../configuration.yaml")
 purrr::walk(config_yaml$libraries, library, character.only = T)

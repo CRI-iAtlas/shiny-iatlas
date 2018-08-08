@@ -15,30 +15,30 @@ groupsoverview_UI <- function(id) {
                 p("Upload a comma-separated table with your own sample/group assignments to use in iAtlas analysis modules.")  
             ),
             fluidRow(
-              optionsBox(
-                width = 12,
-                actionButton("filehelp", " Formatting instructions",
-                             icon = icon("info-circle")),
-                actionButton("exfile", " Load example groups file",
-                             icon = icon("file"),
-                             style = "background-color:rgba(219, 174, 88, 1)"),
-                hr(),
-                fileInput(
-                  ns("file1"),
-                  "Choose CSV File",
-                  multiple = FALSE,
-                  accept = c("text/csv",
-                             "text/comma-separated-values,text/plain",
-                             ".csv")
+                optionsBox(
+                    width = 12,
+                    actionButton("filehelp", " Formatting instructions",
+                                 icon = icon("info-circle")),
+                    actionButton("exfile", " Load example groups file",
+                                 icon = icon("file"),
+                                 style = "background-color:rgba(219, 174, 88, 1)"),
+                    hr(),
+                    fileInput(
+                        ns("file1"),
+                        "Choose CSV File",
+                        multiple = FALSE,
+                        accept = c("text/csv",
+                                   "text/comma-separated-values,text/plain",
+                                   ".csv")
+                    )
                 )
-              )
             ),
             messageBox(
-              width = 12,
-              p("After uploading your file, the table below will show your defined groups."),
-              DT::dataTableOutput(
-                ns("user_group_df")
-              )
+                width = 12,
+                p("After uploading your file, the table below will show your defined groups."),
+                DT::dataTableOutput(
+                    ns("user_group_df")
+                )
             )
         ),
         sectionBox(
@@ -97,27 +97,28 @@ groupsoverview <- function(
     })
     
     output$sample_group_table <- DT::renderDT({
-        build_sample_group_key_df(
-            df = subset_df(),
-            group_option = group_internal_choice()
-        ) %>% 
-            datatable(
-                options = list(
-                    dom = "tip",
-                    pageLength = 10,
-                    columnDefs = list(
-                        list(width = '50px', targets = c(1))
-                    )
-                ),
-                rownames = FALSE
-            ) %>%
-            formatStyle(
-                "Plot Color",
-                backgroundColor = styleEqual(
-                    plot_colors(), 
-                    plot_colors()
-                )
-            )
+        
+        key_df <- build_sample_group_key_df(
+            subset_df = subset_df(),
+            group_option = group_internal_choice(),
+            plot_colors = plot_colors())
+        
+        dt <- datatable(
+            key_df,
+            rownames = FALSE,
+            options = list(
+                dom = "tip",
+                pageLength = 10,
+                columnDefs = list(
+                    list(width = '50px',
+                         targets = c(1)))))
+        
+        formatStyle(
+            dt,
+            "Plot Color",
+            backgroundColor = styleEqual(
+                plot_colors(), 
+                plot_colors()))
     })
     
     output$mosaic_group_select <- renderUI({
@@ -160,7 +161,7 @@ groupsoverview <- function(
         display_y  <- group_display_choice()
         internal_x <- get_group_internal_name(display_x)
         internal_y <- group_internal_choice()
-
+        
         mosaic_df <- build_mosaic_plot_df(
             subset_df(),
             x_column = internal_x,

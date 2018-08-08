@@ -88,53 +88,54 @@ cellcontent <- function(
   
   # ** Overall proportions bar plot render ----
   output$overall_props_barplot <- renderPlotly({
-    subset_df() %>% 
-      build_tumor_content_df(group_column = group_internal_choice()) %>% 
-      build_barplot_df(
-        x_column = "fraction_type",
-        y_column = "fraction",
-        color_column = group_internal_choice(),
-        operations = c("mean", "se"),
-        add_label = TRUE
-      ) %>% 
+      barplot_df <- 
+          build_tumor_content_df(
+              subset_df(),
+              group_column = group_internal_choice()) %>% 
+          build_barplot_df(
+              x_column = "fraction_type",
+              y_column = "fraction",
+              color_column = "GROUP",
+              operations = c("mean", "se"),
+              add_label = TRUE)
+
       create_barplot(
-        x_column = group_internal_choice(),
-        y_column = "mean", 
-        color_column = "fraction_type",
-        error_column = "se",
-        x_lab = "Fraction type by group",
-        y_lab = "Fraction mean",
-        source_name = "overall_props_barplot"
+          barplot_df,
+          x_column = "GROUP",
+          y_column = "mean", 
+          color_column = "fraction_type",
+          error_column = "se",
+          x_lab = "Fraction type by group",
+          y_lab = "Fraction mean",
+          source_name = "overall_props_barplot"
       )
   })
   
   # ** Overall proportions scatter plot renders ----
   output$lf_sf_corr_scatterplot <- renderPlotly({
-    eventdata <- event_data(
-      "plotly_click", source = "overall_props_barplot"
-    )
-
+      
+    eventdata <- event_data( "plotly_click", source = "overall_props_barplot")
     selected_plot_subgroup <- eventdata$x[[1]]
     validate(
-
         need(all(!is.null(eventdata),
                  selected_plot_subgroup %in% extract2(subset_df(), group_internal_choice())),
         "Click bar plot"))
-    subset_df() %>%
-      build_scatterplot_df(
+    
+    scatterplot_df <- build_scatterplot_df(
+        subset_df(),
         filter_column = group_internal_choice(),
         filter_value = selected_plot_subgroup,
         x_column = "Stromal_Fraction",
-        y_column = "leukocyte_fraction"
-      ) %>%
-      create_scatterplot(
+        y_column = "leukocyte_fraction") 
+    
+    create_scatterplot(
+        scatterplot_df,
         x_column = "Stromal_Fraction",
         y_column = "leukocyte_fraction",
         x_lab = "Stromal Fraction",
         y_lab = "Leukocyte Fraction",
         title = selected_plot_subgroup,
-        identity_line = TRUE
-      ) %>% 
+        identity_line = TRUE) %>% 
       layout(margin = list(t = 39))
   })
   
@@ -146,6 +147,7 @@ cellcontent <- function(
     cell_fractions <- get_factored_variables_from_feature_df(
         input$cf_choice) %>% 
         as.character
+    
     subset_df() %>%
       build_cell_fraction_df(
         group_column = group_internal_choice(), 
@@ -154,7 +156,7 @@ cellcontent <- function(
       build_barplot_df(
         y_column = "fraction",
         x_column = "fraction_type",
-        color_column = group_internal_choice(),
+        color_column = "GROUP",
         operations = c("mean", "se"),
         add_label = TRUE
       ) %>% 
@@ -164,7 +166,7 @@ cellcontent <- function(
         )
       ) %>% 
       create_barplot(
-        x_column = group_internal_choice(),
+        x_column = "GROUP",
         y_column = "mean",
         color_column = "fraction_name",
         error_column = "se",

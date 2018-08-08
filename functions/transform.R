@@ -160,24 +160,48 @@ build_scatterplot_df <- function(
 
 # ** Sample groups overview module ----
 
-build_sample_group_key_df <- function(df, group_option) {
+build_sample_group_key_df <- function(subset_df, group_option, plot_colors) {
+
+    color_df <- build_plot_color_df(plot_colors, subset_df[[group_option]]) 
+    if(nrow(color_df) == 0){
+        stop("No matching members in groups between color list, and group df")
+    }
     
-    decide_plot_colors(group_option, group_df = df) %>% 
-        enframe() %>% 
-        filter(name %in% df[[group_option]]) %>% 
-        left_join(
-            panimmune_data$sample_group_df, 
-            by = c("name" = "FeatureValue")
-        ) %>% 
+    group_size_df <- build_group_size_df(subset_df, group_option) 
+    if(nrow(group_size_df) == 0){
+        stop("No groups group df column")
+    }
+    
+    panimmune_data$sample_group_df %>% 
+        select(Group = FeatureValue,
+               FeatureName,
+               Characteristics) %>% 
+        inner_join(color_df, by = "Group") %>% 
+        inner_join(group_size_df, by = "Group") %>% 
         distinct() %>% 
-        mutate(
-            `Group Size` = map_int(
-                name, ~ sum(df[, group_option] == ., na.rm = TRUE)
-            )
-        ) %>% 
-        select(`Sample Group` = name, `Group Name` = FeatureName,
-               `Group Size`, Characteristics, `Plot Color` = value)
+        select(
+            `Sample Group` = Group, 
+            `Group Name` = FeatureName,
+            `Group Size` = Group_Size, 
+            Characteristics, 
+            `Plot Color` = Plot_Color)
 }
+
+build_plot_color_df <- function(color_vector, groups){
+    color_vector %>% 
+        tibble::enframe() %>% 
+        magrittr::set_names(c("Group", "Plot_Color")) %>% 
+        dplyr::filter(Group %in% groups)
+}
+
+build_group_size_df <- function(df, group_col){
+    df %>% 
+        dplyr::select(Group = group_col) %>% 
+        .[complete.cases(.),] %>% 
+        group_by(Group) %>% 
+        summarise(Group_Size = n()) 
+}
+
 
 build_mosaic_plot_df <- function(df, x_column, y_column, study_option, user_group_df = NULL) {
     let(
@@ -252,38 +276,27 @@ build_heatmap_corr_mat <- function(
 
 # ** Tumor composition module ----
 
-build_cell_fraction_df <- function(
-    df, group_column, value_columns
-) {
-    let(
-        alias = c(groupvar = group_column),
-        df %>%
-            select(groupvar, value_columns) %>%
-            .[complete.cases(.), ] %>% 
-            gather(fraction_type, fraction, -groupvar)
-    )
+build_cell_fraction_df <- function(df, group_column, value_columns){
+    df %>% 
+        dplyr::select(GROUP = group_column, value_columns) %>% 
+        .[complete.cases(.),] %>% 
+        tidyr::gather(fraction_type, fraction, -GROUP)
 }
 
-build_tumor_content_df <- function(df, group_column) {
-    let(
-        alias = c(groupvar = group_column),
-        df %>% 
-            select(groupvar, Stromal_Fraction, leukocyte_fraction) %>% 
-            .[complete.cases(.),] %>% 
-            mutate(Tumor_Fraction = 1 - Stromal_Fraction) %>% 
-            gather(fraction_type, fraction, -groupvar) %>% 
-            mutate(
-                fraction_type = str_replace(
-                    fraction_type, "Stromal_Fraction", "Stromal Fraction"
-                ),
-                fraction_type = str_replace(
-                    fraction_type, "leukocyte_fraction", "Leukocyte Fraction"
-                ),
-                fraction_type = str_replace(
-                    fraction_type, "Tumor_Fraction", "Tumor Fraction"
-                )
-            )
-    )
+build_tumor_content_df <- function(df, group_column){
+    df %>% 
+        dplyr::select(
+            GROUP = group_column,
+            "Stromal_Fraction", 
+            "leukocyte_fraction") %>% 
+        .[complete.cases(.),] %>% 
+        dplyr::mutate(Tumor_Fraction = 1 - Stromal_Fraction) %>% 
+        magrittr::set_colnames(c(
+            "GROUP", 
+            "Stromal Fraction", 
+            "Leukocyte Fraction", 
+            "Tumor Fraction")) %>% 
+        tidyr::gather(fraction_type, fraction, -GROUP)
 }
 
 # ** Clinical outcomes module ----
