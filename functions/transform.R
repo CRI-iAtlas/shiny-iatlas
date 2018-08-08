@@ -232,56 +232,39 @@ build_mosaic_plot_df <- function(
 # ** Immune feature trends module ----
 
 build_intermediate_corr_df <- function(
-    df, value_column, group_column, group_options, corr_value_columns,
+    df, value1_column, group_column, group_options, value2_columns,
     id_column = "ParticipantBarcode" ) {
     
-    if (is.factor(corr_value_columns)) {
-        corr_value_columns <- levels(corr_value_columns)
-    }
-    
-    df %>%
-        as_data_frame() %>%
-        filter(UQ(as.name(group_column)) %in% group_options) %>%
-        select(
-            one_of(c(id_column, group_column, value_column, corr_value_columns))
-        ) 
+    wrapr::let(
+        c(GROUP = group_column),
+        result_df <- df %>% 
+            dplyr::select(id_column, GROUP, value1_column, value2_columns) %>% 
+            dplyr::filter(GROUP %in% group_options))
 }
 
 
 build_heatmap_corr_mat <- function(
-    df, value_column, group_column, group_options, corr_value_columns
-) {
-    
-    get_correlation <- function(var1, var2, df) {
-        cor(select_(df, var1),
-            select_(df, var2),
-            method = "spearman",
-            use = "pairwise.complete.obs"
-        )
-    }
-    group_options <- group_options[group_options %in% extract2(df, group_column)]
-    corr_mat <- matrix(
-        data = 0,
-        ncol = length(group_options),
-        nrow = length(corr_value_columns)
-    )
-    rownames(corr_mat) <- corr_value_columns
-    colnames(corr_mat) <- group_options
-    # for each factor in facet_groups
-    for (g in group_options) {
-        # subset df
-        sub_df <- df[df[, group_column] == g, ]
-        # compute correlation
-        for (var in corr_value_columns) {
-            corr_mat[var, g] <- get_correlation(var, value_column, sub_df)
-        }
-    }
-    # give it nice names
-    rownames(corr_mat) <- sapply(rownames(corr_mat), get_variable_display_name)
-    corr_mat[is.na(corr_mat)] <- 0
-    corr_mat <- corr_mat[rev(rownames(corr_mat)),]
-    return(corr_mat)
+    df, group_column, value1_column, value2_columns) {
+
+    df %>% 
+        dplyr::select(
+            group = group_column,
+            value1 = value1_column,
+            value2_columns) %>% 
+        tidyr::gather(key = "variable", value = "value2", -c(group, value1)) %>% 
+        dplyr::group_by(group, variable) %>% 
+        dplyr::summarise(cor = cor(
+            value1, 
+            value2,
+            method = "spearman", 
+            use = "pairwise.complete.obs")) %>% 
+        tidyr::spread(key = "group", value = "cor", fill = 0) %>% 
+        dplyr::mutate(variable = map(variable, get_variable_display_name)) %>% 
+        as.data.frame %>% 
+        tibble::column_to_rownames("variable") %>% 
+        as.matrix()
 }
+
 
 # ** Tumor composition module ----
 

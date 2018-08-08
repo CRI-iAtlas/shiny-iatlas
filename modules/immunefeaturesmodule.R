@@ -134,20 +134,18 @@ immunefeatures <- function(
     intermediate_corr_df <- reactive({
         build_intermediate_corr_df(
             subset_df(),
-            value_column = input$heatmap_values,
             group_column = group_internal_choice(),
-            group_options = sample_groups(),
-            corr_value_columns = hm_variables())
+            value1_column = input$heatmap_values,
+            value2_columns = hm_variables(),
+            group_options = sample_groups())
     })
     
     output$corrPlot <- renderPlotly({
-        heatmap_corr_mat <- intermediate_corr_df() %>%
-            build_heatmap_corr_mat(
-                value_column = input$heatmap_values,
-                group_column = group_internal_choice(),
-                group_options = sample_groups(),
-                corr_value_columns = hm_variables()
-            )
+        heatmap_corr_mat <- build_heatmap_corr_mat(
+            intermediate_corr_df(),
+            group_column = group_internal_choice(),
+            value1_column = input$heatmap_values,
+            value2_columns = hm_variables())
         create_heatmap(heatmap_corr_mat, "heatplot")
     })
     
