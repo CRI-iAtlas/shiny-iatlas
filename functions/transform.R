@@ -207,23 +207,7 @@ build_sample_group_key_df <- function(
     }
     
     group_size_df <- build_group_size_df(group_df, group_column) 
-    
-    feature_df <- dplyr::select(
-            feature_df,
-            Group = FeatureValue,
-            FeatureName,
-            Characteristics)
-    
-    key_df <- 
-        list(feature_df, color_df, group_size_df) %>% 
-        purrr::reduce(dplyr::inner_join, by = "Group") %>% 
-        dplyr::distinct() %>% 
-        dplyr::select(
-            `Sample Group` = Group, 
-            `Group Name` = FeatureName,
-            `Group Size` = Group_Size, 
-            Characteristics, 
-            `Plot Color` = Plot_Color)
+    key_df <- build_key_df(feature_df, color_df, group_size_df)
     
     if(nrow(key_df) == 0){
         stop("Result df is empty")
@@ -247,9 +231,28 @@ build_group_size_df <- function(df, group_col){
 }
 
 
+build_key_df <- function(feature_df, color_df, group_size_df){
+    feature_df <- dplyr::select(
+        feature_df,
+        Group = FeatureValue,
+        FeatureName,
+        Characteristics)
+    
+    key_df <- 
+        list(feature_df, color_df, group_size_df) %>% 
+        purrr::reduce(dplyr::inner_join, by = "Group") %>% 
+        dplyr::distinct() %>% 
+        dplyr::select(
+            `Sample Group` = Group, 
+            `Group Name` = FeatureName,
+            `Group Size` = Group_Size, 
+            Characteristics, 
+            `Plot Color` = Plot_Color)
+}
+
 build_group_group_mosaic_plot_df <- function(
     df, x_column, y_column, study_option, user_group_df = NULL) {
-
+    
     df %>%
         subset_panimmune_df(
             group_col = x_column, 

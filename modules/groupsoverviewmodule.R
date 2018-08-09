@@ -145,9 +145,9 @@ groupsoverview <- function(
     output$sample_group_table <- DT::renderDT({
         
         key_df <- build_sample_group_key_df(
-            subset_df = subset_df(),
-            group_option = group_internal_choice(),
-            plot_colors = plot_colors())
+            group_df = subset_df(),
+            group_column = group_internal_choice(),
+            color_vector = plot_colors())
         
         dt <- datatable(
             key_df,
