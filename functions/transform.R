@@ -185,6 +185,18 @@ build_mosaicplot_df <- function(group_df, x_column, y_column){
             dplyr::mutate(Y = forcats::fct_rev(as.factor(Y))))
 }
 
+build_violinplot_df <- function(df, x_column, y_column){
+    if(!x_column %in% colnames(df)){
+        stop("Input df has no X column: ", x_column)
+    }
+    if(!y_column %in% colnames(df)){
+        stop("Input df has no Y column: ", y_column)
+    }
+    df %>% 
+        dplyr::select(x = x_column, y = y_column) %>% 
+        tidyr::drop_na()
+}
+
 
 
 
@@ -433,7 +445,6 @@ build_im_expr_plot_df <- function(df, filter_value, group_option) {
         dplyr::filter(Symbol == filter_value) %>%
         dplyr::left_join(df) %>%
         dplyr::mutate(log_count = log10(normalized_count + 1)) %>%
-        dplyr::select(group_option, log_count) %>%
-        tidyr::drop_na()
+        build_violinplot_df(group_option, "log_count")
 }
 

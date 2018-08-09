@@ -127,15 +127,10 @@ immunefeatures <- function(
         internal_y <- input$violin_y
         display_y  <- get_variable_display_name(internal_y)
         
-        plot_df <- subset_df() %>%
-            dplyr::select(internal_x, internal_y) %>%
-            tidyr::drop_na()
+        plot_df <- build_violinplot_df(subset_df(), internal_x, internal_y) 
         
         create_violinplot(
             plot_df,
-            internal_x,
-            internal_y,
-            internal_x,
             xlab = display_x,
             ylab = display_y,
             fill_colors = plot_colors()

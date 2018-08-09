@@ -68,22 +68,19 @@ immunomodulator <- function(
     subset_df, plot_colors) {
     
     im_expr_plot_df <- reactive(
-        build_im_expr_plot_df(
-            subset_df(),
-            filter_value = input$im_gene_choice, 
-            group_option = group_internal_choice()))
+        df <- 
+            build_im_expr_plot_df(
+                subset_df(),
+                filter_value = input$im_gene_choice, 
+                group_option = group_internal_choice()))
     
     output$violinPlot <- renderPlotly(
         create_violinplot(
             im_expr_plot_df(),
-            x = group_internal_choice(), 
-            y = "log_count", 
-            fill_factor = group_internal_choice(), 
             xlab = group_display_choice(), 
             ylab = "log10(count + 1)",
             source_name = "select",
-            fill_colors = plot_colors(),
-            title = get_im_display_name(input$im_choice)))
+            fill_colors = plot_colors()))
     
     output$histPlot <- renderPlotly({
         
@@ -91,7 +88,7 @@ immunomodulator <- function(
         validate(need(!is.null(eventdata), "Click violin plot above"))
         
         histplot_df <- im_expr_plot_df() %>% 
-            select(GROUP = group_internal_choice(), log_count) %>% 
+            select(GROUP = x, log_count = y) %>% 
             filter(GROUP == eventdata$x[[1]])
         
         create_histogram(
