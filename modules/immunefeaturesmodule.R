@@ -100,11 +100,27 @@ immunefeatures <- function(
     
     ns <- session$ns
     
-    sample_groups <- reactive(
-        get_unique_column_values(
-            group_internal_choice(), 
-            subset_df()))
+    # reactives ----
+    hm_variables  <- reactive({
+        get_factored_variables_from_feature_df(input$heatmap_y) %>% 
+            as.character
+    })
     
+    intermediate_corr_df <- reactive({
+        
+        sample_groups <- get_unique_column_values(
+            group_internal_choice(), 
+            subset_df())
+        
+        build_intermediate_corr_df(
+            subset_df(),
+            group_column = group_internal_choice(),
+            value1_column = input$heatmap_values,
+            value2_columns = hm_variables(),
+            group_options = sample_groups)
+    })
+    
+    # plots ----
     output$violinPlot <- renderPlotly({
         display_x  <- group_display_choice()
         internal_x <- group_internal_choice()
@@ -126,19 +142,6 @@ immunefeatures <- function(
         )
     })
     
-    hm_variables  <- reactive({
-        get_factored_variables_from_feature_df(input$heatmap_y) %>% 
-            as.character
-    })
-    
-    intermediate_corr_df <- reactive({
-        build_intermediate_corr_df(
-            subset_df(),
-            group_column = group_internal_choice(),
-            value1_column = input$heatmap_values,
-            value2_columns = hm_variables(),
-            group_options = sample_groups())
-    })
     
     output$corrPlot <- renderPlotly({
         heatmap_corr_mat <- build_heatmap_corr_mat(
@@ -166,20 +169,19 @@ immunefeatures <- function(
             .[. %in% colnames(intermediate_corr_df())]
         
         
-        plot_df <- intermediate_corr_df() %>% 
-            build_scatterplot_df(
-                filter_column = group_internal_choice(),
-                filter_value = eventdata$x[[1]],
-                x_column = internal_variable_name,
-                y_column = input$heatmap_values
-            )
+        plot_df <- build_scatterplot_df(
+            intermediate_corr_df(), 
+            filter_column = group_internal_choice(),
+            filter_value = eventdata$x[[1]],
+            x_column = internal_variable_name,
+            y_column = input$heatmap_values)
         
-        plot_df %>%
-            create_scatterplot(
-                x_column = internal_variable_name,
-                y_column = input$heatmap_values,
-                x_lab = eventdata$y[[1]],
-                y_lab = get_variable_display_name(input$heatmap_values),
-                title = eventdata$x[[1]])
+        create_scatterplot(
+            plot_df,
+            x_column = internal_variable_name,
+            y_column = input$heatmap_values,
+            x_lab = eventdata$y[[1]],
+            y_lab = get_variable_display_name(input$heatmap_values),
+            title = eventdata$x[[1]])
     })
 }

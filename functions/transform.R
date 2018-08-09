@@ -156,23 +156,57 @@ build_scatterplot_df <- function(
         select_(.dots = id_column, x_column, y_column, "label")
 }
 
+#' Format a dataframe for plotting values of one column versus values of a
+#' second column for moasic plot
+#'
+#' @param df a tidy data_frame
+#' @param x_column string name of column to use for x-axis
+#' @param y_column string name of column to use for y-axis
+#'
+#' @return 
+#' @export
+#'
+#' @examples
+build_mosaicplot_df <- function(group_df, x_column, y_column){
+
+    if(!x_column %in% colnames(group_df)){
+        stop("Group df has no X column: ", x_column)
+    }
+    if(!y_column %in% colnames(group_df)){
+        stop("Group df has no Y column: ", y_column)
+    }
+    wrapr::let(
+        c(X = x_column,
+          Y = y_column),
+        group_df %>% 
+            dplyr::select(X, Y) %>%
+            tidyr::drop_na() %>% 
+            dplyr::mutate(X = as.factor(X)) %>%
+            dplyr::mutate(Y = forcats::fct_rev(as.factor(Y))))
+}
+
+
+
+
 # Module specific data transform ----
 
 # ** Sample groups overview module ----
 
 build_sample_group_key_df <- function(
-    subset_df, group_option, plot_colors, 
+    group_df, group_column, color_vector, 
     feature_df = panimmune_data$sample_group_df) {
-
-    color_df <- build_plot_color_df(plot_colors, subset_df[[group_option]]) 
-    if(nrow(color_df) == 0){
-        stop("No matching members in groups between color list, and group df")
+    
+    if(!group_column %in% colnames(group_df)){
+        stop("Group df has no column: ", group_column)
     }
     
-    group_size_df <- build_group_size_df(subset_df, group_option) 
-    if(nrow(group_size_df) == 0){
-        stop("Group column has no members")
+    color_df <- build_plot_color_df(color_vector, group_df, group_column) 
+    if(nrow(color_df) == 0){
+        stop("No matching members in groups between color vector, group df column: ", 
+             group_column)
     }
+    
+    group_size_df <- build_group_size_df(group_df, group_column) 
     
     feature_df <- dplyr::select(
             feature_df,
@@ -182,7 +216,7 @@ build_sample_group_key_df <- function(
     
     key_df <- 
         list(feature_df, color_df, group_size_df) %>% 
-        dplyr::reduce(dplyr::inner_join, by = "Group") %>% 
+        purrr::reduce(dplyr::inner_join, by = "Group") %>% 
         dplyr::distinct() %>% 
         dplyr::select(
             `Sample Group` = Group, 
@@ -192,15 +226,16 @@ build_sample_group_key_df <- function(
             `Plot Color` = Plot_Color)
     
     if(nrow(key_df) == 0){
-        stop("Result group key df is empty")
+        stop("Result df is empty")
     }
+    return(key_df)
 }
 
-build_plot_color_df <- function(color_vector, groups){
+build_plot_color_df <- function(color_vector, subset_df, group_column){
     color_vector %>% 
         tibble::enframe() %>% 
         magrittr::set_names(c("Group", "Plot_Color")) %>% 
-        dplyr::filter(Group %in% groups)
+        dplyr::filter(Group %in% subset_df[[group_column]])
 }
 
 build_group_size_df <- function(df, group_col){
@@ -212,7 +247,7 @@ build_group_size_df <- function(df, group_col){
 }
 
 
-build_mosaic_plot_df <- function(
+build_group_group_mosaic_plot_df <- function(
     df, x_column, y_column, study_option, user_group_df = NULL) {
 
     df %>%
@@ -220,13 +255,7 @@ build_mosaic_plot_df <- function(
             group_col = x_column, 
             study_option = study_option,
             user_group_df) %>% 
-        dplyr::select(
-            x = x_column,
-            y = y_column) %>%
-        tidyr::drop_na() %>% 
-        dplyr::mutate(x = as.factor(x)) %>%
-        dplyr::mutate(y = forcats::fct_rev(as.factor(y))) %>% 
-        magrittr::set_colnames(c(x_column, y_column))
+        build_mosaicplot_df(x_column, y_column) 
 }
 
 # ** Immune feature trends module ----
@@ -271,7 +300,7 @@ build_heatmap_corr_mat <- function(
 build_cell_fraction_df <- function(df, group_column, value_columns){
     df %>% 
         dplyr::select(GROUP = group_column, value_columns) %>% 
-        .[complete.cases(.),] %>% 
+        tidyr::drop_na() %>%  
         tidyr::gather(fraction_type, fraction, -GROUP)
 }
 
@@ -281,7 +310,7 @@ build_tumor_content_df <- function(df, group_column){
             GROUP = group_column,
             "Stromal_Fraction", 
             "leukocyte_fraction") %>% 
-        .[complete.cases(.),] %>% 
+        tidyr::drop_na() %>%  
         dplyr::mutate(Tumor_Fraction = 1 - Stromal_Fraction) %>% 
         magrittr::set_colnames(c(
             "GROUP", 
@@ -398,10 +427,10 @@ ztransform_df <- function(df) {
 
 build_im_expr_plot_df <- function(df, filter_value, group_option) {
     panimmune_data$im_expr_df %>%
-        filter(Symbol == filter_value) %>%
-        left_join(df) %>%
-        mutate(log_count = log10(normalized_count + 1)) %>%
-        select(group_option, log_count) %>%
-        .[complete.cases(.), ]
+        dplyr::filter(Symbol == filter_value) %>%
+        dplyr::left_join(df) %>%
+        dplyr::mutate(log_count = log10(normalized_count + 1)) %>%
+        dplyr::select(group_option, log_count) %>%
+        tidyr::drop_na()
 }
 

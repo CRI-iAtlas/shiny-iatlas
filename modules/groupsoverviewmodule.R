@@ -92,9 +92,55 @@ groupsoverview <- function(
     
     ns <- session$ns
     
+    # reactives ----
+    
+    user_group_df <- reactive({
+        req(input$file1)
+        tryCatch(
+            {
+                df <- readr::read_csv(input$file1$datapath)
+            },
+            error = function(e) {
+                stop(safeError(e))
+            }
+        )
+        return(df)
+    })
+    
+    # ui ----
+    
+    output$mosaic_group_select <- renderUI({
+        choices <- setdiff(group_options(), group_display_choice())
+        radioButtons(ns("sample_mosaic_group"), 
+                     "Select second sample group to view overlap:",
+                     choices = choices,
+                     selected = choices[1],
+                     inline = TRUE)
+    })
+    
+    output$study_subset_select <- renderUI({
+        req(input$sample_mosaic_group, cancelOutput = TRUE)
+        if (input$sample_mosaic_group == "TCGA Subtype") {
+            choices <- panimmune_data$sample_group_df %>% 
+                filter(sample_group == "tcga_subtype", !is.na(FeatureValue)) %>% 
+                distinct(`TCGA Studies`) %>% 
+                extract2("TCGA Studies")
+            
+            optionsBox(
+                width = 4,
+                selectInput(ns("study_subset_selection"), 
+                            "Choose study subset:",
+                            choices = choices,
+                            selected = NULL))}
+    })
+    
+    # other ----
+    
     output$sample_group_name <- renderText({
         paste(group_display_choice(), "Groups")
     })
+    
+    output$user_group_df <- DT::renderDataTable(user_group_df())
     
     output$sample_group_table <- DT::renderDT({
         
@@ -121,36 +167,7 @@ groupsoverview <- function(
                 plot_colors()))
     })
     
-    output$mosaic_group_select <- renderUI({
-        choices <- setdiff(group_options(), group_display_choice())
-        
-        
-        radioButtons(ns("sample_mosaic_group"), 
-                     "Select second sample group to view overlap:",
-                     choices = choices,
-                     selected = choices[1],
-                     inline = TRUE)
-    })
-    
-    output$study_subset_select <- renderUI({
-        
-        req(input$sample_mosaic_group, cancelOutput = TRUE)
-        
-        if (input$sample_mosaic_group == "TCGA Subtype") {
-            choices <- panimmune_data$sample_group_df %>% 
-                filter(sample_group == "tcga_subtype", !is.na(FeatureValue)) %>% 
-                distinct(`TCGA Studies`) %>% 
-                extract2("TCGA Studies")
-            
-            optionsBox(
-                width = 4,
-                selectInput(ns("study_subset_selection"), 
-                            "Choose study subset:",
-                            choices = choices,
-                            selected = NULL)
-            )
-        }
-    })
+    # plots ----
     
     output$mosaicPlot <- renderPlotly({
         
@@ -162,7 +179,7 @@ groupsoverview <- function(
         internal_x <- get_group_internal_name(display_x)
         internal_y <- group_internal_choice()
         
-        mosaic_df <- build_mosaic_plot_df(
+        mosaic_df <- build_group_group_mosaic_plot_df(
             subset_df(),
             x_column = internal_x,
             y_column = internal_y,
@@ -178,21 +195,6 @@ groupsoverview <- function(
             fill_colors = decide_plot_colors(internal_y)) 
     })
     
-    user_group_df <- reactive({
-        req(input$file1)
-        tryCatch(
-            {
-                df <- readr::read_csv(input$file1$datapath)
-            },
-            error = function(e) {
-                stop(safeError(e))
-            }
-        )
-        return(df)
-        
-    })
-    
-    output$user_group_df <- DT::renderDataTable(user_group_df())
     return(user_group_df)
     
 }

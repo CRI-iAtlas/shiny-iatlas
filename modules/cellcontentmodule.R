@@ -84,6 +84,8 @@ cellcontent_UI <- function(id) {
 cellcontent <- function(
     input, output, session, group_display_choice, group_internal_choice, 
     subset_df) {
+    
+    ns <- session$ns
   
   
   # ** Overall proportions bar plot render ----
