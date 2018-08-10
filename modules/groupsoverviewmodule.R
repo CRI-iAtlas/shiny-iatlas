@@ -188,9 +188,6 @@ groupsoverview <- function(
         
         create_mosaicplot(
             mosaic_df,
-            x = internal_x,
-            y = internal_y,
-            fill_factor = internal_y,
             title = str_c(display_y, "by", display_x, sep = " "),
             fill_colors = decide_plot_colors(internal_y)) 
     })

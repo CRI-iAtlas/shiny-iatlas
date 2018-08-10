@@ -167,22 +167,19 @@ build_scatterplot_df <- function(
 #' @export
 #'
 #' @examples
-build_mosaicplot_df <- function(group_df, x_column, y_column){
-
-    if(!x_column %in% colnames(group_df)){
-        stop("Group df has no X column: ", x_column)
+build_mosaicplot_df <- function(df, x_column, y_column){
+    
+    if(!x_column %in% colnames(df)){
+        stop("Input df has no X column: ", x_column)
     }
-    if(!y_column %in% colnames(group_df)){
-        stop("Group df has no Y column: ", y_column)
+    if(!y_column %in% colnames(df)){
+        stop("Input df has no Y column: ", y_column)
     }
-    wrapr::let(
-        c(X = x_column,
-          Y = y_column),
-        group_df %>% 
-            dplyr::select(X, Y) %>%
-            tidyr::drop_na() %>% 
-            dplyr::mutate(X = as.factor(X)) %>%
-            dplyr::mutate(Y = forcats::fct_rev(as.factor(Y))))
+    df %>% 
+        dplyr::select(x = x_column, y = y_column) %>%
+        tidyr::drop_na() %>% 
+        dplyr::mutate(x = as.factor(x)) %>%
+        dplyr::mutate(y = forcats::fct_rev(as.factor(y)))
 }
 
 build_violinplot_df <- function(df, x_column, y_column){
