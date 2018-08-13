@@ -123,19 +123,18 @@ cellcontent <- function(
                  selected_plot_subgroup %in% extract2(subset_df(), group_internal_choice())),
         "Click bar plot"))
     
-    scatterplot_df <- build_scatterplot_df(
-        subset_df(),
-        filter_column = group_internal_choice(),
-        filter_value = selected_plot_subgroup,
-        x_column = "Stromal_Fraction",
-        y_column = "leukocyte_fraction") 
+    scatterplot_df <-  
+        build_scatterplot_df(
+            subset_df(),
+            group_column = group_internal_choice(),
+            group_filter_value = selected_plot_subgroup,
+            x_column = "Stromal_Fraction",
+            y_column = "leukocyte_fraction") 
     
     create_scatterplot(
         scatterplot_df,
-        x_column = "Stromal_Fraction",
-        y_column = "leukocyte_fraction",
-        x_lab = "Stromal Fraction",
-        y_lab = "Leukocyte Fraction",
+        xlab = "Stromal Fraction",
+        ylab = "Leukocyte Fraction",
         title = selected_plot_subgroup,
         identity_line = TRUE) %>% 
       layout(margin = list(t = 39))

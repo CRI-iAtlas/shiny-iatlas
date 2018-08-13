@@ -166,17 +166,15 @@ immunefeatures <- function(
         
         plot_df <- build_scatterplot_df(
             intermediate_corr_df(), 
-            filter_column = group_internal_choice(),
-            filter_value = eventdata$x[[1]],
+            group_column = group_internal_choice(),
+            group_filter_value = eventdata$x[[1]],
             x_column = internal_variable_name,
             y_column = input$heatmap_values)
         
         create_scatterplot(
             plot_df,
-            x_column = internal_variable_name,
-            y_column = input$heatmap_values,
-            x_lab = eventdata$y[[1]],
-            y_lab = get_variable_display_name(input$heatmap_values),
+            xlab = eventdata$y[[1]],
+            ylab = get_variable_display_name(input$heatmap_values),
             title = eventdata$x[[1]])
     })
 }

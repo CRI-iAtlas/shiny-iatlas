@@ -55,8 +55,11 @@ subset_panimmune_df_by_user_groups <- function(df, user_group_df, group_column){
 # Generic plot data transform ----
 
 create_label <- function(
-    df, title, name_column, group_column, value_columns
-) {
+    df, 
+    value_columns,
+    title = "ParticipantBarcode",
+    name_column = "name", 
+    group_column = "group") {
     
     let(
         alias = c(namevar = name_column, groupvar = group_column),
@@ -83,6 +86,7 @@ create_label <- function(
             unite(label, label, value_label, sep = "</br></br>")
     )
 }
+
 
 #' Format a dataframe for plotting summary values (count, sum, mean, etc.) for
 #' different groups with bar plots; grouping is allowed at one to three levels:
@@ -142,18 +146,14 @@ build_barplot_df <- function(
 #'
 #' @examples
 build_scatterplot_df <- function(
-    df, filter_column, filter_value, x_column, y_column, 
-    id_column = "ParticipantBarcode"
-) {
+    df, group_column, group_filter_value, x_column, y_column, 
+    id_column = "ParticipantBarcode") {
+    
     df %>%
-        filter(UQ(as.name(filter_column)) == filter_value) %>%
-        create_label(
-            title = id_column, 
-            name_column = id_column, 
-            group_column = filter_column, 
-            value_columns = c(x_column, y_column)
-        ) %>% 
-        select_(.dots = id_column, x_column, y_column, "label")
+        select(group = group_column, name = id_column, x_column, y_column) %>% 
+        filter(group == group_filter_value) %>% 
+        create_label(value_columns = c(x_column, y_column)) %>%
+        select(id = name, x = x_column, y = y_column, "label")
 }
 
 #' Format a dataframe for plotting values of one column versus values of a
@@ -194,7 +194,17 @@ build_violinplot_df <- function(df, x_column, y_column){
         tidyr::drop_na()
 }
 
-
+build_boxplot_df <- function(df, x_column, y_column){
+    if(!x_column %in% colnames(df)){
+        stop("Input df has no X column: ", x_column)
+    }
+    if(!y_column %in% colnames(df)){
+        stop("Input df has no Y column: ", y_column)
+    }
+    df %>% 
+        dplyr::select(x = x_column, y = y_column) %>% 
+        tidyr::drop_na()
+}
 
 
 # Module specific data transform ----

@@ -7,6 +7,20 @@ purrr::walk(config_yaml$libraries, library, character.only = T)
 
 source("../functions/transform.R")
 
+test_that("create_label", {
+    input_df <- data_frame(
+        "id_col" = c("id1", "id2", "id3", "id4"),
+        "group_col" = c("group1", "group1", "group2", "group2"),
+        "value_col1" = c(1, 2, 3, 4),
+        "value_col2" = c(8, 9, 10, 11),
+        "value_col3" = c(12, 14, 100, 110))
+    x <- create_label(input_df, "test_title", "id_col", "group_col", c("value_col1", "value_col2"))
+    y <- add_label_column_to_df(input_df, "test_title", "id_col", "group_col", c("value_col1", "value_col2"))
+})
+
+
+
+
 test_that("build_mosaicplot_df", {
     group_df <- data_frame(
         "group_col1" = c(rep("group1", 5), rep("group2", 3)),
