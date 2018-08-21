@@ -52,7 +52,8 @@ shinyServer(function(input, output, session) {
     tilmap, 
     "module7", 
     reactive(input$ss_choice),
-    reactive(subset_tilmap_df()))
+    reactive(subset_df()))
+    #    reactive(subset_tilmap_df()))
   
     
   # Data info
@@ -106,13 +107,5 @@ shinyServer(function(input, output, session) {
       )
   )
 
-  subset_tilmap_df <- reactive(
-    subset_panimmune_tilmap_df(
-      group_column = get_variable_internal_name(input$ss_choice), 
-      study_option = input$study_subset_selection
-    )
-  )
-  
-    
 })
 ################################################################################

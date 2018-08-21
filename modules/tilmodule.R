@@ -23,10 +23,7 @@ tilmap_UI <- function(id) {
           selectInput(
             ns("violin_y"),
             "Select TIL Map characteristic",
-            choices = get_friendly_numeric_columns_by_group()
-            ## is a list of groups. We would like just the ``TIL Map Characteristic` groups
-            ## following does not work as it is not a list object
-            ##choices=panimmune_data$feature_df %>% filter(`Variable Class`=="TIL Map Characteristic" & VariableType=="Numeric") %>% .$FriendlyLabel
+            choices = get_friendly_numeric_columns_by_group()["TIL Map Characteristic"]
           )
         )
       ),
@@ -90,18 +87,20 @@ tilmap <- function(input, output, session, ss_choice, subset_df){
   
   output$til_table <- DT::renderDT({
 
-    panimmune_data$fmx_df %>% 
-      select("ParticipantBarcode","Study", panimmune_data$feature_df %>% 
+      panimmune_data$fmx_df %>% 
+      select("ParticipantBarcode","Study", "Slide", panimmune_data$feature_df %>% 
                filter(`Variable Class`=="TIL Map Characteristic" & VariableType=="Numeric") %>% .$FeatureMatrixLabelTSV) %>% 
       .[complete.cases(.), ] %>%
+      mutate(Image=paste("<a href=\"","http://quip1.bmi.stonybrook.edu:443/camicroscope/osdCamicroscope.php?tissueId=",
+                            .$Slide,"\">",.$Slide,"</a>",sep="") ) %>% 
+      select(-"Slide") %>% ## column width/wrap problem at the moment for this
       datatable(
-        options = list(
-          dom = "tip",
-          pageLength = 10
-        ),
-        rownames = FALSE
+        rownames = FALSE,
+        escape = setdiff(colnames(.),"Image") ## To get hyperlink displayed
       ) %>% formatRound(c('til_percentage','NP_mean',"NP_sd","WCD_mean","WCD_sd","CE_mean",
                           "CE_sd","Ball_Hall","Banfeld_Raftery","C_index","Det_Ratio","Ball_Hall_Adjusted",
                           "Banfeld_Raftery_Adjusted","C_index_Adjusted","Det_Ratio_Adjusted"), digits = 1) 
-  })
+
+    ## Probably want to  get_variable_display_name for the column display
+      })
 }
