@@ -40,6 +40,11 @@ explorepage <- dashboardPage(
                  "Immunomodulators",
                  tabName = "immunomodulators",
                  icon = icon("cog")
+               ),
+               menuSubItem(
+                 "Driver Associations",
+                 tabName = "drivers",
+                 icon = icon("cog")
                )
       ),
       menuItem("Data Description",
@@ -168,6 +173,16 @@ explorepage <- dashboardPage(
               boxText = "Explore the expression of genes that code for immunomodulating proteins, including checkpoint proteins.",
               linkText = "Open Module"
             )
+          ),
+          fluidRow(
+            imgLinkBox(
+              width = 6,
+              title = "Driver Associations",
+              linkId = "link_to_module8",
+              imgSrc = "images/drivers.png",
+              boxText = "Explore Assoiations of Microenvironment with Driver Mutations.",
+              linkText = "Open Module"
+            )
           )
         )
       ),
@@ -194,6 +209,10 @@ explorepage <- dashboardPage(
       tabItem(
         tabName = "immune_features",
         immunefeatures_UI("module6")
+      ),
+      tabItem(
+        tabName = "drivers",
+        immunefeatures_UI("module8")
       ),
       tabItem(
         tabName = "datainfo",

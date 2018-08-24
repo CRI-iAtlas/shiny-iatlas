@@ -60,6 +60,14 @@ shinyServer(function(input, output, session) {
       reactive(group_internal_choice()),
       reactive(subset_df()),
       reactive(plot_colors()))
+  # Driver associations
+  callModule(
+    immunefeatures, 
+    "module8", 
+    reactive(input$ss_choice),
+    reactive(group_internal_choice()),
+    reactive(subset_df()),
+    reactive(plot_colors()))
   
   # Data info
   callModule(datainfo, "moduleX")
@@ -86,7 +94,11 @@ shinyServer(function(input, output, session) {
   observeEvent(input$link_to_module6, {
     shinydashboard::updateTabItems(session, "explorertabs", "immune_features")
   })
+  observeEvent(input$link_to_module8, {
+    shinydashboard::updateTabItems(session, "explorertabs", "drivers")
+  })
   
+    
   output$select_group_UI <- renderUI({
       
       selectInput(
