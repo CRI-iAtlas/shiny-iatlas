@@ -52,6 +52,17 @@ load_im_expression <- function() {
     }
 }
 
+load_driver_mutation <- function() {
+  if (!USE_REMOTE_BQ) {
+    list(
+      driver_mutation_df = read_feather("data/driver_mutations.feather")
+    )
+  } else {
+    fetch_driver_mutation() %>% 
+      format_driver_mutation()
+  }
+}
+
 # Helper functions ----
 
 # ** Color maps for sample groups ----
@@ -109,6 +120,7 @@ load_data <- function() {
     feature_matrix_data <- load_feature_matrix()
     im_annotations_data <- load_im_annotations()
     im_expression_data <- load_im_expression()
+    driver_mutation_data <- load_driver_mutation()
     list(
         feature_df = manifest_data$feature_df,
         feature_method_df = manifest_data$feature_method_df,
@@ -122,6 +134,7 @@ load_data <- function() {
             manifest_data$sample_group_df),
         im_direct_relationships = im_annotations_data$im_direct_relationships,
         im_potential_factors = im_annotations_data$im_potential_factors,
-        im_expr_df = im_expression_data$im_expr_df
+        im_expr_df = im_expression_data$im_expr_df,
+        driver_mutation_df = driver_mutation_data$driver_mutation_df
     )
 }
