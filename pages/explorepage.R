@@ -212,7 +212,7 @@ explorepage <- dashboardPage(
       ),
       tabItem(
         tabName = "drivers",
-        immunefeatures_UI("module8")
+        drivers_UI("module8")
       ),
       tabItem(
         tabName = "datainfo",

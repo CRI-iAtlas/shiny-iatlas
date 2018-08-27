@@ -62,7 +62,7 @@ shinyServer(function(input, output, session) {
       reactive(plot_colors()))
   # Driver associations
   callModule(
-    immunefeatures, 
+    drivers, 
     "module8", 
     reactive(input$ss_choice),
     reactive(group_internal_choice()),
