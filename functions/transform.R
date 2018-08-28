@@ -491,8 +491,25 @@ build_filtered_mutation_df_per_group <- function(df,group_column,count_threshold
                                          df_boole %>% select(combo,value) %>% 
                                            dplyr::group_by(combo) %>%  dplyr::summarise(mutation_count = sum(value)) %>% ungroup()
   )
-  combo_keep <- driver_mutation_mutcount %>% filter(mutation_count > count_threshold) %>% .$combo 
-  df_labeled %>% filter(combo %in% combo_keep) %>% select(-combo)
+  category_count <- wrapr::let(c(gc=group_column),
+                                         df_boole %>% select(combo,value) %>% 
+                                           dplyr::group_by(combo) %>%  dplyr::summarise(cat_count = length(value)) %>% ungroup()
+  )
+  combo_keep <- driver_mutation_mutcount %>% filter(mutation_count > count_threshold) %>% .$combo
+  ## In rare cases, all samples in a category are mutated, or all but one are mutated, and stat differences test not possible
+  all_mutated <- driver_mutation_mutcount$combo[which(driver_mutation_mutcount$mutation_count==category_count$cat_count)]
+  all_but_one_mutated <- driver_mutation_mutcount$combo[which(driver_mutation_mutcount$mutation_count==(category_count$cat_count-1))]
+  ## the above return character(0) in nearly all instances
+  combo_toss = character(length=0)
+  if ( length(all_mutated) > 0 ) {
+    cat("Warning: Removing from statistical test as all cases are mutated: ",all_mutated,"\n")
+    combo_toss = c(combo_toss,all_mutated)
+  } 
+  if ( length(all_but_one_mutated) > 0 ) {
+    cat("Warning: Removing from statistical test as all but one case is mutated:",all_but_one_mutated,"\n")
+    combo_toss = c(combo_toss,all_but_one_mutated)
+  } 
+  df_labeled %>% filter(combo %in% combo_keep & !(combo %in% combo_toss)) %>% select(-combo)
 }
 
 # join driver and fmx dfs

@@ -59,9 +59,6 @@ drivers <- function(
     # plots ----
     output$scatterPlot <- renderPlotly({
       
-      cat("Response var", input$response_variable,"\n")
-      cat ("Group",group_internal_choice(),"\n")
-      cat("Group options",get_unique_column_values(group_internal_choice(), subset_df()),"\n")
       df_for_plot <-  compute_driver_associations(
         fmx_df=subset_df(),
         response_var = input$response_variable,
@@ -69,9 +66,7 @@ drivers <- function(
         group_options = get_unique_column_values(group_internal_choice(), subset_df())
       ) %>%
       rename(label="combo",y="neglog_pval",x="effect_size")
-      cat(colnames(df_for_plot),"\n")
 
-      ##scatterplot_df <- df_for_plot %>% rename(x=effect_size,y=neglog_pval)
       create_scatterplot(df_for_plot,
                          xlab = "Effect Size", 
                          ylab = "- Log10(P-value)", 
