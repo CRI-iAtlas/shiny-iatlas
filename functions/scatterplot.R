@@ -3,12 +3,14 @@ create_scatterplot <- function(
     xlab = "", 
     ylab = "", 
     title = "", 
-    identity_line = FALSE) {
+    identity_line = FALSE,
+    source = NULL) {
     
     p <- df %>%
         plotly::plot_ly(
             x = ~x,
-            y = ~y
+            y = ~y,
+            source = source
         ) %>% 
         add_markers(
             alpha = 0.5,

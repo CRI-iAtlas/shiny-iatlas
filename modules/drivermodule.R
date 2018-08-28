@@ -32,6 +32,13 @@ drivers_UI <- function(id) {
                     plotlyOutput(ns("scatterPlot")) %>% 
                         shinycssloaders::withSpinner()
                 )
+            ),
+            fluidRow(
+              plotBox(
+                width = 12,
+                plotlyOutput(ns("boxPlot")) %>%
+                  shinycssloaders::withSpinner()
+              )
             )
         )
     )
@@ -69,10 +76,27 @@ drivers <- function(
 
       create_scatterplot(df_for_plot,
                          xlab = "Effect Size", 
-                         ylab = "- Log10(P-value)", 
-                         title = ""
+                         ylab = "- log10(P-value)", 
+                         title = "",
+                         source = "scatterplot"
       )
+    })
+    
+    output$boxPlot <- renderPlotly({
       
+      eventdata <- event_data("plotly_click", source = "scatterplot")
+      if (length(eventdata)==0){
+        "Click on a cell in scatterplot to display a histogram"
+      } else {
+        cat("You selected: ",paste(unlist(eventdata),collapse=' '),"\n\n")
+        cat("names" ,names(eventdata),"\n")
+        pointNum <- eventdata[["pointNumber"]]
+        cat("Point Number" ,pointNum,"\n")
+        ## Point number not a reliable row identifier (have confirmed via testing)
+        ## May need to use 
+        ## https://community.plot.ly/t/how-to-return-the-same-event-data-information-for-selected-points-even-after-modifying-the-data/5847/2
+        }
+      plotly_empty()
     })
 
 }
