@@ -10,7 +10,8 @@ create_scatterplot <- function(
         plotly::plot_ly(
             x = ~x,
             y = ~y,
-            source = source
+            source = source,
+            key = ~label
         ) %>% 
         add_markers(
             alpha = 0.5,

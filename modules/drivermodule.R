@@ -85,6 +85,8 @@ drivers <- function(
     output$boxPlot <- renderPlotly({
       
       eventdata <- event_data("plotly_click", source = "scatterplot")
+      label <- eventdata$key
+      print(label)
       if (length(eventdata)==0){
         "Click on a cell in scatterplot to display a histogram"
       } else {
