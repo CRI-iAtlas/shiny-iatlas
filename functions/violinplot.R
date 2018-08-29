@@ -1,5 +1,5 @@
 create_violinplot <- function(
-  df, xlab, ylab, source_name = NULL, fill_colors = NA, facet = NA) {
+  df, xlab, ylab, title="", source_name = NULL, fill_colors = NA, facet = NA) {
     
     df %>% 
       plot_ly(
@@ -18,6 +18,7 @@ create_violinplot <- function(
         )
       ) %>% 
       layout(
+        title = title,
         xaxis = list(title = xlab),
         yaxis = list(title = ylab)
       ) %>% 

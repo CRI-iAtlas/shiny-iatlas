@@ -481,7 +481,7 @@ build_filtered_mutation_df_pancan <- function(df,count_threshold=80){   # select
 }
 
 ## filter mutation df to mutations meeting a minimum overall count_threshold within a group
-build_filtered_mutation_df_per_group <- function(df,group_column,count_threshold=5){   # select greater fixed #mutations for now
+build_filtered_mutation_df_per_group <- function(df,group_column,count_threshold){   # select greater fixed #mutations for now
   df <- df %>% .[complete.cases(.),]
   df_labeled <- wrapr::let(c(gc=group_column),df %>% mutate(combo=paste(mutation,gc,sep=".")))
   binvec <- c(0,1) ; names(binvec) <- c("Wt","Mut")
@@ -509,7 +509,7 @@ build_filtered_mutation_df_per_group <- function(df,group_column,count_threshold
     cat("Warning: Removing from statistical test as all but one case is mutated:",all_but_one_mutated,"\n")
     combo_toss = c(combo_toss,all_but_one_mutated)
   } 
-  df_labeled %>% filter(combo %in% combo_keep & !(combo %in% combo_toss)) %>% select(-combo)
+  df_labeled %>% filter(combo %in% combo_keep & !(combo %in% combo_toss)) 
 }
 
 # join driver and fmx dfs
@@ -522,7 +522,7 @@ build_driver_mutation_df <- function(driver_df,fmx_df) {
 compute_pvals_per_combo <- function(df, value_column, group_column){
   result_vec <- wrapr::let(
     c(response_var=value_column,gc=group_column),
-    df %>% mutate(combo=paste(mutation,gc,sep=".")) %>%
+    df %>% # mutate(combo=paste(mutation,gc,sep=".")) %>%
       split(.$combo) %>% 
       map( ~ lm(response_var ~ value, data=.)) %>%
       map(summary) %>%
@@ -537,7 +537,7 @@ compute_pvals_per_combo <- function(df, value_column, group_column){
 compute_effect_size_per_combo <- function(df, value_column, group_column){
   wrapr::let(
     c(response_var=value_column,gc=group_column),
-    df_means <- df %>% mutate(combo=paste(mutation,gc,sep=".")) %>%
+    df_means <- df %>% # mutate(combo=paste(mutation,gc,sep=".")) %>%
       group_by(combo,value) %>%
       summarize(mean_response=mean(response_var)) %>%
       spread(value,mean_response) %>%
@@ -546,11 +546,14 @@ compute_effect_size_per_combo <- function(df, value_column, group_column){
   )
 }
 
-compute_driver_associations <- function(fmx_df,response_var,group_column,group_options){
-  fmx_df.intermediate <- build_intermediate_fmx_df_for_groups(fmx_df,response_var,group_column,group_options)
+build_df_for_driver_regression <- function(df,response_var,group_column,group_options,count_threshold=5){
+  fmx_df.intermediate <- build_intermediate_fmx_df_for_groups(df,response_var,group_column,group_options)
   driver_mutation_df.long <- panimmune_data$driver_mutation_df %>%  tidyr::gather(key = "mutation", value = "value", -c("ParticipantBarcode"))
   df_mid <- build_driver_mutation_df(driver_mutation_df.long,fmx_df.intermediate)
-  df_for_regression <- build_filtered_mutation_df_per_group(df_mid,group_column) 
+  build_filtered_mutation_df_per_group(df_mid,group_column,count_threshold) 
+}
+
+compute_driver_associations <- function(df_for_regression,response_var,group_column,group_options){
   res1 <- compute_pvals_per_combo(df_for_regression,response_var, group_column)
   res2 <- compute_effect_size_per_combo(df_for_regression,response_var, group_column)
   inner_join(res1,res2,by="combo") ## returns df with combo,neglog_pval,effect_size

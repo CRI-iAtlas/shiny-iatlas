@@ -8,7 +8,7 @@ drivers_UI <- function(id) {
             p("This module allows you to see how immune readouts associate with driver mutations.")  
         ),
         sectionBox(
-            title = "Volcano Plot",
+            title = "Immune Response Association With Driver Mutations",
             messageBox(
                 width = 12,
                 p("This display values for the degree of association between driver mutation status and an immune readout."),
@@ -36,7 +36,7 @@ drivers_UI <- function(id) {
             fluidRow(
               plotBox(
                 width = 12,
-                plotlyOutput(ns("boxPlot")) %>%
+                plotlyOutput(ns("violinPlot")) %>%
                   shinycssloaders::withSpinner()
               )
             )
@@ -50,55 +50,58 @@ drivers <- function(
     subset_df, plot_colors) {
     
     ns <- session$ns
+  
+    df_for_regression <- reactive({
+      build_df_for_driver_regression(
+      df=subset_df(),
+      response_var = input$response_variable,
+      group_column = group_internal_choice(),
+      group_options = get_unique_column_values(group_internal_choice(), subset_df()))
     
-#    driver_associations_df <- reactive({
-#      sample_groups <- get_unique_column_values(
-#        group_internal_choice(), 
-#        subset_df())
-#      df <- 
-#        compute_driver_associations(
-#            subset_df(),
-#            group_column = group_internal_choice(),
-#            value1_column = input$response_variable,
-#            group_options = sample_groups) 
-#    })
+    })
     
     # plots ----
     output$scatterPlot <- renderPlotly({
       
-      df_for_plot <-  compute_driver_associations(
-        fmx_df=subset_df(),
-        response_var = input$response_variable,
-        group_column = group_internal_choice(),
-        group_options = get_unique_column_values(group_internal_choice(), subset_df())
-      ) %>%
-      rename(label="combo",y="neglog_pval",x="effect_size")
-
+      df_for_plot <- compute_driver_associations(df_for_regression(),
+                                                 response_var = input$response_variable,
+                                                 group_column = group_internal_choice(),
+                                                 group_options = get_unique_column_values(group_internal_choice(), subset_df()) %>%
+                                                 rename(label="combo",y="neglog_pval",x="effect_size")
+      ) %>% rename(label="combo",y="neglog_pval",x="effect_size")
+                                                 
       create_scatterplot(df_for_plot,
                          xlab = "Effect Size", 
                          ylab = "- log10(P-value)", 
-                         title = "",
+                         title = "Immune Response Association With Driver Mutations",
                          source = "scatterplot"
       )
     })
     
-    output$boxPlot <- renderPlotly({
+    output$violinPlot <- renderPlotly({
       
       eventdata <- event_data("plotly_click", source = "scatterplot")
-      label <- eventdata$key
-      print(label)
-      if (length(eventdata)==0){
-        "Click on a cell in scatterplot to display a histogram"
-      } else {
-        cat("You selected: ",paste(unlist(eventdata),collapse=' '),"\n\n")
-        cat("names" ,names(eventdata),"\n")
-        pointNum <- eventdata[["pointNumber"]]
-        cat("Point Number" ,pointNum,"\n")
-        ## Point number not a reliable row identifier (have confirmed via testing)
-        ## May need to use 
-        ## https://community.plot.ly/t/how-to-return-the-same-event-data-information-for-selected-points-even-after-modifying-the-data/5847/2
-        }
-      plotly_empty()
-    })
+      
+# from immuneinterfacemodule.R     - need to introduce validation here  
+#      validate(need(
+#        check_immunefeatures_scatterplot_click_data(
+#          eventdata, 
+#          subset_df(), 
+#          group_internal_choice(), 
+#          intermediate_corr_df()),
+#        "Click above heatmap"))
+      
+      combo_selected <- eventdata[["key"]][[1]][1]
+      cat (combo_selected,"\n")
+      dff <- df_for_regression() %>% filter(combo==combo_selected)
+      dfb <- dff %>% rename(x=value,y=input$response_variable) %>% select(x,y)
 
+      plot_title = paste(c("Cohort",df[1,group_internal_choice()]),collapse=" ")
+      xlab = paste(c(df[1,"mutation"],"mutation status"),collapse=" ")
+      ylab = get_variable_display_name(input$response_variable)
+    
+      create_violinplot(dfb,xlab=xlab,ylab=ylab,title=plot_title,fill_colors=c("blue"))
+  })
+    
+      
 }
