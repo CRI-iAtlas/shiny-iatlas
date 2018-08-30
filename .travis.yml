@@ -2,3 +2,6 @@ language: r
 r: bioc-release
 cache: packages
 
+script:
+  - R -f run_tests.R
+

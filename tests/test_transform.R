@@ -1,11 +1,3 @@
-library(yaml)
-library(tidyverse)
-library(testthat)
-
-config_yaml <- yaml::read_yaml("../configuration.yaml")
-purrr::walk(config_yaml$libraries, library, character.only = T)
-
-source("../functions/transform.R")
 
 test_that("create_label", {
     input_df <- data_frame(

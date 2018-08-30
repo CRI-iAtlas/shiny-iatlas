@@ -1,11 +1,3 @@
-library(yaml)
-library(tidyverse)
-library(testthat)
-
-config_yaml <- yaml::read_yaml("../configuration.yaml")
-purrr::walk(config_yaml$libraries, library, character.only = T)
-
-source("../functions/utils.R")
 
 test_that("get_variable_classes", {
     test_df <- data_frame(
