@@ -8,9 +8,6 @@ License: What license is it under?
 Encoding: UTF-8
 LazyData: true
 
-Remotes:
-  th86/concordanceIndex
-
 Imports:
   yaml,
   tidyverse,
