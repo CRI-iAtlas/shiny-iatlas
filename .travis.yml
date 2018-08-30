@@ -2,7 +2,6 @@ language: r
 cache: packages
 
 r_github_packages:
-  - hadley/devtools
   - th86/concordanceIndex
 
 script:
