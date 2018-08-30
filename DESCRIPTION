@@ -7,6 +7,10 @@ Depends: R (>= 3.4.4)
 License: What license is it under?
 Encoding: UTF-8
 LazyData: true
+
+Remotes:
+  th86/concordanceIndex
+
 Imports:
   yaml,
   tidyverse,
@@ -22,5 +26,5 @@ Imports:
   DT,
   wrapr,
   forcats,
-  viridis,
-  concordanceIndex
+  viridis
+  
