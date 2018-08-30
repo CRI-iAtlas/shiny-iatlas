@@ -2,6 +2,9 @@ language: r
 r: bioc-release
 cache: packages
 
+r_github_packages:
+  - hadley/devtools
+
 script:
   - R -f run_tests.R
 
