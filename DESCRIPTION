@@ -8,17 +8,19 @@ License: What license is it under?
 Encoding: UTF-8
 LazyData: true
 Imports:
-  - shinydashboard
-  - shinycssloaders
-  - bigrquery
-  - plotly
-  - survival
-  - survminer
-  - googlesheets
-  - feather
-  - ggmosaic
-  - DT
-  - wrapr
-  - forcats
-  - viridis
-  - concordanceIndex
+  yaml,
+  tidyverse,
+  shinydashboard,
+  shinycssloaders,
+  bigrquery,
+  plotly,
+  survival,
+  survminer,
+  googlesheets,
+  feather,
+  ggmosaic,
+  DT,
+  wrapr,
+  forcats,
+  viridis,
+  concordanceIndex
