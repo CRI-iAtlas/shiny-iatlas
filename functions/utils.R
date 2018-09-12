@@ -225,6 +225,20 @@ check_immunefeatures_scatterplot_click_data <- function(
     all(column_name_valid, row_name_valid)
 }
 
+check_driver_violinplot_click_data <- function(
+  eventdata, df_for_regression,subset_df, group_column){
+  
+  if(is.null(eventdata)) {
+    return(FALSE)  
+  } 
+  
+  combo_selected <- eventdata[["key"]][[1]][1]
+  combo_valid <- combo_selected %in% extract2(df_for_regression,"combo")
+  
+  all(combo_valid)
+}
+
+
 ## selection choices for the dropdown menu of sample groups
 # create_sample_group_options <- function(feature_df) {
 #     feature_df %>%

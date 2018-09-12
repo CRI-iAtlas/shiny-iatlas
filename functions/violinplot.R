@@ -1,6 +1,6 @@
 create_violinplot <- function(
-  df, xlab, ylab, title="", source_name = NULL, fill_colors = NA, facet = NA) {
-    
+  df, xlab, ylab, title="", source_name = NULL, fill_colors = NA, facet = NA, showlegend = TRUE) {
+
     df %>% 
       plot_ly(
         x = ~x,
@@ -15,7 +15,8 @@ create_violinplot <- function(
         ),
         meanline = list(
           visible = TRUE
-        )
+        ),
+        showlegend = showlegend
       ) %>% 
       layout(
         title = title,

@@ -11,8 +11,13 @@ drivers_UI <- function(id) {
             title = "Immune Response Association With Driver Mutations",
             messageBox(
                 width = 12,
-                p("This display values for the degree of association between driver mutation status and an immune readout."),
-                p("Manuscript context: This allows you to display distributions such as those shown in Figures 4D.")
+                p("This displays the degree of association between driver mutation status and an immune readout, as determined by the Select Response Variable option." ),
+                p("Every point in the scatter plot corresponds to a comparison of the values of that immune readout in samples in which a particular driver gene is mutated to the values in samples in which is not."),
+                p("This comparison is made within each cohort among the Sample Groups. Each point thus corresponds to a single driver gene and cohort. The driver-cohort combination can be seen by hovering on a point (separated by a dot)."),
+                p("The x-axis show the effect size, defined as the ratio of the mean readout value in mutated vs non-mutated samples."),
+                p("The y-axis represents the P-value of the significance test comparing the readout in mutated vs non-mutated samples."),
+                p("Manuscript context: This allows you to display distributions such as those shown in Figure 4D.","\n"),
+                p("Click on point to see a violin plot for the immune readout value distribution in mutated vs non-mutated samples for the selected cohort and driver.")
             ),
             fluidRow(
                 optionsBox(
@@ -71,7 +76,7 @@ drivers <- function(
       ) %>% rename(label="combo",y="neglog_pval",x="effect_size")
                                                  
       create_scatterplot(df_for_plot,
-                         xlab = "Effect Size", 
+                         xlab = "log10(Effect Size)", 
                          ylab = "- log10(P-value)", 
                          title = "Immune Response Association With Driver Mutations",
                          source = "scatterplot"
@@ -82,25 +87,29 @@ drivers <- function(
       
       eventdata <- event_data("plotly_click", source = "scatterplot")
       
-# from immuneinterfacemodule.R     - need to introduce validation here  
-#      validate(need(
-#        check_immunefeatures_scatterplot_click_data(
-#          eventdata, 
-#          subset_df(), 
-#          group_internal_choice(), 
-#          intermediate_corr_df()),
-#        "Click above heatmap"))
+      validate(need(
+        check_driver_violinplot_click_data(
+          eventdata,
+          df_for_regression(),
+          subset_df(), 
+          group_internal_choice()),
+        "Click a point on the above scatterplot to see a violin plot for the comparison"))
       
+      df <- df_for_regression()
       combo_selected <- eventdata[["key"]][[1]][1]
-      cat (combo_selected,"\n")
-      dff <- df_for_regression() %>% filter(combo==combo_selected)
-      dfb <- dff %>% rename(x=value,y=input$response_variable) %>% select(x,y)
+      dff <- df %>% filter(combo==combo_selected)
+      mutation <- as.character(dff[1,"mutation"])
+      
+      cohort <- stringr::str_replace(combo_selected,fixed(paste(c(mutation,"."),collapse="")),"")
+      # cohort by string parsing above. For some reason, the following returns a number when working with TCGA Subtypes
+      # cohort <- as.character(dff[1,group_internal_choice()])
 
-      plot_title = paste(c("Cohort",df[1,group_internal_choice()]),collapse=" ")
-      xlab = paste(c(df[1,"mutation"],"mutation status"),collapse=" ")
+      dfb <- dff %>% rename(x=value,y=input$response_variable) %>% select(x,y)
+      plot_title = paste(c("Cohort",cohort),collapse=" ")
+      xlab = paste(c(mutation,"mutation status"),collapse=" ")
       ylab = get_variable_display_name(input$response_variable)
-    
-      create_violinplot(dfb,xlab=xlab,ylab=ylab,title=plot_title,fill_colors=c("blue"))
+
+      create_violinplot(dfb,xlab=xlab,ylab=ylab,title=plot_title,fill_colors=c("blue"),showlegend = FALSE)
   })
     
       
