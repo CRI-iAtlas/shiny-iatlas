@@ -14,12 +14,15 @@ immunomodulator_UI <- function(id) {
       title = "Immunomodulator Distributions",
       messageBox(
         width = 12,
-        p("Select Immumodulator Gene to see its expression in the data set. Use Select Immumodulator Category to organize the selection by particular categories:"),
-        p("Gene Family: Examples are Cytokine, TNF, MHC Class II, Immunoglobulin, CXC chemokine"),
-        p("Super Category: Examples are Ligand, Receptor, Antigen Presentation"),
-        p("Immune Checkpoint: Inhibitory or Stimulatory"),
+        p("Select Immumodulator Gene to see its expression in the data set. Use Select Immumodulator Category (drop-down menu on the right) to organize the selection by particular categories. The categories will subsequently appear in the left drop-down menu. The Categories are:"),
+        tags$ul(
+          tags$li(em('Gene Family'), ", such as TNF, MHC Class II, Immunoglobulin, or CXC chemokine"), 
+          tags$li(em('Super Category'), ", such as Ligand, Receptor, or Antigen Presentation"),
+          tags$li(em('Immune Checkpoint'), " classified as  Inhibitory or Stimulatory")
+        ),
         p(""),
-        p("Manuscript context:  If you are looking at immune subtypes, select EDNRB or CXCL10 to get figure 6B. You can view a histogram for an indvidual distributions by clicking on its violin.")
+        p("Manuscript context:  If you are looking at Immune Subtypes, select EDNRB or CXCL10 to get figure 6B."),
+        p("You can view a histogram for any indvidual distributions by clicking on its violin plot.")
       ),
       fluidRow(
         optionsBox(
