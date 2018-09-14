@@ -19,11 +19,23 @@ immunomodulator_UI <- function(id) {
       ),
       fluidRow(
         optionsBox(
-          width = 4,
-          selectInput(
-            inputId = ns("im_gene_choice"),
-            label = "Select Immunomodulator Gene",
-            choices = panimmune_data$im_direct_relationships[["HGNC Symbol"]]
+          width = 12,
+          column(
+              width = 6,
+              uiOutput(ns("gene_choices"))
+              # selectInput(
+              #     inputId = ns("im_gene_choice"),
+              #     label = "Select Immunomodulator Gene",
+              #     choices = get_immunomodulator_nested_list(class_column = input$im_category_choice_choice)
+              # )
+          ),
+          column(
+              width = 6,
+              selectInput(
+                  inputId = ns("im_category_choice_choice"),
+                  label = "Select Immunomodulator Category",
+                  choices = c("Gene Family", "Super Category", "Immune Checkpoint")
+              )
           )
         )
       ),
@@ -67,6 +79,8 @@ immunomodulator <- function(
     input, output, session, group_display_choice, group_internal_choice, 
     subset_df, plot_colors) {
     
+    ns <- session$ns
+    
     im_expr_plot_df <- reactive(
         df <- 
             build_im_expr_plot_df(
@@ -107,4 +121,14 @@ immunomodulator <- function(
                 rownames = FALSE
                 )
     })
+    
+    output$gene_choices <- renderUI({
+        choices <- get_immunomodulator_nested_list(
+            class_column = input$im_category_choice_choice)
+        selectInput(
+            ns("im_gene_choice"),
+            label = "Select Immunomodulator Gene",
+            choices = choices)
+    })
+    
 }

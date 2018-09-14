@@ -130,14 +130,42 @@ create_user_group_colors <- function(sample_group_label, group_df){
 
 # -----------------------------------------------------------------------------
 
+get_feature_df_nested_list <- function(){
+    get_nested_list1(
+        feature_df = panimmune_data$feature_df,
+        data_df = panimmune_data$fmx_df,
+        class_column = "Variable Class",
+        internal_column = "FeatureMatrixLabelTSV",
+        display_column = "FriendlyLabel"
+    )
+}
 
-get_feature_df_nested_list <- function(
-    feature_df = panimmune_data$feature_df,
-    data_df = panimmune_data$fmx_df,
-    class_column = "Variable Class",
-    internal_column = "FeatureMatrixLabelTSV",
-    display_column = "FriendlyLabel"
-) {
+
+get_immunomodulator_nested_list <- function(
+    class_column = "Gene Family",
+    display_column = "HGNC Symbol",
+    internal_column = "Friendly Name"){
+    
+    panimmune_data$im_direct_relationships %>%
+        dplyr::select(
+            CLASS = class_column,
+            DISPLAY = display_column,
+            INTERNAL = internal_column) %>%
+        dplyr::mutate(CLASS = ifelse(is.na(CLASS), "Other", CLASS)) %>%
+        drop_na() %>% 
+        df_to_nested_list(
+            group_column = "CLASS",
+            key_column = "INTERNAL",
+            value_column = "DISPLAY")
+}
+
+get_nested_list1 <- function(
+    feature_df,
+    data_df,
+    class_column,
+    internal_column,
+    display_column){
+    
     numeric_columns <- get_display_numeric_columns(
         df = data_df,
         translation_df = feature_df,
