@@ -54,7 +54,7 @@ immunomodulator_UI <- function(id) {
         tableBox(
           width = 12,
           div(style = "overflow-x: scroll",
-              DT::dataTableOutput(ns("im_annotations_table")) %>% 
+              DT::dataTableOutput(ns("im_annotations_table")) %>%
                 shinycssloaders::withSpinner()
           )
         )
@@ -103,11 +103,8 @@ immunomodulator <- function(
         panimmune_data$im_direct_relationships %>% 
             select(-X10, -Notes) %>% 
             datatable(
-                options = list(
-                    dom = "tip",
-                    pageLength = 10
-                ),
+                options = list(pageLength = 10),
                 rownames = FALSE
-            )
+                )
     })
 }
