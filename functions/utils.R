@@ -144,13 +144,13 @@ get_feature_df_nested_list <- function(){
 get_immunomodulator_nested_list <- function(
     class_column = "Gene Family",
     display_column = "Gene",
-    internal_column = "Friendly Name"){
+    internal_column = "HGNC Symbol"){
     
     panimmune_data$im_direct_relationships %>%
         dplyr::select(
             CLASS = class_column,
             DISPLAY = display_column,
-            INTERNAL = internal_column) %>%
+            INTERNAL = internal_column) %>% 
         dplyr::mutate(CLASS = ifelse(is.na(CLASS), "Other", CLASS)) %>%
         drop_na() %>% 
         df_to_nested_list(
