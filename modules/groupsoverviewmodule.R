@@ -15,30 +15,30 @@ groupsoverview_UI <- function(id) {
                 p("Upload a comma-separated table with your own sample/group assignments to use in iAtlas analysis modules.")  
             ),
             fluidRow(
-              optionsBox(
-                width = 12,
-                actionButton("filehelp", " Formatting instructions",
-                             icon = icon("info-circle")),
-                actionButton("exfile", " Load example groups file",
-                             icon = icon("file"),
-                             style = "background-color:rgba(219, 174, 88, 1)"),
-                hr(),
-                fileInput(
-                  ns("file1"),
-                  "Choose CSV File",
-                  multiple = FALSE,
-                  accept = c("text/csv",
-                             "text/comma-separated-values,text/plain",
-                             ".csv")
+                optionsBox(
+                    width = 12,
+                    actionButton("filehelp", " Formatting instructions",
+                                 icon = icon("info-circle")),
+                    actionButton("exfile", " Load example groups file",
+                                 icon = icon("file"),
+                                 style = "background-color:rgba(219, 174, 88, 1)"),
+                    hr(),
+                    fileInput(
+                        ns("file1"),
+                        "Choose CSV File",
+                        multiple = FALSE,
+                        accept = c("text/csv",
+                                   "text/comma-separated-values,text/plain",
+                                   ".csv")
+                    )
                 )
-              )
             ),
             messageBox(
-              width = 12,
-              p("After uploading your file, the table below will show your defined groups."),
-              DT::dataTableOutput(
-                ns("user_group_df")
-              )
+                width = 12,
+                p("After uploading your file, the table below will show your defined groups."),
+                DT::dataTableOutput(
+                    ns("user_group_df")
+                )
             )
         ),
         sectionBox(
@@ -92,92 +92,7 @@ groupsoverview <- function(
     
     ns <- session$ns
     
-    sample_groups <- reactive(get_category_group(group_internal_choice()))
-    
-    output$sample_group_name <- renderText({
-        paste(group_display_choice(), "Groups")
-    })
-    
-    output$sample_group_table <- DT::renderDT({
-        build_sample_group_key_df(
-            df = subset_df(),
-            group_option = group_internal_choice()
-        ) %>% 
-            datatable(
-                options = list(
-                    dom = "tip",
-                    pageLength = 10,
-                    columnDefs = list(
-                        list(width = '50px', targets = c(1))
-                    )
-                ),
-                rownames = FALSE
-            ) %>%
-            formatStyle(
-                "Plot Color",
-                backgroundColor = styleEqual(
-                    plot_colors(), 
-                    plot_colors()
-                )
-            )
-    })
-    
-    output$mosaic_group_select <- renderUI({
-        choices <- setdiff(group_options(), group_display_choice())
-        
-        
-        radioButtons(ns("sample_mosaic_group"), 
-                     "Select second sample group to view overlap:",
-                     choices = choices,
-                     selected = choices[1],
-                     inline = TRUE)
-    })
-    
-    output$study_subset_select <- renderUI({
-        
-        req(input$sample_mosaic_group, cancelOutput = TRUE)
-        
-        if (input$sample_mosaic_group == "TCGA Subtype") {
-            choices <- panimmune_data$sample_group_df %>% 
-                filter(sample_group == "tcga_subtype", !is.na(FeatureValue)) %>% 
-                distinct(`TCGA Studies`) %>% 
-                extract2("TCGA Studies")
-            
-            optionsBox(
-                width = 4,
-                selectInput(ns("study_subset_selection"), 
-                            "Choose study subset:",
-                            choices = choices,
-                            selected = NULL)
-            )
-        }
-    })
-    
-    output$mosaicPlot <- renderPlotly({
-        
-        req(input$sample_mosaic_group, input$study_subset_selection,
-            cancelOutput = T)
-        
-        display_x  <- input$sample_mosaic_group
-        display_y  <- group_display_choice()
-        internal_x <- get_group_internal_name(display_x)
-        internal_y <- group_internal_choice()
-
-        mosaic_df <- build_mosaic_plot_df(
-            subset_df(),
-            x_column = internal_x,
-            y_column = internal_y,
-            study_option = input$study_subset_selection,
-            user_group_df()) 
-        
-        create_mosaicplot(
-            mosaic_df,
-            x = internal_x,
-            y = internal_y,
-            fill_factor = internal_y,
-            title = str_c(display_y, "by", display_x, sep = " "),
-            fill_colors = decide_plot_colors(panimmune_data, internal_y)) 
-    })
+    # reactives ----
     
     user_group_df <- reactive({
         req(input$file1)
@@ -190,10 +105,93 @@ groupsoverview <- function(
             }
         )
         return(df)
-        
+    })
+    
+    # ui ----
+    
+    output$mosaic_group_select <- renderUI({
+        choices <- setdiff(group_options(), group_display_choice())
+        radioButtons(ns("sample_mosaic_group"), 
+                     "Select second sample group to view overlap:",
+                     choices = choices,
+                     selected = choices[1],
+                     inline = TRUE)
+    })
+    
+    output$study_subset_select <- renderUI({
+        req(input$sample_mosaic_group, cancelOutput = TRUE)
+        if (input$sample_mosaic_group == "TCGA Subtype") {
+            choices <- panimmune_data$sample_group_df %>% 
+                filter(sample_group == "tcga_subtype", !is.na(FeatureValue)) %>% 
+                distinct(`TCGA Studies`) %>% 
+                extract2("TCGA Studies")
+            
+            optionsBox(
+                width = 4,
+                selectInput(ns("study_subset_selection"), 
+                            "Choose study subset:",
+                            choices = choices,
+                            selected = NULL))}
+    })
+    
+    # other ----
+    
+    output$sample_group_name <- renderText({
+        paste(group_display_choice(), "Groups")
     })
     
     output$user_group_df <- DT::renderDataTable(user_group_df())
+    
+    output$sample_group_table <- DT::renderDT({
+        
+        key_df <- build_sample_group_key_df(
+            group_df = subset_df(),
+            group_column = group_internal_choice(),
+            color_vector = plot_colors())
+        
+        dt <- datatable(
+            key_df,
+            rownames = FALSE,
+            options = list(
+                dom = "tip",
+                pageLength = 10,
+                columnDefs = list(
+                    list(width = '50px',
+                         targets = c(1)))))
+        
+        formatStyle(
+            dt,
+            "Plot Color",
+            backgroundColor = styleEqual(
+                plot_colors(), 
+                plot_colors()))
+    })
+    
+    # plots ----
+    
+    output$mosaicPlot <- renderPlotly({
+        
+        req(input$sample_mosaic_group, input$study_subset_selection,
+            cancelOutput = T)
+        
+        display_x  <- input$sample_mosaic_group
+        display_y  <- group_display_choice()
+        internal_x <- get_group_internal_name(display_x)
+        internal_y <- group_internal_choice()
+        
+        mosaic_df <- build_group_group_mosaic_plot_df(
+            subset_df(),
+            x_column = internal_x,
+            y_column = internal_y,
+            study_option = input$study_subset_selection,
+            user_group_df()) 
+        
+        create_mosaicplot(
+            mosaic_df,
+            title = str_c(display_y, "by", display_x, sep = " "),
+            fill_colors = decide_plot_colors(internal_y)) 
+    })
+    
     return(user_group_df)
     
 }

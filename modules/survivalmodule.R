@@ -72,7 +72,7 @@ survival_UI <- function(id) {
               selectInput(
                   ns("survival_class"),
                   "Select Variables Class (rows)",
-                  choices = get_numeric_variable_classes(),
+                  choices = get_numeric_classes_from_feature_df(),
                   selected = "T Helper Cell Score"
               )
           ),
@@ -116,7 +116,7 @@ survival <- function(input, output, session, ss_choice, group_internal_choice,
   
   output$survPlot <- renderPlot({
     # req(input$var1_surv, cancelOutput = TRUE)
-    sample_groups <- get_category_group(group_internal_choice(), subset_df())
+    sample_groups <- get_unique_column_values(group_internal_choice(), subset_df())
     n_groups <- n_distinct(sample_groups)
     validate(
       need(input$var1_surv, "Waiting for input."),
@@ -158,7 +158,9 @@ survival <- function(input, output, session, ss_choice, group_internal_choice,
       status_col <- "PFI_1"
     }
     
-    features <- as.character(get_variable_group(input$survival_class))
+      features <- get_factored_variables_from_feature_df(
+          input$survival_class) %>% 
+          as.character
     group_internal <- get_variable_internal_name(ss_choice())
     
     ci_mat <- subset_df() %>%

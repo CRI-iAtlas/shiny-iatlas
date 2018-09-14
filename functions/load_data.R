@@ -91,14 +91,6 @@ create_tcga_subtype_colors <- function(sample_group_df) {
         set_names(tcga_subtype_df$FeatureValue)
 }
 
-# ** Pre-defined groups for selection options ----
-
-## selection choices for the dropdown menu of sample groups
-create_sample_group_options <- function(feature_df) {
-    feature_df %>%
-        filter(`Variable Class` == "Sample Category") %>%
-        use_series(FeatureMatrixLabelTSV) 
-}
 
 ## selection choices for the cell fractions.  Lots of other choices possible.
 create_cell_fraction_options <- function() {
@@ -117,42 +109,17 @@ load_data <- function() {
     feature_matrix_data <- load_feature_matrix()
     im_annotations_data <- load_im_annotations()
     im_expression_data <- load_im_expression()
-    sample_group_options <- create_sample_group_options(
-        manifest_data$feature_df
-    )
-    sample_group_names <- 
-        map_chr(
-            sample_group_options, 
-            get_variable_display_name,
-            manifest_data$feature_df) 
-    cell_fraction_options <- create_cell_fraction_options()
-    
     list(
         feature_df = manifest_data$feature_df,
         feature_method_df = manifest_data$feature_method_df,
         sample_group_df = manifest_data$sample_group_df,
-        sample_group_options = sample_group_options,
-        sample_group_names = sample_group_names,
         fmx_df = feature_matrix_data$fmx_df,
         tcga_study_colors = create_tcga_study_colors(
-            manifest_data$sample_group_df
-        ),
+            manifest_data$sample_group_df),
         immune_subtype_colors = create_immune_subtype_colors(
-            manifest_data$sample_group_df
-        ),
+            manifest_data$sample_group_df),
         tcga_subtype_colors = create_tcga_subtype_colors(
-            manifest_data$sample_group_df
-        ),
-        cell_fraction_options = cell_fraction_options,
-        cell_fraction_names = map_chr(
-            cell_fraction_options, get_variable_display_name
-        ),
-        # diversity_metric_choices = set_names_to_self(
-        #     config_yaml$diversity_metric_choices
-        # ),
-        # receptor_type_choices = set_names_to_self(
-        #     config_yaml$receptor_type_choices
-        # ),
+            manifest_data$sample_group_df),
         im_direct_relationships = im_annotations_data$im_direct_relationships,
         im_potential_factors = im_annotations_data$im_potential_factors,
         im_expr_df = im_expression_data$im_expr_df
