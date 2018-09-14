@@ -143,7 +143,7 @@ get_feature_df_nested_list <- function(){
 
 get_immunomodulator_nested_list <- function(
     class_column = "Gene Family",
-    display_column = "HGNC Symbol",
+    display_column = "Gene",
     internal_column = "Friendly Name"){
     
     panimmune_data$im_direct_relationships %>%

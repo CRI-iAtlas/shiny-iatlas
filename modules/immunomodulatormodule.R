@@ -23,11 +23,6 @@ immunomodulator_UI <- function(id) {
           column(
               width = 6,
               uiOutput(ns("gene_choices"))
-              # selectInput(
-              #     inputId = ns("im_gene_choice"),
-              #     label = "Select Immunomodulator Gene",
-              #     choices = get_immunomodulator_nested_list(class_column = input$im_category_choice_choice)
-              # )
           ),
           column(
               width = 6,
