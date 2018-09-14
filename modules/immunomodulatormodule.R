@@ -14,7 +14,11 @@ immunomodulator_UI <- function(id) {
       title = "Immunomodulator Distributions",
       messageBox(
         width = 12,
-        p("Select an immumodulator gene to see its expression over sample groups."),
+        p("Select Immumodulator Gene to see its expression in the data set. Use Select Immumodulator Category to organize the selection by particular categories:"),
+        p("Gene Family: Examples are Cytokine, TNF, MHC Class II, Immunoglobulin, CXC chemokine"),
+        p("Super Category: Examples are Ligand, Receptor, Antigen Presentation"),
+        p("Immune Checkpoint: Inhibitory or Stimulatory"),
+        p(""),
         p("Manuscript context:  If you are looking at immune subtypes, select EDNRB or CXCL10 to get figure 6B. You can view a histogram for an indvidual distributions by clicking on its violin.")
       ),
       fluidRow(
@@ -55,7 +59,7 @@ immunomodulator_UI <- function(id) {
       title = "Immunomodulator Annotations",
       messageBox(
         width = 12,
-        p("The table shows annotations of the immumodulators, and source.")  
+        p("The table shows annotations of the immumodulators, and source. Use the Search box in the upper right to find an immumodulator of interest.")  
       ),
       fluidRow(
         tableBox(
