@@ -99,11 +99,11 @@ subtypepredictor <- function(
     
     # in src files ... have same path as app.R
     reportedClusters <- getSubtypeTable()
-    print(head(reportedClusters))
-    
+
     # get new calls
     getCalls <- eventReactive(input$subtypeGObutton, {
       newdat <- input$expr_file_pred
+      print(head(newdat))
       #withProgress(message = 'Working...', value = 0, {
       #  newScores(newdat, input$logged, input$corenum)
       #})
