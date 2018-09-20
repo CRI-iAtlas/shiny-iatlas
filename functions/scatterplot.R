@@ -4,14 +4,18 @@ create_scatterplot <- function(
     ylab = "", 
     title = "", 
     identity_line = FALSE,
-    source = NULL) {
+    source = NULL,
+    fill_colors = NA,
+    hl = F,
+    hl_y = NULL) {
     
     p <- df %>%
         plotly::plot_ly(
             x = ~x,
             y = ~y,
             source = source,
-            key = ~label
+            key = ~label,
+            colors = fill_colors
         ) %>% 
         add_markers(
             alpha = 0.5,
@@ -26,6 +30,20 @@ create_scatterplot <- function(
             xaxis = list(title = xlab), 
             yaxis = list(title = ylab)
         )
+    
+    if (hl) {
+        p <- p %>%
+            layout(
+                shapes = list(
+                    type = "line",
+                    x0 = -1,
+                    y0 = hl_y,
+                    x1 = 1,
+                    y1 = hl_y,
+                    line = list(color = "black", dash = "dot", alpha = 0.5)
+                ))
+    }
+    
     if (identity_line) {
         p %>% 
             layout(

@@ -65,21 +65,31 @@ drivers <- function(
     
     })
     
+    scatter_plot_df <- reactive({
+        df_for_plot <- 
+            compute_driver_associations(
+                df_for_regression(),
+                response_var = input$response_variable,
+                group_column = group_internal_choice(),
+                group_options = get_unique_column_values(
+                    group_internal_choice(), 
+                    subset_df()) %>% 
+                    rename(label="combo",y="neglog_pval",x="effect_size")) %>%
+            rename(label="combo",y="neglog_pval",x="effect_size") 
+    })
+    
     # plots ----
     output$scatterPlot <- renderPlotly({
       
-      df_for_plot <- compute_driver_associations(df_for_regression(),
-                                                 response_var = input$response_variable,
-                                                 group_column = group_internal_choice(),
-                                                 group_options = get_unique_column_values(group_internal_choice(), subset_df()) %>%
-                                                 rename(label="combo",y="neglog_pval",x="effect_size")
-      ) %>% rename(label="combo",y="neglog_pval",x="effect_size")
+      
                                                  
-      create_scatterplot(df_for_plot,
+      create_scatterplot(scatter_plot_df(),
                          xlab = "log10(Effect Size)", 
                          ylab = "- log10(P-value)", 
                          title = "Immune Response Association With Driver Mutations",
-                         source = "scatterplot"
+                         source = "scatterplot",
+                         hl = T,
+                         hl_y = (- log(0.05))
       )
     })
     
@@ -96,16 +106,30 @@ drivers <- function(
         "Click a point on the above scatterplot to see a violin plot for the comparison"))
       
       df <- df_for_regression()
+      
+
+
       combo_selected <- eventdata[["key"]][[1]][1]
       dff <- df %>% filter(combo==combo_selected)
       mutation <- as.character(dff[1,"mutation"])
+      
+      scatter_plot_selected_row <- filter(scatter_plot_df(), label == combo_selected)
+      point_selected_pval <- scatter_plot_selected_row$y %>% 
+          round(4) %>% 
+          as.character()
+      point_selected_es <- scatter_plot_selected_row$x %>% 
+          round(4) %>% 
+          as.character()
       
       cohort <- stringr::str_replace(combo_selected,fixed(paste(c(mutation,"."),collapse="")),"")
       # cohort by string parsing above. For some reason, the following returns a number when working with TCGA Subtypes
       # cohort <- as.character(dff[1,group_internal_choice()])
 
       dfb <- dff %>% rename(x=value,y=input$response_variable) %>% select(x,y)
-      plot_title = paste(c("Cohort",cohort),collapse=" ")
+      plot_title = paste(c("Cohort:",cohort,
+                           "; - Log P value:",point_selected_pval,
+                           "; Effect size:", point_selected_es),
+                         collapse=" ")
       xlab = paste(c(mutation,"mutation status"),collapse=" ")
       ylab = get_variable_display_name(input$response_variable)
 
