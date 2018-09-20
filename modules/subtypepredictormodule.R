@@ -51,7 +51,7 @@ immunomodulator_UI <- function(id) {
           column(
               width = 3,
               numericInput("corenum", "Cores", 4, width = '100'),
-              actionButton("subtypeGObutton", "GO")
+              actionButton(ns("subtypeGObutton"), "GO")
           )
         )
       ),
