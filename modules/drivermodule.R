@@ -17,7 +17,9 @@ drivers_UI <- function(id) {
                 p("The x-axis show the effect size, defined as the ratio of the mean readout value in mutated vs non-mutated samples."),
                 p("The y-axis represents the P-value of the significance test comparing the readout in mutated vs non-mutated samples. A line is drawn for P=0.05, with the more significant values above that line"),
                 p("Manuscript context: This allows you to display distributions such as those shown in Figure 4D.","\n"),
-                p("Click on point to see a violin plot for the immune readout value distribution in mutated vs non-mutated samples for the selected cohort and driver.")
+                p("Click on point to see a violin plot for the immune readout value distribution in mutated vs non-mutated samples for the selected cohort and driver."),
+                p(""),
+                p("Please Note: This is an initial stage of this module. It works best with moderate group sizes. Multiple hypothesis testing correction and incorporation of covariates will be added at a later stage.")
             ),
             fluidRow(
                 optionsBox(
@@ -128,7 +130,7 @@ drivers <- function(
       dfb <- dff %>% rename(x=value,y=input$response_variable) %>% select(x,y)
       plot_title = paste(c("Cohort:",cohort,
                            "; P-value:",point_selected_pval,
-                           "; Effect size:", point_selected_es),
+                           "; log10(Effect size):", point_selected_es),
                          collapse=" ")
       xlab = paste(c(mutation,"mutation status"),collapse=" ")
       ylab = get_variable_display_name(input$response_variable)
