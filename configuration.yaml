@@ -23,6 +23,10 @@ function_files:
   - "functions/violinplot.R"
   - "functions/mosaicplot.R"
   - "functions/barplot.R"
+  - "functions/computing_scores_and_calling_clusters.R"
+  - "functions/ImmuneSigs68_function.R"
+  - "functions/signature_mclust_ensemble.R"
+  - "functions/tablef_fun.R"
 
 page_files:
   - "pages/aboutpage.R"
