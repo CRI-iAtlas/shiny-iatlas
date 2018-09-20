@@ -55,7 +55,7 @@ ensemblePredict <- function(modList, dat, mode="list", cores) {
   # mode: how to bind the results ... use 'list' or 'matrix'
   #pred <- lapply(modList, function(a) predict(a, dat)$classification)
   
-  print(modList[[1]]$modelName)
+  require(mclust)  ### Error when calling library in the global function for some reason!
   
   pred <- mclapply(modList, function(a) predict(a, dat)$classification, mc.cores=cores)
 

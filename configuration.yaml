@@ -49,7 +49,10 @@ libraries:
   - "forcats"
   - "viridis"
   - "concordanceIndex"
- 
+  - "sva"
+  - "clue"
+  - "parallel"
+
 bq_remote: false # set data as remote (BigQuery) or local (on disk)
 gs_remote: false
   

@@ -122,6 +122,6 @@ xml2	1.1.1	CRAN
 xtable	1.8-2	CRAN
 yaml	2.1.18	CRAN
 zoo	1.8-1	CRAN
-mclust  5.4.1 CRAN
 sva 3.20.0  github
 clue  0.3-56  CRAN
+mclust  5.4.1 CRAN
