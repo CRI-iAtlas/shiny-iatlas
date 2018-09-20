@@ -5,7 +5,9 @@ groupsoverview_UI <- function(id) {
         titleBox("iAtlas Explorer — Sample Groups Overview"),
         textBox(
             width = 12,
-            p("This module provides short summaries of your selected groups, and allows you to see how they overlap with other groups.")  
+            p("This module provides short summaries of your selected groups and allows you to see how they overlap with other groups."),
+            p("You can also upload your own, custom-grouped samples, which will then allow you to compare immune response among those sample groups."),
+            p("Following this upload, your custom groupings will be available through Select Sample Groups, along with the pre-defined groups.") 
         ),
         sectionBox(
             title = "Custom Groups",
@@ -139,7 +141,7 @@ groupsoverview <- function(
     
     observeEvent(input$filehelp, {
         showModal(modalDialog(
-            title = "Format groups",
+            title = "Custom sample group format",
             includeMarkdown("data/user_groups.md"),
             size = "l", easyClose = TRUE
         ))})

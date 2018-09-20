@@ -1,4 +1,19 @@
-# To create your own groups submit a csv that looks like:
+# To create your own sample groups to use in analyses, upload a comma-separated value file ( csv file ) in the following form
+
+
+*** Formatting attempt 2 - tweaked the example data. Needs better line breaks ***
+
+ParticipantID,Alternate Cancer Subtyping,Gender,Molecular Alteration
+
+TCGA-01-0639,group_a,male,activating
+
+TCGA-02-0007,group_a,female,repressing
+
+TCGA-01-0639,group_c,male,none
+
+TCGA-02-0011,groub_b,female,NA
+
+*** Formatting attempt 1 - is missing the commas ***
 
 | ID | group1 | group2 | groupn |
 | ---:| ---:| ---:| ---:|
@@ -7,13 +22,13 @@
 | ...           | ...           | ...    | ...    |
 | TCGA-02-0011  | cancer_type_2 | female | NA     |
 
+## Columns
+The first column needs to contain TCGA participant barcode IDs. Subsequent columns (one or more) contain groupings that you can later select for analysis. For example in the above, the third column contains gender, and the values in that column can thus be used to compare immune response in cancer in women to that in men.
 
-## Columns:
-The first column needs to be TCGA patient ids. Every other column will represent a goruping tha can be selected for analysis. For example in the above group2 is gender, and if that group is selected all analyses will be comparing males vs females.
+## Headers 
+The first column can have any heading. A subsequent column heading will be appear as the label of the corresponding group selection dropdown when comparing groups.
 
-## Headers: 
-The first column can be called anything, it will always be the for ids. The headrs of the rest of the columns will be what appears in the group selection dropdown 
+## Rows
+Rows can be supplied for any subset of TCGA samples. Values of NA in a row will be ignored in comparisons among the corresponding groupings (column values). 
 
-## Rows:
-Rows will be filtered out if they have an NA value for the selected group. For example if groupn is selected the bottom row will be removed.
 
