@@ -26,6 +26,7 @@ function_files:
 page_files:
   - "pages/aboutpage.R"
   - "pages/explorepage.R"
+  - "pages/toolspage.R"
   - "pages/docspage.R"
   - "pages/resourcespage.R"
 
