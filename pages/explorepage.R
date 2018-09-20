@@ -61,17 +61,13 @@ explorepage <- dashboardPage(
                    ", TCGA molecular subtypes",
                    strong("(TCGA Subtype)"),
                    ", or by immune subtypes that span multiple tumor types",
-                   strong("(Immune Subtype)"), ".")
+                   strong("(Immune Subtype)"), ".",
+                   strong("Custom Sample Groups"),
+                   " can also be uploaded, via the Sample Groups Overview module."
+                   )
           )
         ),
-        selectInput(
-          inputId = "ss_choice",
-          label = strong("Select Sample Groups"),
-          choices = as.character(
-            panimmune_data$sample_group_names
-          ),
-          selected = "Immune Subtype"
-        ),
+        uiOutput("select_group_UI"),
         uiOutput("study_subset_UI"),
         p("This is a global setting used in all modules and can be changed at any time to update results.")
       )

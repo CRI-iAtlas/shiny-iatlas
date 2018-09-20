@@ -1,4 +1,28 @@
 tilmap_UI <- function(id) {
+    
+    get_friendly_numeric_columns <- function(){
+        get_numeric_columns() %>% 
+            purrr::map(get_variable_display_name) %>%
+            compact() %>% 
+            unlist() %>% 
+            discard(~is.na(.))
+    }
+    
+    get_friendly_numeric_columns_by_group <- function() {
+        panimmune_data$feature_df %>% 
+            select(Class = `Variable Class`, FriendlyLabel, FeatureMatrixLabelTSV) %>% 
+            filter(FriendlyLabel %in% get_friendly_numeric_columns()) %>% 
+            mutate(Class = ifelse(is.na(Class), "Other", Class)) %>% 
+            nest(-Class) %>% 
+            mutate(data = map(data, deframe)) %>% 
+            deframe()
+    }
+    
+    get_numeric_columns <- function(){
+        panimmune_data$fmx_df %>% 
+            select_if(is.numeric) %>% 
+            colnames()
+    }
   
   ns <- NS(id)
   
@@ -31,7 +55,9 @@ tilmap_UI <- function(id) {
         plotBox(
           width = 12,
           plotlyOutput(ns("violinPlot")) %>% 
-            shinycssloaders::withSpinner()
+            shinycssloaders::withSpinner(),
+          # verbatimTextOutput(ns("hover")),
+          verbatimTextOutput(ns("click"))
         )
       )
     ),
@@ -56,38 +82,72 @@ tilmap_UI <- function(id) {
   )
 }
 
-tilmap <- function(input, output, session, ss_choice, subset_df){
+# tilmap <- function(input, output, session, ss_choice, subset_df){
+tilmap <- function(input, output, session, group_display_choice, group_internal_choice, 
+                   subset_df, plot_colors, group_options){
   
   ns <- session$ns
   
-  ss_internal <- reactive(get_variable_internal_name(ss_choice()))
-  sample_groups <- reactive(get_category_group(ss_internal()))
   
   output$violinPlot <- renderPlotly({
     
-    display_x  <- ss_choice()
-    internal_x <- get_variable_internal_name(display_x)
-    internal_y <- input$violin_y
-    display_y  <- get_variable_display_name(internal_y)
+    display_y  <- get_variable_display_name(input$violin_y)
     
     plot_df <- subset_df() %>%
-      select_(.dots = c(internal_x, internal_y)) %>%
-      .[complete.cases(.),]
+      select(x = group_internal_choice(), y = input$violin_y, label = "Slide") %>%
+      drop_na()
     
-    plot_df %>% 
+    print(plot_df)
+    
+    plot_df %>%
       create_violinplot(
-        internal_x,
-        internal_y,
-        internal_x,
-        xlab = display_x,
+        xlab = group_display_choice(),
         ylab = display_y,
-        fill_colors = decide_plot_colors(panimmune_data, internal_x)
+        fill_colors = plot_colors(),
+        source_name = "violin"
       )
+    
+  })
+  
+  # output$hover <- renderPrint({
+  #     df <- event_data("plotly_hover", source = "violin")
+  #     if (is.null(df)) {
+  #         "Hover events appear here (unhover to clear)" 
+  #     } else {
+  #       df %>% 
+  #             select(x,y,key)
+  #     } 
+  # })
+  
+  
+  
+  output$click <- renderPrint({
+      df <- event_data("plotly_click", source = "violin")
+      if (is.null(df)) {
+          "Hover events appear here (unhover to clear)" 
+      } else {
+          df %>% 
+              select(x,y,key)
+      } 
   })
   
   output$til_table <- DT::renderDT({
+      
+      d <- event_data("plotly_click", source = "violin")
+      slide_id <- NULL
+      if (!is.null(d)) {
+          slide_id <- d %>% 
+              slice(1) %>% 
+              use_series(key)
+      } 
+      if (!is.null(d)) {
+          data_df <- filter(panimmune_data$fmx_df, Slide == slide_id)
+      } else {
+          data_df <- panimmune_data$fmx_df
+      }
+      
 
-      panimmune_data$fmx_df %>% 
+      data_df %>% 
       select("ParticipantBarcode","Study", "Slide", panimmune_data$feature_df %>% 
                filter(`Variable Class`=="TIL Map Characteristic" & VariableType=="Numeric") %>% .$FeatureMatrixLabelTSV) %>% 
       .[complete.cases(.), ] %>%

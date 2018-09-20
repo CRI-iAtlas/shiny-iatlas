@@ -1,18 +1,16 @@
 create_violinplot <- function(
-  df, x, y, fill_factor, xlab, ylab, source_name = NULL, title, fill_colors = NA, 
-  facet = NA
-) {
-  let(
-    alias = c(xvar = x, yvar = y, splitvar = fill_factor),
+  df, xlab, ylab, source_name = NULL, fill_colors = NA, facet = NA) {
+    
     df %>% 
       plot_ly(
-        x = ~xvar,
-        y = ~yvar,
-        split = ~splitvar,
-        color = ~splitvar,
+        x = ~x,
+        y = ~y,
+        split = ~x,
+        color = ~x,
         source = source_name,
         colors = fill_colors,
         type = 'violin',
+        key = ~label,
         box = list(
           visible = TRUE
         ),
@@ -26,5 +24,4 @@ create_violinplot <- function(
       ) %>% 
       format_plotly() %>%
       I
-  )
 }
