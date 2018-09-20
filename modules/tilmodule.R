@@ -110,18 +110,6 @@ tilmap <- function(input, output, session, group_display_choice, group_internal_
     
   })
   
-  # output$hover <- renderPrint({
-  #     df <- event_data("plotly_hover", source = "violin")
-  #     if (is.null(df)) {
-  #         "Hover events appear here (unhover to clear)" 
-  #     } else {
-  #       df %>% 
-  #             select(x,y,key)
-  #     } 
-  # })
-  
-  
-  
   output$click <- renderPrint({
       df <- event_data("plotly_click", source = "violin")
       if (is.null(df)) {
@@ -136,10 +124,9 @@ tilmap <- function(input, output, session, group_display_choice, group_internal_
       
       d <- event_data("plotly_click", source = "violin")
       if (!is.null(d)) {
-          slide_id <- d %>% 
-              slice(1) %>% 
+          slide_ids <- d %>% 
               use_series(key)
-          data_df <- filter(panimmune_data$fmx_df, Slide == slide_id)
+          data_df <- filter(panimmune_data$fmx_df, Slide %in% slide_ids)
       } else {
           data_df <- panimmune_data$fmx_df
       }
