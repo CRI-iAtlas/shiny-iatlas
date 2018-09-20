@@ -28,13 +28,13 @@ immunomodulator_UI <- function(id) {
         optionsBox(
           width = 12,
           column(
-              width = 3,
+              width = 2,
               radioButtons(ns("sep"), "File Separator",
                            choices = c(Comma = ",", Tab = "\t"), selected = ","),
               checkboxInput(ns("logged"), "Apply Log10", TRUE)
           ),
           column(
-            width = 6,
+            width = 4,
             fileInput(ns("expr_file_pred"), "Choose CSV file with \n1st column gene symbols",
                       multiple = FALSE,
                       accept = c("text/csv",
@@ -45,7 +45,10 @@ immunomodulator_UI <- function(id) {
                                  "text/comma-separated-values,text/plain",
                                  ".tsv",
                                  ".tsv.gz"),
-                      placeholder = 'data/ivy20.csv'),
+                      placeholder = 'data/ivy20.csv')
+          ),
+          column(
+            width = 3,
             numericInput(ns("ensemblenum"), "Ensemble Size", 256, max = 256, min = 32, width = '100')
           ),
           column(
@@ -125,7 +128,7 @@ subtypepredictor <- function(
     
     
     # Filter data based on selections
-    output$table <- DT::renderDataTable(
+    output$subtypetable <- DT::renderDataTable(
       DT::datatable(
         as.data.frame(getCalls()$ProbCalls),
         extensions = 'Buttons', options = list(
