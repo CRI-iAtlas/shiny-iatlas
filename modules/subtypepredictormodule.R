@@ -35,7 +35,7 @@ immunomodulator_UI <- function(id) {
           ),
           column(
             width = 6,
-            fileInput("file1", "Choose CSV file with \n1st column gene symbols",
+            fileInput("expr_file_pred", "Choose CSV file with \n1st column gene symbols",
                       multiple = FALSE,
                       accept = c("text/csv",
                                  "text/comma-separated-values,text/plain",
@@ -45,26 +45,27 @@ immunomodulator_UI <- function(id) {
                                  "text/comma-separated-values,text/plain",
                                  ".tsv",
                                  ".tsv.gz"),
-                      placeholder = 'data/ivy20.csv')
+                      placeholder = 'data/ivy20.csv'),
+            numericInput("ensemblenum", "Ensemble Size", 256, max = 256, min = 32, width = '100')
           ),
           column(
               width = 3,
               numericInput("corenum", "Cores", 4, width = '100'),
-              numericInput("ensemblenum", "Ensemble Size", 256, max = 256, min = 32, width = '100')
+              actionButton("subtypeGObutton", "GO")
           )
         )
       ),
       fluidRow(
         plotBox(
           width = 12,
-          plotlyOutput(ns("violinPlot")) %>% 
+          plotOutput(ns("distPlot")) %>% 
             shinycssloaders::withSpinner()
         )
       ),
       fluidRow(
         plotBox(
           width = 12,
-          plotlyOutput(ns("histPlot")) %>% 
+          plotOutput(ns('barPlot')) %>% 
             shinycssloaders::withSpinner()
         )
       )
@@ -72,16 +73,16 @@ immunomodulator_UI <- function(id) {
     
     # Immunomodulator annotations section ----
     sectionBox(
-      title = "Immunomodulator Annotations",
+      title = "Subtype Prediction Results Table",
       messageBox(
         width = 12,
-        p("The table shows annotations of the immumodulators, and source. Use the Search box in the upper right to find an immumodulator of interest.")  
+        p("The table shows the results of subtype prediction. Use the Search box in the upper right to find sample of interest.")  
       ),
       fluidRow(
         tableBox(
           width = 12,
           div(style = "overflow-x: scroll",
-              DT::dataTableOutput(ns("im_annotations_table")) %>%
+              DT::dataTableOutput(ns("subtypetable")) %>%
                 shinycssloaders::withSpinner()
           )
         )
@@ -96,54 +97,49 @@ subtypepredictor <- function(
     
     ns <- session$ns
     
-    im_expr_plot_df <- reactive(
-        df <- 
-            build_im_expr_plot_df(
-                subset_df(),
-                filter_value = input$im_gene_choice, 
-                group_option = group_internal_choice()))
+    # in src files ... have same path as app.R
+    reportedClusters <- getSubtypeTable()
+    print(head(reportedClusters))
     
-    output$violinPlot <- renderPlotly(
-        create_violinplot(
-            im_expr_plot_df(),
-            xlab = group_display_choice(), 
-            ylab = "log10(count + 1)",
-            source_name = "select",
-            fill_colors = plot_colors()))
-    
-    output$histPlot <- renderPlotly({
-        
-        eventdata <- event_data("plotly_click", source = "select")
-        validate(need(!is.null(eventdata), "Click violin plot above"))
-        
-        histplot_df <- im_expr_plot_df() %>% 
-            select(GROUP = x, log_count = y) %>% 
-            filter(GROUP == eventdata$x[[1]])
-        
-        create_histogram(
-            histplot_df,
-            x_column  = "log_count",
-            x_lab = "log10(count + 1)",
-            title = eventdata$x[[1]])
+    # get new calls
+    getCalls <- eventReactive(input$subtypeGObutton, {
+      newdat <- input$expr_file_pred
+      #withProgress(message = 'Working...', value = 0, {
+      #  newScores(newdat, input$logged, input$corenum)
+      #})
+      newScores(newdat, input$logged, input$corenum)
     })
     
-    output$im_annotations_table <- DT::renderDT({
-        
-        panimmune_data$im_direct_relationships %>% 
-            select(-X10, -Notes) %>% 
-            datatable(
-                options = list(pageLength = 10),
-                rownames = FALSE
-                )
+    # plot of where a sample is in signature space X clusters    
+    output$distPlot <- renderPlot({
+      heatmap(as.matrix(getCalls()$Table), xlab = 'Reported Clusters', ylab = 'New Calls')
+      #imagePlot(getCalls()$Table)
     })
     
-    output$gene_choices <- renderUI({
-        choices <- get_immunomodulator_nested_list(
-            class_column = input$im_category_choice_choice)
-        selectInput(
-            ns("im_gene_choice"),
-            label = "Select Immunomodulator Gene",
-            choices = choices)
+    
+    output$barPlot <- renderPlot({
+      counts <- table(getCalls()$MaxCalls)
+      barplot(counts, main="New Cluster Label Calls", 
+              xlab="Cluster Labels")
     })
+    
+    
+    # Filter data based on selections
+    output$table <- DT::renderDataTable(
+      DT::datatable(
+        as.data.frame(getCalls()$ProbCalls),
+        extensions = 'Buttons', options = list(
+          dom = 'Bfrtip',
+          buttons = 
+            list('copy', 'print', 
+                 list(
+                   extend = 'collection',
+                   buttons = c('csv', 'excel', 'pdf'),
+                   text = 'Download')
+            )
+        )
+        
+      )
+    )
     
 }

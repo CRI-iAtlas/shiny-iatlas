@@ -62,11 +62,7 @@ shinyServer(function(input, output, session) {
       reactive(plot_colors()))
   callModule(
       subtypepredictor, 
-      "module_subtypepredictor", 
-      reactive(input$ss_choice),
-      reactive(group_internal_choice()),
-      reactive(subset_df()),
-      reactive(plot_colors()))
+      "module_subtypepredictor")
   
   # Data info
   callModule(datainfo, "moduleX")
