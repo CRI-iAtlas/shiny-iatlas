@@ -104,7 +104,8 @@ tilmap <- function(input, output, session, group_display_choice, group_internal_
         xlab = group_display_choice(),
         ylab = display_y,
         fill_colors = plot_colors(),
-        source_name = "violin"
+        source_name = "violin", 
+        points = "all"
       )
     
   })
@@ -134,32 +135,38 @@ tilmap <- function(input, output, session, group_display_choice, group_internal_
   output$til_table <- DT::renderDT({
       
       d <- event_data("plotly_click", source = "violin")
-      slide_id <- NULL
       if (!is.null(d)) {
           slide_id <- d %>% 
               slice(1) %>% 
               use_series(key)
-      } 
-      if (!is.null(d)) {
           data_df <- filter(panimmune_data$fmx_df, Slide == slide_id)
       } else {
           data_df <- panimmune_data$fmx_df
       }
       
+      
+      TIL_map_columns <- panimmune_data$feature_df %>% 
+          filter(`Variable Class` == "TIL Map Characteristic") %>% 
+          filter(VariableType == "Numeric") %>% 
+          use_series(FeatureMatrixLabelTSV)
 
       data_df %>% 
-      select("ParticipantBarcode","Study", "Slide", panimmune_data$feature_df %>% 
-               filter(`Variable Class`=="TIL Map Characteristic" & VariableType=="Numeric") %>% .$FeatureMatrixLabelTSV) %>% 
-      .[complete.cases(.), ] %>%
-      mutate(Image=paste("<a href=\"","http://quip1.bmi.stonybrook.edu:443/camicroscope/osdCamicroscope.php?tissueId=",
-                            .$Slide,"\">",.$Slide,"</a>",sep="") ) %>% 
-      select(-"Slide") %>% ## column width/wrap problem at the moment for this
-      datatable(
-        rownames = FALSE,
-        escape = setdiff(colnames(.),"Image") ## To get hyperlink displayed
-      ) %>% formatRound(c('til_percentage','NP_mean',"NP_sd","WCD_mean","WCD_sd","CE_mean",
-                          "CE_sd","Ball_Hall","Banfeld_Raftery","C_index","Det_Ratio","Ball_Hall_Adjusted",
-                          "Banfeld_Raftery_Adjusted","C_index_Adjusted","Det_Ratio_Adjusted"), digits = 1) 
+          select("ParticipantBarcode", "Study", "Slide", TIL_map_columns) %>% 
+          mutate(Image = paste(
+              "<a href=\"",
+              "http://quip1.bmi.stonybrook.edu:443/camicroscope/osdCamicroscope.php?tissueId=",
+              Slide,
+              "\">",
+              Slide,
+              "</a>",
+              sep="")) %>% 
+          select(-"Slide") %>% ## column width/wrap problem at the moment for this
+          datatable(
+              rownames = FALSE,
+              escape = setdiff(colnames(.),"Image") ## To get hyperlink displayed
+          ) %>% formatRound(c('til_percentage','NP_mean',"NP_sd","WCD_mean","WCD_sd","CE_mean",
+                              "CE_sd","Ball_Hall","Banfeld_Raftery","C_index","Det_Ratio","Ball_Hall_Adjusted",
+                              "Banfeld_Raftery_Adjusted","C_index_Adjusted","Det_Ratio_Adjusted"), digits = 1) 
 
     ## Probably want to  get_variable_display_name for the column display
       })
