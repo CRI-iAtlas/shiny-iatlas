@@ -56,7 +56,7 @@ tilmap_UI <- function(id) {
           width = 12,
           plotlyOutput(ns("violinPlot")) %>% 
             shinycssloaders::withSpinner(),
-          h4("Click point or violin to filter samples in table below")
+          h4("Click point or violin to filter samples in table below"),
           verbatimTextOutput(ns("click"))
         )
       )
