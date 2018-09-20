@@ -19,8 +19,6 @@ newScores <- function(fileinfo, logflag, cores) {
   #source('functions/ImmuneSigs68_function.R')
   load('data/comparative_immuneSigs_geneLists4.rda')
   
-  #incProgress()
-  
   if (fileinfo$type == 'text/csv') {
     s1 <- ','
   } else if (fileinfo$type == 'text/csv') {
@@ -31,16 +29,12 @@ newScores <- function(fileinfo, logflag, cores) {
   
   newdata <- read.table(fileinfo$datapath, sep=s1, header=T, stringsAsFactors = F)
   
-  #incProgress()
-  
   zscore.cols2<-function(x){
     return((apply(x, 2, function(x) (x - median(na.omit(x)))/sd(na.omit(x)))))
   }
   
   # 1 Recomputed non-Z-scored scores from the EBPP matrix.
   load("data/ebpp_scores.rda")
-  
-  #incProgress()
   
   # 2 we get some new data in.. require:
   #    it is RPKM  
@@ -58,15 +52,11 @@ newScores <- function(fileinfo, logflag, cores) {
   }
   
   ### median scaled for each gene
-  #incProgress()
   datmeds <- apply(datlog2, 1, median, na.rm=T)  
   datscaled <- sweep(datlog2,1,datmeds,'-')
   datScores <- ImmuneSigs_function(datscaled, sigs1_2_eg2,sigs12_weighted_means,sigs12_module_weights,sigs1_2_names2,sigs1_2_type2)
-  
-  #incProgress()
-  
+
   # then batch correction between scores...
-  #incProgress()
   df <- as.matrix(cbind(datScores[rownames(ebppScores),], ebppScores))
   batch <- c(rep(1,ncol(datScores)), rep(2,ncol(ebppScores)))
   modcombat = model.matrix(~1, data=as.data.frame(t(df)))
@@ -77,11 +67,14 @@ newScores <- function(fileinfo, logflag, cores) {
   idx <- c("LIexpression_score", "CSF1_response", "TGFB_score_21050467", "Module3_IFN_score", "CHANG_CORE_SERUM_RESPONSE_UP")
   scores <- t(combat_edata[idx,])
   zscores <- zscore.cols2(scores)
-  
+
   # load the clustering model trained on all pancan data.
   #incProgress()
   load("data/wolf_set_slim1.rda")
+  
+  # make cluster calls using the models.
   calls <- consensusEnsemble(mods2, zscores, cores)
+  
   maxcalls <- apply(calls$.Data, 1, function(a) which(a == max(a))[1])
   
   # and get the reported scores from the manuscript
@@ -98,8 +91,6 @@ newScores <- function(fileinfo, logflag, cores) {
     t2[i,] <- round(t1[kdx,]/sum(t1[kdx,]), digits = 3) 
   }
   rownames(t2) <- c('C1', 'C2', 'C3', 'C4', 'C5', 'C6')
-  
-  #incProgress()
   
   jdx <- match(table=rownames(scores), x=colnames(dat))
   pcalls <- calls$.Data[jdx,]

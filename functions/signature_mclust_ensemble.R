@@ -54,7 +54,11 @@ ensemblePredict <- function(modList, dat, mode="list", cores) {
   # modList: list of mclust models
   # mode: how to bind the results ... use 'list' or 'matrix'
   #pred <- lapply(modList, function(a) predict(a, dat)$classification)
+  
+  print(modList[[1]]$modelName)
+  
   pred <- mclapply(modList, function(a) predict(a, dat)$classification, mc.cores=cores)
+
   if (mode == "matrix") {
     return(do.call("cbind", pred))
   } else {

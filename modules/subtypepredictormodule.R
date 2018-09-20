@@ -29,13 +29,13 @@ immunomodulator_UI <- function(id) {
           width = 12,
           column(
               width = 3,
-              radioButtons("sep", "File Separator",
+              radioButtons(ns("sep"), "File Separator",
                            choices = c(Comma = ",", Tab = "\t"), selected = ","),
-              checkboxInput("logged", "Apply Log10", TRUE)
+              checkboxInput(ns("logged"), "Apply Log10", TRUE)
           ),
           column(
             width = 6,
-            fileInput("expr_file_pred", "Choose CSV file with \n1st column gene symbols",
+            fileInput(ns("expr_file_pred"), "Choose CSV file with \n1st column gene symbols",
                       multiple = FALSE,
                       accept = c("text/csv",
                                  "text/comma-separated-values,text/plain",
@@ -46,11 +46,11 @@ immunomodulator_UI <- function(id) {
                                  ".tsv",
                                  ".tsv.gz"),
                       placeholder = 'data/ivy20.csv'),
-            numericInput("ensemblenum", "Ensemble Size", 256, max = 256, min = 32, width = '100')
+            numericInput(ns("ensemblenum"), "Ensemble Size", 256, max = 256, min = 32, width = '100')
           ),
           column(
               width = 3,
-              numericInput("corenum", "Cores", 4, width = '100'),
+              numericInput(ns("corenum"), "Cores", 4, width = '100'),
               actionButton(ns("subtypeGObutton"), "GO")
           )
         )
