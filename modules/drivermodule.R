@@ -15,7 +15,7 @@ drivers_UI <- function(id) {
                 p("Every point in the scatter plot corresponds to a comparison of the values of that immune readout in samples in which a particular driver gene is mutated to the values in samples in which is not."),
                 p("This comparison is made within each cohort among the Sample Groups. Each point thus corresponds to a single driver gene and cohort. The driver-cohort combination can be seen by hovering on a point (separated by a dot)."),
                 p("The x-axis show the effect size, defined as the ratio of the mean readout value in mutated vs non-mutated samples."),
-                p("The y-axis represents the P-value of the significance test comparing the readout in mutated vs non-mutated samples."),
+                p("The y-axis represents the P-value of the significance test comparing the readout in mutated vs non-mutated samples. A line is drawn for P=0.05, with the more significant values above that line"),
                 p("Manuscript context: This allows you to display distributions such as those shown in Figure 4D.","\n"),
                 p("Click on point to see a violin plot for the immune readout value distribution in mutated vs non-mutated samples for the selected cohort and driver.")
             ),
@@ -89,7 +89,7 @@ drivers <- function(
                          title = "Immune Response Association With Driver Mutations",
                          source = "scatterplot",
                          hl = T,
-                         hl_y = (- log(0.05))
+                         hl_y = (- log10(0.05))
       )
     })
     
@@ -114,7 +114,7 @@ drivers <- function(
       mutation <- as.character(dff[1,"mutation"])
       
       scatter_plot_selected_row <- filter(scatter_plot_df(), label == combo_selected)
-      point_selected_pval <- scatter_plot_selected_row$y %>% 
+      point_selected_pval <- 10^(-scatter_plot_selected_row$y) %>% 
           round(4) %>% 
           as.character()
       point_selected_es <- scatter_plot_selected_row$x %>% 
@@ -127,7 +127,7 @@ drivers <- function(
 
       dfb <- dff %>% rename(x=value,y=input$response_variable) %>% select(x,y)
       plot_title = paste(c("Cohort:",cohort,
-                           "; - Log P value:",point_selected_pval,
+                           "; P-value:",point_selected_pval,
                            "; Effect size:", point_selected_es),
                          collapse=" ")
       xlab = paste(c(mutation,"mutation status"),collapse=" ")
