@@ -178,7 +178,7 @@ explorepage <- dashboardPage(
             imgLinkBox(
               width = 6,
               title = "Immune Subtype Prediction",
-              linkId = "link_to_module7",
+              linkId = "link_to_module_subtypepredictor",
               imgSrc = "images/immunomodulators.png",
               boxText = "Use an ensemble model trained on all TCGA data to predict subtypes on new data.",
               linkText = "Open Module"
@@ -212,7 +212,7 @@ explorepage <- dashboardPage(
       ),
       tabItem(
         tabName = "subtypepredictor",
-        immunomodulator_UI("module7")
+        immunomodulator_UI("module_subtypepredictor")
       ),
       tabItem(
         tabName = "datainfo",

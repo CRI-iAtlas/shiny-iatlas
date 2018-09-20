@@ -3,41 +3,54 @@ immunomodulator_UI <- function(id) {
   ns <- NS(id)
   
   tagList(
-    titleBox("iAtlas Explorer — Immunomodulators"),
+    titleBox("iAtlas Explorer — Immune Subtype Predictor"),
     textBox(
       width = 12,
-      p("Explore the expression of genes that code for immunomodulating proteins, including checkpoint proteins.")  
+      p("Upload gene expression* and predict immune subtypes (* RSEM RPKM).")  
     ),
     
     # Immunomodulator distributions section ----
     sectionBox(
-      title = "Immunomodulator Distributions",
+      title = "Model based clustering",
       messageBox(
         width = 12,
-        p("Select Immumodulator Gene to see its expression in the data set. Use Select Immumodulator Category (drop-down menu on the right) to organize the selection by particular categories. The categories will subsequently appear in the left drop-down menu. The Categories are:"),
+        p("Upload gene expression (csv or tsv). RSEM RPKM expression values were used to train the model, and for best results, your expression data should also be RSEM RPKMs. There are several settings:"),
         tags$ul(
-          tags$li(em('Gene Family'), ", such as TNF, MHC Class II, Immunoglobulin, or CXC chemokine"), 
-          tags$li(em('Super Category'), ", such as Ligand, Receptor, or Antigen Presentation"),
-          tags$li(em('Immune Checkpoint'), " classified as  Inhibitory or Stimulatory")
+          tags$li(em('Log 10'), ", if the data is not already log transformed, select this."), 
+          tags$li(em('Ensemble size'), ", try different ensemble sizes to check for robust results."),
+          tags$li(em('File separator'), ", select commas or tabs.")
         ),
         p(""),
-        p("Manuscript context:  If you are looking at Immune Subtypes, select EDNRB or CXCL10 to get figure 6B."),
-        p("You can view a histogram for any indvidual distributions by clicking on its violin plot.")
+        p("Manuscript context:  See figure 1A."),
+        p(".....")
       ),
       fluidRow(
         optionsBox(
           width = 12,
           column(
-              width = 6,
-              uiOutput(ns("gene_choices"))
+              width = 3,
+              radioButtons("sep", "File Separator",
+                           choices = c(Comma = ",", Tab = "\t"), selected = ","),
+              checkboxInput("logged", "Apply Log10", TRUE)
           ),
           column(
-              width = 6,
-              selectInput(
-                  inputId = ns("im_category_choice_choice"),
-                  label = "Select Immunomodulator Category",
-                  choices = c("Gene Family", "Super Category", "Immune Checkpoint")
-              )
+            width = 6,
+            fileInput("file1", "Choose CSV file with \n1st column gene symbols",
+                      multiple = FALSE,
+                      accept = c("text/csv",
+                                 "text/comma-separated-values,text/plain",
+                                 ".csv",
+                                 ".csv.gz",
+                                 "text/tsv",
+                                 "text/comma-separated-values,text/plain",
+                                 ".tsv",
+                                 ".tsv.gz"),
+                      placeholder = 'data/ivy20.csv')
+          ),
+          column(
+              width = 3,
+              numericInput("corenum", "Cores", 4, width = '100'),
+              numericInput("ensemblenum", "Ensemble Size", 256, max = 256, min = 32, width = '100')
           )
         )
       ),
