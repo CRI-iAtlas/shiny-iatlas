@@ -53,17 +53,17 @@ cellcontent_UI <- function(id) {
       title = "Cell Type Fractions",
       messageBox(
         width = 12,
-        p("This allows you to draw barplots for the proportion of immune different immune cells in the immune compartment.  The values are estimated by CIBERSORT (“Original” fraction), and various combinations of those estimates are provided, for example “Aggregate 1” corresponding to broader categories of cells, and “Aggregate 2” and “Aggregate 3” to finer categories."), 
+        p("This allows you to draw barplots for the proportion of immune different immune cells in the immune compartment.  The proportions are estimated using CIBERSORT (“Original” fraction), and various combinations of those estimates are provided."), 
         p("Manuscript context:  These bargraphs are similar to Figure 2A, and Figure S2A, but with a different arrangement of bars.")
       ),
       fluidRow(
         optionsBox(
-          width = 8,
+          width = 12,
           selectInput(
             inputId = ns("cf_choice"),
             label = "Select Cell Fraction Type",
             choices = config_yaml$cell_type_aggregates,
-            selected = config_yaml$cell_type_aggregates[[1]]
+            selected = config_yaml$cell_type_aggregates[[3]]
           )
         )
       ),

@@ -141,7 +141,7 @@ groupsoverview <- function(
     
     observeEvent(input$filehelp, {
         showModal(modalDialog(
-            title = "Custom sample group format",
+            title = "Formatting custom groups",
             includeMarkdown("data/user_groups.md"),
             size = "l", easyClose = TRUE
         ))})

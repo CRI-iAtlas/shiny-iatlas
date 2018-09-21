@@ -87,8 +87,8 @@ immune_group_colors:
   
 cell_type_aggregates:
   - "Immune Cell Proportion - Original"
-  - "Immune Cell Proportion - Aggregate 1"
-  - "Immune Cell Proportion - Aggregate 2"
-  - "Immune Cell Proportion - Aggregate 3"
+  - "Immune Cell Proportion - Multipotent Progenitor Cell Derivative Class"
+  - "Immune Cell Proportion - Common Lymphoid and Myeloid Cell Derivative Class"
+  - "Immune Cell Proportion - Differentiated Lymphoid and Myeloid Cell Derivative Class"
 
 
