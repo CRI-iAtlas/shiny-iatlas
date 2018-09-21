@@ -57,8 +57,11 @@ ensemblePredict <- function(modList, dat, mode="list", cores) {
   
   require(mclust)  ### Error when calling library in the global function for some reason!
   
-  pred <- mclapply(modList, function(a) predict(a, dat)$classification, mc.cores=cores)
+  pred <- mclapply(modList, function(a) mclust::predict.Mclust(a, dat)$classification, mc.cores=cores)
 
+  # then unload mclust
+  detach(package:mclust, unload=TRUE)
+  
   if (mode == "matrix") {
     return(do.call("cbind", pred))
   } else {
