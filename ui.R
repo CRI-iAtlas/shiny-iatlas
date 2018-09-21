@@ -21,6 +21,7 @@ footerTagList <- list(
 ui <- navbarPage(
   includeCSS("www/custom.css"),
   includeCSS("www/footer.css"),
+  includeCSS("www/bootstrapTable.min.css"),
   title = strong("CRI iAtlas Portal"), selected = "Explore",	
   tabPanel("Explore", explorepage, icon = icon("bar-chart")),	
   tabPanel("About", aboutpage, icon = icon("info-circle")),	
