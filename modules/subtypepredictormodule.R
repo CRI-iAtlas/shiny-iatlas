@@ -94,6 +94,7 @@ immunomodulator_UI <- function(id) {
   )
 }
 
+
 subtypepredictor <- function(
     input, output, session, group_display_choice, group_internal_choice, 
     subset_df, plot_colors) {
@@ -115,8 +116,8 @@ subtypepredictor <- function(
     
     # plot of where a sample is in signature space X clusters    
     output$distPlot <- renderPlot({
-      heatmap(as.matrix(getCalls()$Table), xlab = 'Reported Clusters', ylab = 'New Calls')
-      #imagePlot(getCalls()$Table)
+      #heatmap(as.matrix(getCalls()$Table), xlab = 'Reported Clusters', ylab = 'New Calls')
+      imagePlot(getCalls()$Table)
     })
     
     
