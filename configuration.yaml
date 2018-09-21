@@ -27,6 +27,7 @@ function_files:
   - "functions/ImmuneSigs68_function.R"
   - "functions/signature_mclust_ensemble.R"
   - "functions/tablef_fun.R"
+  - "functions/imageplot.R"
 
 page_files:
   - "pages/aboutpage.R"
