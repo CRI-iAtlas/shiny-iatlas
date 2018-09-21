@@ -48,7 +48,7 @@ modelEnsemble <- function(dat, mods=10, klus=6, sampSize=0.5, init=0.25, cores=2
   modList
 }
 
-ensemblePredict <- function(modList, dat, mode="list", cores) {
+ensemblePredict <- function(modList, dat, mode="list", cores, ensemblesize) {
   # returns a matrix of cluster assignments
   # dat: expression matrix, signature scores in columns 
   # modList: list of mclust models
@@ -57,7 +57,9 @@ ensemblePredict <- function(modList, dat, mode="list", cores) {
   
   require(mclust)  ### Error when calling library in the global function for some reason!
   
-  pred <- mclapply(modList, function(a) mclust::predict.Mclust(a, dat)$classification, mc.cores=cores)
+  idx <- sample(x = 1:length(modList), size = ensemblesize, replace = F)
+  
+  pred <- mclapply(modList[idx], function(a) mclust::predict.Mclust(a, dat)$classification, mc.cores=cores)
 
   # then unload mclust
   detach(package:mclust, unload=TRUE)
@@ -69,11 +71,11 @@ ensemblePredict <- function(modList, dat, mode="list", cores) {
   }
 }
 
-consensusEnsemble <- function(modList, dat, cores=2) {
+consensusEnsemble <- function(modList, dat, cores=2, ensemblesize) {
   # make consensus calls
   # dat: expression matrix, signature scores in columns 
   # modList: list of mclust models
-  preds <- ensemblePredict(modList,dat,"list", cores)
+  preds <- ensemblePredict(modList,dat,"list", cores, ensemblesize)
   partitions <- lapply(preds, function(a) as.cl_partition(a))
   clpart <- cl_ensemble(list=partitions)
   consensus <- cl_consensus(clpart, method="GV1")

@@ -6,7 +6,7 @@
 
 
 # this function computes scores given some expression data.
-newScores <- function(fileinfo, logflag, cores) {
+newScores <- function(fileinfo, logflag, cores, ensemblesize) {
   
   print(fileinfo)
   if(is.null(fileinfo)) {
@@ -73,7 +73,7 @@ newScores <- function(fileinfo, logflag, cores) {
   load("data/wolf_set_slim1.rda")
   
   # make cluster calls using the models.
-  calls <- consensusEnsemble(mods2, zscores, cores)
+  calls <- consensusEnsemble(mods2, zscores, cores, ensemblesize)
   
   maxcalls <- apply(calls$.Data, 1, function(a) which(a == max(a))[1])
   

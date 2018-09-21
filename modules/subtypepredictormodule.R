@@ -110,7 +110,7 @@ subtypepredictor <- function(
       #withProgress(message = 'Working...', value = 0, {
       #  newScores(newdat, input$logged, input$corenum)
       #})
-      newScores(newdat, input$logged, input$corenum)
+      newScores(newdat, input$logged, input$corenum, input$ensemblenum)
     })
     
     # plot of where a sample is in signature space X clusters    
