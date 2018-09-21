@@ -17,11 +17,10 @@ groupsoverview_UI <- function(id) {
             fluidRow(
                 optionsBox(
                     width = 12,
-                    actionButton("filehelp", " Formatting instructions",
+                    tags$head(tags$script(src = "message-handler.js")),
+                    actionButton(ns("filehelp"), 
+                                 " Formatting instructions",
                                  icon = icon("info-circle")),
-                    actionButton("exfile", " Load example groups file",
-                                 icon = icon("file"),
-                                 style = "background-color:rgba(219, 174, 88, 1)"),
                     hr(),
                     fileInput(
                         ns("file1"),
@@ -109,6 +108,8 @@ groupsoverview <- function(
     
     # ui ----
     
+    
+    
     output$mosaic_group_select <- renderUI({
         choices <- setdiff(group_options(), group_display_choice())
         radioButtons(ns("sample_mosaic_group"), 
@@ -135,6 +136,13 @@ groupsoverview <- function(
     })
     
     # other ----
+    
+    observeEvent(input$filehelp, {
+        showModal(modalDialog(
+            title = "Formatting custom groups",
+            includeMarkdown("data/user_groups.md"),
+            size = "l", easyClose = TRUE
+        ))})
     
     output$sample_group_name <- renderText({
         paste(group_display_choice(), "Groups")
