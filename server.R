@@ -90,7 +90,7 @@ shinyServer(function(input, output, session) {
     shinydashboard::updateTabItems(session, "explorertabs", "immune_features")
   })
   observeEvent(input$link_to_module_subtypepredictor, {
-    shinydashboard::updateTabItems(session, "explorertabs", "subtypepredictor")
+    updateNavlistPanel(session, "toolstabs", "Immune Subtype Predictor")
   })
   
   output$select_group_UI <- renderUI({

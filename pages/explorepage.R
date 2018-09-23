@@ -40,11 +40,6 @@ explorepage <- dashboardPage(
                  "Immunomodulators",
                  tabName = "immunomodulators",
                  icon = icon("cog")
-               ),
-               menuSubItem(
-                 "Immune Subtype Prediction",
-                 tabName = "subtypepredictor",
-                 icon = icon("cog")
                )
       ),
       menuItem("Data Description",
@@ -173,16 +168,6 @@ explorepage <- dashboardPage(
               boxText = "Explore the expression of genes that code for immunomodulating proteins, including checkpoint proteins.",
               linkText = "Open Module"
             )
-          ),
-          fluidRow(
-            imgLinkBox(
-              width = 6,
-              title = "Immune Subtype Prediction",
-              linkId = "link_to_module_subtypepredictor",
-              imgSrc = "images/immunomodulators.png",
-              boxText = "Use an ensemble model trained on all TCGA data to predict subtypes on new data.",
-              linkText = "Open Module"
-            )
           )
         )
       ),
@@ -209,10 +194,6 @@ explorepage <- dashboardPage(
       tabItem(
         tabName = "immune_features",
         immunefeatures_UI("module6")
-      ),
-      tabItem(
-        tabName = "subtypepredictor",
-        immunomodulator_UI("module_subtypepredictor")
       ),
       tabItem(
         tabName = "datainfo",

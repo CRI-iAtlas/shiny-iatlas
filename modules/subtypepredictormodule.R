@@ -3,7 +3,7 @@ immunomodulator_UI <- function(id) {
   ns <- NS(id)
   
   tagList(
-    titleBox("iAtlas Explorer — Immune Subtype Predictor"),
+    titleBox("iAtlas Tools — Immune Subtype Predictor"),
     textBox(
       width = 12,
       p("Upload gene expression* and predict immune subtypes (* RSEM RPKM).")  
