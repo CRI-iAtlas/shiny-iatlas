@@ -190,12 +190,20 @@ groupsoverview <- function(
         internal_x <- get_group_internal_name(display_x)
         internal_y <- group_internal_choice()
         
+##        View(subset_df())
+        cat("display_x",display_x,"\n")
+        cat("display_y",display_y,"\n")
+        cat("internal_x",internal_x,"\n")
+        cat("internal_y",internal_y,"\n")
+        
         mosaic_df <- build_group_group_mosaic_plot_df(
             subset_df(),
             x_column = internal_x,
             y_column = internal_y,
             study_option = input$study_subset_selection,
             user_group_df()) 
+        
+        View(mosaic_df)
         
         create_mosaicplot(
             mosaic_df,
