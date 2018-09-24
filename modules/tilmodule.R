@@ -43,21 +43,31 @@ tilmap_UI <- function(id) {
       ),
       fluidRow(
         optionsBox(
-          width = 4,
-          selectInput(
-            ns("violin_y"),
-            "Select TIL Map characteristic",
-            choices = get_friendly_numeric_columns_by_group()["TIL Map Characteristic"]
+          width = 12,
+          column(
+              width = 4,
+              selectInput(
+                  ns("violin_y"),
+                  "Select TIL Map characteristic",
+                  choices = get_friendly_numeric_columns_by_group()["TIL Map Characteristic"]
+              )
+          ),
+          column(
+              width = 4,
+              selectInput(
+                  ns("plot_type"),
+                  "Select plot type",
+                  choices = c("Violin", "Scatter")
+              )
           )
         )
       ),
       fluidRow(
         plotBox(
           width = 12,
-          plotlyOutput(ns("violinPlot")) %>% 
+          plotlyOutput(ns("plot")) %>% 
             shinycssloaders::withSpinner(),
-          h4("Click point or violin to filter samples in table below"),
-          verbatimTextOutput(ns("click"))
+          h4("Click point or violin to filter samples in table below")
         )
       )
     ),
@@ -89,7 +99,7 @@ tilmap <- function(input, output, session, group_display_choice, group_internal_
   ns <- session$ns
   
   
-  output$violinPlot <- renderPlotly({
+  output$plot <- renderPlotly({
     
     display_y  <- get_variable_display_name(input$violin_y)
     
@@ -97,35 +107,36 @@ tilmap <- function(input, output, session, group_display_choice, group_internal_
       select(x = group_internal_choice(), y = input$violin_y, label = "Slide") %>%
       drop_na()
     
-    print(plot_df)
-    
-    plot_df %>%
-      create_violinplot(
-        xlab = group_display_choice(),
-        ylab = display_y,
-        fill_colors = plot_colors(),
-        source_name = "violin", 
-        points = "all"
-      )
+    if(input$plot_type == "Violin"){
+        plot_df %>%
+            create_violinplot(
+                xlab = group_display_choice(),
+                ylab = display_y,
+                fill_colors = plot_colors(),
+                source_name = "plot", 
+                points = "all"
+            )
+    } else {
+        plot_df %>% 
+            left_join(enframe(plot_colors()), by = c("x" = "name")) %>% 
+            create_scatterplot(
+                xlab = group_display_choice(),
+                ylab = display_y,
+                colors = "value",
+                source_name = "plot"
+            )
+    }
     
   })
   
-  output$click <- renderPrint({
-      df <- event_data("plotly_click", source = "violin")
-      if (is.null(df)) {
-          "Hover events appear here (unhover to clear)" 
-      } else {
-          df %>% 
-              select(x,y,key)
-      } 
-  })
   
   output$til_table <- DT::renderDT({
       
-      d <- event_data("plotly_click", source = "violin")
+      d <- event_data("plotly_click", source = "plot")
       if (!is.null(d)) {
           slide_ids <- d %>% 
               use_series(key)
+          print(slide_ids)
           data_df <- filter(panimmune_data$fmx_df, Slide %in% slide_ids)
       } else {
           data_df <- panimmune_data$fmx_df

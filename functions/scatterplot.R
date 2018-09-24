@@ -2,13 +2,17 @@ create_scatterplot <- function(
     df, 
     xlab = "", 
     ylab = "", 
-    title = "", 
+    title = "",
+    source_name = NULL,
     identity_line = FALSE) {
     
     p <- df %>%
         plotly::plot_ly(
             x = ~x,
-            y = ~y
+            y = ~y,
+            key = ~label,
+            source = source_name,
+            color = "colors"
         ) %>% 
         add_markers(
             alpha = 0.5,
