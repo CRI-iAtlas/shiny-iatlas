@@ -1,4 +1,4 @@
-immunomodulator_UI <- function(id) {
+subtypepredictor_UI <- function(id) {
   
   ns <- NS(id)
   
@@ -16,9 +16,9 @@ immunomodulator_UI <- function(id) {
         width = 12,
         p("Upload gene expression (csv or tsv). RSEM RPKM expression values were used to train the model, and for best results, your expression data should also be RSEM RPKMs. There are several settings:"),
         tags$ul(
-          tags$li(em('Log 10'), ", if the data is not already log transformed, select this."), 
-          tags$li(em('Ensemble size'), ", try different ensemble sizes to check for robust results."),
-          tags$li(em('File separator'), ", select commas or tabs.")
+          tags$li(shiny::em('Log 10'), ", if the data is not already log transformed, select this."), 
+          tags$li(shiny::em('Ensemble size'), ", try different ensemble sizes to check for robust results."),
+          tags$li(shiny::em('File separator'), ", select commas or tabs.")
         ),
         p(""),
         p("Manuscript context:  See figure 1A."),

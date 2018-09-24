@@ -19,7 +19,7 @@ toolspage <- fluidPage(
     ),
     tabPanel(
       "Immune Subtype Predictor",
-      immunomodulator_UI("module_subtypepredictor")
+      subtypepredictor_UI("module_subtypepredictor")
     )
   )
 )

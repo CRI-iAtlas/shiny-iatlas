@@ -29,6 +29,11 @@ explorepage <- dashboardPage(
                  tabName = "survival_curves",
                  icon = icon("cog")
                ),
+               menuSubItem(
+                 "Immunomodulators",
+                 tabName = "immunomodulators",
+                 icon = icon("cog")
+               )
                # menuSubItem(
                #   "Genomic State",
                #   icon = icon("chevron-circle-right")),
@@ -36,11 +41,6 @@ explorepage <- dashboardPage(
                #   "Immune Interface",
                #   tabName = "clonal_diversity",
                #   icon = icon("chevron-circle-right")),
-               menuSubItem(
-                 "Immunomodulators",
-                 tabName = "immunomodulators",
-                 icon = icon("cog")
-               )
       ),
       menuItem("Data Description",
                icon = icon("th-list"),
