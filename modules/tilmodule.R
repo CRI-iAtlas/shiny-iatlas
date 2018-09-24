@@ -112,18 +112,16 @@ tilmap <- function(input, output, session, group_display_choice, group_internal_
             create_violinplot(
                 xlab = group_display_choice(),
                 ylab = display_y,
-                fill_colors = plot_colors(),
-                source_name = "plot", 
-                points = "all"
+                source_name = "plot",
+                fill_colors = plot_colors()
             )
     } else {
         plot_df %>% 
-            left_join(enframe(plot_colors()), by = c("x" = "name")) %>% 
             create_scatterplot(
                 xlab = group_display_choice(),
                 ylab = display_y,
-                colors = "value",
-                source_name = "plot"
+                source_name = "plot",
+                fill_colors = plot_colors()
             )
     }
     

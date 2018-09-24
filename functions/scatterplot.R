@@ -4,6 +4,7 @@ create_scatterplot <- function(
     ylab = "", 
     title = "",
     source_name = NULL,
+    fill_colors = NA,
     identity_line = FALSE) {
     
     p <- df %>%
@@ -12,7 +13,8 @@ create_scatterplot <- function(
             y = ~y,
             key = ~label,
             source = source_name,
-            color = "colors"
+            color = ~x,
+            colors = fill_colors
         ) %>% 
         add_markers(
             alpha = 0.5,

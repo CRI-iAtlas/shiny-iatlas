@@ -1,7 +1,10 @@
 create_violinplot <- function(
-  df, xlab, ylab, source_name = NULL, fill_colors = NA, facet = NA, points = NULL) {
+  df, xlab, ylab, 
+  source_name = NULL, 
+  fill_colors = NA, 
+  points = NULL) {
     
-    df %>% 
+    p <- df %>% 
       plot_ly(
         x = ~x,
         y = ~y,
