@@ -57,7 +57,7 @@ tilmap_UI <- function(id) {
               selectInput(
                   ns("plot_type"),
                   "Select plot type",
-                  choices = c("Violin", "Scatter")
+                  choices = c("Violin", "Box")
               )
           )
         )
@@ -67,7 +67,7 @@ tilmap_UI <- function(id) {
           width = 12,
           plotlyOutput(ns("plot")) %>% 
             shinycssloaders::withSpinner(),
-          h4("Click point or violin to filter samples in table below")
+          h4("Click point or violin/box to filter samples in table below")
         )
       )
     ),
@@ -117,7 +117,7 @@ tilmap <- function(input, output, session, group_display_choice, group_internal_
             )
     } else {
         plot_df %>% 
-            create_scatterplot(
+            create_boxplot(
                 xlab = group_display_choice(),
                 ylab = display_y,
                 source_name = "plot",

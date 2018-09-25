@@ -1,19 +1,27 @@
-build_boxplot <- function(df, fill_factor, x_label, y_label, fill_colors = NA, facet = NA, title = NULL) {
-    plot <- df %>%
-        ggplot(aes_string("x", "y", fill = fill_factor)) +
-        geom_boxplot() +
-        guides(colour = FALSE, fill = FALSE) +
-        ylab(y_label) +
-        xlab(x_label) +
-        theme_bw() +
-        theme_1012 +
-        theme(axis.text.x = element_text(angle = 90, vjust = 0.5)) +
-        labs(title = title)
-    if (!is.na(fill_colors)) {
-        plot <- plot + scale_fill_manual(values = fill_colors)
-    }
-    if (!is.na(facet)) {
-        plot <- plot + facet_grid(facet)
-    }
-    return(plot)
+create_boxplot <- function(
+    df, xlab, ylab, 
+    source_name = NULL, 
+    fill_colors = NA){
+    
+    p <- df %>% 
+        plot_ly(
+            x = ~x,
+            y = ~y,
+            split = ~x,
+            color = ~x,
+            type = "box", 
+            boxpoints = "all", 
+            jitter = 0.7,
+            pointpos = 0, 
+            colors = fill_colors,
+            source = source_name,
+            key = ~label) %>% 
+        layout(
+            xaxis = list(title = xlab),
+            yaxis = list(title = ylab)
+        ) %>% 
+        format_plotly() %>%
+        I
+        
+    
 }
