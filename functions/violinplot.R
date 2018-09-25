@@ -1,27 +1,42 @@
 create_violinplot <- function(
-  df, xlab, ylab, 
+  df, 
+  xcol = "x",
+  ycol = "y",
+  key_col = "label",
+  split_col = "x",
+  color_col = "x",
+  xlab = "",
+  ylab = "", 
   source_name = NULL, 
   fill_colors = NA, 
   points = NULL) {
     
-    p <- df %>% 
-      plot_ly(
-        x = ~x,
-        y = ~y,
-        split = ~x,
-        color = ~x,
-        points = points,
-        source = source_name,
-        colors = fill_colors,
-        type = 'violin',
-        key = ~label,
-        box = list(
-          visible = TRUE
-        ),
-        meanline = list(
-          visible = TRUE
-        )
-      ) %>% 
+    print(df)
+    p <- let(
+        alias = c(
+            X = xcol,
+            Y = ycol,
+            KEY = key_col,
+            SPLIT = split_col,
+            COLOR = color_col),
+        plot_ly(
+            df,
+            x = ~X,
+            y = ~Y,
+            split = ~SPLIT,
+            color = ~COLOR,
+            key = ~KEY,
+            points = points,
+            source = source_name,
+            colors = fill_colors,
+            type = 'violin',
+            box = list(
+                visible = TRUE
+            ),
+            meanline = list(
+                visible = TRUE
+            )
+        )) %>% 
       layout(
         xaxis = list(title = xlab),
         yaxis = list(title = ylab)

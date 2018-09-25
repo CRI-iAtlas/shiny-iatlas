@@ -1,5 +1,7 @@
 create_boxplot <- function(
-    df, xlab, ylab, 
+    df, 
+    xlab = "",
+    ylab = "", 
     source_name = NULL, 
     fill_colors = NA){
     

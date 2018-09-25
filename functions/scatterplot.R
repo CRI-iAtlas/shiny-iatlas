@@ -4,17 +4,15 @@ create_scatterplot <- function(
     ylab = "", 
     title = "",
     source_name = NULL,
-    fill_colors = NA,
     identity_line = FALSE) {
     
+    print(df)
     p <- df %>%
         plotly::plot_ly(
             x = ~x,
             y = ~y,
             key = ~label,
-            source = source_name,
-            color = ~x,
-            colors = fill_colors
+            source = source_name
         ) %>% 
         add_markers(
             alpha = 0.5,

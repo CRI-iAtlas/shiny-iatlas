@@ -96,7 +96,8 @@ immunomodulator <- function(
             xlab = group_display_choice(), 
             ylab = "log10(count + 1)",
             source_name = "select",
-            fill_colors = plot_colors()))
+            fill_colors = plot_colors(),
+            key_col = "x"))
     
     output$histPlot <- renderPlotly({
         
