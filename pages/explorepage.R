@@ -29,6 +29,11 @@ explorepage <- dashboardPage(
                  tabName = "survival_curves",
                  icon = icon("cog")
                ),
+               menuSubItem(
+                 "Immunomodulators",
+                 tabName = "immunomodulators",
+                 icon = icon("cog")
+               ),
                # menuSubItem(
                #   "Genomic State",
                #   icon = icon("chevron-circle-right")),
@@ -37,8 +42,8 @@ explorepage <- dashboardPage(
                #   tabName = "clonal_diversity",
                #   icon = icon("chevron-circle-right")),
                menuSubItem(
-                 "Immunomodulators",
-                 tabName = "immunomodulators",
+                 "TIL Maps",
+                 tabName = "tilmap_features",
                  icon = icon("cog")
                ),
                menuSubItem(
@@ -172,6 +177,14 @@ explorepage <- dashboardPage(
               imgSrc = "images/immunomodulators.png",
               boxText = "Explore the expression of genes that code for immunomodulating proteins, including checkpoint proteins.",
               linkText = "Open Module"
+            ),
+            imgLinkBox(
+              width = 6,
+              title = "TIL Maps",
+              linkId = "link_to_module7",
+              imgSrc = "images/TILmap.png",
+              boxText = "Explore the characteristics of TIL Maps.",
+              linkText = "Open Module"
             )
           ),
           fluidRow(
@@ -213,6 +226,10 @@ explorepage <- dashboardPage(
       tabItem(
         tabName = "drivers",
         drivers_UI("module8")
+      ),
+      tabItem(
+        tabName = "tilmap_features",
+        tilmap_UI("module7")
       ),
       tabItem(
         tabName = "datainfo",

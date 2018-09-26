@@ -4,7 +4,7 @@ create_scatterplot <- function(
     ylab = "", 
     title = "", 
     identity_line = FALSE,
-    source = NULL,
+    source_name = NULL,
     fill_colors = NA,
     hl = F,
     hl_y = NULL) {
@@ -13,9 +13,9 @@ create_scatterplot <- function(
         plotly::plot_ly(
             x = ~x,
             y = ~y,
-            source = source,
+            colors = fill_colors,
             key = ~label,
-            colors = fill_colors
+            source = source_name
         ) %>% 
         add_markers(
             alpha = 0.5,
@@ -53,7 +53,6 @@ create_scatterplot <- function(
                     y0 = 0, 
                     x1 = 1, 
                     y1 = 1, 
-                    # xref = "paper",
                     line = list(color = "black", dash = "dot", alpha = 0.5)
                 ),
                 xaxis = list(range(0, 1)),

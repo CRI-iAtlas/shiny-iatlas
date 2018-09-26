@@ -55,11 +55,11 @@ immunefeatures_UI <- function(id) {
                                 "Adaptive Receptor - T cell",
                                 "T Helper Cell Score",
                                 "Immune Cell Proportion - Original",
-                                "Immune Cell Proportion - Aggregate 1",
-                                "Immune Cell Proportion - Aggregate 2",
-                                "Immune Cell Proportion - Aggregate 3"
+                                "Immune Cell Proportion - Multipotent Progenitor Cell Derivative Class",           
+                                "Immune Cell Proportion - Common Lymphoid and Myeloid Cell Derivative Class",        
+                                "Immune Cell Proportion - Differentiated Lymphoid and Myeloid Cell Derivative Class"
                             ),
-                            selected = "Immune Cell Proportion - Aggregate 2"
+                            selected = "Immune Cell Proportion - Original"
                         )
                     ),
                     column(
@@ -128,12 +128,15 @@ immunefeatures <- function(
         display_y  <- get_variable_display_name(internal_y)
         
         plot_df <- build_violinplot_df(subset_df(), internal_x, internal_y) 
+        print(plot_df)
+        
         
         create_violinplot(
             plot_df,
             xlab = display_x,
             ylab = display_y,
-            fill_colors = plot_colors()
+            fill_colors = plot_colors(),
+            key_col = "x"
         )
     })
     

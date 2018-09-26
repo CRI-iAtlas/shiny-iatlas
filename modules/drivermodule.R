@@ -135,7 +135,14 @@ drivers <- function(
       xlab = paste(c(mutation,"mutation status"),collapse=" ")
       ylab = get_variable_display_name(input$response_variable)
 
-      create_violinplot(dfb,xlab=xlab,ylab=ylab,title=plot_title,fill_colors=c("blue"),showlegend = FALSE)
+      create_violinplot(
+          dfb,
+          xlab = xlab,
+          ylab = ylab,
+          title = plot_title, 
+          fill_colors = c("blue"),
+          showlegend = FALSE,
+          key_col = "x")
   })
     
       

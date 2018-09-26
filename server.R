@@ -60,17 +60,30 @@ shinyServer(function(input, output, session) {
       reactive(group_internal_choice()),
       reactive(subset_df()),
       reactive(plot_colors()))
+  # TILmap features
+  callModule(
+      tilmap, 
+      "module7", 
+      reactive(input$ss_choice),
+      reactive(group_internal_choice()),
+      reactive(subset_df()),
+      reactive(plot_colors()))
   # Driver associations
   callModule(
-    drivers, 
-    "module8", 
-    reactive(input$ss_choice),
-    reactive(group_internal_choice()),
-    reactive(subset_df()),
-    reactive(plot_colors()))
-  
+      drivers, 
+      "module8", 
+      reactive(input$ss_choice),
+      reactive(group_internal_choice()),
+      reactive(subset_df()),
+      reactive(plot_colors()))
+  # subtype predictor
+  callModule(
+      subtypepredictor, 
+      "module_subtypepredictor")
   # Data info
-  callModule(datainfo, "moduleX")
+  callModule(
+      datainfo, 
+      "moduleX")
   
   output$ss_choice <- renderText({
     input$ss_choice
@@ -97,6 +110,13 @@ shinyServer(function(input, output, session) {
   observeEvent(input$link_to_module8, {
     shinydashboard::updateTabItems(session, "explorertabs", "drivers")
   })
+  observeEvent(input$link_to_module7, {
+    shinydashboard::updateTabItems(session, "explorertabs", "tilmap_features")
+  })
+  observeEvent(input$link_to_module_subtypepredictor, {
+    updateNavlistPanel(session, "toolstabs", "Immune Subtype Predictor")
+  })
+
   
     
   output$select_group_UI <- renderUI({
@@ -152,3 +172,4 @@ shinyServer(function(input, output, session) {
   
 })
 ###############################################################################
+  

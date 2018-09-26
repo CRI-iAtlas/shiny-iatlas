@@ -1,63 +1,81 @@
-library(yaml)
-library(tidyverse)
-library(testthat)
-
-config_yaml <- yaml::read_yaml("../configuration.yaml")
-purrr::walk(config_yaml$libraries, library, character.only = T)
-
-source("../functions/transform.R")
 
 test_that("create_label", {
     input_df <- data_frame(
-        "id_col" = c("id1", "id2", "id3", "id4"),
-        "group_col" = c("group1", "group1", "group2", "group2"),
+        "name" = c("id1", "id2", "id3", "id4"),
+        "group" = c("group1", "group1", "group2", "group2"),
         "value_col1" = c(1, 2, 3, 4),
         "value_col2" = c(8, 9, 10, 11),
         "value_col3" = c(12, 14, 100, 110))
-    x <- create_label(input_df, "test_title", "id_col", "group_col", c("value_col1", "value_col2"))
-    y <- add_label_column_to_df(input_df, "test_title", "id_col", "group_col", c("value_col1", "value_col2"))
-})
-
-
-
-
-test_that("build_mosaicplot_df", {
-    group_df <- data_frame(
-        "group_col1" = c(rep("group1", 5), rep("group2", 3)),
-        "group_col2" = c(rep("group3", 3), rep(NA, 5)),
-        "group_col4" = c(rep("group5", 2), rep("group6", 6)),
-        "group_col5" = c(rep("group7", 4), rep("group8", 4)))
     result_df1 <- data_frame(
-        "group_col1" = as.factor(c(
-            rep("group1", 5), rep("group2", 3))),
-        "group_col4" = forcats::fct_rev(as.factor(c(
-            rep("group5", 2), rep("group6", 6)))))
+        "name" = c("id1", "id2", "id3", "id4"),
+        "group" = c("group1", "group1", "group2", "group2"),
+        "value_col3" = c(12, 14, 100, 110),
+        "label" = c(
+            "<b>ParticipantBarcode:</b> id1 (group1)</br></br>VALUE_COL1: 1.000</br>VALUE_COL2: 8.000", 
+            "<b>ParticipantBarcode:</b> id2 (group1)</br></br>VALUE_COL1: 2.000</br>VALUE_COL2: 9.000", 
+            "<b>ParticipantBarcode:</b> id3 (group2)</br></br>VALUE_COL1: 3.000</br>VALUE_COL2: 10.000",
+            "<b>ParticipantBarcode:</b> id4 (group2)</br></br>VALUE_COL1: 4.000</br>VALUE_COL2: 11.000"),
+        "value_col1" = c(1, 2, 3, 4),
+        "value_col2" = c(8, 9, 10, 11))
     result_df2 <- data_frame(
-        "group_col1" = as.factor(c(
-            rep("group1", 5), rep("group2", 3))),
-        "group_col5" = forcats::fct_rev(as.factor(c(
-            rep("group7", 4), rep("group8", 4)))))
-    result_df3 <- data_frame(
-        "group_col1" = as.factor(c(
-            rep("group1", 3))),
-        "group_col2" = forcats::fct_rev(as.factor(c(
-            rep("group3", 3)))))
+        "name" = c("id1", "id2", "id3", "id4"),
+        "group" = c("group1", "group1", "group2", "group2"),
+        "label" = c(
+            "<b>ParticipantBarcode:</b> id1 (group1)</br></br>VALUE_COL1: 1.000</br>VALUE_COL2: 8.000</br>VALUE_COL3: 12.000",  
+            "<b>ParticipantBarcode:</b> id2 (group1)</br></br>VALUE_COL1: 2.000</br>VALUE_COL2: 9.000</br>VALUE_COL3: 14.000",  
+            "<b>ParticipantBarcode:</b> id3 (group2)</br></br>VALUE_COL1: 3.000</br>VALUE_COL2: 10.000</br>VALUE_COL3: 100.000",
+            "<b>ParticipantBarcode:</b> id4 (group2)</br></br>VALUE_COL1: 4.000</br>VALUE_COL2: 11.000</br>VALUE_COL3: 110.000"),
+        "value_col1" = c(1, 2, 3, 4),
+        "value_col2" = c(8, 9, 10, 11),
+        "value_col3" = c(12, 14, 100, 110))
     expect_that(
-        build_mosaicplot_df(group_df, "group_col1", "group_col4"),
+        create_label(input_df, c("value_col1", "value_col2")),
         is_identical_to(result_df1))
     expect_that(
-        build_mosaicplot_df(group_df, "group_col1", "group_col5"),
+        create_label(input_df, c("value_col1", "value_col2", "value_col3")),
         is_identical_to(result_df2))
-    expect_that(
-        build_mosaicplot_df(group_df, "group_col1", "group_col2"),
-        is_identical_to(result_df3))
-    expect_that(
-        build_mosaicplot_df(group_df, "group_col1", "group_col6"),
-        throws_error("Group df has no Y column: group_col6"))
-    expect_that(
-        build_mosaicplot_df(group_df, "group_col6", "group_col1"),
-        throws_error("Group df has no X column: group_col6"))
 })
+
+
+
+
+# test_that("build_mosaicplot_df", {
+#     group_df <- data_frame(
+#         "group_col1" = c(rep("group1", 5), rep("group2", 3)),
+#         "group_col2" = c(rep("group3", 3), rep(NA, 5)),
+#         "group_col4" = c(rep("group5", 2), rep("group6", 6)),
+#         "group_col5" = c(rep("group7", 4), rep("group8", 4)))
+#     result_df1 <- data_frame(
+#         "group_col1" = as.factor(c(
+#             rep("group1", 5), rep("group2", 3))),
+#         "group_col4" = forcats::fct_rev(as.factor(c(
+#             rep("group5", 2), rep("group6", 6)))))
+#     result_df2 <- data_frame(
+#         "group_col1" = as.factor(c(
+#             rep("group1", 5), rep("group2", 3))),
+#         "group_col5" = forcats::fct_rev(as.factor(c(
+#             rep("group7", 4), rep("group8", 4)))))
+#     result_df3 <- data_frame(
+#         "group_col1" = as.factor(c(
+#             rep("group1", 3))),
+#         "group_col2" = forcats::fct_rev(as.factor(c(
+#             rep("group3", 3)))))
+#     expect_that(
+#         build_mosaicplot_df(group_df, "group_col1", "group_col4"),
+#         is_identical_to(result_df1))
+#     expect_that(
+#         build_mosaicplot_df(group_df, "group_col1", "group_col5"),
+#         is_identical_to(result_df2))
+#     expect_that(
+#         build_mosaicplot_df(group_df, "group_col1", "group_col2"),
+#         is_identical_to(result_df3))
+#     expect_that(
+#         build_mosaicplot_df(group_df, "group_col1", "group_col6"),
+#         throws_error("Group df has no Y column: group_col6"))
+#     expect_that(
+#         build_mosaicplot_df(group_df, "group_col6", "group_col1"),
+#         throws_error("Group df has no X column: group_col6"))
+# })
 
 test_that("build_sample_group_key_df",{
     group_df <- data_frame(
