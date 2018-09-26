@@ -68,11 +68,14 @@ shinyServer(function(input, output, session) {
       reactive(group_internal_choice()),
       reactive(subset_df()),
       reactive(plot_colors()))
-
-  
-    
+  # subtype predictor
+  callModule(
+      subtypepredictor, 
+      "module_subtypepredictor")
   # Data info
-  callModule(datainfo, "moduleX")
+  callModule(
+      datainfo, 
+      "moduleX")
   
   output$ss_choice <- renderText({
     input$ss_choice
@@ -96,13 +99,14 @@ shinyServer(function(input, output, session) {
   observeEvent(input$link_to_module6, {
     shinydashboard::updateTabItems(session, "explorertabs", "immune_features")
   })
-
   observeEvent(input$link_to_module7, {
     shinydashboard::updateTabItems(session, "explorertabs", "tilmap_features")
   })
-
-    
-
+  observeEvent(input$link_to_module_subtypepredictor, {
+    updateNavlistPanel(session, "toolstabs", "Immune Subtype Predictor")
+  })
+  
+  
   
   output$select_group_UI <- renderUI({
       

@@ -29,6 +29,11 @@ explorepage <- dashboardPage(
                  tabName = "survival_curves",
                  icon = icon("cog")
                ),
+               menuSubItem(
+                 "Immunomodulators",
+                 tabName = "immunomodulators",
+                 icon = icon("cog")
+               )
                # menuSubItem(
                #   "Genomic State",
                #   icon = icon("chevron-circle-right")),

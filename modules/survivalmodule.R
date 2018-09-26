@@ -96,16 +96,9 @@ survival <- function(input, output, session, ss_choice, group_internal_choice,
   
   output$survplot_opts <- renderUI({
     group_choice <- set_names(list(group_internal_choice()), ss_choice())
-    var_choices <- list(
-      "Current Sample Groups" = group_choice,
-      "Continuous Variables" = list(
-        "Leukocyte Fraction" = "leukocyte_fraction",
-        "Mutation Rate, Non-Silent" = "mutationrate_nonsilent_per_Mb",
-        "Indel Neoantigens" = "indel_neoantigen_num",
-        "SNV Neoantigens" = "numberOfImmunogenicMutation",
-        "Stemness Score RNA" = "StemnessScoreRNA"
-      )
-    )
+    var_choices <- c(
+        list("Current Sample Groups" = group_choice),
+        get_feature_df_nested_list())
     selectInput(
       ns("var1_surv"),
       "Variable",
