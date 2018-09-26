@@ -42,11 +42,6 @@ explorepage <- dashboardPage(
                #   tabName = "clonal_diversity",
                #   icon = icon("chevron-circle-right")),
                menuSubItem(
-                 "Immunomodulators",
-                 tabName = "immunomodulators",
-                 icon = icon("cog")
-               ),
-               menuSubItem(
                  "TIL Maps",
                  tabName = "tilmap_features",
                  icon = icon("cog")
