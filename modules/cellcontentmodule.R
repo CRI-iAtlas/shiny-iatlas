@@ -107,7 +107,7 @@ cellcontent <- function(
           y_col = "mean", 
           color_col = "fraction_type",
           error_col = "se",
-          key_col = "GROUP",
+          label_col = "label",
           xlab = "Fraction type by group",
           ylab = "Fraction mean",
           source_name = "overall_props_barplot"
@@ -172,7 +172,6 @@ cellcontent <- function(
         y_col = "mean",
         color_col = "fraction_name",
         error_col = "se",
-        key_col = "GROUP",
         xlab = "Fraction type by group",
         ylab = "Fraction mean",
         source_name = "cell_frac_barplot"

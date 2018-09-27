@@ -128,8 +128,6 @@ immunefeatures <- function(
         display_y  <- get_variable_display_name(internal_y)
         
         plot_df <- build_violinplot_df(subset_df(), internal_x, internal_y) 
-        print(plot_df)
-        
         
         create_violinplot(
             plot_df,

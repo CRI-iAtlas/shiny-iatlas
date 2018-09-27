@@ -5,7 +5,7 @@ create_barplot <- function(
     error_col = "error", 
     key_col = NA,
     color_col = NA, 
-    label_col = "label",
+    label_col = NA,
     xlab = "",
     ylab = "", 
     title = "", 
@@ -14,6 +14,7 @@ create_barplot <- function(
     
     if(is.na(key_col)) key_col <- x_col
     if(is.na(color_col)) color_col <- x_col
+    if(is.na(label_col)) label_col <- x_col
     
     if (is.null(bar_colors)) {
         bar_colors <- viridis::viridis_pal(option = "D")(n_distinct(df[[color_col]]))
