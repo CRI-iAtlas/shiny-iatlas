@@ -1,7 +1,7 @@
 create_violinplot <- function(
     df, 
-    xcol = "x",
-    ycol = "y",
+    x_col = "x",
+    y_col = "y",
     key_col = "label",
     split_col = "x",
     color_col = "x",
@@ -13,11 +13,10 @@ create_violinplot <- function(
     points = NULL,
     showlegend = T) {
     
-    print(df)
     p <- let(
         alias = c(
-            X = xcol,
-            Y = ycol,
+            X = x_col,
+            Y = y_col,
             KEY = key_col,
             SPLIT = split_col,
             COLOR = color_col),
