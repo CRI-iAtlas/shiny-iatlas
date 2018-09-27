@@ -103,12 +103,13 @@ cellcontent <- function(
 
       create_barplot(
           barplot_df,
-          x_column = "GROUP",
-          y_column = "mean", 
-          color_column = "fraction_type",
-          error_column = "se",
-          x_lab = "Fraction type by group",
-          y_lab = "Fraction mean",
+          x_col = "GROUP",
+          y_col = "mean", 
+          color_col = "fraction_type",
+          error_col = "se",
+          key_col = "GROUP",
+          xlab = "Fraction type by group",
+          ylab = "Fraction mean",
           source_name = "overall_props_barplot"
       )
   })
@@ -167,12 +168,13 @@ cellcontent <- function(
         )
       ) %>% 
       create_barplot(
-        x_column = "GROUP",
-        y_column = "mean",
-        color_column = "fraction_name",
-        error_column = "se",
-        x_lab = "Fraction type by group",
-        y_lab = "Fraction mean",
+        x_col = "GROUP",
+        y_col = "mean",
+        color_col = "fraction_name",
+        error_col = "se",
+        key_col = "GROUP",
+        xlab = "Fraction type by group",
+        ylab = "Fraction mean",
         source_name = "cell_frac_barplot"
       )
   })

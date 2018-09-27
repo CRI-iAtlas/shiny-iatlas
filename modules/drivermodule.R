@@ -141,8 +141,7 @@ drivers <- function(
           ylab = ylab,
           title = plot_title, 
           fill_colors = c("blue"),
-          showlegend = FALSE,
-          key_col = "x")
+          showlegend = FALSE)
   })
     
       

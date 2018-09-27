@@ -2,9 +2,10 @@ create_violinplot <- function(
     df, 
     x_col = "x",
     y_col = "y",
-    key_col = "label",
-    split_col = "x",
-    color_col = "x",
+    key_col = NA,
+    color_col = NA,
+    label_col = NA,
+    split_col = NA,
     xlab = "",
     ylab = "", 
     title = "", 
@@ -13,13 +14,19 @@ create_violinplot <- function(
     points = NULL,
     showlegend = T) {
     
-    p <- let(
+    if(is.na(key_col)) key_col <- x_col
+    if(is.na(color_col)) color_col <- x_col
+    if(is.na(label_col)) label_col <- x_col
+    if(is.na(split_col)) split_col <- x_col
+    
+    let(
         alias = c(
             X = x_col,
             Y = y_col,
             KEY = key_col,
+            COLOR = color_col,
             SPLIT = split_col,
-            COLOR = color_col),
+            LABEL = label_col),
         plot_ly(
             df,
             x = ~X,
@@ -27,18 +34,19 @@ create_violinplot <- function(
             split = ~SPLIT,
             color = ~COLOR,
             key = ~KEY,
+            text = ~LABEL,
             points = points,
             source = source_name,
             colors = fill_colors,
             type = 'violin',
+            hoverinfo = 'text',
             showlegend = showlegend,
             box = list(
                 visible = TRUE
             ),
             meanline = list(
                 visible = TRUE
-            )
-        )) %>% 
+            ))) %>%
         layout(
             title = title,
             xaxis = list(title = xlab),

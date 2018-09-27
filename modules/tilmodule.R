@@ -113,7 +113,8 @@ tilmap <- function(input, output, session, group_display_choice, group_internal_
                 xlab = group_display_choice(),
                 ylab = display_y,
                 source_name = "plot",
-                fill_colors = plot_colors()
+                fill_colors = plot_colors(),
+                key_col = "label"
             )
     } else {
         plot_df %>% 
@@ -121,7 +122,8 @@ tilmap <- function(input, output, session, group_display_choice, group_internal_
                 xlab = group_display_choice(),
                 ylab = display_y,
                 source_name = "plot",
-                fill_colors = plot_colors()
+                fill_colors = plot_colors(),
+                key_col = "label"
             )
     }
     

@@ -135,8 +135,7 @@ immunefeatures <- function(
             plot_df,
             xlab = display_x,
             ylab = display_y,
-            fill_colors = plot_colors(),
-            key_col = "x"
+            fill_colors = plot_colors()
         )
     })
     
