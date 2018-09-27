@@ -62,8 +62,11 @@ create_label <- function(
     name_column = "name", 
     group_column = "group") {
     
-    let(
-        alias = c(namevar = name_column, groupvar = group_column),
+    print(nrow(df))
+    x <- let(
+        alias = c(
+            namevar = name_column, 
+            groupvar = group_column),
         df %>%
             mutate(
                 label = str_glue(
@@ -86,6 +89,8 @@ create_label <- function(
             spread(value_name, value) %>% 
             unite(label, label, value_label, sep = "</br></br>")
     )
+    print(nrow(x))
+    return(x)
 }
 
 
