@@ -109,7 +109,7 @@ immunomodulator <- function(
         
         create_histogram(
             histplot_df,
-            x_column  = "log_count",
+            x_col = "log_count",
             x_lab = "log10(count + 1)",
             title = eventdata$x[[1]])
     })
