@@ -85,13 +85,16 @@ drivers <- function(
       
       
                                                  
-      create_scatterplot(scatter_plot_df(),
-                         xlab = "log10(Effect Size)", 
-                         ylab = "- log10(P-value)", 
-                         title = "Immune Response Association With Driver Mutations",
-                         source = "scatterplot",
-                         hl = T,
-                         hl_y = (- log10(0.05))
+      create_scatterplot(
+          scatter_plot_df(),
+          xlab = "log10(Effect Size)", 
+          ylab = "- log10(P-value)", 
+          title = "Immune Response Association With Driver Mutations",
+          source = "scatterplot",
+          key_col = "label",
+          label_col = "label",
+          horizontal_line = T,
+          horizontal_line_y = (- log10(0.05))
       )
     })
     

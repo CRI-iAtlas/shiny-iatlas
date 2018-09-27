@@ -175,6 +175,7 @@ immunefeatures <- function(
             plot_df,
             xlab = eventdata$y[[1]],
             ylab = get_variable_display_name(input$heatmap_values),
-            title = eventdata$x[[1]])
+            title = eventdata$x[[1]],
+            label_col = "label")
     })
 }

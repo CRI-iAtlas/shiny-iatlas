@@ -136,6 +136,7 @@ cellcontent <- function(
         scatterplot_df,
         xlab = "Stromal Fraction",
         ylab = "Leukocyte Fraction",
+        label_col = "label",
         title = selected_plot_subgroup,
         identity_line = TRUE) %>% 
       layout(margin = list(t = 39))
@@ -172,6 +173,7 @@ cellcontent <- function(
         y_col = "mean",
         color_col = "fraction_name",
         error_col = "se",
+        label_col = "label",
         xlab = "Fraction type by group",
         ylab = "Fraction mean",
         source_name = "cell_frac_barplot"
