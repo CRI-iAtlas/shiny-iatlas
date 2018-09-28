@@ -145,9 +145,14 @@ tilmap <- function(input, output, session, group_display_choice, group_internal_
           filter(`Variable Class` == "TIL Map Characteristic") %>% 
           filter(VariableType == "Numeric") %>% 
           use_series(FeatureMatrixLabelTSV)
-
-      data_df %>% 
-          select("ParticipantBarcode", "Study", "Slide", TIL_map_columns) %>% 
+      TIL_map_columns <- setdiff(TIL_map_columns,c("N_cluster","Slide"))
+      # N_cluster is a repeat
+      # Slide: column width/wrap problem at the moment for this
+      TIL_map_columns_display <- as.character(map(TIL_map_columns,get_variable_display_name))
+        
+      data_df <- data_df %>% 
+          select("ParticipantBarcode", "Study", "Slide",TIL_map_columns) %>% 
+          .[complete.cases(.),] %>% 
           mutate(Image = paste(
               "<a href=\"",
               "http://quip1.bmi.stonybrook.edu:443/camicroscope/osdCamicroscope.php?tissueId=",
@@ -155,15 +160,16 @@ tilmap <- function(input, output, session, group_display_choice, group_internal_
               "\">",
               Slide,
               "</a>",
-              sep="")) %>% 
-          select(-"Slide") %>% ## column width/wrap problem at the moment for this
+              sep="")) %>% select(-Slide)
+      colnames(data_df) <- c("ParticipantBarcode", "Study", TIL_map_columns_display,"Image")
+      data_df %>% 
           datatable(
               rownames = FALSE,
               escape = setdiff(colnames(.),"Image") ## To get hyperlink displayed
-          ) %>% formatRound(c('til_percentage','NP_mean',"NP_sd","WCD_mean","WCD_sd","CE_mean",
-                              "CE_sd","Ball_Hall","Banfeld_Raftery","C_index","Det_Ratio","Ball_Hall_Adjusted",
-                              "Banfeld_Raftery_Adjusted","C_index_Adjusted","Det_Ratio_Adjusted"), digits = 1) 
+          ) %>% formatRound(TIL_map_columns_display, digits = 1)               
 
-    ## Probably want to  get_variable_display_name for the column display
+      #          ) %>% formatRound(c('til_percentage','NP_mean',"NP_sd","WCD_mean","WCD_sd","CE_mean",
+#                              "CE_sd","Ball_Hall","Banfeld_Raftery","C_index","Det_Ratio","Ball_Hall_Adjusted",
+#                              "Banfeld_Raftery_Adjusted","C_index_Adjusted","Det_Ratio_Adjusted"), digits = 1) 
       })
 }
