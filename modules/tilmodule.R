@@ -69,6 +69,8 @@ tilmap_UI <- function(id) {
           width = 12,
           plotlyOutput(ns("plot")) %>% 
             shinycssloaders::withSpinner(),
+          p(),
+          textOutput(ns("plot_group_text")),
           h4("Click point or violin/box to filter samples in table below")
         )
       )
@@ -131,6 +133,12 @@ tilmap <- function(input, output, session, group_display_choice, group_internal_
     
   })
   
+  output$plot_group_text <- 
+      renderText(create_group_text_from_plotly(
+          "plot",
+          prompt_text = "",
+          key_column = "x"))
+  
   
   output$til_table <- DT::renderDT({
       
@@ -138,7 +146,7 @@ tilmap <- function(input, output, session, group_display_choice, group_internal_
       if (!is.null(d)) {
           slide_ids <- d %>% 
               use_series(key)
-          print(slide_ids)
+          # print(slide_ids)
           data_df <- filter(panimmune_data$fmx_df, Slide %in% slide_ids)
       } else {
           data_df <- panimmune_data$fmx_df

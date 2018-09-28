@@ -277,10 +277,11 @@ create_group_text_from_plotly <- function(
     if (is.null(data)){
         text = prompt_text
     } else {
+        print(data)
         key_value <- data %>%
             slice(1) %>% 
             extract2(key_column)
-        
+        print(key_value)
         text = panimmune_data$sample_group_df %>% 
             filter(FeatureValue == key_value) %>% 
             mutate(Characteristics = 

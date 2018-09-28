@@ -45,7 +45,9 @@ immunomodulator_UI <- function(id) {
         plotBox(
           width = 12,
           plotlyOutput(ns("violinPlot")) %>% 
-            shinycssloaders::withSpinner()
+            shinycssloaders::withSpinner(),
+          p(),
+          textOutput(ns("violin_group_text"))
         )
       ),
       fluidRow(
@@ -95,12 +97,14 @@ immunomodulator <- function(
             im_expr_plot_df(),
             xlab = group_display_choice(), 
             ylab = "log10(count + 1)",
-            source_name = "select",
+            source_name = "violin",
             fill_colors = plot_colors()))
+    
+    output$violin_group_text <- renderText(create_group_text_from_plotly("violin"))
     
     output$histPlot <- renderPlotly({
         
-        eventdata <- event_data("plotly_click", source = "select")
+        eventdata <- event_data("plotly_click", source = "violin")
         validate(need(!is.null(eventdata), "Click violin plot above"))
         
         histplot_df <- im_expr_plot_df() %>% 
