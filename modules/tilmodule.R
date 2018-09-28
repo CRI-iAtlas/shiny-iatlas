@@ -30,7 +30,9 @@ tilmap_UI <- function(id) {
     titleBox("iAtlas Explorer — TIL Maps"),
     textBox(
       width = 12,
-      p("Explore TIL distributions.")  
+      p("This module includes additional data from a companion manuscript:"),
+      p("Saltz et al. Spatial Organization And Molecular Correlation Of Tumor-Infiltrating Lymphocytes Using Deep Learning On Pathology Images. Cell Reports 23, 181-193, April 3 2018; doi: 10.1016/j.celrep.2018.03.086"),
+      p("TCGA H&E digital pathology images were analyzed for tumor infiltrating lymphocytes (TILs) using deep learning. The analysis identifies small spatial regions on the slide image - patches - that are rich in TILs. The resulting pattern of TIL patches are then assessed in multiple ways: in terms of overall counts and spatial density, and patterns identified by computational analysis and scoring by pathologists.")
     ),
     
     # TIL distributions section ----
@@ -38,15 +40,15 @@ tilmap_UI <- function(id) {
       title = "TIL map characteristics",
       messageBox(
         width = 12,
-        p("Select a TIL map characteristic to see its distribution over sample groups."),
-        p("Manuscript context:  If you are looking at immune subtypes, select TIL Regional Fraction to ge Figure 3B")
+        p("Select a TIL map characteristic to see its distribution over sample groups. Plots are available as violin plots, and box plots with full data points superimposed."),
+        p("Main immune manuscript context:  If you are looking at immune subtypes, select TIL Regional Fraction to get Figure 3B.")
       ),
       fluidRow(
         optionsBox(
           width = 12,
           column(
               width = 4,
-              selectInput(
+              selectInput( ## would be good to initiate on til_percentage/"TIL Regional Fraction (Percent)"
                   ns("violin_y"),
                   "Select TIL Map characteristic",
                   choices = get_friendly_numeric_columns_by_group()["TIL Map Characteristic"]
@@ -77,7 +79,7 @@ tilmap_UI <- function(id) {
       title = "TIL Map Annotations",
       messageBox(
         width = 12,
-        p("The table shows annotations of the TIL Map characteristics")  
+        p("The table shows annotations of the TIL Map characteristics. The rightmost column gives access to the TILmaps superimposed on H&E images using the caMicroscope tool. Zoom in to initiate the view of TIL spatial clusters.")  
       ),
       fluidRow(
         tableBox(
