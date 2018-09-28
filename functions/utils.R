@@ -277,19 +277,23 @@ create_group_text_from_plotly <- function(
     if (is.null(data)){
         text = prompt_text
     } else {
-        print(data)
         key_value <- data %>%
             slice(1) %>% 
             extract2(key_column)
-        print(key_value)
-        text = panimmune_data$sample_group_df %>% 
+        text <- panimmune_data$sample_group_df %>% 
             filter(FeatureValue == key_value) %>% 
+            distinct() %>% 
+            slice(1) %>% 
             mutate(Characteristics = 
                        ifelse(is.na(Characteristics), 
                               "No additional infoformation.", 
                               Characteristics)) %>% 
-            use_series(Characteristics) %>% 
-            str_c(key_value, ": ", .)
+            mutate(name = 
+                       ifelse(is.na(FeatureName), 
+                              FeatureValue, 
+                              FeatureName)) %>% 
+            mutate(text = str_c(name, ": ", Characteristics)) %>% 
+            use_series(text)
     }
     return(text)
 }

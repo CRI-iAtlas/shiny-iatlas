@@ -80,7 +80,9 @@ immunefeatures_UI <- function(id) {
                     width = 12,
                     fluidRow(
                         plotlyOutput(ns("corrPlot")) %>% 
-                            shinycssloaders::withSpinner()
+                            shinycssloaders::withSpinner(),
+                        p(),
+                        textOutput(ns("heatmap_group_text"))
                     )
                 )
             ),
@@ -143,7 +145,8 @@ immunefeatures <- function(
     })
     
     
-    output$violin_group_text <- renderText(create_group_text_from_plotly("violin"))
+    output$violin_group_text <- renderText(
+        create_group_text_from_plotly("violin"))
     
     
     output$corrPlot <- renderPlotly({
@@ -154,6 +157,9 @@ immunefeatures <- function(
             value2_columns = hm_variables())
         create_heatmap(heatmap_corr_mat, "heatplot")
     })
+    
+    output$heatmap_group_text <- renderText(
+        create_group_text_from_plotly("heatplot", key_column = "x"))
     
     output$scatterPlot <- renderPlotly({
         eventdata <- event_data("plotly_click", source = "heatplot")

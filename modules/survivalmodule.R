@@ -80,7 +80,9 @@ survival_UI <- function(id) {
             width = 8,
             fluidRow(
               plotlyOutput(ns("heatmapplot"), height = 600) %>%
-              shinycssloaders::withSpinner()
+              shinycssloaders::withSpinner(),
+              p(),
+              textOutput(ns("heatmap_group_text"))
             )
           )
       )
@@ -165,6 +167,9 @@ survival <- function(input, output, session, ss_choice, group_internal_choice,
       )
     create_heatmap(ci_mat, "ci")
   })
+  
+  output$heatmap_group_text <- renderText(
+      create_group_text_from_plotly("ci", key_column = "x"))
   
 }
 
