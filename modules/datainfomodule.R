@@ -54,7 +54,6 @@ datainfo <- function(input, output, session) {
         df <- panimmune_data$feature_df %>% 
             select(
                 `Feature Name` = FriendlyLabel, 
-                `Feature Matrix Label` = FeatureMatrixLabelTSV,
                 `Variable Class`, 
                 Unit, 
                 VariableType
@@ -84,7 +83,6 @@ datainfo <- function(input, output, session) {
             select(
                 `Variable Class Order`,
                 `Feature Name` = FriendlyLabel, 
-                `Feature Matrix Label` = FeatureMatrixLabelTSV,
                 Unit, 
                 VariableType,
                 Origin
