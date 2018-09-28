@@ -63,7 +63,7 @@ create_label <- function(
     group_column = "group") {
     
     print(nrow(df))
-    x <- let(
+    let(
         alias = c(
             namevar = name_column, 
             groupvar = group_column),
@@ -89,8 +89,6 @@ create_label <- function(
             spread(value_name, value) %>% 
             unite(label, label, value_label, sep = "</br></br>")
     )
-    print(nrow(x))
-    return(x)
 }
 
 

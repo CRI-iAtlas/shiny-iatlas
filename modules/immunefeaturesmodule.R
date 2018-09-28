@@ -29,7 +29,8 @@ immunefeatures_UI <- function(id) {
                     width = 12,
                     plotlyOutput(ns("violinPlot")) %>% 
                         shinycssloaders::withSpinner(),
-                    verbatimTextOutput(ns("click"))
+                    p(),
+                    textOutput(ns("click"))
                 )
             )
         ),
@@ -128,31 +129,36 @@ immunefeatures <- function(
         internal_y <- input$violin_y
         display_y  <- get_variable_display_name(internal_y)
         
-        plot_df <- subset_df() %>%
-            dplyr::select(group = internal_x, metric = internal_y) %>% 
-            dplyr::left_join(panimmune_data$sample_group_df, by = c("group" = "FeatureValue")) %>% 
-            dplyr::select(x = group, y = metric, key = Characteristics) %>% 
-            dplyr::mutate(key = ifelse(is.na(key), "No additional infoformation.", key)) %>% 
-            tidyr::drop_na()
+        
+        plot_df <- build_violinplot_df(subset_df(), internal_x, internal_y) 
 
         
         create_violinplot(
             plot_df,
             xlab = display_x,
             ylab = display_y,
-            key_col = "key",
             fill_colors = plot_colors(),
             source_name = "violin"
         )
     })
     
-    output$click <- renderPrint({
+    output$click <- renderText({
         d <- event_data("plotly_click", source = "violin")
         if (is.null(d)){
             "Click above plot for more group information." 
         } else {
-            df <- slice(d, 1) 
-            str_c(df$x, ": ", df$key)
+            key <- d %>%
+                slice(1) %>% 
+                use_series(key)
+            
+            panimmune_data$sample_group_df %>% 
+                filter(FeatureValue == key) %>% 
+                mutate(Characteristics = 
+                           ifelse(is.na(Characteristics), 
+                                  "No additional infoformation.", 
+                                  Characteristics)) %>% 
+                use_series(Characteristics) %>% 
+                str_c(key, ": ", .)
         }
     })
     
