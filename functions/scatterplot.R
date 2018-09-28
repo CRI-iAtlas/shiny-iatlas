@@ -14,7 +14,6 @@ create_scatterplot <- function(
     horizontal_line = FALSE,
     horizontal_line_y = NULL) {
     
-    print(df)
     if(is.na(key_col)) key_col <- x_col
     if(is.na(color_col)) color_col <- x_col
     if(is.na(label_col)) label_col <- x_col

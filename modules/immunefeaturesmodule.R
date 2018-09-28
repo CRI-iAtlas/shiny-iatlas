@@ -30,7 +30,7 @@ immunefeatures_UI <- function(id) {
                     plotlyOutput(ns("violinPlot")) %>% 
                         shinycssloaders::withSpinner(),
                     p(),
-                    textOutput(ns("click"))
+                    textOutput(ns("violin_group_text"))
                 )
             )
         ),
@@ -142,25 +142,8 @@ immunefeatures <- function(
         )
     })
     
-    output$click <- renderText({
-        d <- event_data("plotly_click", source = "violin")
-        if (is.null(d)){
-            "Click above plot for more group information." 
-        } else {
-            key <- d %>%
-                slice(1) %>% 
-                use_series(key)
-            
-            panimmune_data$sample_group_df %>% 
-                filter(FeatureValue == key) %>% 
-                mutate(Characteristics = 
-                           ifelse(is.na(Characteristics), 
-                                  "No additional infoformation.", 
-                                  Characteristics)) %>% 
-                use_series(Characteristics) %>% 
-                str_c(key, ": ", .)
-        }
-    })
+    
+    output$violin_group_text <- renderText(create_group_text_from_plotly("violin"))
     
     
     output$corrPlot <- renderPlotly({

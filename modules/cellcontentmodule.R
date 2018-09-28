@@ -22,7 +22,9 @@ cellcontent_UI <- function(id) {
         plotBox(
           width = 12,
           plotlyOutput(ns("overall_props_barplot")) %>% 
-            shinycssloaders::withSpinner()
+            shinycssloaders::withSpinner(),
+          p(),
+          textOutput(ns("op_barplot_group_text"))
         )
       ),
       fluidRow(
@@ -73,7 +75,9 @@ cellcontent_UI <- function(id) {
         plotBox(
           width = 12,
           plotlyOutput(ns("cell_frac_barplot")) %>% 
-            shinycssloaders::withSpinner()
+            shinycssloaders::withSpinner(),
+          p(),
+          textOutput(ns("cf_barplot_group_text"))
         )
       )
     )
@@ -110,14 +114,17 @@ cellcontent <- function(
           label_col = "label",
           xlab = "Fraction type by group",
           ylab = "Fraction mean",
-          source_name = "overall_props_barplot"
+          source_name = "op_barplot"
       )
   })
+  
+  output$op_barplot_group_text <-
+      renderText(create_group_text_from_plotly("op_barplot"))
   
   # ** Overall proportions scatter plot renders ----
   output$lf_sf_corr_scatterplot <- renderPlotly({
       
-    eventdata <- event_data( "plotly_click", source = "overall_props_barplot")
+    eventdata <- event_data( "plotly_click", source = "op_barplot")
     selected_plot_subgroup <- eventdata$x[[1]]
     validate(
         need(all(!is.null(eventdata),
@@ -176,8 +183,12 @@ cellcontent <- function(
         label_col = "label",
         xlab = "Fraction type by group",
         ylab = "Fraction mean",
-        source_name = "cell_frac_barplot"
+        source_name = "cf_barplot"
       )
+    
   })
+  
+  output$cf_barplot_group_text <- 
+      renderText(create_group_text_from_plotly("cf_barplot"))
 }
 

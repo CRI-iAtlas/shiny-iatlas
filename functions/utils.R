@@ -266,6 +266,33 @@ check_driver_violinplot_click_data <- function(
   all(combo_valid)
 }
 
+create_group_text_from_plotly <- function(
+    source_name,
+    source_type = "plotly_click",
+    prompt_text = "Click above plot for more group information.",
+    key_column = "key"){
+    
+    data <- event_data(source_type, source = source_name)
+    
+    if (is.null(data)){
+        text = prompt_text
+    } else {
+        key_value <- data %>%
+            slice(1) %>% 
+            extract2(key_column)
+        
+        text = panimmune_data$sample_group_df %>% 
+            filter(FeatureValue == key_value) %>% 
+            mutate(Characteristics = 
+                       ifelse(is.na(Characteristics), 
+                              "No additional infoformation.", 
+                              Characteristics)) %>% 
+            use_series(Characteristics) %>% 
+            str_c(key_value, ": ", .)
+    }
+    return(text)
+}
+
 
 ## selection choices for the dropdown menu of sample groups
 # create_sample_group_options <- function(feature_df) {

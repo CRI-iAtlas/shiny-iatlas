@@ -62,7 +62,6 @@ create_label <- function(
     name_column = "name", 
     group_column = "group") {
     
-    print(nrow(df))
     let(
         alias = c(
             namevar = name_column, 
