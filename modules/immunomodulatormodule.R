@@ -14,16 +14,30 @@ immunomodulator_UI <- function(id) {
       title = "Immunomodulator Distributions",
       messageBox(
         width = 12,
-        p("Select an immumodulator gene to see its expression over sample groups."),
-        p("Manuscript context:  If you are looking at immune subtypes, select EDNRB or CXCL10 to get figure 6B. You can view a histogram for an indvidual distributions by clicking on its violin.")
+        p("Select Immumodulator Gene to see its expression in the data set. Use Select Immumodulator Category (drop-down menu on the right) to organize the selection by particular categories. The categories will subsequently appear in the left drop-down menu. The Categories are:"),
+        tags$ul(
+          tags$li(em('Gene Family'), ", such as TNF, MHC Class II, Immunoglobulin, or CXC chemokine"), 
+          tags$li(em('Super Category'), ", such as Ligand, Receptor, or Antigen Presentation"),
+          tags$li(em('Immune Checkpoint'), " classified as  Inhibitory or Stimulatory")
+        ),
+        p(""),
+        p("Manuscript context:  If you are looking at Immune Subtypes, select EDNRB or CXCL10 to get figure 6B."),
+        p("You can view a histogram for any indvidual distributions by clicking on its violin plot.")
       ),
       fluidRow(
         optionsBox(
-          width = 4,
-          selectInput(
-            inputId = ns("im_choice"),
-            label = "Select Immunomodulator Gene",
-            choices = panimmune_data$im_direct_relationships[["HGNC Symbol"]]
+          width = 12,
+          column(
+              width = 6,
+              uiOutput(ns("gene_choices"))
+          ),
+          column(
+              width = 6,
+              selectInput(
+                  inputId = ns("im_category_choice_choice"),
+                  label = "Select Immunomodulator Category",
+                  choices = c("Gene Family", "Super Category", "Immune Checkpoint")
+              )
           )
         )
       ),
@@ -31,7 +45,9 @@ immunomodulator_UI <- function(id) {
         plotBox(
           width = 12,
           plotlyOutput(ns("violinPlot")) %>% 
-            shinycssloaders::withSpinner()
+            shinycssloaders::withSpinner(),
+          p(),
+          textOutput(ns("violin_group_text"))
         )
       ),
       fluidRow(
@@ -48,13 +64,13 @@ immunomodulator_UI <- function(id) {
       title = "Immunomodulator Annotations",
       messageBox(
         width = 12,
-        p("The table shows annotations of the immumodulators, and source.")  
+        p("The table shows annotations of the immumodulators, and source. Use the Search box in the upper right to find an immumodulator of interest.")  
       ),
       fluidRow(
         tableBox(
           width = 12,
           div(style = "overflow-x: scroll",
-              DT::dataTableOutput(ns("im_annotations_table")) %>% 
+              DT::dataTableOutput(ns("im_annotations_table")) %>%
                 shinycssloaders::withSpinner()
           )
         )
@@ -63,65 +79,62 @@ immunomodulator_UI <- function(id) {
   )
 }
 
-immunomodulator <- function(input, output, session, ss_choice, subset_df){
-  
-  ss_group <- reactive(get_variable_internal_name(ss_choice()))
-  im_expr_plot_df <- reactive(
-    subset_df() %>% 
-      build_im_expr_plot_df(
-        filter_value = input$im_choice, 
-        group_option = ss_group()
-      )
-  )
-  
-  output$violinPlot <- renderPlotly({
-    plot_colors <- decide_plot_colors(panimmune_data, ss_group())
-    im_expr_plot_df() %>% 
-      create_violinplot(
-        x = ss_group(), 
-        y = "log_count", 
-        fill_factor = ss_group(), 
-        xlab = ss_choice(), 
-        ylab = "log10(count + 1)",
-        source_name = "select",
-        fill_colors = plot_colors,
-        title = get_im_display_name(input$im_choice))
-  })
-  
-  output$histPlot <- renderPlotly({
+immunomodulator <- function(
+    input, output, session, group_display_choice, group_internal_choice, 
+    subset_df, plot_colors) {
     
-    eventdata <- event_data("plotly_click", source = "select")
-    validate(need(!is.null(eventdata), "Click violin plot above"))
-    violinplot_selected_group <- im_expr_plot_df() %>% 
-      get_selected_group_from_violinplot(
-        ss_group(), 
-        eventdata
-      )
-
-    histplot_df <- build_histogram_df(
-      im_expr_plot_df(), 
-      ss_group(),
-      violinplot_selected_group
-    )
+    ns <- session$ns
     
-    histplot_df %>% 
-      create_histogram(
-        x_column  = "log_count",
-        x_lab = "log10(count + 1)",
-        title = violinplot_selected_group
-      )
-  })
-  
-  output$im_annotations_table <- DT::renderDT({
-
-    panimmune_data$im_direct_relationships %>% 
-      select(-X10, -Notes) %>% 
-      datatable(
-        options = list(
-          dom = "tip",
-          pageLength = 10
-        ),
-        rownames = FALSE
-      )
-  })
+    im_expr_plot_df <- reactive(
+        df <- 
+            build_im_expr_plot_df(
+                subset_df(),
+                filter_value = input$im_gene_choice, 
+                group_option = group_internal_choice()))
+    
+    output$violinPlot <- renderPlotly(
+        create_violinplot(
+            im_expr_plot_df(),
+            xlab = group_display_choice(), 
+            ylab = "log10(count + 1)",
+            source_name = "violin",
+            fill_colors = plot_colors()))
+    
+    output$violin_group_text <- renderText(create_group_text_from_plotly("violin"))
+    
+    output$histPlot <- renderPlotly({
+        
+        eventdata <- event_data("plotly_click", source = "violin")
+        validate(need(!is.null(eventdata), "Click violin plot above"))
+        
+        histplot_df <- im_expr_plot_df() %>% 
+            select(GROUP = x, log_count = y) %>% 
+            filter(GROUP == eventdata$x[[1]])
+        
+        create_histogram(
+            histplot_df,
+            x_col = "log_count",
+            x_lab = "log10(count + 1)",
+            title = eventdata$x[[1]])
+    })
+    
+    output$im_annotations_table <- DT::renderDT({
+        
+        panimmune_data$im_direct_relationships %>% 
+            select(-X10, -Notes) %>% 
+            datatable(
+                options = list(pageLength = 10),
+                rownames = FALSE
+                )
+    })
+    
+    output$gene_choices <- renderUI({
+        choices <- get_immunomodulator_nested_list(
+            class_column = input$im_category_choice_choice)
+        selectInput(
+            ns("im_gene_choice"),
+            label = "Select Immunomodulator Gene",
+            choices = choices)
+    })
+    
 }

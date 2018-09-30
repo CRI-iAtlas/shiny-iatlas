@@ -14,42 +14,76 @@ shinyServer(function(input, output, session) {
   callModule(
       cellcontent, 
       "module1", 
-      reactive(input$ss_choice), 
+      reactive(input$ss_choice),
+      reactive(group_internal_choice()),
       reactive(subset_df()))
   # Clonal diversity
-  callModule(
-      immuneinterface,
-      "module2",
-      reactive(input$ss_choice),
-      reactive(subset_df()))
-  # Correlation heatmaps
-  callModule(
+  # callModule(
+  #     immuneinterface,
+  #     "module2",
+  #     reactive(input$ss_choice),
+  #     reactive(group_internal_choice()),
+  #     reactive(subset_df()),
+  #     reactive(plot_colors()))
+  # Groups
+  user_group_df <- callModule(
       groupsoverview,
       "module3",
       reactive(input$ss_choice),
+      reactive(group_internal_choice()),
       reactive(subset_df()),
+      reactive(plot_colors()),
+      reactive(group_options()),
       reactive(width()))
   # Survival curves
   callModule(
       survival, 
       "module4", 
       reactive(input$ss_choice),
-      reactive(subset_df()))
+      reactive(group_internal_choice()),
+      reactive(group_options()),
+      reactive(subset_df()),
+      reactive(plot_colors()))
   # Immunomodulators
   callModule(
       immunomodulator, 
       "module5", 
       reactive(input$ss_choice),
-      reactive(subset_df()))
+      reactive(group_internal_choice()),
+      reactive(subset_df()),
+      reactive(plot_colors()))
   # Immune features
   callModule(
       immunefeatures, 
       "module6", 
       reactive(input$ss_choice),
-      reactive(subset_df()))
-  
+      reactive(group_internal_choice()),
+      reactive(subset_df()),
+      reactive(plot_colors()))
+  # TILmap features
+  callModule(
+      tilmap, 
+      "module7", 
+      reactive(input$ss_choice),
+      reactive(group_internal_choice()),
+      reactive(subset_df()),
+      reactive(plot_colors()))
+  # Driver associations
+  callModule(
+      drivers, 
+      "module8", 
+      reactive(input$ss_choice),
+      reactive(group_internal_choice()),
+      reactive(subset_df()),
+      reactive(plot_colors()))
+  # subtype predictor
+  callModule(
+      subtypepredictor, 
+      "module_subtypepredictor")
   # Data info
-  callModule(datainfo, "moduleX")
+  callModule(
+      datainfo, 
+      "moduleX")
   
   output$ss_choice <- renderText({
     input$ss_choice
@@ -73,8 +107,32 @@ shinyServer(function(input, output, session) {
   observeEvent(input$link_to_module6, {
     shinydashboard::updateTabItems(session, "explorertabs", "immune_features")
   })
+  observeEvent(input$link_to_module8, {
+    shinydashboard::updateTabItems(session, "explorertabs", "drivers")
+  })
+  observeEvent(input$link_to_module7, {
+    shinydashboard::updateTabItems(session, "explorertabs", "tilmap_features")
+  })
+  observeEvent(input$link_to_module_subtypepredictor, {
+    updateNavlistPanel(session, "toolstabs", "Immune Subtype Predictor")
+  })
+
+  
+    
+  output$select_group_UI <- renderUI({
+      
+      selectInput(
+          inputId = "ss_choice",
+          label = strong("Select Sample Groups"),
+          choices = as.character(
+              group_options()
+          ),
+          selected = "Immune Subtype"
+      )
+  })
   
   output$study_subset_UI <- renderUI({
+      req(input$ss_choice)
       if (input$ss_choice == "TCGA Subtype") {
           choices <- panimmune_data$sample_group_df %>% 
             filter(sample_group == "tcga_subtype", !is.na(FeatureValue)) %>% 
@@ -88,12 +146,30 @@ shinyServer(function(input, output, session) {
       }
   })
   
-  subset_df <- reactive(
+  group_options <- reactive({
+      groups <-  c("Immune Subtype", "TCGA Subtype", "TCGA Study")   
+      user_groups <- try(colnames(user_group_df()))
+      if(is.vector(user_groups)) groups <- c(groups, user_groups[-1])
+      return(groups)
+  })
+  
+  
+  group_internal_choice <- reactive({
+      req(input$ss_choice)
+      get_group_internal_name(input$ss_choice)
+  })
+  
+  subset_df <- reactive({
       subset_panimmune_df(
-          group_column = get_variable_internal_name(input$ss_choice), 
-          study_option = input$study_subset_selection
+          group_column = group_internal_choice(), 
+          study_option = input$study_subset_selection,
+          user_group_df = user_group_df()
       )
-  )
+  })
+  
+  plot_colors <- reactive(decide_plot_colors(
+      group_internal_choice(), group_df = subset_df()))
   
 })
-################################################################################
+###############################################################################
+  

@@ -9,7 +9,6 @@ purrr::walk(config_yaml$function_files, source)
 USE_REMOTE_BQ <- config_yaml$bq_remote 
 USE_REMOTE_GS <- config_yaml$gs_remote
 
-feature_table <- load_manifest()
 panimmune_data <- load_data()
 
 purrr::walk(config_yaml$module_files, source)

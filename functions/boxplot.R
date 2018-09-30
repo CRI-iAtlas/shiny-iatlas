@@ -1,19 +1,52 @@
-create_boxplot <- function(df, x, y, fill_factor, x_label, y_label, fill_colors = NA, facet = NA, title = NULL) {
-  plot <- df %>%
-    ggplot(aes_string(x, y, fill = fill_factor)) +
-    geom_boxplot() +
-    guides(colour = FALSE, fill = FALSE) +
-    ylab(y_label) +
-    xlab(x_label) +
-    theme_bw() +
-    theme_1012 +
-    theme(axis.text.x = element_text(angle = 90, vjust = 0.5)) +
-    labs(title = title)
-  if (!is.na(fill_colors)) {
-    plot <- plot + scale_fill_manual(values = fill_colors)
-  }
-  if (!is.na(facet)) {
-    plot <- plot + facet_grid(facet)
-  }
-  return(plot)
+create_boxplot <- function(
+    df, 
+    x_col = "x",
+    y_col = "y",
+    key_col = NA,
+    color_col = NA, 
+    label_col = NA,
+    split_col = NA,
+    xlab = "",
+    ylab = "", 
+    title = "", 
+    source_name = NULL, 
+    fill_colors = NA){
+    
+    if(is.na(key_col)) key_col <- x_col
+    if(is.na(color_col)) color_col <- x_col
+    if(is.na(label_col)) label_col <- x_col
+    if(is.na(split_col)) split_col <- x_col
+    
+    let(
+        alias = c(
+            X = x_col, 
+            Y = y_col, 
+            KEY = key_col,
+            COLOR = color_col,
+            LABEL = label_col,
+            SPLIT = split_col),
+        plot_ly(
+            df,
+            x = ~X,
+            y = ~Y,
+            split = ~SPLIT,
+            color = ~COLOR,
+            key = ~KEY,
+            text = ~LABEL,
+            type = "box", 
+            boxpoints = "all", 
+            jitter = 0.7,
+            pointpos = 0, 
+            colors = fill_colors,
+            source = source_name
+        )) %>% 
+        layout(
+            title = title,
+            xaxis = list(title = xlab),
+            yaxis = list(title = ylab)
+        ) %>% 
+        format_plotly() %>%
+        I
+    
+    
 }

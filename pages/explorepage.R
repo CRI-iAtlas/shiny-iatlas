@@ -29,6 +29,11 @@ explorepage <- dashboardPage(
                  tabName = "survival_curves",
                  icon = icon("cog")
                ),
+               menuSubItem(
+                 "Immunomodulators",
+                 tabName = "immunomodulators",
+                 icon = icon("cog")
+               ),
                # menuSubItem(
                #   "Genomic State",
                #   icon = icon("chevron-circle-right")),
@@ -37,8 +42,13 @@ explorepage <- dashboardPage(
                #   tabName = "clonal_diversity",
                #   icon = icon("chevron-circle-right")),
                menuSubItem(
-                 "Immunomodulators",
-                 tabName = "immunomodulators",
+                 "TIL Maps",
+                 tabName = "tilmap_features",
+                 icon = icon("cog")
+               ),
+               menuSubItem(
+                 "Driver Associations",
+                 tabName = "drivers",
                  icon = icon("cog")
                )
       ),
@@ -56,17 +66,13 @@ explorepage <- dashboardPage(
                    ", TCGA molecular subtypes",
                    strong("(TCGA Subtype)"),
                    ", or by immune subtypes that span multiple tumor types",
-                   strong("(Immune Subtype)"), ".")
+                   strong("(Immune Subtype)"), ".",
+                   strong("Custom Sample Groups"),
+                   " can also be uploaded, via the Sample Groups Overview module."
+                   )
           )
         ),
-        selectInput(
-          inputId = "ss_choice",
-          label = strong("Select Sample Groups"),
-          choices = as.character(
-            panimmune_data$sample_group_names
-          ),
-          selected = "Immune Subtype"
-        ),
+        uiOutput("select_group_UI"),
         uiOutput("study_subset_UI"),
         p("This is a global setting used in all modules and can be changed at any time to update results.")
       )
@@ -171,6 +177,24 @@ explorepage <- dashboardPage(
               imgSrc = "images/immunomodulators.png",
               boxText = "Explore the expression of genes that code for immunomodulating proteins, including checkpoint proteins.",
               linkText = "Open Module"
+            ),
+            imgLinkBox(
+              width = 6,
+              title = "TIL Maps",
+              linkId = "link_to_module7",
+              imgSrc = "images/TILmap.png",
+              boxText = "Explore the characteristics of maps of tumor infiltrating lymphocytes obtained from analysis of H&E images.",
+              linkText = "Open Module"
+            )
+          ),
+          fluidRow(
+            imgLinkBox(
+              width = 6,
+              title = "Driver Associations",
+              linkId = "link_to_module8",
+              imgSrc = "images/drivers.png",
+              boxText = "Explore Associations of Microenvironment with Driver Mutations.",
+              linkText = "Open Module"
             )
           )
         )
@@ -198,6 +222,14 @@ explorepage <- dashboardPage(
       tabItem(
         tabName = "immune_features",
         immunefeatures_UI("module6")
+      ),
+      tabItem(
+        tabName = "drivers",
+        drivers_UI("module8")
+      ),
+      tabItem(
+        tabName = "tilmap_features",
+        tilmap_UI("module7")
       ),
       tabItem(
         tabName = "datainfo",

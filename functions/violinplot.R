@@ -1,30 +1,57 @@
 create_violinplot <- function(
-  df, x, y, fill_factor, xlab, ylab, source_name = NULL, title, fill_colors = NA, 
-  facet = NA
-) {
-  let(
-    alias = c(xvar = x, yvar = y, splitvar = fill_factor),
-    df %>% 
-      plot_ly(
-        x = ~xvar,
-        y = ~yvar,
-        split = ~splitvar,
-        color = ~splitvar,
-        source = source_name,
-        colors = fill_colors,
-        type = 'violin',
-        box = list(
-          visible = TRUE
-        ),
-        meanline = list(
-          visible = TRUE
-        )
-      ) %>% 
-      layout(
-        xaxis = list(title = xlab),
-        yaxis = list(title = ylab)
-      ) %>% 
-      format_plotly() %>%
-      I
-  )
+    df, 
+    x_col = "x",
+    y_col = "y",
+    key_col = NA,
+    color_col = NA,
+    label_col = NA,
+    split_col = NA,
+    xlab = "",
+    ylab = "", 
+    title = "", 
+    source_name = NULL, 
+    fill_colors = NA, 
+    points = NULL,
+    showlegend = T) {
+    
+    if(is.na(key_col)) key_col <- x_col
+    if(is.na(color_col)) color_col <- x_col
+    if(is.na(label_col)) label_col <- x_col
+    if(is.na(split_col)) split_col <- x_col
+    
+    let(
+        alias = c(
+            X = x_col,
+            Y = y_col,
+            KEY = key_col,
+            COLOR = color_col,
+            SPLIT = split_col,
+            LABEL = label_col),
+        plot_ly(
+            df,
+            x = ~X,
+            y = ~Y,
+            split = ~SPLIT,
+            color = ~COLOR,
+            key = ~KEY,
+            text = ~LABEL,
+            points = points,
+            source = source_name,
+            colors = fill_colors,
+            type = 'violin',
+            hoverinfo = 'text',
+            showlegend = showlegend,
+            box = list(
+                visible = TRUE
+            ),
+            meanline = list(
+                visible = TRUE
+            ))) %>%
+        layout(
+            title = title,
+            xaxis = list(title = xlab),
+            yaxis = list(title = ylab)
+        ) %>% 
+        format_plotly() %>%
+        I
 }

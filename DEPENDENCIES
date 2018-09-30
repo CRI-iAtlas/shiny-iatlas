@@ -76,6 +76,7 @@ nlme	3.1-131	CRAN
 openssl	0.9.9	CRAN
 packrat	0.4.9-1	CRAN
 pillar	1.2.1	CRAN
+parallel  3.4.1 CRAN
 pkgconfig	2.0.1	CRAN
 plogr	0.1-1	CRAN
 plotly	4.7.1.9000	github
@@ -121,3 +122,6 @@ xml2	1.1.1	CRAN
 xtable	1.8-2	CRAN
 yaml	2.1.18	CRAN
 zoo	1.8-1	CRAN
+sva 3.20.0  github
+clue  0.3-56  CRAN
+mclust  5.4.1 CRAN
