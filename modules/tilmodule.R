@@ -37,7 +37,7 @@ tilmap_UI <- function(id) {
     
     # TIL distributions section ----
     sectionBox(
-      title = "TIL map characteristics",
+      title = "TIL Map Characteristics",
       messageBox(
         width = 12,
         p("Select a TIL map characteristic to see its distribution over sample groups. Plots are available as violin plots, and box plots with full data points superimposed."),
@@ -50,7 +50,7 @@ tilmap_UI <- function(id) {
               width = 4,
               selectInput( ## would be good to initiate on til_percentage/"TIL Regional Fraction (Percent)"
                   ns("violin_y"),
-                  "Select TIL Map characteristic",
+                  "Select TIL Map Characteristic",
                   choices = get_friendly_numeric_columns_by_group()["TIL Map Characteristic"]
               )
           ),
@@ -58,7 +58,7 @@ tilmap_UI <- function(id) {
               width = 4,
               selectInput(
                   ns("plot_type"),
-                  "Select plot type",
+                  "Select Plot Type",
                   choices = c("Violin", "Box")
               )
           )

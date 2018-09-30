@@ -193,7 +193,7 @@ explorepage <- dashboardPage(
               title = "Driver Associations",
               linkId = "link_to_module8",
               imgSrc = "images/drivers.png",
-              boxText = "Explore Assoiations of Microenvironment with Driver Mutations.",
+              boxText = "Explore Associations of Microenvironment with Driver Mutations.",
               linkText = "Open Module"
             )
           )
