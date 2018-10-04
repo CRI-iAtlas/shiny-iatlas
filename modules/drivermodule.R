@@ -68,13 +68,7 @@ drivers <- function(
     })
     
     scatter_plot_df <- reactive({
-        print(df_for_regression())
-        group_options <- get_unique_column_values(
-            group_internal_choice(), 
-            subset_df())
-        print(group_options)
-        
-        x1 <- 
+        df_for_plot <- 
             compute_driver_associations(
                 df_for_regression(),
                 response_var = input$response_variable,
@@ -82,12 +76,8 @@ drivers <- function(
                 group_options = get_unique_column_values(
                     group_internal_choice(), 
                     subset_df()) %>% 
-                    rename(label="combo",y="neglog_pval",x="effect_size"))
-        print(x1)
-        x2 <- x1 %>% 
+                    rename(label="combo",y="neglog_pval",x="effect_size")) %>%
             rename(label="combo",y="neglog_pval",x="effect_size") 
-        print(x2)
-        return(x2)
     })
     
     # plots ----
