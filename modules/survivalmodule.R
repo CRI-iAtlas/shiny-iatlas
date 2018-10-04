@@ -126,14 +126,20 @@ survival <- function(input, output, session, ss_choice, group_internal_choice,
         time_column = input$timevar,
         k = input$divk
       )
-    
     fit <- survival::survfit(Surv(time, status) ~ variable, data = survival_df)
+    print(fit)
     title <- get_variable_display_name(input$var1_surv)
+    if (identical(title, character(0))){
+        title <- input$var1_surv
+    }
+    
+    print(title)
     if (title %in% group_options()) {
       group_colors <- plot_colors()
     } else {
       group_colors <- viridisLite::viridis(input$divk)
     }
+    print(group_colors)
     create_kmplot(
       fit = fit, 
       df = survival_df, 
@@ -156,11 +162,11 @@ survival <- function(input, output, session, ss_choice, group_internal_choice,
       features <- get_factored_variables_from_feature_df(
           input$survival_class) %>% 
           as.character
-    group_internal <- get_variable_internal_name(ss_choice())
+    
     
     ci_mat <- subset_df() %>%
       build_ci_mat(
-        group_column = group_internal,
+        group_column = group_internal_choice(),
         value_columns = features,
         time_column = time_col,
         status_column = status_col

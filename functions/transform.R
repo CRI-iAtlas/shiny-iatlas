@@ -178,8 +178,9 @@ build_mosaicplot_df <- function(df, x_column, y_column){
     if(!y_column %in% colnames(df)){
         stop("Input df has no Y column: ", y_column)
     }
-    df %>% 
-        dplyr::select(x = x_column, y = y_column) %>%
+
+   df %>% 
+        dplyr::select(x = x_column, y = y_column) %>% 
         tidyr::drop_na() %>% 
         dplyr::mutate(x = as.factor(x)) %>%
         dplyr::mutate(y = forcats::fct_rev(as.factor(y)))
@@ -261,8 +262,8 @@ build_key_df <- function(feature_df, color_df, group_size_df){
         Characteristics)
     
     key_df <- 
-        list(feature_df, color_df, group_size_df) %>% 
-        purrr::reduce(dplyr::inner_join, by = "Group") %>% 
+        dplyr::inner_join(color_df, group_size_df, by = "Group") %>% 
+        dplyr::left_join(feature_df, by = "Group") %>% 
         dplyr::distinct() %>% 
         dplyr::select(
             `Sample Group` = Group, 
@@ -275,12 +276,16 @@ build_key_df <- function(feature_df, color_df, group_size_df){
 build_group_group_mosaic_plot_df <- function(
     df, x_column, y_column, study_option, user_group_df = NULL) {
     
-    df %>%
+    x1 <- df %>%
         subset_panimmune_df(
             group_col = x_column, 
             study_option = study_option,
-            user_group_df) %>% 
+            user_group_df) 
+    # print(x1)
+    x2 <- x1 %>% 
         build_mosaicplot_df(x_column, y_column) 
+    # print(x2)
+    return(x2)
 }
 
 # ** Immune feature trends module ----
@@ -408,6 +413,7 @@ get_concordance_by_group <- function(
 build_ci_mat <- function(
     df, group_column, value_columns, time_column, status_column
 ) {
+    
     value_names <- map(value_columns, get_variable_display_name)
     group_v <- extract2(df, group_column) 
     groups <- group_v %>% 
@@ -580,7 +586,14 @@ build_df_for_driver_regression <- function(df,response_var,group_column,group_op
 ## Compute p-value and effect size for each combo and combine to single data frame
 ##
 compute_driver_associations <- function(df_for_regression,response_var,group_column,group_options){
-  res1 <- compute_pvals_per_combo(df_for_regression,response_var, group_column)
-  res2 <- compute_effect_size_per_combo(df_for_regression,response_var, group_column)
-  inner_join(res1,res2,by="combo") ## returns df with combo,neglog_pval,effect_size
+    # print(df_for_regression)
+    # print(response_var)
+    # print(group_column)
+    print(group_options)
+    
+    
+    res1 <- compute_pvals_per_combo(df_for_regression,response_var, group_column)
+    print(res1)
+    res2 <- compute_effect_size_per_combo(df_for_regression,response_var, group_column)
+    inner_join(res1,res2,by="combo") ## returns df with combo,neglog_pval,effect_size
 }

@@ -189,12 +189,7 @@ groupsoverview <- function(
         display_y  <- group_display_choice()
         internal_x <- get_group_internal_name(display_x)
         internal_y <- group_internal_choice()
-        
-##        View(subset_df())
-        # cat("display_x",display_x,"\n")
-        # cat("display_y",display_y,"\n")
-        # cat("internal_x",internal_x,"\n")
-        # cat("internal_y",internal_y,"\n")
+
         
         mosaic_df <- build_group_group_mosaic_plot_df(
             subset_df(),
@@ -203,7 +198,8 @@ groupsoverview <- function(
             study_option = input$study_subset_selection,
             user_group_df()) 
         
-        # View(mosaic_df)
+        validate(
+            need(nrow(mosaic_df) > 0, "Group choices have no samples in common"))
         
         create_mosaicplot(
             mosaic_df,
