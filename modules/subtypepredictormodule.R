@@ -11,7 +11,7 @@ subtypepredictor_UI <- function(id) {
     
     # Immunomodulator distributions section ----
     sectionBox(
-      title = "Model based clustering",
+      title = "Model Based Clustering",
       messageBox(
         width = 12,
         p("Upload gene expression (csv or tsv). RSEM RPKM expression values were used to train the model, and for best results, your expression data should also be RSEM RPKMs. There are several settings:"),

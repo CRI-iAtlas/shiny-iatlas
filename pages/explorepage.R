@@ -183,7 +183,7 @@ explorepage <- dashboardPage(
               title = "TIL Maps",
               linkId = "link_to_module7",
               imgSrc = "images/TILmap.png",
-              boxText = "Explore the characteristics of TIL Maps.",
+              boxText = "Explore the characteristics of maps of tumor infiltrating lymphocytes obtained from analysis of H&E images.",
               linkText = "Open Module"
             )
           ),
@@ -193,7 +193,7 @@ explorepage <- dashboardPage(
               title = "Driver Associations",
               linkId = "link_to_module8",
               imgSrc = "images/drivers.png",
-              boxText = "Explore Assoiations of Microenvironment with Driver Mutations.",
+              boxText = "Explore Associations of Microenvironment with Driver Mutations.",
               linkText = "Open Module"
             )
           )
