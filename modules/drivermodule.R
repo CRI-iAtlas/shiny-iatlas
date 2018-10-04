@@ -41,11 +41,11 @@ drivers_UI <- function(id) {
                 )
             ),
             fluidRow(
-              plotBox(
-                width = 12,
-                plotlyOutput(ns("violinPlot")) %>%
-                  shinycssloaders::withSpinner()
-              )
+                plotBox(
+                    width = 12,
+                    plotlyOutput(ns("violinPlot")) %>%
+                        shinycssloaders::withSpinner()
+                )
             )
         )
     )
@@ -57,17 +57,18 @@ drivers <- function(
     subset_df, plot_colors) {
     
     ns <- session$ns
-  
-    df_for_regression <- reactive({
-      build_df_for_driver_regression(
-      df=subset_df(),
-      response_var = input$response_variable,
-      group_column = group_internal_choice(),
-      group_options = get_unique_column_values(group_internal_choice(), subset_df()))
     
+    df_for_regression <- reactive({
+        build_df_for_driver_regression(
+            df=subset_df(),
+            response_var = input$response_variable,
+            group_column = group_internal_choice(),
+            group_options = get_unique_column_values(group_internal_choice(), subset_df()))
+        
     })
     
     scatter_plot_df <- reactive({
+        if (nrow(df_for_regression()) == 0) return(NULL)
         df_for_plot <- 
             compute_driver_associations(
                 df_for_regression(),
@@ -75,77 +76,79 @@ drivers <- function(
                 group_column = group_internal_choice(),
                 group_options = get_unique_column_values(
                     group_internal_choice(), 
-                    subset_df()) %>% 
-                    rename(label="combo",y="neglog_pval",x="effect_size")) %>%
+                    subset_df())) %>% 
             rename(label="combo",y="neglog_pval",x="effect_size") 
     })
     
     # plots ----
     output$scatterPlot <- renderPlotly({
-      
-      
-                                                 
-      create_scatterplot(
-          scatter_plot_df(),
-          xlab = "log10(Effect Size)", 
-          ylab = "- log10(P-value)", 
-          title = "Immune Response Association With Driver Mutations",
-          source = "scatterplot",
-          key_col = "label",
-          label_col = "label",
-          horizontal_line = T,
-          horizontal_line_y = (- log10(0.05))
-      )
+        
+        print(scatter_plot_df())
+        validate(
+            need(!is.null(scatter_plot_df()), "Group choices incompatible with mutation choice"))
+        
+        
+        create_scatterplot(
+            scatter_plot_df(),
+            xlab = "log10(Effect Size)", 
+            ylab = "- log10(P-value)", 
+            title = "Immune Response Association With Driver Mutations",
+            source = "scatterplot",
+            key_col = "label",
+            label_col = "label",
+            horizontal_line = T,
+            horizontal_line_y = (- log10(0.05))
+        )
     })
     
     output$violinPlot <- renderPlotly({
-      
-      eventdata <- event_data("plotly_click", source = "scatterplot")
-      
-      validate(need(
-        check_driver_violinplot_click_data(
-          eventdata,
-          df_for_regression(),
-          subset_df(), 
-          group_internal_choice()),
-        "Click a point on the above scatterplot to see a violin plot for the comparison"))
-      
-      df <- df_for_regression()
-      
-
-
-      combo_selected <- eventdata[["key"]][[1]][1]
-      dff <- df %>% filter(combo==combo_selected)
-      mutation <- as.character(dff[1,"mutation"])
-      
-      scatter_plot_selected_row <- filter(scatter_plot_df(), label == combo_selected)
-      point_selected_pval <- 10^(-scatter_plot_selected_row$y) %>% 
-          round(4) %>% 
-          as.character()
-      point_selected_es <- scatter_plot_selected_row$x %>% 
-          round(4) %>% 
-          as.character()
-      
-      cohort <- stringr::str_replace(combo_selected,fixed(paste(c(mutation,"."),collapse="")),"")
-      # cohort by string parsing above. For some reason, the following returns a number when working with TCGA Subtypes
-      # cohort <- as.character(dff[1,group_internal_choice()])
-
-      dfb <- dff %>% rename(x=value,y=input$response_variable) %>% select(x,y)
-      plot_title = paste(c("Cohort:",cohort,
-                           "; P-value:",point_selected_pval,
-                           "; log10(Effect size):", point_selected_es),
-                         collapse=" ")
-      xlab = paste(c(mutation,"mutation status"),collapse=" ")
-      ylab = get_variable_display_name(input$response_variable)
-
-      create_violinplot(
-          dfb,
-          xlab = xlab,
-          ylab = ylab,
-          title = plot_title, 
-          fill_colors = c("blue"),
-          showlegend = FALSE)
-  })
+        
+        eventdata <- event_data("plotly_click", source = "scatterplot")
+        
+        validate(need(
+            check_driver_violinplot_click_data(
+                eventdata,
+                df_for_regression(),
+                subset_df(), 
+                group_internal_choice()),
+            "Click a point on the above scatterplot to see a violin plot for the comparison"))
+        
+        df <- df_for_regression()
+        
+        
+        
+        combo_selected <- eventdata[["key"]][[1]][1]
+        dff <- df %>% filter(combo==combo_selected)
+        mutation <- as.character(dff[1,"mutation"])
+        
+        scatter_plot_selected_row <- filter(scatter_plot_df(), label == combo_selected)
+        point_selected_pval <- 10^(-scatter_plot_selected_row$y) %>% 
+            round(4) %>% 
+            as.character()
+        point_selected_es <- scatter_plot_selected_row$x %>% 
+            round(4) %>% 
+            as.character()
+        
+        cohort <- stringr::str_replace(combo_selected,fixed(paste(c(mutation,"."),collapse="")),"")
+        # cohort by string parsing above. For some reason, the following returns a number when working with TCGA Subtypes
+        # cohort <- as.character(dff[1,group_internal_choice()])
+        
+        dfb <- dff %>% rename(x=value,y=input$response_variable) %>% select(x,y)
+        plot_title = paste(c("Cohort:",cohort,
+                             "; P-value:",point_selected_pval,
+                             "; log10(Effect size):", point_selected_es),
+                           collapse=" ")
+        xlab = paste(c(mutation,"mutation status"),collapse=" ")
+        ylab = get_variable_display_name(input$response_variable)
+        
+        create_violinplot(
+            dfb,
+            xlab = xlab,
+            ylab = ylab,
+            title = plot_title, 
+            fill_colors = c("blue"),
+            showlegend = FALSE)
+    })
     
-      
+    
 }
