@@ -14,15 +14,24 @@ subtypepredictor_UI <- function(id) {
       title = "Model Based Clustering",
       messageBox(
         width = 12,
-        p("Upload gene expression (csv or tsv). RSEM RPKM expression values were used to train the model, and for best results, your expression data should also be RSEM RPKMs. There are several settings:"),
+        p("Upload gene expression (csv or tsv). RSEM RPKM expression values were used to train the model, and for best results, your expression data should also be RSEM RPKMs (FPKMs will also work)."),
+        p(""),
+        p("Tool settings:"),
         tags$ul(
-          tags$li(shiny::em('Log 10'), ", if the data is not already log transformed, select this."), 
+          tags$li(shiny::em('Log 2'), ", if the data is not already log transformed, select this."), 
           tags$li(shiny::em('Ensemble size'), ", try different ensemble sizes to check for robust results."),
           tags$li(shiny::em('File separator'), ", select commas or tabs.")
         ),
         p(""),
-        p("Manuscript context:  See figure 1A."),
-        p(".....")
+        p("Notes on input data:"),
+        tags$ul(
+          tags$li("First column should contain gene symbols, after that, samples."), 
+          tags$li("Gene names (rows) must be unique (duplicated gene names not allowed)."),
+          tags$li("Gene expression values will be log2 transformed and median centered per sample."),
+          tags$li("For an example of outputs, leave the input file blank, set ensemble size to a small number (32) and click GO.")
+        ),
+        p(""),
+        p("Manuscript context:  See figure 1A.")
       ),
       fluidRow(
         optionsBox(
@@ -31,11 +40,11 @@ subtypepredictor_UI <- function(id) {
               width = 2,
               radioButtons(ns("sep"), "File Separator",
                            choices = c(Comma = ",", Tab = "\t"), selected = ","),
-              checkboxInput(ns("logged"), "Apply Log10", TRUE)
+              checkboxInput(ns("logged"), "Apply Log2", TRUE)
           ),
           column(
             width = 4,
-            fileInput(ns("expr_file_pred"), "Choose CSV file with \n1st column gene symbols",
+            fileInput(ns("expr_file_pred"), "Choose CSV file, First column gene symbols. Leave blank for example run.",
                       multiple = FALSE,
                       accept = c("text/csv",
                                  "text/comma-separated-values,text/plain",
@@ -49,11 +58,11 @@ subtypepredictor_UI <- function(id) {
           ),
           column(
             width = 3,
-            numericInput(ns("ensemblenum"), "Ensemble Size", 256, max = 256, min = 32, width = '100')
+            numericInput(ns("ensemblenum"), "Ensemble Size (32-256)", 256, max = 256, min = 32, width = '100')
           ),
           column(
               width = 3,
-              numericInput(ns("corenum"), "Cores", 4, width = '100'),
+              numericInput(ns("corenum"), "Cores (1-4)", 4, width = '100'),
               actionButton(ns("subtypeGObutton"), "GO")
           )
         )
