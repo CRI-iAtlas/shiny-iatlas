@@ -467,6 +467,99 @@ build_im_expr_plot_df <- function(df, filter_value, group_option) {
 # ** Driver correlation module ----
 
 ##
+##  Builds data frame used for the regression 
+##
+
+build_mutation_df <- function(df,response_var,group_column,group_options,count_threshold=5){
+    fmx_df.intermediate <- build_intermediate_fmx_df_for_groups(
+        df,
+        response_var,
+        group_column,
+        group_options)
+    driver_mutation_df.long <- 
+        panimmune_data$driver_mutation_df %>%  
+        tidyr::gather(key = "mutation", value = "value", -c("ParticipantBarcode")) %>% 
+        dplyr::mutate(value = fct_relevel(value, "Wt", "Mut"))
+    df_mid <- build_driver_mutation_df(driver_mutation_df.long, fmx_df.intermediate)
+    if(nrow(df_mid) == 0){
+        df_mid <- NULL
+    } else {
+        df_mid <- label_driver_mutation_df(df_mid, group_column)
+    }
+    return(df_mid)
+}
+
+
+#
+# join driver data frame and fmx (feature matrix) data frame
+#
+build_driver_mutation_df <- function(driver_df,fmx_df) {
+    driver_df %>%
+        dplyr::left_join(fmx_df,by="ParticipantBarcode") %>% 
+        tidyr::drop_na()
+}
+
+label_driver_mutation_df <- function(df, group_column){
+    df_labeled <- wrapr::let(
+        c(gc = group_column),
+        dplyr::mutate(df, combo = stringr::str_c(mutation, gc, sep = ".")))
+}
+
+
+build_df_for_driver_regression <- function(df,response_var,group_column,group_options,count_threshold=5){
+    fmx_df.intermediate <- build_intermediate_fmx_df_for_groups(
+        df,
+        response_var,
+        group_column,
+        group_options)
+    driver_mutation_df.long <- 
+        panimmune_data$driver_mutation_df %>%  
+        tidyr::gather(key = "mutation", value = "value", -c("ParticipantBarcode")) %>% 
+        dplyr::mutate(value = fct_relevel(value, "Wt", "Mut"))
+    df_mid <- build_driver_mutation_df(driver_mutation_df.long, fmx_df.intermediate)
+    if(nrow(df_mid) == 0){
+        df_mid <- NULL
+    } else {
+        df_mid <- build_filtered_mutation_df_per_group(df_mid,group_column,count_threshold)
+    }
+    return(df_mid)
+}
+
+
+
+
+
+## filter mutation data frame to mutations meeting a minimum overall count_threshold within a group
+## count_threshold is the minimum mutation count required
+## In rare cases, combinations where all samples, or all but one samples is mutations occur
+## These are removed as well as significance testing cannot be performed
+
+build_filtered_mutation_df_per_group <- function(df,group_column,count_threshold){
+    df_labeled <- wrapr::let(
+        c(gc = group_column),
+        df %>% 
+            dplyr::mutate(combo = stringr::str_c(mutation, gc, sep = ".")))
+    
+    keep_vector  <- df_labeled %>%
+        dplyr::mutate(value = ifelse(value == "Wt", 0, 1)) %>% 
+        dplyr::select(combo, value) %>%
+        dplyr::group_by(combo) %>%
+        dplyr::summarise(
+            mutation_count = sum(value),
+            cat_count = dplyr::n()) %>%
+        dplyr::ungroup() %>%
+        dplyr::filter(mutation_count > count_threshold) %>%
+        dplyr::filter(mutation_count < cat_count - 1) %>%
+        magrittr::use_series(combo)
+    
+    filter(df_labeled, combo %in% keep_vector)
+}
+
+
+
+
+
+##
 ## restrict fmx_df to rows with available group values and a single selected value column
 ##
 build_intermediate_fmx_df_for_groups <- function(
@@ -492,51 +585,10 @@ build_filtered_mutation_df_pancan <- function(df,count_threshold=80){   # select
   df %>% filter(mutation %in% drivers.keep)
 }
 
-## filter mutation data frame to mutations meeting a minimum overall count_threshold within a group
-## count_threshold is the minimum mutation count required
-## In rare cases, combinations where all samples, or all but one samples is mutations occur
-## These are removed as well as significance testing cannot be performed
 
-build_filtered_mutation_df_per_group <- function(df,group_column,count_threshold){   
-  df <- df %>% .[complete.cases(.),]
-  ######### needs to account for when this df has now rows ###############################
-  if(nrow(df) == 0) return(df)
-  df_labeled <- wrapr::let(c(gc=group_column),df %>% mutate(combo=paste(mutation,gc,sep=".")))
-  binvec <- c(0,1) ; names(binvec) <- c("Wt","Mut")
-  df_boole <- df_labeled  %>% 
-    mutate(boole=as.vector(binvec[.$value])) %>% select(-value) %>% rename(value=boole)
-  driver_mutation_mutcount <- wrapr::let(c(gc=group_column),
-                                         df_boole %>% select(combo,value) %>% 
-                                           dplyr::group_by(combo) %>%  dplyr::summarise(mutation_count = sum(value)) %>% ungroup()
-  )
-  category_count <- wrapr::let(c(gc=group_column),
-                                         df_boole %>% select(combo,value) %>% 
-                                           dplyr::group_by(combo) %>%  dplyr::summarise(cat_count = length(value)) %>% ungroup()
-  )
-  combo_keep <- driver_mutation_mutcount %>% filter(mutation_count > count_threshold) %>% .$combo
-  ## In rare cases, all samples in a category are mutated, or all but one are mutated, and stat differences test not possible
-  all_mutated <- driver_mutation_mutcount$combo[which(driver_mutation_mutcount$mutation_count==category_count$cat_count)]
-  all_but_one_mutated <- driver_mutation_mutcount$combo[which(driver_mutation_mutcount$mutation_count==(category_count$cat_count-1))]
-  ## the above return character(0) in nearly all instances
-  combo_toss = character(length=0)
-  if ( length(all_mutated) > 0 ) {
-    cat("Warning: Removing from statistical test as all cases are mutated: ",all_mutated,"\n")
-    combo_toss = c(combo_toss,all_mutated)
-  } 
-  if ( length(all_but_one_mutated) > 0 ) {
-    cat("Warning: Removing from statistical test as all but one case is mutated:",all_but_one_mutated,"\n")
-    combo_toss = c(combo_toss,all_but_one_mutated)
-  } 
-  df_labeled %>% filter(combo %in% combo_keep & !(combo %in% combo_toss)) 
-}
 
-#
-# join driver data frame and fmx (feature matrix) data frame
-#
-build_driver_mutation_df <- function(driver_df,fmx_df) {
-  driver_df %>%
-    dplyr::left_join(fmx_df,by="ParticipantBarcode")
-}
+
+
 
 ##
 ## Compute p values for each 'combo' of driver mutation and cohort
@@ -576,21 +628,7 @@ compute_effect_size_per_combo <- function(df, value_column, group_column){
     )
 }
 
-##
-##  Builds data frame used for the regression 
-##
-build_df_for_driver_regression <- function(df,response_var,group_column,group_options,count_threshold=5){
-    fmx_df.intermediate <- build_intermediate_fmx_df_for_groups(
-        df,
-        response_var,
-        group_column,group_options)
-    driver_mutation_df.long <- 
-        panimmune_data$driver_mutation_df %>%  
-        tidyr::gather(key = "mutation", value = "value", -c("ParticipantBarcode"))
-    driver_mutation_df.long$value <- fct_relevel(driver_mutation_df.long$value,"Wt","Mut") ## For Mut to be 'higher' than Wt in factor analysis
-    df_mid <- build_driver_mutation_df(driver_mutation_df.long,fmx_df.intermediate)
-    build_filtered_mutation_df_per_group(df_mid,group_column,count_threshold) 
-}
+
 
 
 ##

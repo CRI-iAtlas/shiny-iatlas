@@ -58,6 +58,9 @@ drivers <- function(
     
     ns <- session$ns
     
+    mutation_df <- reactive(build_mutation_df(df, response_var, group_column, group_options))
+    
+    
     df_for_regression <- reactive({
         build_df_for_driver_regression(
             df=subset_df(),
@@ -68,7 +71,7 @@ drivers <- function(
     })
     
     scatter_plot_df <- reactive({
-        if (nrow(df_for_regression()) == 0) return(NULL)
+        if (is.null(df_for_regression())) return(NULL)
         df_for_plot <- 
             compute_driver_associations(
                 df_for_regression(),
@@ -83,9 +86,8 @@ drivers <- function(
     # plots ----
     output$scatterPlot <- renderPlotly({
         
-        print(scatter_plot_df())
         validate(
-            need(!is.null(scatter_plot_df()), "Group choices incompatible with mutation choice"))
+            need(!is.null(scatter_plot_df()), "No overlap between group choice and driver mutations"))
         
         
         create_scatterplot(
