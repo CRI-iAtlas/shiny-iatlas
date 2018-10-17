@@ -470,7 +470,7 @@ build_im_expr_plot_df <- function(df, filter_value, group_option) {
 ##  Builds data frame used for the regression 
 ##
 
-build_mutation_df <- function(df,response_var,group_column,group_options,count_threshold=5){
+build_mutation_df <- function(df, response_var, group_column, group_options){
     fmx_df.intermediate <- build_intermediate_fmx_df_for_groups(
         df,
         response_var,
@@ -480,80 +480,61 @@ build_mutation_df <- function(df,response_var,group_column,group_options,count_t
         panimmune_data$driver_mutation_df %>%  
         tidyr::gather(key = "mutation", value = "value", -c("ParticipantBarcode")) %>% 
         dplyr::mutate(value = fct_relevel(value, "Wt", "Mut"))
-    df_mid <- build_driver_mutation_df(driver_mutation_df.long, fmx_df.intermediate)
-    if(nrow(df_mid) == 0){
-        df_mid <- NULL
+    mutation_df <- build_driver_mutation_df(driver_mutation_df.long, fmx_df.intermediate)
+    if(nrow(mutation_df) == 0){
+        mutation_df <- NULL
     } else {
-        df_mid <- label_driver_mutation_df(df_mid, group_column)
+        mutation_df <- label_driver_mutation_df(mutation_df, group_column)
     }
-    return(df_mid)
+    return(mutation_df)
 }
 
 
 #
 # join driver data frame and fmx (feature matrix) data frame
 #
-build_driver_mutation_df <- function(driver_df,fmx_df) {
+build_driver_mutation_df <- function(driver_df, fmx_df) {
     driver_df %>%
-        dplyr::left_join(fmx_df,by="ParticipantBarcode") %>% 
+        dplyr::left_join(fmx_df, by="ParticipantBarcode") %>% 
         tidyr::drop_na()
 }
 
 label_driver_mutation_df <- function(df, group_column){
     df_labeled <- wrapr::let(
         c(gc = group_column),
-        dplyr::mutate(df, combo = stringr::str_c(mutation, gc, sep = ".")))
+        dplyr::mutate(df, group = stringr::str_c(mutation, gc, sep = ".")))
 }
-
-
-build_df_for_driver_regression <- function(df,response_var,group_column,group_options,count_threshold=5){
-    fmx_df.intermediate <- build_intermediate_fmx_df_for_groups(
-        df,
-        response_var,
-        group_column,
-        group_options)
-    driver_mutation_df.long <- 
-        panimmune_data$driver_mutation_df %>%  
-        tidyr::gather(key = "mutation", value = "value", -c("ParticipantBarcode")) %>% 
-        dplyr::mutate(value = fct_relevel(value, "Wt", "Mut"))
-    df_mid <- build_driver_mutation_df(driver_mutation_df.long, fmx_df.intermediate)
-    if(nrow(df_mid) == 0){
-        df_mid <- NULL
-    } else {
-        df_mid <- build_filtered_mutation_df_per_group(df_mid,group_column,count_threshold)
-    }
-    return(df_mid)
-}
-
-
-
-
 
 ## filter mutation data frame to mutations meeting a minimum overall count_threshold within a group
 ## count_threshold is the minimum mutation count required
 ## In rare cases, combinations where all samples, or all but one samples is mutations occur
 ## These are removed as well as significance testing cannot be performed
 
-build_filtered_mutation_df_per_group <- function(df,group_column,count_threshold){
-    df_labeled <- wrapr::let(
-        c(gc = group_column),
-        df %>% 
-            dplyr::mutate(combo = stringr::str_c(mutation, gc, sep = ".")))
-    
-    keep_vector  <- df_labeled %>%
+build_mutation_group_summary_df <- function(df){
+    df %>%
         dplyr::mutate(value = ifelse(value == "Wt", 0, 1)) %>% 
-        dplyr::select(combo, value) %>%
-        dplyr::group_by(combo) %>%
+        dplyr::select(group, value) %>%
+        dplyr::group_by(group) %>%
         dplyr::summarise(
             mutation_count = sum(value),
             cat_count = dplyr::n()) %>%
-        dplyr::ungroup() %>%
+        dplyr::ungroup()
+}
+
+get_plotable_groups <- function(df, count_threshold = 5){
+    df %>%
         dplyr::filter(mutation_count > count_threshold) %>%
         dplyr::filter(mutation_count < cat_count - 1) %>%
-        magrittr::use_series(combo)
-    
-    filter(df_labeled, combo %in% keep_vector)
+        magrittr::use_series(group)
 }
+
+get_unplotable_groups <- function(df, plotable_groups){
+    df %>% 
+        dplyr::filter(!group %in% plotable_groups) %>% 
+        magrittr::use_series(group)
+}
+
+
 
 
 
@@ -563,12 +544,12 @@ build_filtered_mutation_df_per_group <- function(df,group_column,count_threshold
 ## restrict fmx_df to rows with available group values and a single selected value column
 ##
 build_intermediate_fmx_df_for_groups <- function(
-  df, value_column, group_column, group_options, id_column = "ParticipantBarcode" ) {
-  wrapr::let(
-    c(GROUP = group_column),
-    result_df <- df %>% 
-      dplyr::select(id_column, GROUP, value_column) %>% 
-      dplyr::filter(GROUP %in% group_options)) %>% .[complete.cases(.),]    
+    df, value_column, group_column, group_options, id_column = "ParticipantBarcode" ) {
+    wrapr::let(
+        c(GROUP = group_column),
+        result_df <- df %>% 
+            dplyr::select(id_column, GROUP, value_column) %>% 
+            dplyr::filter(GROUP %in% group_options)) %>% .[complete.cases(.),]    
 }
 
 ##
@@ -598,7 +579,7 @@ compute_pvals_per_combo <- function(df, value_column, group_column){
         c(response_var=value_column,
           gc=group_column),
         df %>% 
-            split(.$combo) %>% 
+            split(.$group) %>% 
             map( ~ lm(response_var ~ value, data=.)) %>%
             map(summary) %>%
             map("coefficients") %>% 
@@ -607,7 +588,7 @@ compute_pvals_per_combo <- function(df, value_column, group_column){
     )
     
     data.frame(
-        combo=as.vector(names(result_vec)),
+        group=as.vector(names(result_vec)),
         neglog_pval=as.vector(-log10(result_vec)),
         stringsAsFactors = FALSE)
 }
@@ -620,7 +601,7 @@ compute_effect_size_per_combo <- function(df, value_column, group_column){
     wrapr::let(
         c(response_var=value_column,gc=group_column),
         df_means <- df %>% 
-            group_by(combo,value) %>%
+            group_by(group,value) %>%
             summarize(mean_response=mean(response_var)) %>%
             spread(value,mean_response) %>%
             mutate(effect_size=-log10(Wt/Mut)) %>%
@@ -637,5 +618,5 @@ compute_effect_size_per_combo <- function(df, value_column, group_column){
 compute_driver_associations <- function(df_for_regression,response_var,group_column,group_options){
     res1 <- compute_pvals_per_combo(df_for_regression,response_var, group_column)
     res2 <- compute_effect_size_per_combo(df_for_regression,response_var, group_column)
-    inner_join(res1,res2,by="combo") ## returns df with combo,neglog_pval,effect_size
+    inner_join(res1,res2,by="group") ## returns df with combo,neglog_pval,effect_size
 }

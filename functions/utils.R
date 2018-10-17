@@ -260,10 +260,10 @@ check_driver_violinplot_click_data <- function(
     return(FALSE)  
   } 
   
-  combo_selected <- eventdata[["key"]][[1]][1]
-  combo_valid <- combo_selected %in% extract2(df_for_regression,"combo")
+  group_selected <- eventdata[["key"]][[1]][1]
+  group_valid <- group_selected %in% extract2(df_for_regression,"group")
   
-  all(combo_valid)
+  all(group_valid)
 }
 
 create_group_text_from_plotly <- function(

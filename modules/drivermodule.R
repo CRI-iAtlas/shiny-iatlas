@@ -34,6 +34,12 @@ drivers_UI <- function(id) {
                 )
             ),
             fluidRow(
+                messageBox(
+                    width = 12,
+                    p(textOutput(ns("text")))
+                )
+            ),
+            fluidRow(
                 plotBox(
                     width = 12,
                     plotlyOutput(ns("scatterPlot")) %>% 
@@ -58,20 +64,47 @@ drivers <- function(
     
     ns <- session$ns
     
-    mutation_df <- reactive(build_mutation_df(df, response_var, group_column, group_options))
+    mutation_df <- reactive(build_mutation_df(
+        df = subset_df(),
+        response_var = input$response_variable,
+        group_column = group_internal_choice(),
+        group_options = get_unique_column_values(group_internal_choice(), subset_df())))
+    
+    mutation_group_summary_df <- reactive(build_mutation_group_summary_df(mutation_df()))
+    
+    plotable_groups <- reactive(get_plotable_groups(mutation_group_summary_df()))
+    unplotable_groups <- reactive(get_unplotable_groups(mutation_group_summary_df(), plotable_groups()))
+    
+    output$text <- renderText({
+        if(is.null(mutation_df())){
+            return("Members in current selected groupings do not have driver mutation data")
+        } else if (length(plotable_groups()) == 0) {
+            return("No current group:driver gene combination able to be calculated")
+        } else {
+            string <- stringr::str_c(
+                "Plotable groups: ", 
+                as.character(length(plotable_groups())),
+                ";\t",
+                "Unplotable groups: ", 
+                as.character(length(unplotable_groups()))
+            )
+            return(string)
+        }
+    })
     
     
     df_for_regression <- reactive({
-        build_df_for_driver_regression(
-            df=subset_df(),
-            response_var = input$response_variable,
-            group_column = group_internal_choice(),
-            group_options = get_unique_column_values(group_internal_choice(), subset_df()))
-        
+        if (is.null(mutation_df()) | length(plotable_groups()) == 0){
+            return(NULL)  
+        } 
+        mutation_df() %>% 
+            filter(group %in% plotable_groups())
     })
     
     scatter_plot_df <- reactive({
-        if (is.null(df_for_regression())) return(NULL)
+        if (is.null(df_for_regression())){
+            return(NULL)  
+        } 
         df_for_plot <- 
             compute_driver_associations(
                 df_for_regression(),
@@ -80,14 +113,14 @@ drivers <- function(
                 group_options = get_unique_column_values(
                     group_internal_choice(), 
                     subset_df())) %>% 
-            rename(label="combo",y="neglog_pval",x="effect_size") 
+            rename(label="group",y="neglog_pval",x="effect_size") 
     })
     
     # plots ----
     output$scatterPlot <- renderPlotly({
         
         validate(
-            need(!is.null(scatter_plot_df()), "No overlap between group choice and driver mutations"))
+            need(!is.null(scatter_plot_df()), "No plotable groups, see above for explanation"))
         
         
         create_scatterplot(
@@ -115,15 +148,16 @@ drivers <- function(
                 group_internal_choice()),
             "Click a point on the above scatterplot to see a violin plot for the comparison"))
         
-        df <- df_for_regression()
         
+        group_selected <- eventdata[["key"]][[1]][1]
         
+        df <- 
+            df_for_regression() %>% 
+            filter(group == group_selected)
         
-        combo_selected <- eventdata[["key"]][[1]][1]
-        dff <- df %>% filter(combo==combo_selected)
-        mutation <- as.character(dff[1,"mutation"])
+        mutation <- as.character(df[1,"mutation"])
         
-        scatter_plot_selected_row <- filter(scatter_plot_df(), label == combo_selected)
+        scatter_plot_selected_row <- filter(scatter_plot_df(), label == group_selected)
         point_selected_pval <- 10^(-scatter_plot_selected_row$y) %>% 
             round(4) %>% 
             as.character()
@@ -131,11 +165,13 @@ drivers <- function(
             round(4) %>% 
             as.character()
         
-        cohort <- stringr::str_replace(combo_selected,fixed(paste(c(mutation,"."),collapse="")),"")
+        cohort <- stringr::str_replace(group_selected,fixed(paste(c(mutation,"."),collapse="")),"")
         # cohort by string parsing above. For some reason, the following returns a number when working with TCGA Subtypes
         # cohort <- as.character(dff[1,group_internal_choice()])
         
-        dfb <- dff %>% rename(x=value,y=input$response_variable) %>% select(x,y)
+        dfb <- df %>% rename(x=value,y=input$response_variable) %>% select(x,y)
+        
+        
         plot_title = paste(c("Cohort:",cohort,
                              "; P-value:",point_selected_pval,
                              "; log10(Effect size):", point_selected_es),
