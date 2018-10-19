@@ -491,7 +491,7 @@ build_mutation_df <- function(df, response_var, group_column, group_options){
 
 
 #
-# join driver data frame and fmx (feature matrix) data frame
+# join driver data frame and fmx (feature matrix) data frame 
 #
 build_driver_mutation_df <- function(driver_df, fmx_df) {
     driver_df %>%
@@ -502,7 +502,7 @@ build_driver_mutation_df <- function(driver_df, fmx_df) {
 label_driver_mutation_df <- function(df, group_column){
     df_labeled <- wrapr::let(
         c(gc = group_column),
-        dplyr::mutate(df, group = stringr::str_c(mutation, gc, sep = ".")))
+        dplyr::mutate(df, mutation_group = stringr::str_c(mutation, gc, sep = ".")))
 }
 
 ## filter mutation data frame to mutations meeting a minimum overall count_threshold within a group
@@ -510,35 +510,36 @@ label_driver_mutation_df <- function(df, group_column){
 ## In rare cases, combinations where all samples, or all but one samples is mutations occur
 ## These are removed as well as significance testing cannot be performed
 
+#
+# For each combination of mutation and group, compile total count and count mutated
+#
 build_mutation_group_summary_df <- function(df){
     df %>%
         dplyr::mutate(value = ifelse(value == "Wt", 0, 1)) %>% 
-        dplyr::select(group, value) %>%
-        dplyr::group_by(group) %>%
+        dplyr::select(mutation_group, value) %>%
+        dplyr::group_by(mutation_group) %>%
         dplyr::summarise(
             mutation_count = sum(value),
             cat_count = dplyr::n()) %>%
         dplyr::ungroup()
 }
 
-get_plotable_groups <- function(df, count_threshold = 5){
+#
+# identify which mutation groups combination have sufficient data for test
+#
+# uses a universal minimum count. Better might be to use percent of group size as a minimum.
+get_testable_mutation_groups <- function(df, count_threshold = 4){
     df %>%
-        dplyr::filter(mutation_count > count_threshold) %>%
-        dplyr::filter(mutation_count < cat_count - 1) %>%
-        magrittr::use_series(group)
+        dplyr::filter(mutation_count >= count_threshold) %>% # requirement for a minimal mutation count
+        dplyr::filter(mutation_count < cat_count - 1) %>% # cannot test if all mutated or all but one mutated
+        magrittr::use_series(mutation_group)
 }
 
-get_unplotable_groups <- function(df, plotable_groups){
+get_untestable_mutation_groups <- function(df, testable_mutation_groups){
     df %>% 
-        dplyr::filter(!group %in% plotable_groups) %>% 
-        magrittr::use_series(group)
+        dplyr::filter(!mutation_group %in% testable_mutation_groups) %>% 
+        magrittr::use_series(mutation_group)
 }
-
-
-
-
-
-
 
 ##
 ## restrict fmx_df to rows with available group values and a single selected value column
@@ -579,7 +580,7 @@ compute_pvals_per_combo <- function(df, value_column, group_column){
         c(response_var=value_column,
           gc=group_column),
         df %>% 
-            split(.$group) %>% 
+            split(.$mutation_group) %>% 
             map( ~ lm(response_var ~ value, data=.)) %>%
             map(summary) %>%
             map("coefficients") %>% 
@@ -588,7 +589,7 @@ compute_pvals_per_combo <- function(df, value_column, group_column){
     )
     
     data.frame(
-        group=as.vector(names(result_vec)),
+        mutation_group=as.vector(names(result_vec)),
         neglog_pval=as.vector(-log10(result_vec)),
         stringsAsFactors = FALSE)
 }
@@ -601,7 +602,7 @@ compute_effect_size_per_combo <- function(df, value_column, group_column){
     wrapr::let(
         c(response_var=value_column,gc=group_column),
         df_means <- df %>% 
-            group_by(group,value) %>%
+            group_by(mutation_group,value) %>%
             summarize(mean_response=mean(response_var)) %>%
             spread(value,mean_response) %>%
             mutate(effect_size=-log10(Wt/Mut)) %>%
@@ -618,5 +619,5 @@ compute_effect_size_per_combo <- function(df, value_column, group_column){
 compute_driver_associations <- function(df_for_regression,response_var,group_column,group_options){
     res1 <- compute_pvals_per_combo(df_for_regression,response_var, group_column)
     res2 <- compute_effect_size_per_combo(df_for_regression,response_var, group_column)
-    inner_join(res1,res2,by="group") ## returns df with combo,neglog_pval,effect_size
+    inner_join(res1,res2,by="mutation_group") ## returns df with combo,neglog_pval,effect_size
 }
