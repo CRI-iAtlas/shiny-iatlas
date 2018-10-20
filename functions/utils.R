@@ -254,16 +254,15 @@ check_immunefeatures_scatterplot_click_data <- function(
 }
 
 check_driver_violinplot_click_data <- function(
-  eventdata, df_for_regression,subset_df, group_column){
-  
-  if(is.null(eventdata)) {
-    return(FALSE)  
-  } 
-  
-  group_selected <- eventdata[["key"]][[1]][1]
-  group_valid <- group_selected %in% extract2(df_for_regression,"group")
-  
-  all(group_valid)
+    eventdata, df_for_regression,subset_df, group_column){
+    
+    if(is.null(eventdata)) {
+        return(FALSE)  
+    } 
+    group_selected <- eventdata[["key"]][[1]][1]
+    group_valid <- group_selected %in% extract2(df_for_regression,"mutation_group")
+    
+    all(group_valid)
 }
 
 create_group_text_from_plotly <- function(

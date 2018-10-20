@@ -160,6 +160,7 @@ drivers <- function(
             df_for_regression() %>% 
             filter(mutation_group == mutation_group_selected)
         
+        
         mutation <- as.character(df[1,"mutation"])
         
         scatter_plot_selected_row <- filter(scatter_plot_df(), label == mutation_group_selected)
