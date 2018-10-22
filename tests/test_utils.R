@@ -153,7 +153,43 @@ testthat::test_that("get_complete_class_df", {
         testthat::throws_error("result df is empty"))
 })
 
+testthat::test_that("factor_variables_with_df", {
+    test_df1 <- data_frame(
+        "variable_col" = c("var1", "var2", "var3"),
+        "order_col" = c(1,2,3))
+    test_df2 <- data_frame(
+        "variable_col" = c("var4", "var5", "var6"),
+        "order_col" = c(3,2,1))
+    testthat::expect_that(
+        factor_variables_with_df(test_df1, "variable_col", "order_col"),
+        testthat::is_identical_to(factor(c("var1", "var2", "var3"),
+                               levels = c("var1", "var2", "var3"))))
+    testthat::expect_that(
+        factor_variables_with_df(test_df2, "variable_col", "order_col"),
+        testthat::is_identical_to(factor(c("var6", "var5", "var4"),
+                               levels = c("var6", "var5", "var4"))))
+})
 
+testthat::test_that("get_factored_variables_by_class", {
+    test_df <- data_frame(
+        "class col" = c("class1", "class1", "class1", "class2", "class2", "class2"),
+        "variable col" = c("var1", "var2", "var3", "var4", "var5", "var6"),
+        "order col" = c(1,2,3,3,2,1))
+    testthat::expect_that(
+        get_factored_variables_by_class(
+            "class1", test_df, "class col", "variable col", "order col"),
+        testthat::is_identical_to(
+            factor(c("var1", "var2", "var3"), levels = c("var1", "var2", "var3"))))
+    testthat::expect_that(
+        get_factored_variables_by_class(
+            "class2", test_df, "class col", "variable col", "order col"),
+        testthat::is_identical_to(
+            factor(c("var6", "var5", "var4"),  levels = c("var6", "var5", "var4"))))
+    testthat::expect_that(
+        get_factored_variables_by_class(
+            "class3", test_df, "class col", "variable col", "order col"),
+        testthat::throws_error("result df is empty"))
+})
 
 
 
@@ -298,43 +334,9 @@ testthat::test_that("get_complete_class_df", {
 #             "class3" = "#4DAF4A")))
 # })
 # 
-# test_that("get_factored_variables_by_class", {
-#     test_df <- data_frame(
-#         "class col" = c("class1", "class1", "class1", "class2", "class2", "class2"),
-#         "variable col" = c("var1", "var2", "var3", "var4", "var5", "var6"),
-#         "order col" = c(1,2,3,3,2,1))
-#     expect_that(
-#         get_factored_variables_by_class(
-#             "class1", test_df, "class col", "variable col", "order col"),
-#         is_identical_to(
-#             factor(c("var1", "var2", "var3"), levels = c("var1", "var2", "var3"))))
-#     expect_that(
-#         get_factored_variables_by_class(
-#             "class2", test_df, "class col", "variable col", "order col"),
-#         is_identical_to(
-#             factor(c("var6", "var5", "var4"),  levels = c("var6", "var5", "var4"))))
-#     expect_that(
-#         get_factored_variables_by_class(
-#             "class3", test_df, "class col", "variable col", "order col"),
-#         throws_error("empty class: class3"))
-# })
+
 # 
-# test_that("factor_variables_with_df", {
-#     test_df1 <- data_frame(
-#         "variable_col" = c("var1", "var2", "var3"),
-#         "order_col" = c(1,2,3))
-#     test_df2 <- data_frame(
-#         "variable_col" = c("var4", "var5", "var6"),
-#         "order_col" = c(3,2,1))
-#     expect_that(
-#         factor_variables_with_df(test_df1, "variable_col", "order_col"),
-#         is_identical_to(factor(c("var1", "var2", "var3"),
-#                                levels = c("var1", "var2", "var3"))))
-#     expect_that(
-#         factor_variables_with_df(test_df2, "variable_col", "order_col"),
-#         is_identical_to(factor(c("var6", "var5", "var4"),
-#                                levels = c("var6", "var5", "var4"))))
-# })
+
 # 
 
 # 

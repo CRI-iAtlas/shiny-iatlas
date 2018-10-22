@@ -151,7 +151,43 @@ get_complete_class_df <- function(
     return(result_df)
 }
 
+# factor_variables_with_df ----------------------------------------------------
 
+factor_variables_with_df <- function(df, variable_column, order_column){
+    columns <- c(variable_column, order_column)
+    assert_df_has_columns(df, columns)
+
+    result_df <- df %>% 
+        get_complete_df_by_columns(columns) %>% 
+        dplyr::select(VAR = variable_column, ORDER = order_column) %>%
+        dplyr::arrange(ORDER)
+    
+    assert_df_has_rows(result_df)
+    
+    result_df %>% 
+        magrittr::use_series(VAR) %>% 
+        factor(., levels = .)
+}
+
+
+
+# get_factored_variables_by_class ---------------------------------------------
+
+get_factored_variables_by_class <- function(
+    class_name, df, class_column, variable_column, order_column){
+    
+    class_name %>% 
+        get_complete_class_df(df, class_column, variable_column, order_column) %>% 
+        factor_variables_with_df(variable_column, order_column)
+}
+
+get_factored_variables_from_feature_df <- purrr::partial(
+    get_factored_variables_by_class,
+    df = panimmune_data$feature_df,
+    class_column = "Variable Class",
+    variable_column = "FeatureMatrixLabelTSV",
+    order_column = "Variable Class Order" 
+)
 
 ###############################################################################
 # Tests below this line do not have tests yet, newly writen functions 
@@ -168,34 +204,11 @@ get_complete_class_df <- function(
 
 # factor variables ------------------------------------------------------------
 
-get_factored_variables_from_feature_df <- function(class_name){
-    get_factored_variables_by_class(
-        class_name, 
-        df = panimmune_data$feature_df,
-        class_column = "Variable Class",
-        variable_column = "FeatureMatrixLabelTSV",
-        order_column = "Variable Class Order" 
-    )
-}
 
-get_factored_variables_by_class <- function(
-    class_name, df, class_column, variable_column, order_column){
-    
-    class_df <- get_complete_class_df(
-        class_name, df, class_column, variable_column, order_column)
-    if (nrow(class_df) == 0) {
-        stop("empty class: ", class_name)
-    }
-    factor_variables_with_df(class_df, variable_column, order_column)
-}
 
-factor_variables_with_df <- function(df, variable_column, order_column){
-    df %>% 
-        dplyr::select(VAR = variable_column, ORDER = order_column) %>% 
-        dplyr::arrange(ORDER) %>% 
-        magrittr::use_series(VAR) %>% 
-        factor(., levels = .)
-}
+
+
+
 
 
 
