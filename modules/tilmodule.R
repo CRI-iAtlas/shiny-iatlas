@@ -2,10 +2,11 @@ tilmap_UI <- function(id) {
     
     get_friendly_numeric_columns <- function(){
         get_numeric_columns() %>% 
-            purrr::map(get_variable_display_name) %>%
-            compact() %>% 
-            unlist() %>% 
-            discard(~is.na(.))
+            convert_values_between_columns(
+                df = panimmune_data$feature_df,
+                from_column = "FeatureMatrixLabelTSV",
+                to_column = "FriendlyLabel"
+            )
     }
     
     get_friendly_numeric_columns_by_group <- function() {

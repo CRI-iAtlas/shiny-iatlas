@@ -10,16 +10,64 @@
 
 # convert_value_between_columns -----------------------------------------------
 
-# function ----
-
-convert_value_between_columns <- function(value, df, from_column, to_column){
+convert_values <- function(values, df, from_column, to_column){
+    if(!from_column %in% colnames(df)){
+        stop("from column not in df: ", from_column)
+    }
+    if(!to_column %in% colnames(df)){
+        stop("to column not in df: ", to_column)
+    }
     df %>% 
         dplyr::select(FROM = from_column, TO = to_column) %>% 
-        dplyr::filter(FROM == value) %>% 
+        dplyr::filter(FROM %in% values) %>% 
         magrittr::use_series(TO)
 }
 
-# partials ----
+
+# get_group_internal_name -----------------------------------------------------
+
+convert_value_between_columns <- function(
+    input_value, df, from_column, to_column,
+    no_matches = "error",
+    many_matches = "error"){
+    
+    result <- convert_values(
+        input_value, df, from_column, to_column)
+    
+    # 1 match
+    if (length(result) == 1) return(result) 
+    
+    # no matches
+    if (length(result) == 0){
+        if(no_matches == "return_input"){
+            return(input_value)
+        } else if(no_matches == "return_na") {
+            return(NA)
+        } else {
+            stop("input value has no matches: ", input_value)
+        }
+    }
+    
+    # many matches
+    if (length(result) > 1){
+        if(many_matches == "return_result"){
+            return(result)
+        } else {
+            stop("input value: ",
+                 input_value, 
+                 ", has multiple matches: ", 
+                 str_c(result, collapse = ", "))
+        }
+    }
+}
+
+
+get_group_internal_name <- purrr::partial(
+    convert_value_between_columns,
+    df = panimmune_data$feature_df,
+    to_column = "FeatureMatrixLabelTSV",
+    from_column = "FriendlyLabel",
+    no_matches = "return_input")
 
 get_variable_display_name <- purrr::partial(
     convert_value_between_columns,
@@ -39,36 +87,25 @@ get_im_display_name <- purrr::partial(
     to_column = "Gene",
     from_column = "HGNC Symbol")
 
-# get_group_internal_name -----------------------------------------------------
 
-# function ----
+# convert_values_between_columns ----------------------------------------------
 
-convert_value_between_column_if_exists <- function(
-    input_name, df, from_column, to_column){
+convert_values_between_columns <- function(
+    input_values, df, from_column, to_column){
     
-    result <- convert_value_between_columns(
-        input_name, df, from_column, to_column)
-    
-    if (length(result) == 0){
-        return(input_name) 
-    } else if (length(result) == 1) {
-        return(result) 
-    } else {
-        stop("input name has multiple matches: ", 
-             input_name, 
-             " matches: ", 
-             str_c(result, collapse = ", "))
-    }
+    results <- input_values %>% 
+        convert_value_between_columns(
+            df, 
+            from_column, 
+            to_column,
+            no_matches = "return_na",
+            many_matches = "return_result") %>% 
+        purrr::compact() %>% 
+        purrr::discard(~is.na(.))
 }
 
-# partials ----
 
-get_group_internal_name <- purrr::partial(
-    convert_value_between_column_if_exists,
-    df = panimmune_data$feature_df,
-    to_column = "FeatureMatrixLabelTSV",
-    from_column = "FriendlyLabel"
-)
+
 
 
 ###############################################################################
@@ -79,7 +116,6 @@ get_group_internal_name <- purrr::partial(
 
 
 
-# these switch between internal name and display name -------------------------
 
 
 
@@ -237,14 +273,11 @@ get_display_numeric_columns <- function(
     df %>% 
         dplyr::select_if(is.numeric) %>% 
         colnames() %>% 
-        purrr::map(function(name) convert_value_between_columns(
-            name,
-            translation_df,
-            df_column,
-            translation_df_column)) %>% 
-        purrr::compact() %>% 
-        unlist() %>% 
-        purrr::discard(~is.na(.))
+        convert_values_between_columns(
+            df = panimmune_data$feature_df,
+            from_column = "FeatureMatrixLabelTSV",
+            to_column = "FriendlyLabel"
+        )
 }
 
 df_to_nested_list <- function(df, group_column, key_column, value_column){

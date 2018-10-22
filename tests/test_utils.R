@@ -6,6 +6,33 @@ purrr::walk(config_yaml$libraries, library, character.only = T)
 purrr::walk(config_yaml$function_files, source)
 
 
+testthat::test_that("convert_values", {
+    test_df1 <- data_frame("col1" = c("value1", "value2"),
+                           "col2" = c("A", "B"),
+                           "col3" = c("C", "C"))
+    testthat::expect_that(
+        convert_values("value1", test_df1, "col1", "col2"), 
+        testthat::is_identical_to("A"))
+    testthat::expect_that(
+        convert_values("value2", test_df1, "col1", "col2"), 
+        testthat::is_identical_to("B"))
+    testthat::expect_that(
+        convert_values("value1", test_df1, "col1", "col3"), 
+        testthat::is_identical_to("C"))
+    testthat::expect_that(
+        convert_values("C", test_df1, "col3", "col1"), 
+        testthat::is_identical_to(c("value1", "value2")))
+    testthat::expect_that(
+        convert_values("value3", test_df1, "col1", "col2"), 
+        testthat::is_identical_to(vector(mode = "character", length = 0)))
+    testthat::expect_that(
+        convert_values("value3", test_df1, "cola", "col2"), 
+        testthat::throws_error("from column not in df: cola" ))
+    testthat::expect_that(
+        convert_values("value3", test_df1, "col1", "cola"), 
+        testthat::throws_error("to column not in df: cola" ))
+})
+
 testthat::test_that("convert_value_between_columns", {
     test_df1 <- data_frame("col1" = c("value1", "value2"),
                            "col2" = c("A", "B"),
@@ -13,33 +40,44 @@ testthat::test_that("convert_value_between_columns", {
     testthat::expect_that(
         convert_value_between_columns("value1", test_df1, "col1", "col2"), 
         testthat::is_identical_to("A"))
+    
     testthat::expect_that(
-        convert_value_between_columns("value2", test_df1, "col1", "col2"), 
-        testthat::is_identical_to("B"))
+        convert_value_between_columns("C", test_df1, "col3", "col1"),
+        testthat::throws_error("input value: C, has multiple matches: value1, value2"))
     testthat::expect_that(
-        convert_value_between_columns("value1", test_df1, "col1", "col3"), 
-        testthat::is_identical_to("C"))
-    testthat::expect_that(
-        convert_value_between_columns("C", test_df1, "col3", "col1"), 
+        convert_value_between_columns("C", test_df1, "col3", "col1", many_matches = "return_result"),
         testthat::is_identical_to(c("value1", "value2")))
+    
     testthat::expect_that(
-        convert_value_between_columns("value3", test_df1, "col1", "col2"), 
-        testthat::is_identical_to(vector(mode = "character", length = 0)))
+        convert_value_between_columns("value3", test_df1, "col1", "col2"),
+        testthat::throws_error("input value has no matches: value3"))
+    testthat::expect_that(
+        convert_value_between_columns("value3", test_df1, "col1", "col2", no_matches = "return_input"),
+        testthat::is_identical_to("value3"))
+    testthat::expect_that(
+        convert_value_between_columns("value3", test_df1, "col1", "col2", no_matches = "return_na"),
+        testthat::is_identical_to(NA))
 })
 
-testthat::test_that("get_group_internal_name", {
-    test_df1 <- data_frame("FriendlyLabel" = c("value1", "value3", "value3"),
-                           "FeatureMatrixLabelTSV" = c("A", "B", "C"))
+testthat::test_that("convert_values_between_columns", {
+    test_df1 <- data_frame("col1" = c("value1", "value2"),
+                           "col2" = c("A", "B"),
+                           "col3" = c("C", NA),
+                           "col4" = c(NA, NA))
     testthat::expect_that(
-        get_group_internal_name("value1", test_df1),
+        convert_values_between_columns("value1", test_df1, "col1", "col2"), 
         testthat::is_identical_to("A"))
     testthat::expect_that(
-        get_group_internal_name("value2", test_df1),
-        testthat::is_identical_to("value2"))
+        convert_values_between_columns(c("value1", "value2"), test_df1, "col1", "col2"), 
+        testthat::is_identical_to(c("A", "B")))
     testthat::expect_that(
-        get_group_internal_name("value3", test_df1),
-        testthat::throws_error("group name has multiple matches: value3 matches: B, C"))
+        convert_values_between_columns(c("value1", "value2"), test_df1, "col1", "col3"), 
+        testthat::is_identical_to(c("C")))
+    testthat::expect_that(
+        convert_values_between_columns(c("value1", "value2"), test_df1, "col1", "col4"), 
+        testthat::is_identical_to(vector(mode = "logical", length = 0)))
 })
+
 
 
 
