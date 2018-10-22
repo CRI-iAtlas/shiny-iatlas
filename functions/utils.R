@@ -206,7 +206,7 @@ get_column_names_of_type <- function(df, func){
         dplyr::select_if(func) %>% 
         colnames() 
     if(length(col_names) == 0) {
-        stop("df has no columns from slection function")
+        stop("df has no columns from selection function")
     }
     return(col_names)
 }
@@ -265,7 +265,7 @@ get_nested_list_by_column_type <- function(
         create_nested_list_by_class()
 }
 
-get_feature_df_nested_list <- purrr:: partial(
+get_feature_df_nested_list <- purrr::partial(
     get_nested_list_by_column_type,
     feature_df = panimmune_data$feature_df,
     data_df = panimmune_data$fmx_df,
