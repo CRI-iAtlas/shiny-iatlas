@@ -1,42 +1,89 @@
+###############################################################################
+# These functions have been refactored and have unit tests.
+# Do not make any modifications to these!
+# If you want to make a modification, please copy and paste the function the
+# lower section and call it <function_name>2.
+# Make any needed modifcations to the coipied function.
+# The new functionality will get unut tests and be folded back into the 
+# original function.
+###############################################################################
 
-# these switch between internal name and display name -------------------------
+# convert_value_between_columns -----------------------------------------------
 
-get_group_internal_name <- function(input_name, df = panimmune_data$feature_df){
-    internal_name <- get_variable_internal_name(input_name, df)
-    if (length(internal_name) == 0){
-        return(input_name) # user supplied group names
-    } else if (length(internal_name) == 1) {
-        return(internal_name) # standard group names
+# function ----
+
+convert_value_between_columns <- function(value, df, from_column, to_column){
+    df %>% 
+        dplyr::select(FROM = from_column, TO = to_column) %>% 
+        dplyr::filter(FROM == value) %>% 
+        magrittr::use_series(TO)
+}
+
+# partials ----
+
+get_variable_display_name <- purrr::partial(
+    convert_value_between_columns,
+    df = panimmune_data$feature_df,
+    from_column = "FeatureMatrixLabelTSV",
+    to_column = "FriendlyLabel")
+
+get_variable_internal_name <- purrr::partial(
+    convert_value_between_columns,
+    df = panimmune_data$feature_df,
+    to_column = "FeatureMatrixLabelTSV",
+    from_column = "FriendlyLabel")
+
+get_im_display_name <- purrr::partial(
+    convert_value_between_columns,
+    df = panimmune_data$im_direct_relationships,
+    to_column = "Gene",
+    from_column = "HGNC Symbol")
+
+# get_group_internal_name -----------------------------------------------------
+
+# function ----
+
+convert_value_between_column_if_exists <- function(
+    input_name, df, from_column, to_column){
+    
+    result <- convert_value_between_columns(
+        input_name, df, from_column, to_column)
+    
+    if (length(result) == 0){
+        return(input_name) 
+    } else if (length(result) == 1) {
+        return(result) 
     } else {
-        stop("group name has multiple matches: ", 
+        stop("input name has multiple matches: ", 
              input_name, 
              " matches: ", 
-             str_c(internal_name, collapse = ", "))
+             str_c(result, collapse = ", "))
     }
 }
 
-get_variable_display_name <- function(name, df = panimmune_data$feature_df){
-    convert_value_between_columns(
-        df, name, "FeatureMatrixLabelTSV", "FriendlyLabel")
-}
+# partials ----
 
-get_variable_internal_name <- function(name, df = panimmune_data$feature_df){
-    convert_value_between_columns(
-        df, name, "FriendlyLabel", "FeatureMatrixLabelTSV")
-}
+get_group_internal_name <- purrr::partial(
+    convert_value_between_column_if_exists,
+    df = panimmune_data$feature_df,
+    to_column = "FeatureMatrixLabelTSV",
+    from_column = "FriendlyLabel"
+)
 
-get_im_display_name <- function(
-    name, df = panimmune_data$im_direct_relationships){
-    
-    convert_value_between_columns(df, name, "HGNC Symbol", "Gene")
-}
 
-convert_value_between_columns <- function(df, value, old_col, new_col){
-    df %>% 
-        dplyr::select(OLD = old_col, NEW = new_col) %>% 
-        dplyr::filter(OLD == value) %>% 
-        magrittr::use_series(NEW)
-}
+###############################################################################
+# Tests below this line do not have tests yet, newly writen functions 
+###############################################################################
+
+
+
+
+
+# these switch between internal name and display name -------------------------
+
+
+
+
 
 # factor variables ------------------------------------------------------------
 
@@ -191,8 +238,8 @@ get_display_numeric_columns <- function(
         dplyr::select_if(is.numeric) %>% 
         colnames() %>% 
         purrr::map(function(name) convert_value_between_columns(
-            translation_df,
             name,
+            translation_df,
             df_column,
             translation_df_column)) %>% 
         purrr::compact() %>% 
