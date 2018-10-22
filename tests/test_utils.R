@@ -191,6 +191,42 @@ testthat::test_that("get_factored_variables_by_class", {
         testthat::throws_error("result df is empty"))
 })
 
+testthat::test_that("df_to_nested_list", {
+    test_df1 <- data_frame(
+        "class_col" = c("class1", "class1", "class1", "class2", "class2", "class3"),
+        "internal_col" = c("name1", "name2", "name3", "name4", "name5", "name6"),
+        "display_col" = c("value1", "value2", "value3", "value4", "value5", "value6"))
+    testthat::expect_that(
+        df_to_nested_list(test_df1, "class_col", "internal_col", "display_col"),
+        testthat::is_identical_to(list(
+            "class1" = c("value1" = "name1",
+                         "value2" = "name2",
+                         "value3" = "name3"),
+            "class2" = c("value4" = "name4",
+                         "value5" = "name5"),
+            "class3" = c("value6" = "name6"))))
+})
+
+testthat::test_that("get_column_names_of_type", {
+    test_df <- data_frame(
+        "char_col" = c("class1"),
+        "int_col" = c(1L),
+        "double_col" = c(1.1),
+        "log_col" = c(T))
+    testthat::expect_that(
+        get_column_names_of_type(test_df, purrr::is_integer),
+        testthat::is_identical_to(c("int_col")))
+    testthat::expect_that(
+        get_column_names_of_type(test_df, purrr::is_double),
+        testthat::is_identical_to(c("double_col")))
+    testthat::expect_that(
+        get_column_names_of_type(test_df, purrr::is_numeric),
+        testthat::is_identical_to(c("int_col", "double_col")))
+    testthat::expect_that(
+        get_column_names_of_type(test_df, is.factor),
+        testthat::throws_error("df has no columns from slection function"))
+})
+
 
 
 # 
@@ -240,21 +276,7 @@ testthat::test_that("get_factored_variables_by_class", {
 #             "class3" = c("value6" = "name6"))))
 # })
 # 
-# test_that("df_to_nested_list", {
-#     test_df1 <- data_frame(
-#         "class_col" = c("class1", "class1", "class1", "class2", "class2", "class3"),
-#         "internal_col" = c("name1", "name2", "name3", "name4", "name5", "name6"),
-#         "display_col" = c("value1", "value2", "value3", "value4", "value5", "value6"))
-#     expect_that(
-#         df_to_nested_list(test_df1, "class_col", "internal_col", "display_col"),
-#         is_identical_to(list(
-#             "class1" = c("value1" = "name1",
-#                          "value2" = "name2",
-#                          "value3" = "name3"),
-#             "class2" = c("value4" = "name4",
-#                          "value5" = "name5"),
-#             "class3" = c("value6" = "name6"))))
-# })
+
 # 
 # test_that("get_display_numeric_columns", {
 #     test_df1 <- data_frame(

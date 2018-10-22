@@ -103,10 +103,8 @@ get_im_display_name <- purrr::partial(
 
 # convert_values_between_columns ----------------------------------------------
 
-convert_values_between_columns <- function(
-    input_values, df, from_column, to_column){
-    
-    results <- input_values %>% 
+convert_values_between_columns <- function(values, df, from_column, to_column){
+    results <- values %>% 
         convert_value_between_columns(
             df, 
             from_column, 
@@ -125,7 +123,8 @@ get_complete_df_by_columns <- function(df, columns){
     assert_df_has_columns(df, columns)
     result_df <- df %>%
         dplyr::select(columns) %>%
-        tidyr::drop_na()
+        tidyr::drop_na() %>% 
+        dplyr::distinct()
     assert_df_has_rows(result_df)
     return(result_df)
 }
@@ -189,29 +188,57 @@ get_factored_variables_from_feature_df <- purrr::partial(
     order_column = "Variable Class Order" 
 )
 
+
+# df_to_nested_list -----------------------------------------------------------
+
+df_to_nested_list <- function(df, group_column, key_column, value_column){
+    df %>% 
+        get_complete_df_by_columns(c(group_column, value_column, key_column)) %>% 
+        tidyr::nest(-1) %>%
+        dplyr::mutate(data = purrr::map(data, tibble::deframe)) %>%
+        tibble::deframe()
+}
+
+# get_column_names_of_type ----------------------------------------------------
+
+get_column_names_of_type <- function(df, func){
+    col_names <- df %>% 
+        dplyr::select_if(func) %>% 
+        colnames() 
+    if(length(col_names) == 0) {
+        stop("df has no columns from slection function")
+    }
+    return(col_names)
+}
+
+# create_nested_list_by_class -------------------------------------------------
+
+create_nested_list_by_class <- function(
+    class_column, df, display_column, internal_column){
+    
+    df %>%
+        dplyr::select(
+            CLASS = class_column,
+            DISPLAY = display_column,
+            INTERNAL = internal_column) %>%
+        dplyr::mutate(CLASS = ifelse(is.na(CLASS), "Other", CLASS)) %>%
+        df_to_nested_list(
+            group_column = "CLASS",
+            key_column = "INTERNAL",
+            value_column = "DISPLAY")
+}
+
+get_immunomodulator_nested_list <- purrr::partial(
+    create_nested_list_by_class,
+    df = panimmune_data$im_direct_relationships,
+    display_column = "Gene",
+    internal_column = "HGNC Symbol"
+)
+
+
 ###############################################################################
 # Tests below this line do not have tests yet, newly writen functions 
 ###############################################################################
-
-
-
-
-
-
-
-
-
-
-# factor variables ------------------------------------------------------------
-
-
-
-
-
-
-
-
-
 
 
 
@@ -267,23 +294,7 @@ get_feature_df_nested_list <- function(){
 }
 
 
-get_immunomodulator_nested_list <- function(
-    class_column = "Gene Family",
-    display_column = "Gene",
-    internal_column = "HGNC Symbol"){
-    
-    panimmune_data$im_direct_relationships %>%
-        dplyr::select(
-            CLASS = class_column,
-            DISPLAY = display_column,
-            INTERNAL = internal_column) %>% 
-        dplyr::mutate(CLASS = ifelse(is.na(CLASS), "Other", CLASS)) %>%
-        drop_na() %>% 
-        df_to_nested_list(
-            group_column = "CLASS",
-            key_column = "INTERNAL",
-            value_column = "DISPLAY")
-}
+
 
 get_nested_list1 <- function(
     feature_df,
@@ -292,17 +303,19 @@ get_nested_list1 <- function(
     internal_column,
     display_column){
     
-    numeric_columns <- get_display_numeric_columns(
-        df = data_df,
-        translation_df = feature_df,
-        df_column = internal_column,
-        translation_df_column = display_column)
+    numeric_internal_columns <- get_column_names_of_type(data_df, is.numeric)
+    numeric_display_columns <- convert_values_between_columns(
+        values = numeric_internal_columns,
+        df = feature_df,
+        from_column = internal_column,
+        to_column = display_column
+    )
     feature_df %>%
         dplyr::select(
             CLASS = class_column,
             DISPLAY = display_column,
             INTERNAL = internal_column) %>%
-        dplyr::filter(DISPLAY %in% numeric_columns) %>%
+        dplyr::filter(DISPLAY %in% numeric_display_columns) %>%
         dplyr::mutate(CLASS = ifelse(is.na(CLASS), "Other", CLASS)) %>%
         df_to_nested_list(
             group_column = "CLASS",
@@ -310,26 +323,9 @@ get_nested_list1 <- function(
             value_column = "DISPLAY")
 }
 
-get_display_numeric_columns <- function(
-    df, translation_df, df_column, translation_df_column){
-    
-    df %>% 
-        dplyr::select_if(is.numeric) %>% 
-        colnames() %>% 
-        convert_values_between_columns(
-            df = panimmune_data$feature_df,
-            from_column = "FeatureMatrixLabelTSV",
-            to_column = "FriendlyLabel"
-        )
-}
 
-df_to_nested_list <- function(df, group_column, key_column, value_column){
-    df %>% 
-        dplyr::select(group_column, value_column, key_column) %>% 
-        tidyr::nest(-1) %>%
-        dplyr::mutate(data = purrr::map(data, tibble::deframe)) %>% 
-        tibble::deframe()
-}
+
+
 
 
 # -----------------------------------------------------------------------------
