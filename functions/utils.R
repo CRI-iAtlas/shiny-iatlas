@@ -214,7 +214,10 @@ get_column_names_of_type <- function(df, func){
 # create_nested_list_by_class -------------------------------------------------
 
 create_nested_list_by_class <- function(
-    class_column, df, display_column, internal_column){
+    df, 
+    class_column = "CLASS",
+    display_column = "DISPLAY",
+    internal_column = "INTERNAL"){
     
     df %>%
         dplyr::select(
@@ -233,6 +236,43 @@ get_immunomodulator_nested_list <- purrr::partial(
     df = panimmune_data$im_direct_relationships,
     display_column = "Gene",
     internal_column = "HGNC Symbol"
+)
+
+# get_nested_list_by_column_type ----------------------------------------------
+
+get_nested_list_by_column_type <- function(
+    feature_df,
+    data_df,
+    class_column,
+    internal_column,
+    display_column,
+    column_function){
+    
+    display_columns <- data_df %>% 
+        get_column_names_of_type(column_function) %>% 
+        convert_values_between_columns(
+            df = feature_df,
+            from_column = internal_column,
+            to_column = display_column
+        )
+    
+    feature_df %>%
+        dplyr::select(
+            CLASS = class_column,
+            DISPLAY = display_column,
+            INTERNAL = internal_column) %>% 
+        dplyr::filter(DISPLAY %in% display_columns) %>%
+        create_nested_list_by_class()
+}
+
+get_feature_df_nested_list <- purrr:: partial(
+    get_nested_list_by_column_type,
+    feature_df = panimmune_data$feature_df,
+    data_df = panimmune_data$fmx_df,
+    class_column = "Variable Class",
+    internal_column = "FeatureMatrixLabelTSV",
+    display_column = "FriendlyLabel",
+    column_function = is.numeric
 )
 
 
@@ -279,54 +319,6 @@ create_user_group_colors <- function(sample_group_label, group_df){
     colors <- RColorBrewer::brewer.pal(length(groups), "Set1")
     magrittr::set_names(colors, groups)
 }
-
-
-# -----------------------------------------------------------------------------
-
-get_feature_df_nested_list <- function(){
-    get_nested_list1(
-        feature_df = panimmune_data$feature_df,
-        data_df = panimmune_data$fmx_df,
-        class_column = "Variable Class",
-        internal_column = "FeatureMatrixLabelTSV",
-        display_column = "FriendlyLabel"
-    )
-}
-
-
-
-
-get_nested_list1 <- function(
-    feature_df,
-    data_df,
-    class_column,
-    internal_column,
-    display_column){
-    
-    numeric_internal_columns <- get_column_names_of_type(data_df, is.numeric)
-    numeric_display_columns <- convert_values_between_columns(
-        values = numeric_internal_columns,
-        df = feature_df,
-        from_column = internal_column,
-        to_column = display_column
-    )
-    feature_df %>%
-        dplyr::select(
-            CLASS = class_column,
-            DISPLAY = display_column,
-            INTERNAL = internal_column) %>%
-        dplyr::filter(DISPLAY %in% numeric_display_columns) %>%
-        dplyr::mutate(CLASS = ifelse(is.na(CLASS), "Other", CLASS)) %>%
-        df_to_nested_list(
-            group_column = "CLASS",
-            key_column = "INTERNAL",
-            value_column = "DISPLAY")
-}
-
-
-
-
-
 
 # -----------------------------------------------------------------------------
 

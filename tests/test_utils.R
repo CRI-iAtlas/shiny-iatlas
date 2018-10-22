@@ -227,6 +227,40 @@ testthat::test_that("get_column_names_of_type", {
         testthat::throws_error("df has no columns from slection function"))
 })
 
+testthat::test_that("get_feature_df_nested_list", {
+    test_data_df <- data_frame(
+        "name1" = c(1L, 2L, 3L),
+        "name2" = c(1.1, 2.0, 3),
+        "name3" = c(1L, 2L, 3L),
+        "name4" = c(1.1, 2.0, 3),
+        "name5" = c(1L, 2L, 3L),
+        "name6" = c(1.1, 2.0, 3),
+        "name7" = c("A", "B", "C"),
+        "name8" = c(T, F, F),
+        "name9" = factor(c("A", "B", "C")))
+    test_feature_df <- data_frame(
+        "class_col" = c(
+            "class1", "class1", "class1", "class2", "class2", "class3",
+            "class4", "class4", "class4"),
+        "internal_col" = c(
+            "name1", "name2", "name3", "name4", "name5", "name6",
+            "name7", "name8", "name9"),
+        "display_col" = c(
+            "value1", "value2", "value3", "value4", "value5", "value6",
+            "value7", "value8", "value9"))
+    # testthat::expect_that(
+    #     get_feature_df_nested_list(
+    #         test_feature_df, test_data_df, "class_col", "internal_col", "display_col"),
+    #     testthat::is_identical_to(list(
+    #         "class1" = c("value1" = "name1",
+    #                      "value2" = "name2",
+    #                      "value3" = "name3"),
+    #         "class2" = c("value4" = "name4",
+    #                      "value5" = "name5"),
+    #         "class3" = c("value6" = "name6"))))
+})
+
+
 
 
 # 
@@ -243,39 +277,7 @@ testthat::test_that("get_column_names_of_type", {
 #         is_identical_to(c("class1", "class3")))
 # })
 # 
-# test_that("get_feature_df_nested_list", {
-#     test_data_df <- data_frame(
-#         "name1" = c(1L, 2L, 3L),
-#         "name2" = c(1.1, 2.0, 3),
-#         "name3" = c(1L, 2L, 3L),
-#         "name4" = c(1.1, 2.0, 3),
-#         "name5" = c(1L, 2L, 3L),
-#         "name6" = c(1.1, 2.0, 3),
-#         "name7" = c("A", "B", "C"),
-#         "name8" = c(T, F, F),
-#         "name9" = factor(c("A", "B", "C")))
-#     test_feature_df <- data_frame(
-#         "class_col" = c(
-#             "class1", "class1", "class1", "class2", "class2", "class3",
-#             "class4", "class4", "class4"),
-#         "internal_col" = c(
-#             "name1", "name2", "name3", "name4", "name5", "name6",
-#             "name7", "name8", "name9"),
-#         "display_col" = c(
-#             "value1", "value2", "value3", "value4", "value5", "value6",
-#             "value7", "value8", "value9"))
-#     expect_that(
-#         get_feature_df_nested_list(
-#             test_feature_df, test_data_df, "class_col", "internal_col", "display_col"),
-#         is_identical_to(list(
-#             "class1" = c("value1" = "name1",
-#                          "value2" = "name2",
-#                          "value3" = "name3"),
-#             "class2" = c("value4" = "name4",
-#                          "value5" = "name5"),
-#             "class3" = c("value6" = "name6"))))
-# })
-# 
+
 
 # 
 # test_that("get_display_numeric_columns", {
