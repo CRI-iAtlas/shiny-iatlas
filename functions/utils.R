@@ -8,15 +8,28 @@
 # original function.
 ###############################################################################
 
-# convert_value_between_columns -----------------------------------------------
+# assert_df_has_columns ------------------------------------------------------------
+
+assert_df_has_columns <- function(df, columns){
+    missing_columns <- columns[!columns %in% colnames(df)]
+    if(length(missing_columns) != 0){
+        stop("df has missing columns: ",
+             str_c(missing_columns, collapse = ", "))
+    }
+}
+
+# assert_df_has_rows ----------------------------------------------------------
+
+assert_df_has_rows <- function(df){
+    if(nrow(df) == 0){
+        stop("result df is empty")
+    }
+}
+
+# convert_values --------------------------------------------------------------
 
 convert_values <- function(values, df, from_column, to_column){
-    if(!from_column %in% colnames(df)){
-        stop("from column not in df: ", from_column)
-    }
-    if(!to_column %in% colnames(df)){
-        stop("to column not in df: ", to_column)
-    }
+    assert_df_has_columns(df, c(from_column, to_column))
     df %>% 
         dplyr::select(FROM = from_column, TO = to_column) %>% 
         dplyr::filter(FROM %in% values) %>% 
@@ -24,7 +37,7 @@ convert_values <- function(values, df, from_column, to_column){
 }
 
 
-# get_group_internal_name -----------------------------------------------------
+# convert_value_between_columns -----------------------------------------------
 
 convert_value_between_columns <- function(
     input_value, df, from_column, to_column,
@@ -106,6 +119,38 @@ convert_values_between_columns <- function(
 
 
 
+# get_complete_df_by_columns --------------------------------------------------
+
+get_complete_df_by_columns <- function(df, columns){
+    assert_df_has_columns(df, columns)
+    result_df <- df %>%
+        dplyr::select(columns) %>%
+        tidyr::drop_na()
+    assert_df_has_rows(result_df)
+    return(result_df)
+}
+
+# get_complete_class_df -------------------------------------------------------
+
+get_complete_class_df <- function(
+    class_name, df, class_column, variable_column, order_column){
+    
+    columns <- c(class_column, variable_column, order_column)
+    assert_df_has_columns(df, columns)
+    
+    result_df <- df %>% 
+        dplyr::select(CLASS = class_column, variable_column, order_column) %>% 
+        get_complete_df_by_columns(c(
+            "CLASS",
+            variable_column,
+            order_column)) %>% 
+        dplyr::filter(CLASS == class_name) %>% 
+        dplyr::select(variable_column, order_column)
+    
+    assert_df_has_rows(result_df)
+    return(result_df)
+}
+
 
 
 ###############################################################################
@@ -152,25 +197,10 @@ factor_variables_with_df <- function(df, variable_column, order_column){
         factor(., levels = .)
 }
 
-get_complete_class_df <- function(
-    class_name, df, class_column, variable_column, order_column){
-    
-    df %>% 
-        dplyr::select(CLASS = class_column, variable_column, order_column) %>% 
-        get_complete_df_by_columns(c(
-            "CLASS",
-            variable_column,
-            order_column)) %>% 
-        dplyr::filter(CLASS == class_name) %>% 
-        dplyr::select(variable_column, order_column)
-}
 
 
-get_complete_df_by_columns <- function(df, columns){
-    df %>%
-        dplyr::select(columns) %>%
-        .[complete.cases(.),] 
-}
+
+
 
 # colors for plotting groups --------------------------------------------------
 

@@ -5,6 +5,34 @@ config_yaml <- yaml::read_yaml("configuration.yaml")
 purrr::walk(config_yaml$libraries, library, character.only = T)
 purrr::walk(config_yaml$function_files, source)
 
+testthat::test_that("assert_df_has_columns", {
+    test_df1 <- data_frame("col1" = c("value1", "value2"),
+                           "col2" = c("A", "B"),
+                           "col3" = c("C", "C"))
+    testthat::expect_that(
+        assert_df_has_columns(test_df1, c("col1", "col2")), 
+        testthat::is_identical_to(NULL))
+    testthat::expect_that(
+        assert_df_has_columns(test_df1, c("cola", "col2")),
+        testthat::throws_error("df has missing columns: cola" ))
+    testthat::expect_that(
+        assert_df_has_columns(test_df1, c("cola", "colb")),
+        testthat::throws_error("df has missing columns: cola, colb" ))
+})
+
+testthat::test_that("assert_df_has_rows", {
+    test_df1 <- data_frame("col1" = c("value1", "value2"),
+                           "col2" = c("A", "B"),
+                           "col3" = c("C", "C"))
+    test_df2 <- test_df1 %>% 
+        filter(col1 == "value3")
+    testthat::expect_that(
+        assert_df_has_rows(test_df1),
+        testthat::is_identical_to(NULL))
+    testthat::expect_that(
+        assert_df_has_rows(test_df2),
+        testthat::throws_error("result df is empty"))
+})
 
 testthat::test_that("convert_values", {
     test_df1 <- data_frame("col1" = c("value1", "value2"),
@@ -27,10 +55,10 @@ testthat::test_that("convert_values", {
         testthat::is_identical_to(vector(mode = "character", length = 0)))
     testthat::expect_that(
         convert_values("value3", test_df1, "cola", "col2"), 
-        testthat::throws_error("from column not in df: cola" ))
+        testthat::throws_error("df has missing columns: cola" ))
     testthat::expect_that(
         convert_values("value3", test_df1, "col1", "cola"), 
-        testthat::throws_error("to column not in df: cola" ))
+        testthat::throws_error("df has missing columns: cola" ))
 })
 
 testthat::test_that("convert_value_between_columns", {
@@ -76,6 +104,53 @@ testthat::test_that("convert_values_between_columns", {
     testthat::expect_that(
         convert_values_between_columns(c("value1", "value2"), test_df1, "col1", "col4"), 
         testthat::is_identical_to(vector(mode = "logical", length = 0)))
+})
+
+testthat::test_that("get_complete_df_by_columns",{
+    test_df <- data_frame(
+        "col1" = c("val1", "val2", "val3"),
+        "col2" = c(NA, 1, 2),
+        "col3" = c(NA, NA, NA))
+    testthat::expect_that(
+        get_complete_df_by_columns(test_df, c("col1")),
+        testthat::is_identical_to(data_frame(
+            "col1" = c("val1", "val2", "val3"))))
+    testthat::expect_that(
+        get_complete_df_by_columns(test_df, c("col1", "col2")),
+        testthat::is_identical_to(data_frame(
+            "col1" = c("val2", "val3"),
+            "col2" = c(1, 2))))
+    testthat::expect_that(
+        get_complete_df_by_columns(test_df, c("col1", "col4")),
+        testthat::throws_error("df has missing columns: col4"))
+    testthat::expect_that(
+        get_complete_df_by_columns(test_df, c("col1", "col3")),
+        testthat::throws_error("result df is empty"))
+})
+
+testthat::test_that("get_complete_class_df", {
+    test_df <- data_frame(
+        "class col" = c("class1", "class1", "class1", "class2", "class2", "class2"),
+        "variable col" = c("var1", "var2", "var3", "var4", "var5", "var6"),
+        "order col" = c(1,2,3,3,2,1))
+    result_df1 <- data_frame(
+        "variable col" = c("var1", "var2", "var3"),
+        "order col" = c(1,2,3))
+    result_df2 <- data_frame(
+        "variable col" = c("var4", "var5", "var6"),
+        "order col" = c(3,2,1))
+    testthat::expect_that(
+        get_complete_class_df("class1", test_df, "class col", "variable col", "order col"),
+        testthat::is_identical_to(result_df1))
+    testthat::expect_that(
+        get_complete_class_df("class2", test_df, "class col", "variable col", "order col"),
+        testthat::is_identical_to(result_df2))
+    testthat::expect_that(
+        get_complete_class_df("class2", test_df, "class col2", "variable col", "order col"),
+        testthat::throws_error("df has missing columns: class col2"))
+    testthat::expect_that(
+        get_complete_class_df("class4", test_df, "class col", "variable col", "order col"),
+        testthat::throws_error("result df is empty"))
 })
 
 
@@ -261,39 +336,9 @@ testthat::test_that("convert_values_between_columns", {
 #                                levels = c("var6", "var5", "var4"))))
 # })
 # 
-# test_that("get_complete_class_df", {
-#     test_df <- data_frame(
-#         "class col" = c("class1", "class1", "class1", "class2", "class2", "class2"),
-#         "variable col" = c("var1", "var2", "var3", "var4", "var5", "var6"),
-#         "order col" = c(1,2,3,3,2,1))
-#     result_df1 <- data_frame(
-#         "variable col" = c("var1", "var2", "var3"),
-#         "order col" = c(1,2,3))
-#     result_df2 <- data_frame(
-#         "variable col" = c("var4", "var5", "var6"),
-#         "order col" = c(3,2,1))
-#     expect_that(
-#         get_complete_class_df("class1", test_df, "class col", "variable col", "order col"),
-#         is_identical_to(result_df1))
-#     expect_that(
-#         get_complete_class_df("class2", test_df, "class col", "variable col", "order col"),
-#         is_identical_to(result_df2))
-# })
+
 # 
-# test_that("get_complete_df_by_columns",{
-#     test_df <- data_frame(
-#         "col1" = c("val1", "val2", "val3"),
-#         "col2" = c(NA, 1, 2))
-#     expect_that(
-#         get_complete_df_by_columns(test_df, c("col1")),
-#         is_identical_to(data_frame(
-#             "col1" = c("val1", "val2", "val3"))))
-#     expect_that(
-#         get_complete_df_by_columns(test_df, c("col1", "col2")),
-#         is_identical_to(data_frame(
-#             "col1" = c("val2", "val3"),
-#             "col2" = c(1, 2))))
-# })
+
 # 
 
 # 
