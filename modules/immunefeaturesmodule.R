@@ -124,25 +124,34 @@ immunefeatures <- function(
             group_options = sample_groups)
     })
     
+    immunefeatures_df <- reactive({
+        
+        sample_groups <- get_unique_column_values(
+            group_internal_choice(), 
+            subset_df())
+        
+        build_immunefeatures_df(
+            subset_df(),
+            group_column = group_internal_choice(),
+            value1_column = input$heatmap_values,
+            value2_columns = hm_variables(),
+            group_options = sample_groups)
+
+    })
+    
     # plots ----
     output$violinPlot <- renderPlotly({
-        display_x  <- group_display_choice()
-        internal_x <- group_internal_choice()
-        internal_y <- input$violin_y
-        display_y  <- get_variable_display_name(internal_y)
-        
-        
-        print(internal_x)
-        print(internal_y)
-        plot_df <- build_violinplot_df(subset_df(), x_col = internal_x, y_col = internal_y) 
-        print(plot_df)
 
+        display_y  <- get_variable_display_name(input$violin_y)
         
+        plot_df <- build_immunomodulator_violin_plot_df(
+            subset_df(), 
+            x_col = group_internal_choice(),
+            y_col = input$violin_y) 
+
         create_violinplot(
             plot_df,
-            x_col = internal_x, 
-            y_col = internal_y,
-            xlab = display_x,
+            xlab = group_display_choice(),
             ylab = display_y,
             fill_colors = plot_colors(),
             source_name = "violin"
@@ -160,6 +169,10 @@ immunefeatures <- function(
             group_column = group_internal_choice(),
             value1_column = input$heatmap_values,
             value2_columns = hm_variables())
+        immunefeatures_correlation_matrix <- 
+            build_immunefeatures_correlation_matrix(immunefeatures_df())
+        print(heatmap_corr_mat)
+        print(immunefeatures_correlation_matrix)
         create_heatmap(heatmap_corr_mat, "heatplot")
     })
     

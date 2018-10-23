@@ -66,11 +66,54 @@ build_immunomodulator_histogram_df <- function(df, selected_group){
 
 # immunefeatures functions ----------------------------------------------------
 
-# build_immunefeatures_violin_plot_df <- function(df){
-#     df %>%
-#         dplyr::select(x = GROUP, y = LOG_COUNT) %>% 
-#         build_violinplot_df()
-# }
+build_immunefeatures_df <- function(
+    df, 
+    group_column, 
+    value1_column, 
+    value2_columns,
+    group_options, 
+    id_column = "ParticipantBarcode"){
+    
+    assert_df_has_columns(
+        df, c(group_column, value1_column, value2_columns, id_column))
+    
+    result_df <- df %>% 
+        dplyr::select(
+            ID = id_column, 
+            GROUP = group_column, 
+            VALUE1 = value1_column, 
+            value2_columns) %>% 
+        dplyr::filter(GROUP %in% group_options)
+    assert_df_has_rows(result_df)
+    return(result_df)
+}
+
+build_immunefeatures_correlation_matrix <- function(df, method = "spearman") {
+    df  %>% 
+        dplyr::select(-ID) %>% 
+        tidyr::gather(
+            key = "VARIABLE", 
+            value = "VALUE2", 
+            -c(GROUP, VALUE1)) %>% 
+        dplyr::group_by(GROUP, VARIABLE) %>% 
+        dplyr::summarise(COR = cor(
+            VALUE1, 
+            VALUE2,
+            method = method, 
+            use = "pairwise.complete.obs")) %>% 
+        tidyr::spread(key = "GROUP", value = "COR", fill = 0) %>% 
+        dplyr::mutate(VARIABLE = map(VARIABLE, get_variable_display_name)) %>% 
+        as.data.frame %>% 
+        tibble::column_to_rownames("VARIABLE") %>% 
+        as.matrix()
+}
+
+
+build_immunomodulator_violin_plot_df <- function(df, x_col, y_col){
+    df %>%
+        dplyr::select(x = x_col, y = y_col) %>% 
+        build_violinplot_df()
+}
 
 
 # functions for plot-function dataframes --------------------------------------
