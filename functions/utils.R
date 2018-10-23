@@ -145,7 +145,6 @@ get_complete_class_df <- function(
             order_column)) %>% 
         dplyr::filter(CLASS == class_name) %>% 
         dplyr::select(variable_column, order_column)
-    
     assert_df_has_rows(result_df)
     return(result_df)
 }
@@ -282,14 +281,27 @@ get_unique_column_values <- function(column, df){
         as.character()
 }
 
+# get_variable_classes --------------------------------------------------------
 
-###############################################################################
-# Tests below this line do not have tests yet, newly writen functions 
-###############################################################################
+get_variable_classes <- function(df, class_column, type_column, value){
+    df %>% 
+        dplyr::select(CLASS = class_column, TYPE = type_column) %>% 
+        dplyr::filter(TYPE == value) %>% 
+        magrittr::use_series(CLASS) %>% 
+        unique %>% 
+        purrr::discard(is.na(.))
+}
+
+get_numeric_classes_from_feature_df <- purrr::partial(
+    get_variable_classes,
+    df = panimmune_data$feature_df,
+    class_column = "Variable Class",
+    type_column = "VariableType", 
+    value = "Numeric"
+)
 
 
-
-# colors for plotting groups --------------------------------------------------
+# decide_plot_colors ----------------------------------------------------------
 
 decide_plot_colors <- function(
     sample_group_label, 
@@ -303,6 +315,8 @@ decide_plot_colors <- function(
         return(create_user_group_colors(sample_group_label, group_df))
     }
 }
+
+# get_study_plot_colors -------------------------------------------------------
 
 get_study_plot_colors <- function(
     group_name, data_object = panimmune_data, config_list = config_yaml){
@@ -318,6 +332,8 @@ get_study_plot_colors <- function(
     return(color_group)
 }
 
+# create_user_group_colors ----------------------------------------------------
+
 create_user_group_colors <- function(sample_group_label, group_df){
     groups <- group_df %>% 
         magrittr::extract2(sample_group_label) %>% 
@@ -326,7 +342,8 @@ create_user_group_colors <- function(sample_group_label, group_df){
     colors <- RColorBrewer::brewer.pal(length(groups), "Set1")
     magrittr::set_names(colors, groups)
 }
+###############################################################################
+# Tests below this line do not have tests yet, newly writen functions 
+###############################################################################
 
 
-
-# -----------------------------------------------------------------------------

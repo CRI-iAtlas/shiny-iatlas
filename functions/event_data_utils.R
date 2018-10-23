@@ -8,6 +8,12 @@
 # original function.
 ###############################################################################
 
+
+###############################################################################
+# Tests below this line do not have tests yet, newly writen functions 
+###############################################################################
+
+
 check_immunefeatures_scatterplot_click_data <- function(
     eventdata, subset_df, group_column, corr_df){
     
@@ -15,7 +21,6 @@ check_immunefeatures_scatterplot_click_data <- function(
     if(is.null(eventdata)) {
         return(FALSE)  
     } 
-    print(eventdata)
     column_name <- eventdata$x[[1]]
     row_name  <- eventdata$y[[1]]
     column_name_valid <- column_name %in% extract2(subset_df, group_column)
@@ -25,13 +30,13 @@ check_immunefeatures_scatterplot_click_data <- function(
 }
 
 check_driver_violinplot_click_data <- function(
-    eventdata, df_for_regression,subset_df, group_column){
+    eventdata, df){
     
     if(is.null(eventdata)) {
         return(FALSE)  
     } 
     group_selected <- eventdata[["key"]][[1]][1]
-    group_valid <- group_selected %in% extract2(df_for_regression,"mutation_group")
+    group_valid <- group_selected %in% extract2(df, "mutation_group")
     
     all(group_valid)
 }
@@ -67,8 +72,3 @@ create_group_text_from_plotly <- function(
     }
     return(text)
 }
-
-
-###############################################################################
-# Tests below this line do not have tests yet, newly writen functions 
-###############################################################################

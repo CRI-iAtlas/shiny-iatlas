@@ -300,78 +300,73 @@ testthat::test_that("get_unique_column_values", {
         testthat::is_identical_to(c("value1", "value2")))
 })
 
+testthat::test_that("get_variable_classes", {
+    test_df <- data_frame(
+        "class" = c("class1", "class1", "class1", "class2", "class2", "class3",
+                    "class4", "class4", "class4"),
+        "type" = c("Numeric", "Numeric", "Numeric", "Factor", "Factor", 
+                   "Numeric", "Logical", "Logical", "Logical"))
+    testthat::expect_that(
+        get_variable_classes(
+            test_df, "class", "type", "Numeric"),
+        testthat::is_identical_to(c("class1", "class3")))
+})
 
+testthat::test_that("decide_plot_colors", {
+    test_group_df <- data_frame(
+        "user_group1" = c("class1", "class2", "class3", "class4"),
+        "user_group2" = c("class1", "class2", "class3", "class3"))
+    test_config_list <- list(
+        "immune_groups" = list(
+            "preset_group1",
+            "preset_group2",
+            "preset_group3",
+            "preset_group4"),
+        "immune_group_colors" = list(
+            "preset_group1" = "colors1",
+            "preset_group2" = "colors2",
+            "preset_group3" = "colors3"))
+    test_data_object <- list(
+        "colors1" = c("BRCA" = "#ED2891", "GBM" = "#B2509E"),
+        "colors2" = c("C1" = "#FF0000", "C2" = "#FFFF00"))
 
+    testthat::expect_that(
+        decide_plot_colors("preset_group1", test_group_df, test_data_object, test_config_list),
+        testthat::is_identical_to(c(
+            "BRCA" = "#ED2891",
+            "GBM" = "#B2509E")))
+    testthat::expect_that(
+        decide_plot_colors("user_group1", test_group_df, test_data_object, test_config_list),
+        testthat::is_identical_to(c(
+            "class1" = "#E41A1C",
+            "class2" = "#377EB8",
+            "class3" = "#4DAF4A",
+            "class4" = "#984EA3")))
 
-# 
-# test_that("decide_plot_colors", {
-#     test_group_df <- data_frame(
-#         "user_group1" = c("class1", "class2", "class3", "class4"),
-#         "user_group2" = c("class1", "class2", "class3", "class3"))
-#     test_config_list <- list(
-#         "immune_groups" = list(
-#             "preset_group1", 
-#             "preset_group2", 
-#             "preset_group3", 
-#             "preset_group4"),
-#         "immune_group_colors" = list(
-#             "preset_group1" = "colors1",
-#             "preset_group2" = "colors2",
-#             "preset_group3" = "colors3"))
-#     test_data_object <- list(
-#         "colors1" = c("BRCA" = "#ED2891", "GBM" = "#B2509E"),
-#         "colors2" = c("C1" = "#FF0000", "C2" = "#FFFF00"))
-#     
-#     expect_that(
-#         decide_plot_colors("preset_group1", test_group_df, test_data_object, test_config_list),
-#         is_identical_to(c(
-#             "BRCA" = "#ED2891", 
-#             "GBM" = "#B2509E")))
-#     expect_that(
-#         decide_plot_colors("user_group1", test_group_df, test_data_object, test_config_list),
-#         is_identical_to(c(
-#             "class1" = "#E41A1C", 
-#             "class2" = "#377EB8", 
-#             "class3" = "#4DAF4A", 
-#             "class4" = "#984EA3")))
-#     
-#     expect_that(
-#         get_study_plot_colors("preset_group1", test_data_object, test_config_list),
-#         is_identical_to(c("BRCA" = "#ED2891", "GBM" = "#B2509E")))
-#     expect_that(
-#         get_study_plot_colors("preset_group2", test_data_object, test_config_list),
-#         is_identical_to(c("C1" = "#FF0000", "C2" = "#FFFF00")))
-#     expect_that(
-#         get_study_plot_colors("preset_group3", test_data_object, test_config_list),
-#         throws_error("color group missing from data object for: preset_group3 colors3"))
-#     expect_that(
-#         get_study_plot_colors("preset_group4", test_data_object, test_config_list),
-#         throws_error("colors group name missing from config for: preset_group4"))
-#         
-#     expect_that(
-#         create_user_group_colors("user_group1", test_group_df),
-#         is_identical_to(c(
-#             "class1" = "#E41A1C", 
-#             "class2" = "#377EB8", 
-#             "class3" = "#4DAF4A", 
-#             "class4" = "#984EA3")))
-#     expect_that(
-#         create_user_group_colors("user_group2", test_group_df),
-#         is_identical_to(c(
-#             "class1" = "#E41A1C", 
-#             "class2" = "#377EB8", 
-#             "class3" = "#4DAF4A")))
-# })
-# 
+    testthat::expect_that(
+        get_study_plot_colors("preset_group1", test_data_object, test_config_list),
+        testthat::is_identical_to(c("BRCA" = "#ED2891", "GBM" = "#B2509E")))
+    testthat::expect_that(
+        get_study_plot_colors("preset_group2", test_data_object, test_config_list),
+        testthat::is_identical_to(c("C1" = "#FF0000", "C2" = "#FFFF00")))
+    testthat::expect_that(
+        get_study_plot_colors("preset_group3", test_data_object, test_config_list),
+        testthat::throws_error("color group missing from data object for: preset_group3 colors3"))
+    testthat::expect_that(
+        get_study_plot_colors("preset_group4", test_data_object, test_config_list),
+        testthat::throws_error("colors group name missing from config for: preset_group4"))
 
-# 
-
-# 
-
-# 
-
-# 
-
-# 
-# 
-# 
+    testthat::expect_that(
+        create_user_group_colors("user_group1", test_group_df),
+        testthat::is_identical_to(c(
+            "class1" = "#E41A1C",
+            "class2" = "#377EB8",
+            "class3" = "#4DAF4A",
+            "class4" = "#984EA3")))
+    testthat::expect_that(
+        create_user_group_colors("user_group2", test_group_df),
+        testthat::is_identical_to(c(
+            "class1" = "#E41A1C",
+            "class2" = "#377EB8",
+            "class3" = "#4DAF4A")))
+})

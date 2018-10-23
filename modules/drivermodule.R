@@ -147,11 +147,7 @@ drivers <- function(
         eventdata <- event_data("plotly_click", source = "scatterplot")
         
         validate(need(
-            check_driver_violinplot_click_data(
-                eventdata,
-                df_for_regression(),
-                subset_df(), 
-                group_internal_choice()),
+            check_driver_violinplot_click_data(eventdata, df_for_regression()),
             "Click a point on the above scatterplot to see a violin plot for the comparison"))
         
         mutation_group_selected <- eventdata[["key"]][[1]][1]
