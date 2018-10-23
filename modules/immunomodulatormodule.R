@@ -106,14 +106,26 @@ immunomodulator <- function(
     
     # output ----
     
-    output$violinPlot <- renderPlotly(
-        expression_df() %>% 
-            build_immunomodulator_violin_plot_df() %>% 
-            create_violinplot(
-                xlab = group_display_choice(), 
-                ylab = "log10(count + 1)",
-                source_name = "violin",
-                fill_colors = plot_colors()))
+    output$violinPlot <- renderPlotly({
+        
+        validate(
+            need(is.data.frame(expression_df()), "Error"))
+        
+        violin_plot_df <- 
+            expression_df() %>% 
+            build_immunomodulator_violin_plot_df() 
+        
+        
+        
+        create_violinplot(
+            violin_plot_df,
+            xlab = group_display_choice(), 
+            ylab = "log10(count + 1)",
+            source_name = "violin",
+            fill_colors = plot_colors()
+        )
+    })
+        
     
     output$violin_group_text <- renderText(create_group_text_from_plotly("violin"))
     

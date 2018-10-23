@@ -17,38 +17,51 @@ build_immunomodulator_expression_df <- function(
     expression_col = "normalized_count",
     group_id_col = "ParticipantBarcode"){
     
-    group_df <- group_df %>% 
-        get_complete_df_by_columns(c(
-            group_col, 
-            group_id_col)) 
+    expression_df <- filter_immunomodulator_expression_df(
+        expression_df, 
+        group_id_col, 
+        expression_filter_col, 
+        expression_col, 
+        filter_value)
     
-    expression_df <- expression_df %>% 
+    group_df <- group_df %>% 
+        get_complete_df_by_columns(c(group_col, group_id_col)) %>% 
+        select(GROUP = group_col, ID = group_id_col)
+
+    result_df <- 
+        dplyr::left_join(group_df, expression_df, by = "ID") %>%
+        dplyr::select(GROUP, LOG_COUNT)
+
+}
+
+filter_immunomodulator_expression_df <- function(
+    df, group_id_col, expression_filter_col, expression_col, filter_value){
+    
+    df %>% 
         get_complete_df_by_columns(c(
             group_id_col, 
             expression_filter_col, 
             expression_col)) %>% 
-        select(
+        dplyr::select(
             FILTER = expression_filter_col, 
             COUNT = expression_col,
-            everything()) %>% 
-        filter(FILTER == filter_value) %>% 
-        dplyr::mutate(log_count = log10(COUNT + 1)) 
-    
-    result_df <- 
-        dplyr::left_join(group_df, expression_df, by = group_id_col) %>%
-        dplyr::select(group = group_col, expr = log_count)
+            ID = group_id_col) %>% 
+        dplyr::filter(FILTER == filter_value) %>% 
+        dplyr::mutate(LOG_COUNT = log10(COUNT + 1)) %>% 
+        dplyr::select(LOG_COUNT, ID)
 }
+
 
 build_immunomodulator_violin_plot_df <- function(df){
     df %>%
-        dplyr::select(x = group, y = expr) %>% 
+        dplyr::select(x = GROUP, y = LOG_COUNT) %>% 
         build_violinplot_df()
 }
 
 build_immunomodulator_histogram_df <- function(df, selected_group){
     df %>%
-        filter(group == selected_group) %>% 
-        select(x = expr) %>% 
+        filter(GROUP == selected_group) %>% 
+        select(x = LOG_COUNT) %>% 
         build_histogram_df()
 }
 

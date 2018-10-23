@@ -1,40 +1,54 @@
+library(yaml)
+library(tidyverse)
 
-test_that("create_label", {
-    input_df <- data_frame(
-        "name" = c("id1", "id2", "id3", "id4"),
-        "group" = c("group1", "group1", "group2", "group2"),
-        "value_col1" = c(1, 2, 3, 4),
-        "value_col2" = c(8, 9, 10, 11),
-        "value_col3" = c(12, 14, 100, 110))
-    result_df1 <- data_frame(
-        "name" = c("id1", "id2", "id3", "id4"),
-        "group" = c("group1", "group1", "group2", "group2"),
-        "value_col3" = c(12, 14, 100, 110),
-        "label" = c(
-            "<b>ParticipantBarcode:</b> id1 (group1)</br></br>VALUE_COL1: 1.000</br>VALUE_COL2: 8.000", 
-            "<b>ParticipantBarcode:</b> id2 (group1)</br></br>VALUE_COL1: 2.000</br>VALUE_COL2: 9.000", 
-            "<b>ParticipantBarcode:</b> id3 (group2)</br></br>VALUE_COL1: 3.000</br>VALUE_COL2: 10.000",
-            "<b>ParticipantBarcode:</b> id4 (group2)</br></br>VALUE_COL1: 4.000</br>VALUE_COL2: 11.000"),
-        "value_col1" = c(1, 2, 3, 4),
-        "value_col2" = c(8, 9, 10, 11))
-    result_df2 <- data_frame(
-        "name" = c("id1", "id2", "id3", "id4"),
-        "group" = c("group1", "group1", "group2", "group2"),
-        "label" = c(
-            "<b>ParticipantBarcode:</b> id1 (group1)</br></br>VALUE_COL1: 1.000</br>VALUE_COL2: 8.000</br>VALUE_COL3: 12.000",  
-            "<b>ParticipantBarcode:</b> id2 (group1)</br></br>VALUE_COL1: 2.000</br>VALUE_COL2: 9.000</br>VALUE_COL3: 14.000",  
-            "<b>ParticipantBarcode:</b> id3 (group2)</br></br>VALUE_COL1: 3.000</br>VALUE_COL2: 10.000</br>VALUE_COL3: 100.000",
-            "<b>ParticipantBarcode:</b> id4 (group2)</br></br>VALUE_COL1: 4.000</br>VALUE_COL2: 11.000</br>VALUE_COL3: 110.000"),
-        "value_col1" = c(1, 2, 3, 4),
-        "value_col2" = c(8, 9, 10, 11),
-        "value_col3" = c(12, 14, 100, 110))
-    expect_that(
-        create_label(input_df, c("value_col1", "value_col2")),
-        is_identical_to(result_df1))
-    expect_that(
-        create_label(input_df, c("value_col1", "value_col2", "value_col3")),
-        is_identical_to(result_df2))
-})
+config_yaml <- yaml::read_yaml("configuration.yaml")
+purrr::walk(config_yaml$libraries, library, character.only = T)
+purrr::walk(config_yaml$function_files, source)
+
+
+
+
+
+
+
+
+
+# test_that("create_label", {
+#     input_df <- data_frame(
+#         "name" = c("id1", "id2", "id3", "id4"),
+#         "group" = c("group1", "group1", "group2", "group2"),
+#         "value_col1" = c(1, 2, 3, 4),
+#         "value_col2" = c(8, 9, 10, 11),
+#         "value_col3" = c(12, 14, 100, 110))
+#     result_df1 <- data_frame(
+#         "name" = c("id1", "id2", "id3", "id4"),
+#         "group" = c("group1", "group1", "group2", "group2"),
+#         "value_col3" = c(12, 14, 100, 110),
+#         "label" = c(
+#             "<b>ParticipantBarcode:</b> id1 (group1)</br></br>VALUE_COL1: 1.000</br>VALUE_COL2: 8.000", 
+#             "<b>ParticipantBarcode:</b> id2 (group1)</br></br>VALUE_COL1: 2.000</br>VALUE_COL2: 9.000", 
+#             "<b>ParticipantBarcode:</b> id3 (group2)</br></br>VALUE_COL1: 3.000</br>VALUE_COL2: 10.000",
+#             "<b>ParticipantBarcode:</b> id4 (group2)</br></br>VALUE_COL1: 4.000</br>VALUE_COL2: 11.000"),
+#         "value_col1" = c(1, 2, 3, 4),
+#         "value_col2" = c(8, 9, 10, 11))
+#     result_df2 <- data_frame(
+#         "name" = c("id1", "id2", "id3", "id4"),
+#         "group" = c("group1", "group1", "group2", "group2"),
+#         "label" = c(
+#             "<b>ParticipantBarcode:</b> id1 (group1)</br></br>VALUE_COL1: 1.000</br>VALUE_COL2: 8.000</br>VALUE_COL3: 12.000",  
+#             "<b>ParticipantBarcode:</b> id2 (group1)</br></br>VALUE_COL1: 2.000</br>VALUE_COL2: 9.000</br>VALUE_COL3: 14.000",  
+#             "<b>ParticipantBarcode:</b> id3 (group2)</br></br>VALUE_COL1: 3.000</br>VALUE_COL2: 10.000</br>VALUE_COL3: 100.000",
+#             "<b>ParticipantBarcode:</b> id4 (group2)</br></br>VALUE_COL1: 4.000</br>VALUE_COL2: 11.000</br>VALUE_COL3: 110.000"),
+#         "value_col1" = c(1, 2, 3, 4),
+#         "value_col2" = c(8, 9, 10, 11),
+#         "value_col3" = c(12, 14, 100, 110))
+#     expect_that(
+#         create_label(input_df, c("value_col1", "value_col2")),
+#         is_identical_to(result_df1))
+#     expect_that(
+#         create_label(input_df, c("value_col1", "value_col2", "value_col3")),
+#         is_identical_to(result_df2))
+# })
 
 
 
