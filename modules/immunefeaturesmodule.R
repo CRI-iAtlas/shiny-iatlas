@@ -50,17 +50,7 @@ immunefeatures_UI <- function(id) {
                         selectInput(
                             ns("heatmap_y"),
                             "Select Variable Class",
-                            c(
-                                "Core Expression Signature",
-                                "DNA Alteration",
-                                "Adaptive Receptor - B cell",
-                                "Adaptive Receptor - T cell",
-                                "T Helper Cell Score",
-                                "Immune Cell Proportion - Original",
-                                "Immune Cell Proportion - Multipotent Progenitor Cell Derivative Class",           
-                                "Immune Cell Proportion - Common Lymphoid and Myeloid Cell Derivative Class",        
-                                "Immune Cell Proportion - Differentiated Lymphoid and Myeloid Cell Derivative Class"
-                            ),
+                            get_numeric_classes_from_feature_df(),
                             selected = "Immune Cell Proportion - Original"
                         )
                     ),
@@ -72,6 +62,15 @@ immunefeatures_UI <- function(id) {
                             choices = get_feature_df_nested_list(),
                             selected = "Leukocyte Fraction"
                         )
+                    ),
+                    column(
+                        width = 4,
+                        selectInput(
+                            ns("correlation_method"),
+                            "Select Correlation Method",
+                            choices = config_yaml$correlation_methods,
+                            selected = "spearman"
+                        )
                     )
                 )
             ),
@@ -79,7 +78,7 @@ immunefeatures_UI <- function(id) {
                 plotBox(
                     width = 12,
                     fluidRow(
-                        plotlyOutput(ns("corrPlot")) %>% 
+                        plotlyOutput(ns("heatmap")) %>% 
                             shinycssloaders::withSpinner(),
                         p(),
                         textOutput(ns("heatmap_group_text"))
@@ -139,7 +138,7 @@ immunefeatures <- function(
 
     })
     
-    # plots ----
+    # output ----
     output$violinPlot <- renderPlotly({
 
         display_y  <- get_variable_display_name(input$violin_y)
@@ -163,17 +162,12 @@ immunefeatures <- function(
         create_group_text_from_plotly("violin"))
     
     
-    output$corrPlot <- renderPlotly({
-        heatmap_corr_mat <- build_heatmap_corr_mat(
-            intermediate_corr_df(),
-            group_column = group_internal_choice(),
-            value1_column = input$heatmap_values,
-            value2_columns = hm_variables())
+    output$heatmap <- renderPlotly({
         immunefeatures_correlation_matrix <- 
-            build_immunefeatures_correlation_matrix(immunefeatures_df())
-        print(heatmap_corr_mat)
-        print(immunefeatures_correlation_matrix)
-        create_heatmap(heatmap_corr_mat, "heatplot")
+            build_immunefeatures_correlation_matrix(
+                immunefeatures_df(), 
+                input$correlation_method)
+        create_heatmap(immunefeatures_correlation_matrix, "heatplot")
     })
     
     output$heatmap_group_text <- renderText(

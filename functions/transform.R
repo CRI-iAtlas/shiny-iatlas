@@ -89,7 +89,7 @@ build_immunefeatures_df <- function(
 }
 
 build_immunefeatures_correlation_matrix <- function(df, method = "spearman") {
-    df  %>% 
+    x <- df  %>% 
         dplyr::select(-ID) %>% 
         tidyr::gather(
             key = "VARIABLE", 
@@ -103,7 +103,6 @@ build_immunefeatures_correlation_matrix <- function(df, method = "spearman") {
             use = "pairwise.complete.obs")) %>% 
         tidyr::spread(key = "GROUP", value = "COR", fill = 0) %>% 
         dplyr::mutate(VARIABLE = map(VARIABLE, get_variable_display_name)) %>% 
-        as.data.frame %>% 
         tibble::column_to_rownames("VARIABLE") %>% 
         as.matrix()
 }
