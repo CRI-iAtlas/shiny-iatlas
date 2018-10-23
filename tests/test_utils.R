@@ -254,77 +254,55 @@ testthat::test_that("create_nested_list_by_class", {
             "Other" = c("value10" = "name10"))))
 })
 
-testthat::test_that("get_nested_list_by_column_type", {
-    test_data_df <- data_frame(
-        "name1" = c(1L, 2L, 3L),
-        "name2" = c(1.1, 2.0, 3),
-        "name3" = c(1L, 2L, 3L),
-        "name4" = c(1.1, 2.0, 3),
-        "name5" = c(1L, 2L, 3L),
-        "name6" = c(1.1, 2.0, 3),
-        "name7" = c("A", "B", "C"),
-        "name8" = c(T, F, F),
-        "name9" = factor(c("A", "B", "C")))
-    test_feature_df <- data_frame(
-        "class_col" = c(
+testthat::test_that("create_filtered_nested_list_by_class", {
+    test_df <- data_frame(
+        "CLASS" = c(
             "class1", "class1", "class1", "class2", "class2", "class3",
             "class4", "class4", "class4", NA),
-        "internal_col" = c(
+        "INTERNAL" = c(
             "name1", "name2", "name3", "name4", "name5", "name6",
             "name7", "name8", "name9", "name10"),
-        "display_col" = c(
+        "DISPLAY" = c(
             "value1", "value2", "value3", "value4", "value5", "value6",
-            "value7", "value8", "value9", "value10"))
+            "value7", "value8", "value9", "value10"),
+        "FILTER" = c(rep("numeric", 5), rep("categorical", 5))
+    )
     testthat::expect_that(
-        get_nested_list_by_column_type(
-            test_feature_df, test_data_df, "class_col", "internal_col", "display_col", is.numeric),
+        create_filtered_nested_list_by_class(test_df, "numeric"),
         testthat::is_identical_to(list(
             "class1" = c("value1" = "name1",
                          "value2" = "name2",
                          "value3" = "name3"),
             "class2" = c("value4" = "name4",
-                         "value5" = "name5"),
-            "class3" = c("value6" = "name6"))))
+                         "value5" = "name5"))))
+})
+
+testthat::test_that("get_unique_column_values", {
+    test_df1 <- data_frame("col" = c("value1", "value2"))
+    test_df2 <- data_frame("col" = c("value1", "value1"))
+    test_df3 <- data_frame("col" = c("value1", NA))
+    test_df4 <- data_frame("col" = c(5, 6))
+    test_df5 <- data_frame("col" = c("value2", "value1"))
+    testthat::expect_that(
+        get_unique_column_values("col", test_df1),
+        testthat::is_identical_to(c("value1", "value2")))
+    testthat::expect_that(
+        get_unique_column_values("col", test_df2),
+        testthat::is_identical_to(c("value1")))
+    testthat::expect_that(
+        get_unique_column_values("col", test_df3),
+        testthat::is_identical_to(c("value1")))
+    testthat::expect_that(
+        get_unique_column_values("col", test_df4),
+        testthat::is_identical_to(c("5", "6")))
+    testthat::expect_that(
+        get_unique_column_values("col", test_df5),
+        testthat::is_identical_to(c("value1", "value2")))
 })
 
 
 
 
-# 
-# 
-# test_that("get_variable_classes", {
-#     test_df <- data_frame(
-#         "class" = c("class1", "class1", "class1", "class2", "class2", "class3",
-#                     "class4", "class4", "class4"),
-#         "type" = c("Numeric", "Numeric", "Numeric", "Factor", "Factor", 
-#                    "Numeric", "Logical", "Logical", "Logical"))
-#     expect_that(
-#         get_variable_classes(
-#             test_df, "class", "type", "Numeric"),
-#         is_identical_to(c("class1", "class3")))
-# })
-# 
-
-
-# 
-# test_that("get_display_numeric_columns", {
-#     test_df1 <- data_frame(
-#         "col1" = c(1L, 2L, 3L),
-#         "col2" = c(1.1, 2.0, 3),
-#         "col3" = c("A", "B", "C"),
-#         "col4" = c(T, F, F),
-#         "col5" = factor(c("A", "B", "C")))
-#     translation_df <- data_frame(
-#         "internal_name" = c("col1", "col2", "col3", "col4", "col5"),
-#         "display_name1" = c("int", "dbl", "chr", "lgl", "fct"),
-#         "display_name2" = c("colA", "colB", "colC", "colD", "colF"))
-#     expect_that(
-#         get_display_numeric_columns(test_df1, translation_df, "internal_name", "display_name1"),
-#         is_identical_to(c("int", "dbl")))
-#     expect_that(
-#         get_display_numeric_columns(test_df1, translation_df, "internal_name", "display_name2"),
-#         is_identical_to(c("colA", "colB")))
-# })
 # 
 # test_that("decide_plot_colors", {
 #     test_group_df <- data_frame(
@@ -397,25 +375,3 @@ testthat::test_that("get_nested_list_by_column_type", {
 # 
 # 
 # 
-# test_that("get_unique_column_values", {
-#     test_df1 <- data_frame("col" = c("value1", "value2"))
-#     test_df2 <- data_frame("col" = c("value1", "value1"))
-#     test_df3 <- data_frame("col" = c("value1", NA))
-#     test_df4 <- data_frame("col" = c(5, 6))
-#     test_df5 <- data_frame("col" = c("value2", "value1"))
-#     expect_that(
-#         get_unique_column_values("col", test_df1),
-#         is_identical_to(c("value1", "value2")))
-#     expect_that(
-#         get_unique_column_values("col", test_df2),
-#         is_identical_to(c("value1")))
-#     expect_that(
-#         get_unique_column_values("col", test_df3),
-#         is_identical_to(c("value1")))
-#     expect_that(
-#         get_unique_column_values("col", test_df4),
-#         is_identical_to(c("5", "6")))
-#     expect_that(
-#         get_unique_column_values("col", test_df5),
-#         is_identical_to(c("value1", "value2")))
-# })

@@ -30,6 +30,7 @@ function_files:
   - "functions/signature_mclust_ensemble.R"
   - "functions/tablef_fun.R"
   - "functions/imageplot.R"
+  - "functions/event_data_utils.R"
 
 page_files:
   - "pages/aboutpage.R"

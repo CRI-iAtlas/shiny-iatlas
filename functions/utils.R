@@ -240,40 +240,47 @@ get_immunomodulator_nested_list <- purrr::partial(
 
 # get_nested_list_by_column_type ----------------------------------------------
 
-get_nested_list_by_column_type <- function(
+
+create_filtered_nested_list_by_class <- function(
     feature_df,
-    data_df,
-    class_column,
-    internal_column,
-    display_column,
-    column_function){
-    
-    display_columns <- data_df %>% 
-        get_column_names_of_type(column_function) %>% 
-        convert_values_between_columns(
-            df = feature_df,
-            from_column = internal_column,
-            to_column = display_column
-        )
+    filter_value,
+    class_column = "CLASS",
+    display_column = "DISPLAY",
+    internal_column = "INTERNAL",
+    filter_column = "FILTER"){
     
     feature_df %>%
         dplyr::select(
             CLASS = class_column,
             DISPLAY = display_column,
-            INTERNAL = internal_column) %>% 
-        dplyr::filter(DISPLAY %in% display_columns) %>%
+            INTERNAL = internal_column,
+            FILTER = filter_column) %>% 
+        dplyr::filter(FILTER == filter_value) %>%
+        select(CLASS, INTERNAL, DISPLAY) %>% 
         create_nested_list_by_class()
 }
 
 get_feature_df_nested_list <- purrr::partial(
-    get_nested_list_by_column_type,
+    create_filtered_nested_list_by_class,
     feature_df = panimmune_data$feature_df,
-    data_df = panimmune_data$fmx_df,
+    filter_value = "Numeric",
     class_column = "Variable Class",
     internal_column = "FeatureMatrixLabelTSV",
     display_column = "FriendlyLabel",
-    column_function = is.numeric
+    filter_column = "VariableType"
 )
+
+# get_unique_column_values ----------------------------------------------------
+
+get_unique_column_values <- function(column, df){
+    assert_df_has_columns(df, column)
+    df %>% 
+        magrittr::extract2(column) %>% 
+        na.omit() %>%
+        unique() %>%
+        sort() %>%
+        as.character()
+}
 
 
 ###############################################################################
@@ -320,98 +327,6 @@ create_user_group_colors <- function(sample_group_label, group_df){
     magrittr::set_names(colors, groups)
 }
 
-# -----------------------------------------------------------------------------
 
-get_numeric_classes_from_feature_df <- function(){
-    get_variable_classes(
-        df = panimmune_data$feature_df,
-        class_column = "Variable Class",
-        type_column = "VariableType", 
-        value = "Numeric")
-}
-
-get_variable_classes <- function(df, class_column, type_column, value){
-    df %>% 
-        dplyr::select(CLASS = class_column, TYPE = type_column) %>% 
-        dplyr::filter(TYPE == value) %>% 
-        magrittr::use_series(CLASS) %>% 
-        unique %>% 
-        purrr::discard(is.na(.))
-}
 
 # -----------------------------------------------------------------------------
-
-get_unique_column_values <- function(category, df){
-    df %>% 
-        magrittr::extract2(category) %>% 
-        na.omit() %>%
-        unique() %>%
-        sort() %>%
-        as.character()
-}
-
-check_immunefeatures_scatterplot_click_data <- function(
-    eventdata, subset_df, group_column, corr_df){
-    
-    if(is.null(eventdata)) {
-        return(FALSE)  
-    } 
-    column_name <- eventdata$x[[1]]
-    row_name  <- eventdata$y[[1]]
-    column_name_valid <- column_name %in% extract2(subset_df, group_column)
-    row_name_valid <- any(
-        get_variable_internal_name(row_name) %in% colnames(corr_df))
-    all(column_name_valid, row_name_valid)
-}
-
-check_driver_violinplot_click_data <- function(
-    eventdata, df_for_regression,subset_df, group_column){
-    
-    if(is.null(eventdata)) {
-        return(FALSE)  
-    } 
-    group_selected <- eventdata[["key"]][[1]][1]
-    group_valid <- group_selected %in% extract2(df_for_regression,"mutation_group")
-    
-    all(group_valid)
-}
-
-create_group_text_from_plotly <- function(
-    source_name,
-    source_type = "plotly_click",
-    prompt_text = "Click above plot for more group information.",
-    key_column = "key"){
-    
-    data <- event_data(source_type, source = source_name)
-    
-    if (is.null(data)){
-        text = prompt_text
-    } else {
-        key_value <- data %>%
-            slice(1) %>% 
-            extract2(key_column)
-        text <- panimmune_data$sample_group_df %>% 
-            filter(FeatureValue == key_value) %>% 
-            distinct() %>% 
-            slice(1) %>% 
-            mutate(Characteristics = 
-                       ifelse(is.na(Characteristics), 
-                              "No additional infoformation.", 
-                              Characteristics)) %>% 
-            mutate(name = 
-                       ifelse(is.na(FeatureName), 
-                              FeatureValue, 
-                              FeatureName)) %>% 
-            mutate(text = str_c(name, ": ", Characteristics)) %>% 
-            use_series(text)
-    }
-    return(text)
-}
-
-
-## selection choices for the dropdown menu of sample groups
-# create_sample_group_options <- function(feature_df) {
-#     feature_df %>%
-#         filter(`Variable Class` == "Sample Category") %>%
-#         use_series(FeatureMatrixLabelTSV) 
-# }
