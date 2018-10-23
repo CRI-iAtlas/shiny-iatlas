@@ -108,14 +108,13 @@ immunomodulator <- function(
     
     output$violinPlot <- renderPlotly({
         
-        validate(
-            need(is.data.frame(expression_df()), "Error"))
+        validate(need(
+            nrow(expression_df()) > 0, 
+            "Samples in current selected groups have no expression data for the currently selected gene."))
         
         violin_plot_df <- 
             expression_df() %>% 
             build_immunomodulator_violin_plot_df() 
-        
-        
         
         create_violinplot(
             violin_plot_df,
@@ -130,6 +129,10 @@ immunomodulator <- function(
     output$violin_group_text <- renderText(create_group_text_from_plotly("violin"))
     
     output$histPlot <- renderPlotly({
+        
+        validate(need(
+            nrow(expression_df()) > 0, 
+            "Samples in current selected groups have no expression data for the currently selected gene."))
         
         eventdata <- event_data("plotly_click", source = "violin")
         validate(need(!is.null(eventdata), "Click violin plot above"))

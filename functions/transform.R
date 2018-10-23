@@ -15,37 +15,36 @@ build_immunomodulator_expression_df <- function(
     expression_df = panimmune_data$im_expr_df,
     expression_filter_col = "Symbol",
     expression_col = "normalized_count",
-    group_id_col = "ParticipantBarcode"){
+    id_col = "ParticipantBarcode"){
     
     expression_df <- filter_immunomodulator_expression_df(
         expression_df, 
-        group_id_col, 
+        id_col, 
         expression_filter_col, 
         expression_col, 
         filter_value)
     
     group_df <- group_df %>% 
-        get_complete_df_by_columns(c(group_col, group_id_col)) %>% 
-        select(GROUP = group_col, ID = group_id_col)
-
+        get_complete_df_by_columns(c(group_col, id_col)) %>% 
+        select(GROUP = group_col, ID = id_col)
+    
     result_df <- 
-        dplyr::left_join(group_df, expression_df, by = "ID") %>%
+        dplyr::inner_join(group_df, expression_df, by = "ID") %>%
         dplyr::select(GROUP, LOG_COUNT)
-
 }
 
 filter_immunomodulator_expression_df <- function(
-    df, group_id_col, expression_filter_col, expression_col, filter_value){
+    df, id_col, filter_col, expression_col, filter_value){
     
     df %>% 
         get_complete_df_by_columns(c(
-            group_id_col, 
-            expression_filter_col, 
+            id_col, 
+            filter_col, 
             expression_col)) %>% 
         dplyr::select(
-            FILTER = expression_filter_col, 
+            FILTER = filter_col, 
             COUNT = expression_col,
-            ID = group_id_col) %>% 
+            ID = id_col) %>% 
         dplyr::filter(FILTER == filter_value) %>% 
         dplyr::mutate(LOG_COUNT = log10(COUNT + 1)) %>% 
         dplyr::select(LOG_COUNT, ID)
@@ -64,6 +63,15 @@ build_immunomodulator_histogram_df <- function(df, selected_group){
         select(x = LOG_COUNT) %>% 
         build_histogram_df()
 }
+
+# immunefeatures functions ----------------------------------------------------
+
+# build_immunefeatures_violin_plot_df <- function(df){
+#     df %>%
+#         dplyr::select(x = GROUP, y = LOG_COUNT) %>% 
+#         build_violinplot_df()
+# }
+
 
 # functions for plot-function dataframes --------------------------------------
 
