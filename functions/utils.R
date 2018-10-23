@@ -123,8 +123,7 @@ get_complete_df_by_columns <- function(df, columns){
     assert_df_has_columns(df, columns)
     result_df <- df %>%
         dplyr::select(columns) %>%
-        tidyr::drop_na() %>% 
-        dplyr::distinct()
+        tidyr::drop_na() 
     assert_df_has_rows(result_df)
     return(result_df)
 }

@@ -1,3 +1,105 @@
+###############################################################################
+# These functions have been refactored and have unit tests.
+# Do not make any modifications to these!
+# If you want to make a modification, please copy and paste the function the
+# lower section and call it <function_name>2.
+# Make any needed modifcations to the coipied function.
+# The new functionality will get unut tests and be folded back into the 
+# original function.
+###############################################################################
+
+# immunomodulator functions ---------------------------------------------------
+
+build_immunomodulator_expression_df <- function(
+    group_df, filter_value, group_col,
+    expression_df = panimmune_data$im_expr_df,
+    expression_filter_col = "Symbol",
+    expression_col = "normalized_count",
+    group_id_col = "ParticipantBarcode"){
+    
+    group_df <- group_df %>% 
+        get_complete_df_by_columns(c(
+            group_col, 
+            group_id_col)) 
+    
+    expression_df <- expression_df %>% 
+        get_complete_df_by_columns(c(
+            group_id_col, 
+            expression_filter_col, 
+            expression_col)) %>% 
+        select(
+            FILTER = expression_filter_col, 
+            COUNT = expression_col,
+            everything()) %>% 
+        filter(FILTER == filter_value) %>% 
+        dplyr::mutate(log_count = log10(COUNT + 1)) 
+    
+    result_df <- 
+        dplyr::left_join(group_df, expression_df, by = group_id_col) %>%
+        dplyr::select(group = group_col, expr = log_count)
+}
+
+build_immunomodulator_violin_plot_df <- function(df){
+    df %>%
+        dplyr::select(x = group, y = expr) %>% 
+        build_violinplot_df()
+}
+
+build_immunomodulator_histogram_df <- function(df, selected_group){
+    df %>%
+        filter(group == selected_group) %>% 
+        select(x = expr) %>% 
+        build_histogram_df()
+}
+
+# functions for plot-function dataframes --------------------------------------
+
+build_violinplot_df <- function(
+    df, 
+    x_col = "x",
+    y_col = "y",
+    key_col = NA,
+    color_col = NA,
+    label_col = NA,
+    split_col = NA){
+    
+    columns <- 
+        c(x_col, y_col, key_col, color_col, label_col, split_col) %>% 
+        na.omit()
+    get_complete_df_by_columns(df, columns)
+}
+
+build_histogram_df <- function(
+    df, 
+    x_col = "x", 
+    key_col = NA,
+    label_col = NA){
+    
+    columns <- 
+        c(x_col, key_col, label_col) %>% 
+        na.omit()
+    get_complete_df_by_columns(df, columns)
+}
+
+
+
+
+###############################################################################
+# Tests below this line do not have tests yet, newly writen functions 
+###############################################################################
+
+
+
+
+
+
+
+
+
+
+
+
+
 ## Transform functions are used globally and within individual modules to
 ## subset, arrange, or otherwise modify data prior to visualization with tables
 ## or plots
@@ -186,17 +288,7 @@ build_mosaicplot_df <- function(df, x_column, y_column){
         dplyr::mutate(y = forcats::fct_rev(as.factor(y)))
 }
 
-build_violinplot_df <- function(df, x_column, y_column){
-    if(!x_column %in% colnames(df)){
-        stop("Input df has no X column: ", x_column)
-    }
-    if(!y_column %in% colnames(df)){
-        stop("Input df has no Y column: ", y_column)
-    }
-    df %>% 
-        dplyr::select(x = x_column, y = y_column) %>% 
-        tidyr::drop_na()
-}
+
 
 build_boxplot_df <- function(df, x_column, y_column){
     if(!x_column %in% colnames(df)){
@@ -456,13 +548,7 @@ ztransform_df <- function(df) {
 
 # ** Immunomodulators module ----
 
-build_im_expr_plot_df <- function(df, filter_value, group_option) {
-    panimmune_data$im_expr_df %>%
-        dplyr::filter(Symbol == filter_value) %>%
-        dplyr::left_join(df) %>%
-        dplyr::mutate(log_count = log10(normalized_count + 1)) %>%
-        build_violinplot_df(group_option, "log_count")
-}
+
 
 # ** Driver correlation module ----
 

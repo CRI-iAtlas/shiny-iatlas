@@ -85,20 +85,35 @@ immunomodulator <- function(
     
     ns <- session$ns
     
-    im_expr_plot_df <- reactive(
-        df <- 
-            build_im_expr_plot_df(
-                subset_df(),
-                filter_value = input$im_gene_choice, 
-                group_option = group_internal_choice()))
+    # reactives ----
+    
+    expression_df <- reactive(
+        build_immunomodulator_expression_df(
+            subset_df(),
+            filter_value = input$im_gene_choice, 
+            group_col = group_internal_choice()))
+    
+    # ui ----
+    
+    output$gene_choices <- renderUI({
+        choices <- get_immunomodulator_nested_list(
+            class_column = input$im_category_choice_choice)
+        selectInput(
+            ns("im_gene_choice"),
+            label = "Select Immunomodulator Gene",
+            choices = choices)
+    })
+    
+    # output ----
     
     output$violinPlot <- renderPlotly(
-        create_violinplot(
-            im_expr_plot_df(),
-            xlab = group_display_choice(), 
-            ylab = "log10(count + 1)",
-            source_name = "violin",
-            fill_colors = plot_colors()))
+        expression_df() %>% 
+            build_immunomodulator_violin_plot_df() %>% 
+            create_violinplot(
+                xlab = group_display_choice(), 
+                ylab = "log10(count + 1)",
+                source_name = "violin",
+                fill_colors = plot_colors()))
     
     output$violin_group_text <- renderText(create_group_text_from_plotly("violin"))
     
@@ -106,16 +121,14 @@ immunomodulator <- function(
         
         eventdata <- event_data("plotly_click", source = "violin")
         validate(need(!is.null(eventdata), "Click violin plot above"))
+        clicked_group <- eventdata$x[[1]]
         
-        histplot_df <- im_expr_plot_df() %>% 
-            select(GROUP = x, log_count = y) %>% 
-            filter(GROUP == eventdata$x[[1]])
+        histogram_df <- expression_df() %>% 
+            build_immunomodulator_histogram_df(clicked_group) %>% 
+            create_histogram(
+                x_lab = "log10(count + 1)",
+                title = clicked_group)
         
-        create_histogram(
-            histplot_df,
-            x_col = "log_count",
-            x_lab = "log10(count + 1)",
-            title = eventdata$x[[1]])
     })
     
     output$im_annotations_table <- DT::renderDT({
@@ -128,13 +141,6 @@ immunomodulator <- function(
                 )
     })
     
-    output$gene_choices <- renderUI({
-        choices <- get_immunomodulator_nested_list(
-            class_column = input$im_category_choice_choice)
-        selectInput(
-            ns("im_gene_choice"),
-            label = "Select Immunomodulator Gene",
-            choices = choices)
-    })
+    
     
 }
