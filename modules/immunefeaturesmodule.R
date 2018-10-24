@@ -143,7 +143,7 @@ immunefeatures <- function(
 
         display_y  <- get_variable_display_name(input$violin_y)
         
-        plot_df <- build_immunomodulator_violin_plot_df(
+        plot_df <- build_immunefeatures_violin_plot_df(
             subset_df(), 
             x_col = group_internal_choice(),
             y_col = input$violin_y) 
@@ -189,6 +189,10 @@ immunefeatures <- function(
             get_variable_internal_name() %>%
             .[. %in% colnames(intermediate_corr_df())]
         
+        # print(internal_variable_name)
+        # print(intermediate_corr_df())
+        # print(immunefeatures_df())
+        
         
         plot_df <- build_scatterplot_df(
             intermediate_corr_df(), 
@@ -196,6 +200,17 @@ immunefeatures <- function(
             group_filter_value = eventdata$x[[1]],
             x_column = internal_variable_name,
             y_column = input$heatmap_values)
+        
+        print(plot_df)
+        
+        scatterplot_df <- build_immunefeatures_scatter_plot_df(
+            immunefeatures_df(),
+            x_col = internal_variable_name,
+            y_col = input$heatmap_values,
+            group_filter_value = eventdata$x[[1]]
+        )
+        
+        print(scatterplot_df)
         
         create_scatterplot(
             plot_df,

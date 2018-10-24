@@ -103,15 +103,29 @@ build_immunefeatures_correlation_matrix <- function(df, method = "spearman") {
             use = "pairwise.complete.obs")) %>% 
         tidyr::spread(key = "GROUP", value = "COR", fill = 0) %>% 
         dplyr::mutate(VARIABLE = map(VARIABLE, get_variable_display_name)) %>% 
+        as.data.frame() %>% 
         tibble::column_to_rownames("VARIABLE") %>% 
         as.matrix()
 }
 
 
-build_immunomodulator_violin_plot_df <- function(df, x_col, y_col){
+build_immunefeatures_violin_plot_df <- function(df, x_col, y_col){
     df %>%
         dplyr::select(x = x_col, y = y_col) %>% 
         build_violinplot_df()
+}
+
+build_immunefeatures_scatter_plot_df <- function(df, x_col, y_col, group_filter_value){
+    print(df)
+    print(x_col)
+    print(y_col)
+    print(group_filter_value)
+    df %>%
+        select(ID, GROUP, y = "VALUE1", x = x_col) %>% 
+        filter(GROUP == group_filter_value) %>% 
+        create_label2(value_columns = c(x, y)) %>%
+        select(x, y, "label") %>% 
+        build_scatter_plot_df2(label_col = "label")
 }
 
 
@@ -142,6 +156,48 @@ build_histogram_df <- function(
         c(x_col, key_col, label_col) %>% 
         na.omit()
     get_complete_df_by_columns(df, columns)
+}
+
+build_scatter_plot_df2 <- function(
+    df, 
+    x_col = "x",
+    y_col = "y",
+    key_col = NA,
+    color_col = NA, 
+    label_col = NA){
+    
+    columns <- 
+        c(x_col, y_col, key_col, color_col, label_col) %>% 
+        na.omit()
+    get_complete_df_by_columns(df, columns)
+}
+
+
+create_label2 <- function(
+    df, 
+    value_columns,
+    title = "ParticipantBarcode") {
+
+    x <- df %>%
+        mutate(label = str_glue(
+            "<b>{title}:</b> {name} ({group})", 
+            title = title,
+            name = ID, 
+            group = GROUP)) %>% 
+        gather(key = "key", value = "value", -c(ID, GROUP, label)) %>% 
+        mutate(value = as.character(value)) %>% 
+        mutate(key = str_to_upper(key)) %>% 
+        mutate(value_label = str_glue(
+            "{key}: {value}", 
+            key = key), 
+            value = value) %>% 
+        group_by(label) %>% 
+        mutate(value_label = str_c(value_label, collapse = "</br>")) %>% 
+        ungroup() %>% 
+        spread(key = "key", value = "value") %>% 
+        unite(label, label, value_label, sep = "</br></br>")
+    print(x)
+    return(x)
 }
 
 
