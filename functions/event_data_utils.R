@@ -61,7 +61,7 @@ create_group_text_from_plotly <- function(
             slice(1) %>% 
             mutate(Characteristics = 
                        ifelse(is.na(Characteristics), 
-                              "No additional infoformation.", 
+                              "No additional information.", 
                               Characteristics)) %>% 
             mutate(name = 
                        ifelse(is.na(FeatureName), 

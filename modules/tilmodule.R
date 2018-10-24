@@ -31,9 +31,10 @@ tilmap_UI <- function(id) {
     titleBox("iAtlas Explorer — TIL Maps"),
     textBox(
       width = 12,
-      p("This module includes additional data from a companion manuscript:"),
+      p("This module relates to the manuscript:"),
       p("Saltz et al. Spatial Organization And Molecular Correlation Of Tumor-Infiltrating Lymphocytes Using Deep Learning On Pathology Images. Cell Reports 23, 181-193, April 3 2018; doi: 10.1016/j.celrep.2018.03.086"),
-      p("TCGA H&E digital pathology images were analyzed for tumor infiltrating lymphocytes (TILs) using deep learning. The analysis identifies small spatial regions on the slide image - patches - that are rich in TILs. The resulting pattern of TIL patches are then assessed in multiple ways: in terms of overall counts and spatial density, and patterns identified by computational analysis and scoring by pathologists.")
+      p("TCGA H&E digital pathology images were analyzed for tumor infiltrating lymphocytes (TILs) using deep learning. The analysis identifies small spatial regions on the slide image - patches - that are rich in TILs. The resulting pattern of TIL patches are then assessed in multiple ways: in terms of overall counts and spatial density, and patterns identified by computational analysis and scoring by pathologists."),
+      p("These assessments are also available in other modules, under the Variable Class: TIL Map Characteristic.")
     ),
     
     # TIL distributions section ----
@@ -158,8 +159,6 @@ tilmap <- function(input, output, session, group_display_choice, group_internal_
           filter(`Variable Class` == "TIL Map Characteristic") %>% 
           filter(VariableType == "Numeric") %>% 
           use_series(FeatureMatrixLabelTSV)
-      TIL_map_columns <- setdiff(TIL_map_columns,c("N_cluster","Slide"))
-      # N_cluster is a repeat
       # Slide: column width/wrap problem at the moment for this
       TIL_map_columns_display <- as.character(map(TIL_map_columns,get_variable_display_name))
         
