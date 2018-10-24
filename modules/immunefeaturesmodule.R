@@ -68,8 +68,8 @@ immunefeatures_UI <- function(id) {
                         selectInput(
                             ns("correlation_method"),
                             "Select Correlation Method",
-                            choices = config_yaml$correlation_methods,
-                            selected = "spearman"
+                            choices = unlist(config_yaml$correlation_methods),
+                            selected = "Spearman"
                         )
                     )
                 )
@@ -201,16 +201,16 @@ immunefeatures <- function(
             x_column = internal_variable_name,
             y_column = input$heatmap_values)
         
-        print(plot_df)
+        # print(plot_df)
         
-        scatterplot_df <- build_immunefeatures_scatter_plot_df(
-            immunefeatures_df(),
-            x_col = internal_variable_name,
-            y_col = input$heatmap_values,
-            group_filter_value = eventdata$x[[1]]
-        )
+        # scatterplot_df <- build_immunefeatures_scatter_plot_df(
+        #     immunefeatures_df(),
+        #     x_col = internal_variable_name,
+        #     y_col = input$heatmap_values,
+        #     group_filter_value = eventdata$x[[1]]
+        # )
         
-        print(scatterplot_df)
+        # print(scatterplot_df)
         
         create_scatterplot(
             plot_df,

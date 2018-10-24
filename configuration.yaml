@@ -105,8 +105,8 @@ cell_type_aggregates:
   - "Immune Cell Proportion - Differentiated Lymphoid and Myeloid Cell Derivative Class"
 
 correlation_methods:
-  - "spearman"
-  - "pearson"
-  - "kendall"
+  - "Spearman": "spearman" 
+  - "Pearson": "pearson"
+  - "Kendall": "kendall"
 
 
