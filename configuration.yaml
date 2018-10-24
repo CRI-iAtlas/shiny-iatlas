@@ -7,6 +7,7 @@ module_files:
   - "modules/immunomodulatormodule.R"
   - "modules/tilmodule.R"
   - "modules/immunefeaturesmodule.R"
+  - "modules/iotargetmodule.R"
   - "modules/datainfomodule.R"
   - "modules/drivermodule.R"
   - "modules/subtypepredictormodule.R"
@@ -88,6 +89,9 @@ immunomodulator_groups:
   - "Immune_Checkpoint"
   - "Function"
   
+immunotarget_groups:
+  - "Pathway"
+
 immune_groups:
   - "Subtype_Immune_Model_Based"
   - "Subtype_Curated_Malta_Noushmehr_et_al"

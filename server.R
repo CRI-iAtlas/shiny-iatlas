@@ -80,6 +80,14 @@ shinyServer(function(input, output, session) {
   callModule(
       subtypepredictor, 
       "module_subtypepredictor")
+  # IO Target
+  callModule(
+      iotarget,
+      "module9",
+      reactive(input$ss_choice),
+      reactive(group_internal_choice()),
+      reactive(subset_df()),
+      reactive(plot_colors()))
   # Data info
   callModule(
       datainfo, 
