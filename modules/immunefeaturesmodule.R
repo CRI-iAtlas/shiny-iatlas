@@ -186,7 +186,7 @@ immunefeatures <- function(
         
         
         internal_variable_name <- eventdata$y[[1]] %>%
-            get_variable_internal_name() %>%
+            get_variable_internal_names() %>%
             .[. %in% colnames(intermediate_corr_df())]
 
         scatterplot_df <- build_immunefeatures_scatter_plot_df(

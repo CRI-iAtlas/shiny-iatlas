@@ -352,4 +352,6 @@ create_user_group_colors <- function(sample_group_label, group_df){
 # Tests below this line do not have tests yet, newly writen functions 
 ###############################################################################
 
-
+se <- function(x){
+    mean(x) / sqrt(length(x))
+}   

@@ -1,3 +1,7 @@
+## Transform functions are used globally and within individual modules to
+## subset, arrange, or otherwise modify data prior to visualization with tables
+## or plots
+
 ###############################################################################
 # These functions have been refactored and have unit tests.
 # Do not make any modifications to these!
@@ -126,6 +130,66 @@ build_immunefeatures_scatter_plot_df <- function(df, x_col, group_filter_value){
 }
 
 
+# cellcontent functions -------------------------------------------------------
+
+build_cellcontent_df <- function(df, group_column){
+    assert_df_has_columns(df, c(group_column, "Stromal_Fraction", "leukocyte_fraction"))
+    result_df <- df %>% 
+        dplyr::select(
+            GROUP = group_column,
+            "Stromal_Fraction", 
+            "leukocyte_fraction") %>% 
+        get_complete_df_by_columns(c("GROUP", "Stromal_Fraction", "leukocyte_fraction")) %>% 
+        dplyr::mutate(Tumor_Fraction = 1 - Stromal_Fraction) %>% 
+        magrittr::set_colnames(c(
+            "GROUP", 
+            "Stromal Fraction", 
+            "Leukocyte Fraction", 
+            "Tumor Fraction")) %>% 
+        tidyr::gather(fraction_type, fraction, -GROUP)
+    assert_df_has_columns(result_df, c("GROUP", "fraction_type", "fraction"))
+    assert_df_has_rows(result_df)
+    return(result_df)
+}
+
+build_cell_fraction_df <- function(df, group_column, value_columns){
+    assert_df_has_columns(df, c(group_column, value_columns))
+    result_df <- df %>% 
+        dplyr::select(GROUP = group_column, value_columns) %>% 
+        get_complete_df_by_columns(c("GROUP", value_columns)) %>% 
+        tidyr::gather(fraction_type, fraction, -GROUP)
+    assert_df_has_columns(result_df, c("GROUP", "fraction_type", "fraction"))
+    assert_df_has_rows(result_df)
+    return(result_df)
+}
+
+
+build_cellcontent_barplot_df <- function(
+    df, x_column, y_column, 
+    operations = c("sum", "mean", "sd", "se")) {
+    
+    
+    assert_df_has_columns(df, c("GROUP", "fraction_type", "fraction"))
+    result_df <- df %>%
+        dplyr::group_by(GROUP, fraction_type) %>%
+        dplyr::summarise_at("fraction", .funs = operations) %>%
+        dplyr::ungroup() %>%
+        create_label2(
+            title = stringr::str_to_title(y_column),
+            name_column = x_column,
+            group_column = "GROUP",
+            value_columns = operations) %>% 
+        dplyr::select(
+            x = "GROUP",
+            y = "mean",
+            color = "fraction_type",
+            error = "se",
+            label)
+    assert_df_has_columns(result_df, c("x", "y", "label", "color", "error"))
+    assert_df_has_rows(result_df)
+    return(result_df)
+}
+
 # functions for plot-function dataframes --------------------------------------
 
 build_violinplot_df <- function(
@@ -169,6 +233,8 @@ build_scatter_plot_df <- function(
     get_complete_df_by_columns(df, columns)
 }
 
+
+
 # functions for making plot df label column -----------------------------------
 
 create_label <- function(
@@ -177,13 +243,13 @@ create_label <- function(
     id_column = "ID",
     group_column = "GROUP",
     title = "ParticipantBarcode") {
-
+    
     assert_df_has_columns(df, c(id_column, group_column, value_columns))
     result_df <- df %>%
         mutate(label = str_glue(
             "<b>{title}:</b> {name} ({group})", 
             title = title,
-            name = ID, 
+            name = id_column, 
             group = GROUP)) %>% 
         gather(value_name, value, one_of(value_columns)) %>% 
         mutate(
@@ -203,34 +269,12 @@ create_label <- function(
     return(result_df)
 }
 
-
-
-
 ###############################################################################
 # Tests below this line do not have tests yet, newly writen functions 
 ###############################################################################
-
-
-
-
-
-
-
-
-
-
-
-
-
-## Transform functions are used globally and within individual modules to
-## subset, arrange, or otherwise modify data prior to visualization with tables
-## or plots
-
 # Global data transform ----
-
 # ** PanImmune data subsetting ----
-
-# subset by group choices 
+# subset by group choices -----
 subset_panimmune_df <- function(
     df = panimmune_data$fmx_df, 
     group_column, 
@@ -297,7 +341,7 @@ create_label2 <- function(
                     title = title,
                     name = namevar,
                     group = groupvar
-                )) %>%
+                )) %>% 
             gather(value_name, value, one_of(value_columns)) %>%
             mutate(
                 value_label = str_glue(
@@ -335,28 +379,7 @@ create_label2 <- function(
 #' @export
 #'
 #' @examples
-build_barplot_df <- function(
-    df, x_column, y_column, color_column = NULL, facet_column = NULL, 
-    operations = c("sum", "mean", "sd", "se"), add_label = FALSE
-) {
-    se <- function(x) { mean(x) / sqrt(length(x)) }
-    
-    df <- df %>% 
-        group_by(.dots = c(x_column, color_column, facet_column)) %>% 
-        summarise_at(y_column, .funs = operations) %>% 
-        ungroup()
-    if (add_label) {
-        df %>%
-            create_label2(
-                title = str_to_title(y_column),
-                name_column = x_column,
-                group_column = color_column,
-                value_columns = operations
-            )
-    } else {
-        df
-    }
-}
+
 
 #' Format a dataframe for plotting values of one column versus values of a
 #' second column as points in a scatter plot
@@ -490,16 +513,12 @@ build_key_df <- function(feature_df, color_df, group_size_df){
 build_group_group_mosaic_plot_df <- function(
     df, x_column, y_column, study_option, user_group_df = NULL) {
     
-    x1 <- df %>%
+    df %>%
         subset_panimmune_df(
             group_col = x_column, 
             study_option = study_option,
-            user_group_df) 
-    # print(x1)
-    x2 <- x1 %>% 
+            user_group_df) %>% 
         build_mosaicplot_df(x_column, y_column) 
-    # print(x2)
-    return(x2)
 }
 
 # ** Immune feature trends module ----
@@ -541,28 +560,9 @@ build_heatmap_corr_mat <- function(
 
 # ** Tumor composition module ----
 
-build_cell_fraction_df <- function(df, group_column, value_columns){
-    df %>% 
-        dplyr::select(GROUP = group_column, value_columns) %>% 
-        tidyr::drop_na() %>%  
-        tidyr::gather(fraction_type, fraction, -GROUP)
-}
 
-build_tumor_content_df <- function(df, group_column){
-    df %>% 
-        dplyr::select(
-            GROUP = group_column,
-            "Stromal_Fraction", 
-            "leukocyte_fraction") %>% 
-        tidyr::drop_na() %>%  
-        dplyr::mutate(Tumor_Fraction = 1 - Stromal_Fraction) %>% 
-        magrittr::set_colnames(c(
-            "GROUP", 
-            "Stromal Fraction", 
-            "Leukocyte Fraction", 
-            "Tumor Fraction")) %>% 
-        tidyr::gather(fraction_type, fraction, -GROUP)
-}
+
+
 
 # ** Clinical outcomes module ----
 

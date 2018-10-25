@@ -55,7 +55,7 @@ testthat::test_that("filter_immunomodulator_expression_df", {
     )
 })
                     
-testthat::test_that("create_label2", {
+testthat::test_that("create_label", {
     input_df <- data_frame(
         "ID" = c("id1", "id2", "id3", "id4"),
         "GROUP" = c("group1", "group1", "group2", "group2"),
