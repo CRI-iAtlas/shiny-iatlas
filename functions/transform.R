@@ -58,14 +58,14 @@ filter_immunomodulator_expression_df <- function(
 build_immunomodulator_violin_plot_df <- function(df){
     df %>%
         dplyr::select(x = GROUP, y = LOG_COUNT) %>% 
-        build_violinplot_df()
+        get_complete_df_by_columns(c("x", "y"))
 }
 
 build_immunomodulator_histogram_df <- function(df, selected_group){
     df %>%
         filter(GROUP == selected_group) %>% 
         select(x = LOG_COUNT) %>% 
-        build_histogram_df()
+        get_complete_df_by_columns("x")
 }
 
 # immunefeatures functions ----------------------------------------------------
@@ -116,7 +116,7 @@ build_immunefeatures_correlation_matrix <- function(df, method = "spearman") {
 build_immunefeatures_violin_plot_df <- function(df, x_col, y_col){
     df %>%
         dplyr::select(x = x_col, y = y_col) %>% 
-        build_violinplot_df()
+        get_complete_df_by_columns(c("x", "y"))
 }
 
 build_immunefeatures_scatter_plot_df <- function(df, x_col, group_filter_value){
@@ -124,9 +124,12 @@ build_immunefeatures_scatter_plot_df <- function(df, x_col, group_filter_value){
     df %>%
         select(ID, GROUP, y = "VALUE1", x = x_col) %>% 
         filter(GROUP == group_filter_value) %>% 
-        create_label(value_columns = c("x", "y")) %>%
+        create_label(
+            name_column = "ID",
+            group_column = "GROUP",
+            value_columns = c("x", "y")) %>%
         select("x", "y", "label") %>% 
-        build_scatter_plot_df(label_col = "label")
+        get_complete_df_by_columns(c("x", "y", "label"))
 }
 
 
@@ -174,7 +177,7 @@ build_cellcontent_barplot_df <- function(
         dplyr::group_by(GROUP, fraction_type) %>%
         dplyr::summarise_at("fraction", .funs = operations) %>%
         dplyr::ungroup() %>%
-        create_label2(
+        create_label(
             title = stringr::str_to_title(y_column),
             name_column = x_column,
             group_column = "GROUP",
@@ -190,83 +193,68 @@ build_cellcontent_barplot_df <- function(
     return(result_df)
 }
 
-# functions for plot-function dataframes --------------------------------------
-
-build_violinplot_df <- function(
-    df, 
-    x_col = "x",
-    y_col = "y",
-    key_col = NA,
-    color_col = NA,
-    label_col = NA,
-    split_col = NA){
+build_cellcontent_scatterplot_df <- function(
+    df, group_column, group_filter_value, 
+    id_column = "ParticipantBarcode",
+    x_column = "Stromal_Fraction",
+    y_column = "leukocyte_fraction") {
     
-    columns <- 
-        c(x_col, y_col, key_col, color_col, label_col, split_col) %>% 
-        na.omit()
-    get_complete_df_by_columns(df, columns)
+    result_df  <- df %>%
+        select(
+            GROUP = group_column, 
+            ID = id_column, 
+            x = x_column, 
+            y = y_column) %>%
+        filter(GROUP == group_filter_value) %>%
+        create_label(
+            name_column = "ID",
+            group_column = "GROUP",
+            value_columns = c("x", "y")) %>% 
+        select(x, y, "label")
+    assert_df_has_columns(result_df, c("x", "y", "label"))
+    assert_df_has_rows(result_df)
+    return(result_df)
 }
-
-build_histogram_df <- function(
-    df, 
-    x_col = "x", 
-    key_col = NA,
-    label_col = NA){
-    
-    columns <- 
-        c(x_col, key_col, label_col) %>% 
-        na.omit()
-    get_complete_df_by_columns(df, columns)
-}
-
-build_scatter_plot_df <- function(
-    df, 
-    x_col = "x",
-    y_col = "y",
-    key_col = NA,
-    color_col = NA, 
-    label_col = NA){
-    
-    columns <- 
-        c(x_col, y_col, key_col, color_col, label_col) %>% 
-        na.omit()
-    get_complete_df_by_columns(df, columns)
-}
-
-
 
 # functions for making plot df label column -----------------------------------
 
 create_label <- function(
-    df, 
+    df,
     value_columns,
-    id_column = "ID",
-    group_column = "GROUP",
-    title = "ParticipantBarcode") {
+    title = "ParticipantBarcode",
+    name_column = "name",
+    group_column = "group") {
     
-    assert_df_has_columns(df, c(id_column, group_column, value_columns))
-    result_df <- df %>%
-        mutate(label = str_glue(
-            "<b>{title}:</b> {name} ({group})", 
-            title = title,
-            name = id_column, 
-            group = GROUP)) %>% 
-        gather(value_name, value, one_of(value_columns)) %>% 
-        mutate(
-            value_label = str_glue(
-                "{name}: {value}", 
-                name = str_to_upper(value_name), 
-                value = sprintf("%0.3f", value)
-            )
-        ) %>% 
-        group_by(label) %>% 
-        mutate(value_label = str_c(value_label, collapse = "</br>")) %>% 
-        ungroup() %>% 
-        spread(value_name, value) %>% 
-        unite(label, label, value_label, sep = "</br></br>")
-    assert_df_has_columns(result_df, c("label", id_column, group_column, value_columns))
+    result_df <- let(
+        alias = c(
+            namevar = name_column,
+            groupvar = group_column),
+        df %>%
+            mutate(
+                label = str_glue(
+                    "<b>{title}:</b> {name} ({group})",
+                    title = title,
+                    name = namevar,
+                    group = groupvar
+                )) %>% 
+            gather(value_name, value, one_of(value_columns)) %>%
+            mutate(
+                value_label = str_glue(
+                    "{name}: {value}",
+                    name = str_to_upper(value_name),
+                    value = sprintf("%0.3f", value)
+                )
+            ) %>%
+            group_by(label) %>%
+            mutate(value_label = str_c(value_label, collapse = "</br>")) %>%
+            ungroup() %>%
+            spread(value_name, value) %>%
+            unite(label, label, value_label, sep = "</br></br>")
+    )
+    assert_df_has_columns(result_df, c("label", name_column, group_column, value_columns))
     assert_df_has_rows(result_df)
     return(result_df)
+    
 }
 
 ###############################################################################
@@ -320,45 +308,6 @@ subset_panimmune_df_by_user_groups <- function(df, user_group_df, group_column){
     )
 }
 
-
-# Generic plot data transform ----
-
-create_label2 <- function(
-    df,
-    value_columns,
-    title = "ParticipantBarcode",
-    name_column = "name",
-    group_column = "group") {
-
-    let(
-        alias = c(
-            namevar = name_column,
-            groupvar = group_column),
-        df %>%
-            mutate(
-                label = str_glue(
-                    "<b>{title}:</b> {name} ({group})",
-                    title = title,
-                    name = namevar,
-                    group = groupvar
-                )) %>% 
-            gather(value_name, value, one_of(value_columns)) %>%
-            mutate(
-                value_label = str_glue(
-                    "{name}: {value}",
-                    name = str_to_upper(value_name),
-                    value = sprintf("%0.3f", value)
-                )
-            ) %>%
-            group_by(label) %>%
-            mutate(value_label = str_c(value_label, collapse = "</br>")) %>%
-            ungroup() %>%
-            spread(value_name, value) %>%
-            unite(label, label, value_label, sep = "</br></br>")
-    )
-}
-
-
 #' Format a dataframe for plotting summary values (count, sum, mean, etc.) for
 #' different groups with bar plots; grouping is allowed at one to three levels:
 #' group (required), subgroup, and facet
@@ -395,16 +344,16 @@ create_label2 <- function(
 #' @export
 #'
 #' @examples
-build_scatterplot_df2 <- function(
-    df, group_column, group_filter_value, x_column, y_column, 
-    id_column = "ParticipantBarcode") {
-    
-    df %>%
-        select(group = group_column, name = id_column, x_column, y_column) %>% 
-        filter(group == group_filter_value) %>% 
-        create_label2(value_columns = c(x_column, y_column)) %>%
-        select(id = name, x = x_column, y = y_column, "label")
-}
+# build_scatterplot_df2 <- function(
+#     df, group_column, group_filter_value, x_column, y_column, 
+#     id_column = "ParticipantBarcode") {
+#     
+#     df %>%
+#         select(group = group_column, name = id_column, x_column, y_column) %>% 
+#         filter(group == group_filter_value) %>% 
+#         create_label(value_columns = c(x_column, y_column)) %>%
+#         select(id = name, x = x_column, y = y_column, "label")
+# }
 
 #' Format a dataframe for plotting values of one column versus values of a
 #' second column for moasic plot
