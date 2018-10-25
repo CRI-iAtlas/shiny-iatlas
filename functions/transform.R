@@ -308,52 +308,6 @@ subset_panimmune_df_by_user_groups <- function(df, user_group_df, group_column){
     )
 }
 
-#' Format a dataframe for plotting summary values (count, sum, mean, etc.) for
-#' different groups with bar plots; grouping is allowed at one to three levels:
-#' group (required), subgroup, and facet
-#'
-#' @param df a tidy dataframe
-#' @param group_column string name of column containing values to summarize; 
-#'     will correspond to size of bars in the plot
-#' @param group_column string name of top level column by which to group; will
-#'     correspond to x- or y-axis ticks in plot
-#' @param subgroup_column string name of second level column by which to group;
-#'     will correspond to fill colors of individual bars/segments
-#' @param facet_column string name of third level column by which to group;
-#'     will correspond to subplots
-#' @param operation string or vector of strings indicating which summary 
-#'     statistic(s) to calculate
-#'
-#' @return
-#' @export
-#'
-#' @examples
-
-
-#' Format a dataframe for plotting values of one column versus values of a
-#' second column as points in a scatter plot
-#'
-#' @param df a tidy dataframe
-#' @param filter_column string name of column on which to filter values to 
-#'     subset rows
-#' @param filter_value string representing value by which to filter rows 
-#' @param x_column string name of column to use for x-axis
-#' @param y_column string name of column to use for y-axis
-#'
-#' @return
-#' @export
-#'
-#' @examples
-# build_scatterplot_df2 <- function(
-#     df, group_column, group_filter_value, x_column, y_column, 
-#     id_column = "ParticipantBarcode") {
-#     
-#     df %>%
-#         select(group = group_column, name = id_column, x_column, y_column) %>% 
-#         filter(group == group_filter_value) %>% 
-#         create_label(value_columns = c(x_column, y_column)) %>%
-#         select(id = name, x = x_column, y = y_column, "label")
-# }
 
 #' Format a dataframe for plotting values of one column versus values of a
 #' second column for moasic plot
@@ -383,18 +337,6 @@ build_mosaicplot_df <- function(df, x_column, y_column){
 }
 
 
-
-build_boxplot_df <- function(df, x_column, y_column){
-    if(!x_column %in% colnames(df)){
-        stop("Input df has no X column: ", x_column)
-    }
-    if(!y_column %in% colnames(df)){
-        stop("Input df has no Y column: ", y_column)
-    }
-    df %>% 
-        dplyr::select(x = x_column, y = y_column) %>% 
-        tidyr::drop_na()
-}
 
 
 # Module specific data transform ----
@@ -475,42 +417,13 @@ build_group_group_mosaic_plot_df <- function(
 build_intermediate_corr_df <- function(
     df, value1_column, group_column, group_options, value2_columns,
     id_column = "ParticipantBarcode" ) {
-    
+
     wrapr::let(
         c(GROUP = group_column),
-        result_df <- df %>% 
-            dplyr::select(id_column, GROUP, value1_column, value2_columns) %>% 
+        result_df <- df %>%
+            dplyr::select(id_column, GROUP, value1_column, value2_columns) %>%
             dplyr::filter(GROUP %in% group_options))
 }
-
-
-build_heatmap_corr_mat <- function(
-    df, group_column, value1_column, value2_columns) {
-
-    df %>% 
-        dplyr::select(
-            group = group_column,
-            value1 = value1_column,
-            value2_columns) %>% 
-        tidyr::gather(key = "variable", value = "value2", -c(group, value1)) %>% 
-        dplyr::group_by(group, variable) %>% 
-        dplyr::summarise(cor = cor(
-            value1, 
-            value2,
-            method = "spearman", 
-            use = "pairwise.complete.obs")) %>% 
-        tidyr::spread(key = "group", value = "cor", fill = 0) %>% 
-        dplyr::mutate(variable = map(variable, get_variable_display_name)) %>% 
-        as.data.frame %>% 
-        tibble::column_to_rownames("variable") %>% 
-        as.matrix()
-}
-
-
-# ** Tumor composition module ----
-
-
-
 
 
 # ** Clinical outcomes module ----
@@ -596,26 +509,26 @@ build_ci_mat <- function(
 
 # ** Immune interface module ----
 
-build_immuneinterface_df <- function(
-    build_df, sample_group, diversity_vars
-) {
-    df %>%
-        select(sample_group, diversity_vars) %>%
-        .[complete.cases(.), ] %>%
-        gather(metric, diversity, -1) %>%
-        separate(metric, into = c("receptor", "metric"), sep = "_")
-}
-
-ztransform_df <- function(df) {
-    df %>%
-        group_by(receptor, metric) %>%
-        mutate(
-            div_mean = mean(diversity),
-            div_sd = sd(diversity)
-        ) %>%
-        ungroup() %>%
-        mutate(diversity = (diversity - div_mean) / div_sd)
-}
+# build_immuneinterface_df <- function(
+#     build_df, sample_group, diversity_vars
+# ) {
+#     df %>%
+#         select(sample_group, diversity_vars) %>%
+#         .[complete.cases(.), ] %>%
+#         gather(metric, diversity, -1) %>%
+#         separate(metric, into = c("receptor", "metric"), sep = "_")
+# }
+# 
+# ztransform_df <- function(df) {
+#     df %>%
+#         group_by(receptor, metric) %>%
+#         mutate(
+#             div_mean = mean(diversity),
+#             div_sd = sd(diversity)
+#         ) %>%
+#         ungroup() %>%
+#         mutate(diversity = (diversity - div_mean) / div_sd)
+# }
 
 # ** Immunomodulators module ----
 
@@ -633,9 +546,9 @@ build_mutation_df <- function(df, response_var, group_column, group_options){
         response_var,
         group_column,
         group_options)
-    driver_mutation_df.long <- 
-        panimmune_data$driver_mutation_df %>%  
-        tidyr::gather(key = "mutation", value = "value", -c("ParticipantBarcode")) %>% 
+    driver_mutation_df.long <-
+        panimmune_data$driver_mutation_df %>%
+        tidyr::gather(key = "mutation", value = "value", -c("ParticipantBarcode")) %>%
         dplyr::mutate(value = fct_relevel(value, "Wt", "Mut"))
     mutation_df <- build_driver_mutation_df(driver_mutation_df.long, fmx_df.intermediate)
     if(nrow(mutation_df) == 0){
