@@ -89,7 +89,7 @@ build_immunefeatures_df <- function(
 }
 
 build_immunefeatures_correlation_matrix <- function(df, method = "spearman") {
-    x <- df  %>% 
+    df  %>% 
         dplyr::select(-ID) %>% 
         tidyr::gather(
             key = "VARIABLE", 
@@ -115,17 +115,14 @@ build_immunefeatures_violin_plot_df <- function(df, x_col, y_col){
         build_violinplot_df()
 }
 
-build_immunefeatures_scatter_plot_df <- function(df, x_col, y_col, group_filter_value){
-    print(df)
-    print(x_col)
-    print(y_col)
-    print(group_filter_value)
+build_immunefeatures_scatter_plot_df <- function(df, x_col, group_filter_value){
+    assert_df_has_columns(df, c(x_col, "VALUE1", "ID", "GROUP"))
     df %>%
         select(ID, GROUP, y = "VALUE1", x = x_col) %>% 
         filter(GROUP == group_filter_value) %>% 
-        create_label2(value_columns = c(x, y)) %>%
-        select(x, y, "label") %>% 
-        build_scatter_plot_df2(label_col = "label")
+        create_label(value_columns = c("x", "y")) %>%
+        select("x", "y", "label") %>% 
+        build_scatter_plot_df(label_col = "label")
 }
 
 
@@ -158,7 +155,7 @@ build_histogram_df <- function(
     get_complete_df_by_columns(df, columns)
 }
 
-build_scatter_plot_df2 <- function(
+build_scatter_plot_df <- function(
     df, 
     x_col = "x",
     y_col = "y",
@@ -172,32 +169,38 @@ build_scatter_plot_df2 <- function(
     get_complete_df_by_columns(df, columns)
 }
 
+# functions for making plot df label column -----------------------------------
 
-create_label2 <- function(
+create_label <- function(
     df, 
     value_columns,
+    id_column = "ID",
+    group_column = "GROUP",
     title = "ParticipantBarcode") {
 
-    x <- df %>%
+    assert_df_has_columns(df, c(id_column, group_column, value_columns))
+    result_df <- df %>%
         mutate(label = str_glue(
             "<b>{title}:</b> {name} ({group})", 
             title = title,
             name = ID, 
             group = GROUP)) %>% 
-        gather(key = "key", value = "value", -c(ID, GROUP, label)) %>% 
-        mutate(value = as.character(value)) %>% 
-        mutate(key = str_to_upper(key)) %>% 
-        mutate(value_label = str_glue(
-            "{key}: {value}", 
-            key = key), 
-            value = value) %>% 
+        gather(value_name, value, one_of(value_columns)) %>% 
+        mutate(
+            value_label = str_glue(
+                "{name}: {value}", 
+                name = str_to_upper(value_name), 
+                value = sprintf("%0.3f", value)
+            )
+        ) %>% 
         group_by(label) %>% 
         mutate(value_label = str_c(value_label, collapse = "</br>")) %>% 
         ungroup() %>% 
-        spread(key = "key", value = "value") %>% 
+        spread(value_name, value) %>% 
         unite(label, label, value_label, sep = "</br></br>")
-    print(x)
-    return(x)
+    assert_df_has_columns(result_df, c("label", id_column, group_column, value_columns))
+    assert_df_has_rows(result_df)
+    return(result_df)
 }
 
 
@@ -276,37 +279,37 @@ subset_panimmune_df_by_user_groups <- function(df, user_group_df, group_column){
 
 # Generic plot data transform ----
 
-create_label <- function(
-    df, 
+create_label2 <- function(
+    df,
     value_columns,
     title = "ParticipantBarcode",
-    name_column = "name", 
+    name_column = "name",
     group_column = "group") {
-    
+
     let(
         alias = c(
-            namevar = name_column, 
+            namevar = name_column,
             groupvar = group_column),
         df %>%
             mutate(
                 label = str_glue(
-                    "<b>{title}:</b> {name} ({group})", 
+                    "<b>{title}:</b> {name} ({group})",
                     title = title,
-                    name = namevar, 
+                    name = namevar,
                     group = groupvar
-                )) %>% 
-            gather(value_name, value, one_of(value_columns)) %>% 
+                )) %>%
+            gather(value_name, value, one_of(value_columns)) %>%
             mutate(
                 value_label = str_glue(
-                    "{name}: {value}", 
-                    name = str_to_upper(value_name), 
+                    "{name}: {value}",
+                    name = str_to_upper(value_name),
                     value = sprintf("%0.3f", value)
                 )
-            ) %>% 
-            group_by(label) %>% 
-            mutate(value_label = str_c(value_label, collapse = "</br>")) %>% 
-            ungroup() %>% 
-            spread(value_name, value) %>% 
+            ) %>%
+            group_by(label) %>%
+            mutate(value_label = str_c(value_label, collapse = "</br>")) %>%
+            ungroup() %>%
+            spread(value_name, value) %>%
             unite(label, label, value_label, sep = "</br></br>")
     )
 }
@@ -344,7 +347,7 @@ build_barplot_df <- function(
         ungroup()
     if (add_label) {
         df %>%
-            create_label(
+            create_label2(
                 title = str_to_title(y_column),
                 name_column = x_column,
                 group_column = color_column,
@@ -369,14 +372,14 @@ build_barplot_df <- function(
 #' @export
 #'
 #' @examples
-build_scatterplot_df <- function(
+build_scatterplot_df2 <- function(
     df, group_column, group_filter_value, x_column, y_column, 
     id_column = "ParticipantBarcode") {
     
     df %>%
         select(group = group_column, name = id_column, x_column, y_column) %>% 
         filter(group == group_filter_value) %>% 
-        create_label(value_columns = c(x_column, y_column)) %>%
+        create_label2(value_columns = c(x_column, y_column)) %>%
         select(id = name, x = x_column, y = y_column, "label")
 }
 

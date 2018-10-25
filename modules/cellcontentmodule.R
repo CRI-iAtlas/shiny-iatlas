@@ -132,7 +132,7 @@ cellcontent <- function(
         "Click bar plot"))
     
     scatterplot_df <-  
-        build_scatterplot_df(
+        build_scatterplot_df2(
             subset_df(),
             group_column = group_internal_choice(),
             group_filter_value = selected_plot_subgroup,
