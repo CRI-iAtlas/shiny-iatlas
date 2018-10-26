@@ -699,14 +699,12 @@ compute_driver_associations <- function(df_for_regression,response_var,group_col
 # ** IO target module ----
 
 build_io_target_expr_plot_df <- function(df, filter_value, group_option) { # added Oct 24, 2018
-  x <- panimmune_data$io_target_expr_df %>%
-    dplyr::filter(Symbol == filter_value) %>%
-    dplyr::left_join(df) %>%
-    dplyr::mutate(log_count = log10(normalized_count + 1)) %>%
-    dplyr::select(x = group_option, y = log_count) %>% 
-    build_violinplot_df()
-  print(x)
-  return(x)
+    result_df <- panimmune_data$io_target_expr_df %>%
+        dplyr::filter(Symbol == filter_value) %>%
+        dplyr::left_join(df) %>%
+        dplyr::mutate(log_count = log10(normalized_count + 1)) %>%
+        dplyr::select(x = group_option, y = log_count) %>% 
+        get_complete_df_by_columns(c("x", "y"))
 }
 
 
