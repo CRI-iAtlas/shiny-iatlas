@@ -100,6 +100,13 @@ get_im_display_name <- purrr::partial(
     to_column = "Gene",
     from_column = "HGNC Symbol")
 
+get_variable_internal_names <- purrr::partial(
+    convert_value_between_columns,
+    df = panimmune_data$feature_df,
+    to_column = "FeatureMatrixLabelTSV",
+    from_column = "FriendlyLabel",
+    many_matches = "return_result")
+
 
 # convert_values_between_columns ----------------------------------------------
 
@@ -363,4 +370,7 @@ get_iotarget_nested_list <- function( ## added 24 Oct 2018
       value_column = "DISPLAY")
 }
 
+se <- function(x){
+    mean(x) / sqrt(length(x))
+}   
 

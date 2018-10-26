@@ -25,7 +25,7 @@ check_immunefeatures_scatterplot_click_data <- function(
     row_name  <- eventdata$y[[1]]
     column_name_valid <- column_name %in% extract2(subset_df, group_column)
     row_name_valid <- any(
-        get_variable_internal_name(row_name) %in% colnames(corr_df))
+        get_variable_internal_names(row_name) %in% colnames(corr_df))
     all(column_name_valid, row_name_valid)
 }
 

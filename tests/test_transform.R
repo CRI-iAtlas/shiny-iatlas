@@ -41,7 +41,7 @@ testthat::test_that("filter_immunomodulator_expression_df", {
         "GENE" = c("genea", "geneb", "genea", "geneb")
     )
     testthat::expect_that(
-        x <- filter_immunomodulator_expression_df(
+        filter_immunomodulator_expression_df(
             expr_df, 
             id_col = "ID",
             filter_col = "GENE",
@@ -55,7 +55,42 @@ testthat::test_that("filter_immunomodulator_expression_df", {
     )
 })
                     
-
+testthat::test_that("create_label", {
+    input_df <- data_frame(
+        "ID" = c("id1", "id2", "id3", "id4"),
+        "GROUP" = c("group1", "group1", "group2", "group2"),
+        "value_col1" = c(1, 2, 3, 4),
+        "value_col2" = c(8, 9, 10, 11),
+        "value_col3" = c(12, 14, 100, 110))
+    result_df1 <- data_frame(
+        "ID" = c("id1", "id2", "id3", "id4"),
+        "GROUP" = c("group1", "group1", "group2", "group2"),
+        "value_col3" = c(12, 14, 100, 110),
+        "label" = c(
+            "<b>ParticipantBarcode:</b> id1 (group1)</br></br>VALUE_COL1: 1.000</br>VALUE_COL2: 8.000",
+            "<b>ParticipantBarcode:</b> id2 (group1)</br></br>VALUE_COL1: 2.000</br>VALUE_COL2: 9.000",
+            "<b>ParticipantBarcode:</b> id3 (group2)</br></br>VALUE_COL1: 3.000</br>VALUE_COL2: 10.000",
+            "<b>ParticipantBarcode:</b> id4 (group2)</br></br>VALUE_COL1: 4.000</br>VALUE_COL2: 11.000"),
+        "value_col1" = c(1, 2, 3, 4),
+        "value_col2" = c(8, 9, 10, 11))
+    result_df2 <- data_frame(
+        "ID" = c("id1", "id2", "id3", "id4"),
+        "GROUP" = c("group1", "group1", "group2", "group2"),
+        "label" = c(
+            "<b>ParticipantBarcode:</b> id1 (group1)</br></br>VALUE_COL1: 1.000</br>VALUE_COL2: 8.000</br>VALUE_COL3: 12.000",
+            "<b>ParticipantBarcode:</b> id2 (group1)</br></br>VALUE_COL1: 2.000</br>VALUE_COL2: 9.000</br>VALUE_COL3: 14.000",
+            "<b>ParticipantBarcode:</b> id3 (group2)</br></br>VALUE_COL1: 3.000</br>VALUE_COL2: 10.000</br>VALUE_COL3: 100.000",
+            "<b>ParticipantBarcode:</b> id4 (group2)</br></br>VALUE_COL1: 4.000</br>VALUE_COL2: 11.000</br>VALUE_COL3: 110.000"),
+        "value_col1" = c(1, 2, 3, 4),
+        "value_col2" = c(8, 9, 10, 11),
+        "value_col3" = c(12, 14, 100, 110))
+    testthat::expect_that(
+        create_label2(input_df, c("value_col1", "value_col2")),
+        testthat::is_identical_to(result_df1))
+    testthat::expect_that(
+        create_label2(input_df, c("value_col1", "value_col2", "value_col3")),
+        testthat::is_identical_to(result_df2))
+})
 
 
 
