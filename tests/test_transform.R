@@ -56,87 +56,7 @@ testthat::test_that("filter_immunomodulator_expression_df", {
 })
                     
 
-# functions for making plot df label column -----------------------------------
-
-
-testthat::test_that("create_label", {
-    input_df <- data_frame(
-        "name" = c("id1", "id2", "id3", "id4"),
-        "group" = c("group1", "group1", "group2", "group2"),
-        "value_col1" = c(1, 2, 3, 4),
-        "value_col2" = c(8, 9, 10, 11),
-        "value_col3" = c(12, 14, 100, 110))
-    result_df1 <- data_frame(
-        "name" = c("id1", "id2", "id3", "id4"),
-        "group" = c("group1", "group1", "group2", "group2"),
-        "value_col3" = c(12, 14, 100, 110),
-        "label" = c(
-            "<b>ParticipantBarcode:</b> id1 (group1)</br></br>VALUE_COL1: 1.000</br>VALUE_COL2: 8.000",
-            "<b>ParticipantBarcode:</b> id2 (group1)</br></br>VALUE_COL1: 2.000</br>VALUE_COL2: 9.000",
-            "<b>ParticipantBarcode:</b> id3 (group2)</br></br>VALUE_COL1: 3.000</br>VALUE_COL2: 10.000",
-            "<b>ParticipantBarcode:</b> id4 (group2)</br></br>VALUE_COL1: 4.000</br>VALUE_COL2: 11.000"),
-        "value_col1" = c(1, 2, 3, 4),
-        "value_col2" = c(8, 9, 10, 11))
-    result_df2 <- data_frame(
-        "name" = c("id1", "id2", "id3", "id4"),
-        "group" = c("group1", "group1", "group2", "group2"),
-        "label" = c(
-            "<b>ParticipantBarcode:</b> id1 (group1)</br></br>VALUE_COL1: 1.000</br>VALUE_COL2: 8.000</br>VALUE_COL3: 12.000",
-            "<b>ParticipantBarcode:</b> id2 (group1)</br></br>VALUE_COL1: 2.000</br>VALUE_COL2: 9.000</br>VALUE_COL3: 14.000",
-            "<b>ParticipantBarcode:</b> id3 (group2)</br></br>VALUE_COL1: 3.000</br>VALUE_COL2: 10.000</br>VALUE_COL3: 100.000",
-            "<b>ParticipantBarcode:</b> id4 (group2)</br></br>VALUE_COL1: 4.000</br>VALUE_COL2: 11.000</br>VALUE_COL3: 110.000"),
-        "value_col1" = c(1, 2, 3, 4),
-        "value_col2" = c(8, 9, 10, 11),
-        "value_col3" = c(12, 14, 100, 110))
-    testthat::expect_that(
-        create_label(input_df, c("value_col1", "value_col2")),
-        testthat::is_identical_to(result_df1))
-    testthat::expect_that(
-        create_label(input_df, c("value_col1", "value_col2", "value_col3")),
-        testthat::is_identical_to(result_df2))
-})
-
-# other functions -------------------------------------------------------------
-
-
-testthat::test_that("build_mosaicplot_df", {
-    group_df <- data_frame(
-        "group_col1" = c(rep("group1", 5), rep("group2", 3)),
-        "group_col2" = c(rep("group3", 3), rep(NA, 5)),
-        "group_col4" = c(rep("group5", 2), rep("group6", 6)),
-        "group_col5" = c(rep("group7", 4), rep("group8", 4)))
-    result_df1 <- data_frame(
-        "x" = as.factor(c(
-            rep("group1", 5), rep("group2", 3))),
-        "y" = forcats::fct_rev(as.factor(c(
-            rep("group5", 2), rep("group6", 6)))))
-    result_df2 <- data_frame(
-        "x" = as.factor(c(
-            rep("group1", 5), rep("group2", 3))),
-        "y" = forcats::fct_rev(as.factor(c(
-            rep("group7", 4), rep("group8", 4)))))
-    result_df3 <- data_frame(
-        "x" = as.factor(c(
-            rep("group1", 3))),
-        "y" = forcats::fct_rev(as.factor(c(
-            rep("group3", 3)))))
-    testthat::expect_that(
-        build_mosaicplot_df(group_df, "group_col1", "group_col4"),
-        testthat::is_identical_to(result_df1))
-    testthat::expect_that(
-        build_mosaicplot_df(group_df, "group_col1", "group_col5"),
-        testthat::is_identical_to(result_df2))
-    testthat::expect_that(
-        build_mosaicplot_df(group_df, "group_col1", "group_col2"),
-        testthat::is_identical_to(result_df3))
-    testthat::expect_that(
-        build_mosaicplot_df(group_df, "group_col1", "group_col6"),
-        testthat::throws_error("df has missing columns: group_col6"))
-    testthat::expect_that(
-        build_mosaicplot_df(group_df, "group_col6", "group_col1"),
-        testthat::throws_error("df has missing columns: group_col6"))
-})
-
+# samplegroup functions -------------------------------------------------------
 testthat::test_that("build_sample_group_key_df",{
     group_df <- data_frame(
         "group_col1" = c(rep("group1", 5), rep("group2", 3)),
@@ -219,3 +139,83 @@ testthat::test_that("build_group_size_df",{
         build_group_size_df(test_subset_df, "group_col2"),
         testthat::is_identical_to(result_size_df2))
 })
+
+# functions for making plot df label column -----------------------------------
+
+
+testthat::test_that("create_label", {
+    input_df <- data_frame(
+        "name" = c("id1", "id2", "id3", "id4"),
+        "group" = c("group1", "group1", "group2", "group2"),
+        "value_col1" = c(1, 2, 3, 4),
+        "value_col2" = c(8, 9, 10, 11),
+        "value_col3" = c(12, 14, 100, 110))
+    result_df1 <- data_frame(
+        "name" = c("id1", "id2", "id3", "id4"),
+        "group" = c("group1", "group1", "group2", "group2"),
+        "value_col3" = c(12, 14, 100, 110),
+        "label" = c(
+            "<b>ParticipantBarcode:</b> id1 (group1)</br></br>VALUE_COL1: 1.000</br>VALUE_COL2: 8.000",
+            "<b>ParticipantBarcode:</b> id2 (group1)</br></br>VALUE_COL1: 2.000</br>VALUE_COL2: 9.000",
+            "<b>ParticipantBarcode:</b> id3 (group2)</br></br>VALUE_COL1: 3.000</br>VALUE_COL2: 10.000",
+            "<b>ParticipantBarcode:</b> id4 (group2)</br></br>VALUE_COL1: 4.000</br>VALUE_COL2: 11.000"),
+        "value_col1" = c(1, 2, 3, 4),
+        "value_col2" = c(8, 9, 10, 11))
+    result_df2 <- data_frame(
+        "name" = c("id1", "id2", "id3", "id4"),
+        "group" = c("group1", "group1", "group2", "group2"),
+        "label" = c(
+            "<b>ParticipantBarcode:</b> id1 (group1)</br></br>VALUE_COL1: 1.000</br>VALUE_COL2: 8.000</br>VALUE_COL3: 12.000",
+            "<b>ParticipantBarcode:</b> id2 (group1)</br></br>VALUE_COL1: 2.000</br>VALUE_COL2: 9.000</br>VALUE_COL3: 14.000",
+            "<b>ParticipantBarcode:</b> id3 (group2)</br></br>VALUE_COL1: 3.000</br>VALUE_COL2: 10.000</br>VALUE_COL3: 100.000",
+            "<b>ParticipantBarcode:</b> id4 (group2)</br></br>VALUE_COL1: 4.000</br>VALUE_COL2: 11.000</br>VALUE_COL3: 110.000"),
+        "value_col1" = c(1, 2, 3, 4),
+        "value_col2" = c(8, 9, 10, 11),
+        "value_col3" = c(12, 14, 100, 110))
+    testthat::expect_that(
+        create_label(input_df, c("value_col1", "value_col2")),
+        testthat::is_identical_to(result_df1))
+    testthat::expect_that(
+        create_label(input_df, c("value_col1", "value_col2", "value_col3")),
+        testthat::is_identical_to(result_df2))
+})
+
+# other functions -------------------------------------------------------------
+
+testthat::test_that("summarise_df_at_column",{
+    test_df1 <- data_frame(
+        "group_col1" = c(rep("group1", 5)),
+        "group_col2" = c(rep("group1", 3), rep("group2", 2)),
+        "sum_col1" = c(rep(5, 5)))
+    result_df1 <- data_frame(
+        "group_col1" = "group1",
+        "mean" = 5)
+    result_df2 <- data_frame(
+        "group_col1" = "group1", 
+        "mean" = 5,
+        "sd" = 0)
+    result_df3 <- data_frame(
+        "group_col2" = c("group1", "group2"),
+        "mean" = c(5, 5))
+    result_df4 <- data_frame(
+        "group_col1" = c("group1", "group1"),
+        "group_col2" = c("group1", "group2"),
+        "mean" = c(5, 5))
+    # one group one function
+    testthat::expect_that(
+        summarise_df_at_column(test_df1, "sum_col1", "group_col1", "mean"),
+        testthat::is_identical_to(result_df1))
+    # two functions
+    testthat::expect_that(
+        summarise_df_at_column(test_df1, "sum_col1", "group_col1", c("mean", "sd")),
+        testthat::is_identical_to(result_df2))
+    # two groups
+    testthat::expect_that(
+        summarise_df_at_column(test_df1, "sum_col1", "group_col2", "mean"),
+        testthat::is_identical_to(result_df3))
+    # two grouping columns
+    testthat::expect_that(
+        summarise_df_at_column(test_df1, "sum_col1", c("group_col1", "group_col2"), "mean"),
+        testthat::is_identical_to(result_df4))
+})
+

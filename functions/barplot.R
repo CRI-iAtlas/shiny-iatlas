@@ -12,6 +12,7 @@ create_barplot <- function(
     source_name = NULL, 
     bar_colors = NULL ) {
     
+    print(df)
     if(is.na(key_col)) key_col <- x_col
     if(is.na(color_col)) color_col <- x_col
     if(is.na(label_col)) label_col <- x_col
