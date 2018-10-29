@@ -32,9 +32,11 @@ build_immunomodulator_expression_df <- function(
         get_complete_df_by_columns(c(group_col, id_col)) %>% 
         select(GROUP = group_col, ID = id_col)
     
+    
     result_df <- 
         dplyr::inner_join(group_df, expression_df, by = "ID") %>%
         dplyr::select(GROUP, LOG_COUNT)
+    
 }
 
 filter_immunomodulator_expression_df <- function(

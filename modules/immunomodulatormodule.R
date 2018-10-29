@@ -88,7 +88,11 @@ immunomodulator <- function(
     # reactives ----
     
     expression_df <- reactive({
-        req(!is.null(subset_df()), cancelOutput = T)
+        
+        req(input$im_gene_choice,
+            subset_df(), 
+            group_internal_choice(), 
+            cancelOutput = T)
         
         build_immunomodulator_expression_df(
             subset_df(),
@@ -110,7 +114,7 @@ immunomodulator <- function(
     # output ----
     
     output$violinPlot <- renderPlotly({
-        
+
         validate(need(
             nrow(expression_df()) > 0, 
             "Samples in current selected groups have no expression data for the currently selected gene."))
