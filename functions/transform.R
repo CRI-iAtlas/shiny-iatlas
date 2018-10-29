@@ -167,21 +167,18 @@ build_cell_fraction_df <- function(df, group_column, value_columns){
 }
 
 
-build_cellcontent_barplot_df <- function(
-    df, x_column, y_column, 
-    operations = c("sum", "mean", "sd", "se")) {
-    
-    
+build_cellcontent_barplot_df <- function(df, x_column, y_column) {
     assert_df_has_columns(df, c("GROUP", "fraction_type", "fraction"))
     result_df <- df %>%
-        dplyr::group_by(GROUP, fraction_type) %>%
-        dplyr::summarise_at("fraction", .funs = operations) %>%
-        dplyr::ungroup() %>%
+        summarise_df_at_column(
+            column = "fraction",
+            grouping_columns = c("GROUP", "fraction_type"),
+            function_names = c("mean", "se")) %>% 
         create_label(
             title = stringr::str_to_title(y_column),
             name_column = x_column,
             group_column = "GROUP",
-            value_columns = operations) %>% 
+            value_columns = c("mean", "se")) %>% 
         dplyr::select(
             x = "GROUP",
             y = "mean",
@@ -331,6 +328,21 @@ create_label <- function(
 
 
 # other functions -------------------------------------------------------------
+
+summarise_df_at_column <- function(df, column, grouping_columns, function_names){
+    assert_df_has_columns(df, c(column, grouping_columns))
+    result_df <- df %>% 
+        dplyr::group_by_at(vars(one_of(grouping_columns))) %>%
+        dplyr::summarise_at(column, .funs = function_names) %>%
+        dplyr::ungroup() 
+    if(length(function_names) == 1){
+        result_df <- dplyr::rename(result_df, !!function_names := column)
+    }
+    assert_df_has_columns(result_df, c(grouping_columns, function_names))
+    assert_df_has_rows(result_df)
+    return(result_df)
+}
+
 
 build_mosaicplot_df <- function(df, x_column, y_column){
     

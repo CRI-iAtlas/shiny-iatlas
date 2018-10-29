@@ -104,8 +104,7 @@ cellcontent <- function(
         barplot_df <- build_cellcontent_barplot_df(
             cellcontent_df,
             x_column = "fraction_type",
-            y_column = "fraction",
-            operations = c("mean", "se"))
+            y_column = "fraction")
         
         create_barplot(
             barplot_df,
@@ -133,7 +132,7 @@ cellcontent <- function(
         scatterplot_df <- build_cellcontent_scatterplot_df(
             subset_df(),
             group_column = group_internal_choice(),
-            group_filter_value = selected_plot_subgroup,
+            group_filter_value = selected_plot_subgroup
             ) 
         
         create_scatterplot(
@@ -165,9 +164,7 @@ cellcontent <- function(
             build_cellcontent_barplot_df(
                 cell_fraction_df,
                 y_column = "fraction",
-                x_column = "fraction_type",
-                operations = c("mean", "se")
-            ) %>%
+                x_column = "fraction_type") %>%
             mutate(color = map_chr(color, get_variable_display_name))
         
         create_barplot(
