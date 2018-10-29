@@ -108,19 +108,6 @@ groupsoverview <- function(
         }
     })
     
-    # user_group_df <- reactive({
-    #     req(input$file1)
-    #     tryCatch(
-    #         {
-    #             df <- readr::read_csv(input$file1$datapath)
-    #         },
-    #         error = function(e) {
-    #             stop(safeError(e))
-    #         }
-    #     )
-    #     return(df)
-    # })
-    
         
     # ui ----
     

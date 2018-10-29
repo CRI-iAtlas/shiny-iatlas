@@ -133,6 +133,7 @@ survival <- function(input, output, session, ss_choice, group_internal_choice,
             title <- input$var1_surv
         }
         
+        print(sample_groups)
         if (title %in% group_options()) {
             group_colors <- plot_colors()
         } else {
