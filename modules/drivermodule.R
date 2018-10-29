@@ -82,7 +82,11 @@ drivers <- function(
     })
         
     
-    mutation_group_summary_df <- reactive(build_mutation_group_summary_df(mutation_df()))
+    mutation_group_summary_df <- reactive({
+        req(!is.null(mutation_df()), cancelOutput = T)
+        build_mutation_group_summary_df(mutation_df())
+    })
+    
     testable_mutation_groups <- reactive(get_testable_mutation_groups(mutation_group_summary_df()))
     untestable_mutation_groups <- reactive(get_untestable_mutation_groups(mutation_group_summary_df(), testable_mutation_groups()))
     
@@ -106,17 +110,16 @@ drivers <- function(
     
     
     df_for_regression <- reactive({
-        if (is.null(mutation_df()) | length(testable_mutation_groups()) == 0){
-            return(NULL)  
-        } 
-        mutation_df() %>% 
-            filter(mutation_group %in% testable_mutation_groups())
+        if(is.null(mutation_df())){
+            return(NULL)
+        }
+        filter(mutation_df(), mutation_group %in% testable_mutation_groups())
     })
     
     scatter_plot_df <- reactive({
-        if (is.null(df_for_regression())){
-            return(NULL)  
-        } 
+        validate(need(
+            !is.null(df_for_regression()),
+            "No results to display, pick a different group."))
         df_for_plot <- 
             compute_driver_associations(
                 df_for_regression(),
