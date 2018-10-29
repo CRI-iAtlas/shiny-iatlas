@@ -388,7 +388,7 @@ subset_panimmune_df_by_TCGA_subtype <- function(df, group_column, study_option){
             
             df %>% 
                 filter(COL %in% sample_groups) %>% 
-                mutate(COL = fct_drop(COL))
+                mutate(COL = as.character(fct_drop(COL)))
         }
     )
 }

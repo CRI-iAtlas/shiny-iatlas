@@ -20,7 +20,7 @@ create_mosaicplot <- function(
             axis.text.y = element_blank(),
             axis.ticks.y = element_blank()
         )
-    if (!is.na(fill_colors)) {
+    if (!is.na(fill_colors[[1]])) {
         plot <- plot + scale_fill_manual(values = fill_colors)
     }
     p <- plotly_build(plot) %>%
