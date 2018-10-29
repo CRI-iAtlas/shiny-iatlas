@@ -109,6 +109,15 @@ groupsoverview <- function(
         return(df)
     })
     
+    sample_group_key_df <- reactive({
+        req(subset_df())
+        build_sample_group_key_df(
+            group_df = subset_df(),
+            group_column = group_internal_choice(),
+            color_vector = plot_colors())
+    })
+
+        
     # ui ----
     
     
@@ -155,10 +164,7 @@ groupsoverview <- function(
     
     output$sample_group_table <- DT::renderDT({
         
-        key_df <- build_sample_group_key_df(
-            group_df = subset_df(),
-            group_column = group_internal_choice(),
-            color_vector = plot_colors())
+        key_df <- sample_group_key_df()
         
         dt <- datatable(
             key_df,
@@ -182,7 +188,12 @@ groupsoverview <- function(
     
     output$mosaicPlot <- renderPlotly({
         
-        req(input$sample_mosaic_group, input$study_subset_selection,
+        req(
+            subset_df(),
+            group_internal_choice(),
+            group_display_choice(),
+            input$sample_mosaic_group, 
+            input$study_subset_selection,
             cancelOutput = T)
         
         display_x  <- input$sample_mosaic_group
