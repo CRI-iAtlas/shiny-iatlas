@@ -350,7 +350,7 @@ build_mosaicplot_df <- function(df, x_column, y_column){
     
     assert_df_has_columns(df, c(x_column, y_column))
     result_df <- df %>% 
-        dplyr::select(x = x_column, y = y_column) %>%     
+        dplyr::select(x = x_column, y = y_column) %>% 
         get_complete_df_by_columns(c("x", "y")) %>% 
         dplyr::mutate(x = as.factor(x)) %>%
         dplyr::mutate(y = forcats::fct_rev(as.factor(y)))
@@ -415,7 +415,7 @@ subset_panimmune_df_by_user_groups <- function(df, user_group_df, group_column){
 # ** Sample groups overview module ----
 
 build_group_group_mosaic_plot_df <- function(
-    df, x_column, y_column, study_option, user_group_df = NULL) {
+    df, x_column, y_column, study_option, user_group_df) {
     
     df %>%
         subset_panimmune_df(

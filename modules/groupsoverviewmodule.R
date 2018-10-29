@@ -97,26 +97,30 @@ groupsoverview <- function(
     # reactives ----
     
     user_group_df <- reactive({
-        req(input$file1)
-        tryCatch(
-            {
-                df <- readr::read_csv(input$file1$datapath)
-            },
-            error = function(e) {
-                stop(safeError(e))
-            }
-        )
-        return(df)
+        if(is.null(input$file1$datapath)){
+            return(NULL)
+        }
+        result <- try(readr::read_csv(input$file1$datapath))
+        if(is.data.frame(result)){
+            return(result)  
+        } else {
+            return(NA)
+        }
     })
     
-    sample_group_key_df <- reactive({
-        req(subset_df())
-        build_sample_group_key_df(
-            group_df = subset_df(),
-            group_column = group_internal_choice(),
-            color_vector = plot_colors())
-    })
-
+    # user_group_df <- reactive({
+    #     req(input$file1)
+    #     tryCatch(
+    #         {
+    #             df <- readr::read_csv(input$file1$datapath)
+    #         },
+    #         error = function(e) {
+    #             stop(safeError(e))
+    #         }
+    #     )
+    #     return(df)
+    # })
+    
         
     # ui ----
     
@@ -164,7 +168,15 @@ groupsoverview <- function(
     
     output$sample_group_table <- DT::renderDT({
         
-        key_df <- sample_group_key_df()
+        req(subset_df(), 
+            group_internal_choice(), 
+            plot_colors(),
+            cancelOutput = T)
+        
+        key_df <- build_sample_group_key_df(
+                group_df = subset_df(),
+                group_column = group_internal_choice(),
+                color_vector = plot_colors())
         
         dt <- datatable(
             key_df,
@@ -188,18 +200,21 @@ groupsoverview <- function(
     
     output$mosaicPlot <- renderPlotly({
         
-        req(
-            !is.null(subset_df()),
+        req(input$sample_mosaic_group != group_display_choice(),
+            subset_df(),
             group_internal_choice(),
             group_display_choice(),
             input$sample_mosaic_group, 
             input$study_subset_selection,
+            !is.null(user_group_df()),
             cancelOutput = T)
         
         display_x  <- input$sample_mosaic_group
         display_y  <- group_display_choice()
         internal_x <- get_group_internal_name(display_x)
         internal_y <- group_internal_choice()
+        
+       
 
         
         mosaic_df <- build_group_group_mosaic_plot_df(
