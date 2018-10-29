@@ -97,6 +97,8 @@ cellcontent <- function(
     # ** Overall proportions bar plot render ----
     output$overall_props_barplot <- renderPlotly({
         
+        req(!is.null(subset_df()), cancelOutput = T)
+        
         cellcontent_df <- build_cellcontent_df(
             subset_df(),
             group_column = group_internal_choice())
@@ -149,6 +151,8 @@ cellcontent <- function(
     
     # ** Cell fractions bar plot render ----
     output$cell_frac_barplot <- renderPlotly({
+        
+        req(!is.null(subset_df()), cancelOutput = T)
         
         cell_fractions <- get_factored_variables_from_feature_df(
             input$cf_choice) %>% 

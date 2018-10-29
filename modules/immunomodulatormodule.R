@@ -87,11 +87,14 @@ immunomodulator <- function(
     
     # reactives ----
     
-    expression_df <- reactive(
+    expression_df <- reactive({
+        req(!is.null(subset_df()), cancelOutput = T)
+        
         build_immunomodulator_expression_df(
             subset_df(),
             filter_value = input$im_gene_choice, 
-            group_col = group_internal_choice()))
+            group_col = group_internal_choice())
+        })
     
     # ui ----
     

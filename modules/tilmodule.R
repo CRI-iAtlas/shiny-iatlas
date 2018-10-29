@@ -106,6 +106,8 @@ tilmap <- function(input, output, session, group_display_choice, group_internal_
   
   
   output$plot <- renderPlotly({
+      
+      req(!is.null(subset_df()), cancelOutput = T)
     
     display_y  <- get_variable_display_name(input$violin_y)
     

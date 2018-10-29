@@ -189,7 +189,7 @@ groupsoverview <- function(
     output$mosaicPlot <- renderPlotly({
         
         req(
-            subset_df(),
+            !is.null(subset_df()),
             group_internal_choice(),
             group_display_choice(),
             input$sample_mosaic_group, 

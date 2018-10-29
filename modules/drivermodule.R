@@ -70,11 +70,17 @@ drivers <- function(
     
     ns <- session$ns
     
-    mutation_df <- reactive(build_mutation_df(
-        df = subset_df(),
-        response_var = input$response_variable,
-        group_column = group_internal_choice(),
-        group_options = get_unique_column_values(group_internal_choice(), subset_df())))
+    mutation_df <- reactive({
+        req(!is.null(subset_df()), cancelOutput = T)
+        
+        build_mutation_df(
+            df = subset_df(),
+            response_var = input$response_variable,
+            group_column = group_internal_choice(),
+            group_options = get_unique_column_values(group_internal_choice(), subset_df())
+        )
+    })
+        
     
     mutation_group_summary_df <- reactive(build_mutation_group_summary_df(mutation_df()))
     testable_mutation_groups <- reactive(get_testable_mutation_groups(mutation_group_summary_df()))

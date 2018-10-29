@@ -125,6 +125,8 @@ immunefeatures <- function(
     
     immunefeatures_df <- reactive({
         
+        req(!is.null(subset_df()), cancelOutput = T)
+        
         sample_groups <- get_unique_column_values(
             group_internal_choice(), 
             subset_df())
@@ -140,6 +142,8 @@ immunefeatures <- function(
     
     # output ----
     output$violinPlot <- renderPlotly({
+        
+        req(!is.null(subset_df()), cancelOutput = T)
 
         display_y  <- get_variable_display_name(input$violin_y)
         
@@ -174,6 +178,9 @@ immunefeatures <- function(
         create_group_text_from_plotly("heatplot", key_column = "x"))
     
     output$scatterPlot <- renderPlotly({
+        
+        req(!is.null(subset_df()), cancelOutput = T)
+        
         eventdata <- event_data("plotly_click", source = "heatplot")
         
         validate(need(
