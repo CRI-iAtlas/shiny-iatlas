@@ -67,7 +67,7 @@ build_immunomodulator_histogram_df <- function(df, selected_group){
     df %>%
         filter(GROUP == selected_group) %>% 
         select(x = LOG_COUNT) %>% 
-        get_complete_df_by_columns("x")
+        tidyr::drop_na()
 }
 
 # immunefeatures functions ----------------------------------------------------
@@ -89,25 +89,31 @@ build_immunefeatures_df <- function(
             GROUP = group_column, 
             VALUE1 = value1_column, 
             value2_columns) %>% 
-        dplyr::filter(GROUP %in% group_options)
-    assert_df_has_rows(result_df)
+        dplyr::filter(GROUP %in% group_options) %>% 
+        dplyr::filter(!is.na(VALUE1))
+    assert_df_has_columns(result_df, c("ID", "GROUP", "VALUE1", value2_columns))
     return(result_df)
 }
 
 build_immunefeatures_correlation_matrix <- function(df, method = "spearman") {
-    df %>% 
+    long_df  <- df %>% 
         dplyr::select(-ID) %>% 
         tidyr::gather(
             key = "VARIABLE", 
             value = "VALUE2", 
             -c(GROUP, VALUE1)) %>% 
         dplyr::group_by(GROUP, VARIABLE) %>% 
+        tidyr::drop_na()
+    
+    if(nrow(long_df) == 0) return(long_df)
+    
+    result_matrix <- long_df %>% 
         dplyr::summarise(COR = cor(
             VALUE1, 
             VALUE2,
             method = method, 
             use = "pairwise.complete.obs")) %>% 
-        tidyr::spread(key = "GROUP", value = "COR", fill = 0) %>% 
+        tidyr::spread(key = "GROUP", value = "COR", fill = NA) %>% 
         dplyr::mutate(VARIABLE = map(VARIABLE, get_variable_display_name)) %>% 
         as.data.frame() %>% 
         tibble::column_to_rownames("VARIABLE") %>% 
@@ -139,21 +145,19 @@ build_immunefeatures_scatter_plot_df <- function(df, x_col, group_filter_value){
 
 build_cellcontent_df <- function(df, group_column){
     assert_df_has_columns(df, c(group_column, "Stromal_Fraction", "leukocyte_fraction"))
-    result_df <- df %>% 
+    long_df <- df %>% 
         dplyr::select(
             GROUP = group_column,
             "Stromal_Fraction", 
             "leukocyte_fraction") %>% 
-        get_complete_df_by_columns(c("GROUP", "Stromal_Fraction", "leukocyte_fraction")) %>% 
+        tidyr::drop_na()
+    
+    if(nrow(long_df) == 0) return(long_df)
+    
+    result_df <- long_df %>% 
         dplyr::mutate(Tumor_Fraction = 1 - Stromal_Fraction) %>% 
-        magrittr::set_colnames(c(
-            "GROUP", 
-            "Stromal Fraction", 
-            "Leukocyte Fraction", 
-            "Tumor Fraction")) %>% 
         tidyr::gather(fraction_type, fraction, -GROUP)
     assert_df_has_columns(result_df, c("GROUP", "fraction_type", "fraction"))
-    assert_df_has_rows(result_df)
     return(result_df)
 }
 
@@ -161,10 +165,9 @@ build_cell_fraction_df <- function(df, group_column, value_columns){
     assert_df_has_columns(df, c(group_column, value_columns))
     result_df <- df %>% 
         dplyr::select(GROUP = group_column, value_columns) %>% 
-        get_complete_df_by_columns(c("GROUP", value_columns)) %>% 
-        tidyr::gather(fraction_type, fraction, -GROUP)
+        tidyr::gather(fraction_type, fraction, -GROUP) %>% 
+        tidyr::drop_na()
     assert_df_has_columns(result_df, c("GROUP", "fraction_type", "fraction"))
-    assert_df_has_rows(result_df)
     return(result_df)
 }
 

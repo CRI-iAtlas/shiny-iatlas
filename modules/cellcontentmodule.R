@@ -103,6 +103,10 @@ cellcontent <- function(
             subset_df(),
             group_column = group_internal_choice())
         
+        validate(need(
+            nrow(cellcontent_df) > 0, 
+            "Samples in current selected groups have no fraction data."))
+        
         barplot_df <- build_cellcontent_barplot_df(
             cellcontent_df,
             x_column = "fraction_type",
@@ -163,6 +167,10 @@ cellcontent <- function(
             group_column = group_internal_choice(), 
             value_columns = cell_fractions
         )
+        
+        validate(need(
+            nrow(cell_fraction_df) > 0, 
+            "Samples in current selected groups have no selected fraction data."))
         
         barplot_df <- 
             build_cellcontent_barplot_df(

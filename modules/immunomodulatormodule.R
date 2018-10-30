@@ -145,11 +145,19 @@ immunomodulator <- function(
         validate(need(!is.null(eventdata), "Click violin plot above"))
         clicked_group <- eventdata$x[[1]]
         
-        histogram_df <- expression_df() %>% 
-            build_immunomodulator_histogram_df(clicked_group) %>% 
-            create_histogram(
-                x_lab = "log10(count + 1)",
-                title = clicked_group)
+        current_violin_groups <- expression_df() %>% 
+            magrittr::use_series(GROUP) %>% 
+            unique
+        
+        validate(need(clicked_group %in% current_violin_groups, "Click violin plot above"))
+        
+        histogram_df <-  build_immunomodulator_histogram_df(expression_df(), clicked_group) 
+        
+            
+        create_histogram(
+            histogram_df ,
+            x_lab = "log10(count + 1)",
+            title = clicked_group)
         
     })
     

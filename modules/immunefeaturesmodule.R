@@ -158,10 +158,16 @@ immunefeatures <- function(
     
     
     output$heatmap <- renderPlotly({
-        immunefeatures_correlation_matrix <- 
-            build_immunefeatures_correlation_matrix(
+        
+        validate(
+            need(nrow(immunefeatures_df()) > 0, 
+                 "Current selected group and selected variable have no overlap")
+        )
+        
+        immunefeatures_correlation_matrix <- build_immunefeatures_correlation_matrix(
                 immunefeatures_df(), 
                 input$correlation_method)
+        
         create_heatmap(immunefeatures_correlation_matrix, "heatplot")
     })
     
@@ -179,13 +185,13 @@ immunefeatures <- function(
                 eventdata, 
                 subset_df(), 
                 group_internal_choice(), 
-                intermediate_corr_df()),
+                immunefeatures_df()),
             "Click above heatmap"))
         
         
         internal_variable_name <- eventdata$y[[1]] %>%
             get_variable_internal_names() %>%
-            .[. %in% colnames(intermediate_corr_df())]
+            .[. %in% colnames(immunefeatures_df())]
 
         scatterplot_df <- build_immunefeatures_scatter_plot_df(
             immunefeatures_df(),
