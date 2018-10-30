@@ -224,7 +224,15 @@ build_sample_group_key_df <- function(
     group_df, group_column, color_vector, 
     feature_df = panimmune_data$sample_group_df) {
     
+    allowed_group_choices <- c("Subtype_Immune_Model_Based", 
+                               "Subtype_Curated_Malta_Noushmehr_et_al", 
+                               "Study")
+    
     assert_df_has_columns(group_df, group_column)
+    
+    if (!group_column %in% allowed_group_choices){
+        feature_df  <- filter(feature_df, is.na("sample_group"))  
+    } 
     
     color_df <- build_plot_color_df(color_vector, group_df, group_column) 
     assert_df_has_rows(color_df)
@@ -258,12 +266,11 @@ build_group_size_df <- function(df, group_col){
 }
 
 
-build_key_df <- function(feature_df, color_df, group_size_df){
+build_key_df <- function(feature_df, color_df, group_size_df, g){
     
     assert_df_has_columns(
         feature_df, 
         c("FeatureValue", "FeatureName", "Characteristics"))
-    
     
     feature_df <- dplyr::select(
         feature_df,

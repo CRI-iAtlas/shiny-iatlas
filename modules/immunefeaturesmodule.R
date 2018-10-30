@@ -154,7 +154,7 @@ immunefeatures <- function(
     
     
     output$violin_group_text <- renderText(
-        create_group_text_from_plotly("violin"))
+        create_group_text_from_plotly("violin", group_internal_choice()))
     
     
     output$heatmap <- renderPlotly({
@@ -172,7 +172,7 @@ immunefeatures <- function(
     })
     
     output$heatmap_group_text <- renderText(
-        create_group_text_from_plotly("heatplot", key_column = "x"))
+        create_group_text_from_plotly("heatplot", group_internal_choice(), key_column = "x"))
     
     output$scatterPlot <- renderPlotly({
         

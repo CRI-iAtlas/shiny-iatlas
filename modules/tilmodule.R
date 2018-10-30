@@ -144,6 +144,7 @@ tilmap <- function(input, output, session, group_display_choice, group_internal_
     output$plot_group_text <- 
         renderText(create_group_text_from_plotly(
             "plot",
+            group_internal_choice(),
             prompt_text = "",
             key_column = "x"))
     

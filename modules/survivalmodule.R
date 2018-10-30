@@ -179,7 +179,7 @@ survival <- function(input, output, session, ss_choice, group_internal_choice,
     })
     
     output$heatmap_group_text <- renderText(
-        create_group_text_from_plotly("ci", key_column = "x"))
+        create_group_text_from_plotly("ci", group_internal_choice(), key_column = "x"))
     
 }
 

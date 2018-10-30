@@ -133,7 +133,7 @@ immunomodulator <- function(
     })
         
     
-    output$violin_group_text <- renderText(create_group_text_from_plotly("violin"))
+    output$violin_group_text <- renderText(create_group_text_from_plotly("violin", group_internal_choice()))
     
     output$histPlot <- renderPlotly({
         
