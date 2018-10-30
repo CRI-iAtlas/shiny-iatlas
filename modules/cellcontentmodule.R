@@ -97,15 +97,20 @@ cellcontent <- function(
     # ** Overall proportions bar plot render ----
     output$overall_props_barplot <- renderPlotly({
         
+        req(!is.null(subset_df()), cancelOutput = T)
+        
         cellcontent_df <- build_cellcontent_df(
             subset_df(),
             group_column = group_internal_choice())
         
+        validate(need(
+            nrow(cellcontent_df) > 0, 
+            "Samples in current selected groups have no fraction data."))
+        
         barplot_df <- build_cellcontent_barplot_df(
             cellcontent_df,
             x_column = "fraction_type",
-            y_column = "fraction",
-            operations = c("mean", "se"))
+            y_column = "fraction")
         
         create_barplot(
             barplot_df,
@@ -133,7 +138,7 @@ cellcontent <- function(
         scatterplot_df <- build_cellcontent_scatterplot_df(
             subset_df(),
             group_column = group_internal_choice(),
-            group_filter_value = selected_plot_subgroup,
+            group_filter_value = selected_plot_subgroup
             ) 
         
         create_scatterplot(
@@ -151,6 +156,8 @@ cellcontent <- function(
     # ** Cell fractions bar plot render ----
     output$cell_frac_barplot <- renderPlotly({
         
+        req(!is.null(subset_df()), cancelOutput = T)
+        
         cell_fractions <- get_factored_variables_from_feature_df(
             input$cf_choice) %>% 
             as.character
@@ -161,13 +168,15 @@ cellcontent <- function(
             value_columns = cell_fractions
         )
         
+        validate(need(
+            nrow(cell_fraction_df) > 0, 
+            "Samples in current selected groups have no selected fraction data."))
+        
         barplot_df <- 
             build_cellcontent_barplot_df(
                 cell_fraction_df,
                 y_column = "fraction",
-                x_column = "fraction_type",
-                operations = c("mean", "se")
-            ) %>%
+                x_column = "fraction_type") %>%
             mutate(color = map_chr(color, get_variable_display_name))
         
         create_barplot(

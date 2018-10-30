@@ -87,11 +87,18 @@ immunomodulator <- function(
     
     # reactives ----
     
-    expression_df <- reactive(
+    expression_df <- reactive({
+        
+        req(input$im_gene_choice,
+            subset_df(), 
+            group_internal_choice(), 
+            cancelOutput = T)
+        
         build_immunomodulator_expression_df(
             subset_df(),
             filter_value = input$im_gene_choice, 
-            group_col = group_internal_choice()))
+            group_col = group_internal_choice())
+        })
     
     # ui ----
     
@@ -107,7 +114,7 @@ immunomodulator <- function(
     # output ----
     
     output$violinPlot <- renderPlotly({
-        
+
         validate(need(
             nrow(expression_df()) > 0, 
             "Samples in current selected groups have no expression data for the currently selected gene."))
@@ -138,11 +145,19 @@ immunomodulator <- function(
         validate(need(!is.null(eventdata), "Click violin plot above"))
         clicked_group <- eventdata$x[[1]]
         
-        histogram_df <- expression_df() %>% 
-            build_immunomodulator_histogram_df(clicked_group) %>% 
-            create_histogram(
-                x_lab = "log10(count + 1)",
-                title = clicked_group)
+        current_violin_groups <- expression_df() %>% 
+            magrittr::use_series(GROUP) %>% 
+            unique
+        
+        validate(need(clicked_group %in% current_violin_groups, "Click violin plot above"))
+        
+        histogram_df <-  build_immunomodulator_histogram_df(expression_df(), clicked_group) 
+        
+            
+        create_histogram(
+            histogram_df ,
+            x_lab = "log10(count + 1)",
+            title = clicked_group)
         
     })
     

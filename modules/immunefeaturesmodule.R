@@ -109,21 +109,9 @@ immunefeatures <- function(
             as.character
     })
     
-    intermediate_corr_df <- reactive({
-        
-        sample_groups <- get_unique_column_values(
-            group_internal_choice(), 
-            subset_df())
-        
-        build_intermediate_corr_df(
-            subset_df(),
-            group_column = group_internal_choice(),
-            value1_column = input$heatmap_values,
-            value2_columns = hm_variables(),
-            group_options = sample_groups)
-    })
-    
     immunefeatures_df <- reactive({
+        
+        req(!is.null(subset_df()), cancelOutput = T)
         
         sample_groups <- get_unique_column_values(
             group_internal_choice(), 
@@ -140,6 +128,8 @@ immunefeatures <- function(
     
     # output ----
     output$violinPlot <- renderPlotly({
+        
+        req(!is.null(subset_df()), cancelOutput = T)
 
         display_y  <- get_variable_display_name(input$violin_y)
         
@@ -147,6 +137,11 @@ immunefeatures <- function(
             subset_df(), 
             x_col = group_internal_choice(),
             y_col = input$violin_y) 
+        
+        validate(
+            need(nrow(plot_df) > 0, 
+                 "Current selected group and selected variable have no overlap")
+        )
 
         create_violinplot(
             plot_df,
@@ -163,10 +158,16 @@ immunefeatures <- function(
     
     
     output$heatmap <- renderPlotly({
-        immunefeatures_correlation_matrix <- 
-            build_immunefeatures_correlation_matrix(
+        
+        validate(
+            need(nrow(immunefeatures_df()) > 0, 
+                 "Current selected group and selected variable have no overlap")
+        )
+        
+        immunefeatures_correlation_matrix <- build_immunefeatures_correlation_matrix(
                 immunefeatures_df(), 
                 input$correlation_method)
+        
         create_heatmap(immunefeatures_correlation_matrix, "heatplot")
     })
     
@@ -174,6 +175,9 @@ immunefeatures <- function(
         create_group_text_from_plotly("heatplot", key_column = "x"))
     
     output$scatterPlot <- renderPlotly({
+        
+        req(!is.null(subset_df()), cancelOutput = T)
+        
         eventdata <- event_data("plotly_click", source = "heatplot")
         
         validate(need(
@@ -181,13 +185,13 @@ immunefeatures <- function(
                 eventdata, 
                 subset_df(), 
                 group_internal_choice(), 
-                intermediate_corr_df()),
+                immunefeatures_df()),
             "Click above heatmap"))
         
         
         internal_variable_name <- eventdata$y[[1]] %>%
             get_variable_internal_names() %>%
-            .[. %in% colnames(intermediate_corr_df())]
+            .[. %in% colnames(immunefeatures_df())]
 
         scatterplot_df <- build_immunefeatures_scatter_plot_df(
             immunefeatures_df(),

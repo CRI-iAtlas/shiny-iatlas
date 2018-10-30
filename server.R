@@ -168,15 +168,21 @@ shinyServer(function(input, output, session) {
   })
   
   subset_df <- reactive({
-      subset_panimmune_df(
+      result_df <- subset_panimmune_df(
           group_column = group_internal_choice(), 
           study_option = input$study_subset_selection,
           user_group_df = user_group_df()
       )
+      if(nrow(result_df) > 0){
+          return(result_df)
+      } else {
+          return(NULL)
+      }
+      
   })
   
-  plot_colors <- reactive(decide_plot_colors(
-      group_internal_choice(), group_df = subset_df()))
+  plot_colors <- reactive(decide_plot_colors(group_internal_choice(), group_df = subset_df()))
+ 
   
 })
 ###############################################################################

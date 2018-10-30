@@ -14,6 +14,7 @@ create_violinplot <- function(
     points = NULL,
     showlegend = T) {
     
+    
     if(is.na(key_col)) key_col <- x_col
     if(is.na(color_col)) color_col <- x_col
     if(is.na(label_col)) label_col <- x_col
