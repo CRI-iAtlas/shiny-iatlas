@@ -86,7 +86,7 @@ create_tcga_study_colors <- function(sample_group_df) {
 }
 
 create_tcga_subtype_colors <- function(sample_group_df) {
-    tcga_subtype_df <- panimmune_data$sample_group_df %>%
+    tcga_subtype_df <- sample_group_df %>%
         dplyr::filter(sample_group == "tcga_subtype") %>% 
         dplyr::filter(!is.na(FeatureValue)) %>% 
         group_by(`TCGA Studies`) %>% 
