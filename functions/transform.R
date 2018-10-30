@@ -95,7 +95,7 @@ build_immunefeatures_df <- function(
 }
 
 build_immunefeatures_correlation_matrix <- function(df, method = "spearman") {
-    df  %>% 
+    df %>% 
         dplyr::select(-ID) %>% 
         tidyr::gather(
             key = "VARIABLE", 
@@ -117,8 +117,8 @@ build_immunefeatures_correlation_matrix <- function(df, method = "spearman") {
 
 build_immunefeatures_violin_plot_df <- function(df, x_col, y_col){
     df %>%
-        dplyr::select(x = x_col, y = y_col) %>% 
-        get_complete_df_by_columns(c("x", "y"))
+        dplyr::select(x = x_col, y = y_col) %>%
+        tidyr::drop_na()
 }
 
 build_immunefeatures_scatter_plot_df <- function(df, x_col, group_filter_value){

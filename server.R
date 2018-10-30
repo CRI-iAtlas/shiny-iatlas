@@ -173,8 +173,8 @@ shinyServer(function(input, output, session) {
       
   })
   
-  plot_colors <- reactive(decide_plot_colors(
-      group_internal_choice(), group_df = subset_df()))
+  plot_colors <- reactive(decide_plot_colors(group_internal_choice(), group_df = subset_df()))
+ 
   
 })
 ###############################################################################

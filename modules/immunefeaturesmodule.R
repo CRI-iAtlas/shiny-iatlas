@@ -109,20 +109,6 @@ immunefeatures <- function(
             as.character
     })
     
-    intermediate_corr_df <- reactive({
-        
-        sample_groups <- get_unique_column_values(
-            group_internal_choice(), 
-            subset_df())
-        
-        build_intermediate_corr_df(
-            subset_df(),
-            group_column = group_internal_choice(),
-            value1_column = input$heatmap_values,
-            value2_columns = hm_variables(),
-            group_options = sample_groups)
-    })
-    
     immunefeatures_df <- reactive({
         
         req(!is.null(subset_df()), cancelOutput = T)
@@ -151,6 +137,11 @@ immunefeatures <- function(
             subset_df(), 
             x_col = group_internal_choice(),
             y_col = input$violin_y) 
+        
+        validate(
+            need(nrow(plot_df) > 0, 
+                 "Current selected group and selected variable have no overlap")
+        )
 
         create_violinplot(
             plot_df,

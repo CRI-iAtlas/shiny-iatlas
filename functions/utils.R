@@ -327,11 +327,14 @@ decide_plot_colors <- function(
 get_study_plot_colors <- function(
     group_name, data_object = panimmune_data, config_list = config_yaml){
     
+    print(group_name)
     color_group_name <- config_list$immune_group_colors[[group_name]]
+    print(color_group_name)
     if(is.null(color_group_name)){
         stop("colors group name missing from config for: ", group_name)
     }
     color_group <- data_object[[color_group_name]]
+    print(length(color_group))
     if(is.null(color_group)){
         stop("color group missing from data object for: ", group_name, " ", color_group_name)
     }
