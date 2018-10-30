@@ -84,20 +84,36 @@ iotarget <- function(
     
     ns <- session$ns
     
-    io_target_expr_plot_df <- reactive(
-        df <- 
-            build_io_target_expr_plot_df(
-                subset_df(),
-                filter_value = input$io_target_gene_choice, 
-                group_option = group_internal_choice()))
+    io_target_expr_plot_df <- reactive({
+        
+        req(subset_df(), 
+            input$io_target_gene_choice, 
+            group_internal_choice(),
+            cancelOutput = T)
+        
+        build_io_target_expr_plot_df(
+            subset_df(),
+            filter_value = input$io_target_gene_choice, 
+            group_option = group_internal_choice())
+    })
     
-    output$violinPlot <- renderPlotly(
+    output$violinPlot <- renderPlotly({
+        
+        req(io_target_expr_plot_df(), cancelOutput = T)
+        
+        validate(
+            need(nrow(io_target_expr_plot_df()) > 0, 
+                 "Current selected group and selected variable have no overlap")
+        )
+        
         create_violinplot(
             io_target_expr_plot_df(),
             xlab = group_display_choice(), 
             ylab = "log10(count + 1)",
             source_name = "violin",
-            fill_colors = plot_colors()))
+            fill_colors = plot_colors())
+    })
+        
     
     output$violin_group_text <- renderText(create_group_text_from_plotly("violin"))
     
@@ -105,10 +121,17 @@ iotarget <- function(
         
         eventdata <- event_data("plotly_click", source = "violin")
         validate(need(!is.null(eventdata), "Click violin plot above"))
+        clicked_group <- eventdata$x[[1]]
+        
+        current_violin_groups <- io_target_expr_plot_df() %>% 
+            magrittr::use_series(x) %>% 
+            unique
+        
+        validate(need(clicked_group %in% current_violin_groups, "Click violin plot above"))
         
         histplot_df <- io_target_expr_plot_df() %>% 
             select(GROUP = x, log_count = y) %>% 
-            filter(GROUP == eventdata$x[[1]])
+            filter(GROUP == clicked_group)
         
         create_histogram(
             histplot_df,

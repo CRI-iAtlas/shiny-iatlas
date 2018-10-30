@@ -717,7 +717,7 @@ build_io_target_expr_plot_df <- function(df, filter_value, group_option) { # add
         dplyr::left_join(df) %>%
         dplyr::mutate(log_count = log10(normalized_count + 1)) %>%
         dplyr::select(x = group_option, y = log_count) %>% 
-        get_complete_df_by_columns(c("x", "y"))
+        tidyr::drop_na()
 }
 
 
