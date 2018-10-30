@@ -354,12 +354,9 @@ build_mosaicplot_df <- function(df, x_column, y_column){
     assert_df_has_columns(df, c(x_column, y_column))
     result_df <- df %>% 
         dplyr::select(x = x_column, y = y_column) %>% 
-        get_complete_df_by_columns(c("x", "y")) %>% 
+        tidyr::drop_na() %>% 
         dplyr::mutate(x = as.factor(x)) %>%
         dplyr::mutate(y = forcats::fct_rev(as.factor(y)))
-   
-    assert_df_has_columns(result_df, c("x", "y"))
-    assert_df_has_rows(result_df)
     return(result_df)
 }
 ###############################################################################
