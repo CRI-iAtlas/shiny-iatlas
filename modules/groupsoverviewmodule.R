@@ -98,7 +98,7 @@ groupsoverview <- function(
     
     user_group_df <- reactive({
         if(is.null(input$file1$datapath)){
-            return(NULL)
+            return(NA)
         }
         result <- try(readr::read_csv(input$file1$datapath))
         if(is.data.frame(result)){
