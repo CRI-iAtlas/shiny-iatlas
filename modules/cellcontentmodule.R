@@ -123,7 +123,7 @@ cellcontent <- function(
     })
     
     output$op_barplot_group_text <-
-        renderText(create_group_text_from_plotly("op_barplot"))
+        renderText(create_group_text_from_plotly("op_barplot", group_internal_choice()))
     
     # ** Overall proportions scatter plot renders ----
     output$lf_sf_corr_scatterplot <- renderPlotly({
@@ -192,6 +192,6 @@ cellcontent <- function(
     })
     
     output$cf_barplot_group_text <- 
-        renderText(create_group_text_from_plotly("cf_barplot"))
+        renderText(create_group_text_from_plotly("cf_barplot", group_internal_choice()))
 }
 
