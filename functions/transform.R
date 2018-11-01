@@ -220,35 +220,28 @@ build_cellcontent_scatterplot_df <- function(
 
 # samplegroup functions -------------------------------------------------------
 
-build_sample_group_key_df <- function(
-    group_df, group_column, color_vector, 
-    feature_df = panimmune_data$sample_group_df) {
-    
-    allowed_group_choices <- c("Subtype_Immune_Model_Based", 
-                               "Subtype_Curated_Malta_Noushmehr_et_al", 
-                               "Study")
-    
+build_sample_group_key_df <- function(group_df, group_column, feature_df) {
     assert_df_has_columns(group_df, group_column)
     
-    if (!group_column %in% allowed_group_choices){
-        feature_df  <- filter(feature_df, is.na("sample_group"))  
-    } 
-    
-    color_df <- build_plot_color_df(color_vector, group_df, group_column) 
-    assert_df_has_rows(color_df)
-    
     group_size_df <- build_group_size_df(group_df, group_column) 
-    key_df <- build_key_df(feature_df, color_df, group_size_df)
     
-    return(key_df)
-}
-
-build_plot_color_df <- function(color_vector, subset_df, group_column){
-    result_df <- color_vector %>% 
-        tibble::enframe() %>% 
-        magrittr::set_names(c("Group", "Plot_Color")) %>% 
-        dplyr::filter(Group %in% subset_df[[group_column]])
-    assert_df_has_columns(result_df, c("Group", "Plot_Color"))
+    result_df <- feature_df %>% 
+        dplyr::select(
+            Group = FeatureValue,
+            FeatureName,
+            Characteristics,
+            FeatureHex) %>% 
+        dplyr::inner_join(group_size_df, by = "Group") %>% 
+        dplyr::distinct() %>% 
+        dplyr::select(
+            `Sample Group` = Group, 
+            `Group Name` = FeatureName,
+            `Group Size` = Group_Size, 
+            Characteristics, 
+            `Plot Color` = FeatureHex)
+    assert_df_has_columns(
+        result_df, 
+        c("Sample Group", "Group Name", "Group Size", "Characteristics", "Plot Color"))
     assert_df_has_rows(result_df)
     return(result_df)
 }
@@ -264,38 +257,6 @@ build_group_size_df <- function(df, group_col){
     assert_df_has_rows(result_df)
     return(result_df)
 }
-
-
-build_key_df <- function(feature_df, color_df, group_size_df, g){
-    
-    assert_df_has_columns(
-        feature_df, 
-        c("FeatureValue", "FeatureName", "Characteristics"))
-    
-    feature_df <- dplyr::select(
-        feature_df,
-        Group = FeatureValue,
-        FeatureName,
-        Characteristics)
-    
-    key_df <- 
-        dplyr::inner_join(color_df, group_size_df, by = "Group") %>% 
-        dplyr::left_join(feature_df, by = "Group") %>% 
-        dplyr::distinct() %>% 
-        dplyr::select(
-            `Sample Group` = Group, 
-            `Group Name` = FeatureName,
-            `Group Size` = Group_Size, 
-            Characteristics, 
-            `Plot Color` = Plot_Color)
-    
-    assert_df_has_columns(
-        key_df, 
-        c("Sample Group", "Group Name", "Group Size", "Characteristics", "Plot Color"))
-    assert_df_has_rows(key_df)
-    return(key_df)
-}
-
 
 # functions for making plot df label column -----------------------------------
 
@@ -341,6 +302,72 @@ create_label <- function(
 
 # other functions -------------------------------------------------------------
 
+subset_sample_group_df <- function(
+    group_column, study_option, user_group_df,
+    sample_group_df = panimmune_data$sample_group_df
+){
+
+    sample_group_df <- translate_to_correct_group_name(sample_group_df)
+
+    if (group_column %in% c("Subtype_Immune_Model_Based", "Study")) {
+        sample_group_df <- filter(sample_group_df, sample_group == group_column)
+
+    } else if (group_column == "Subtype_Curated_Malta_Noushmehr_et_al") {
+        sample_group_df <- sample_group_df %>%
+            filter(sample_group == group_column) %>%
+            filter(`TCGA Studies` == study_option) %>% 
+            add_missing_plot_colors
+
+
+    } else {
+        sample_group_df <- user_group_df %>% 
+            user_group_df_to_sample_group_df() %>% 
+            filter(sample_group == group_column) %>%
+            add_missing_plot_colors()
+    }
+    return(sample_group_df)
+
+}
+
+user_group_df_to_sample_group_df <- function(df){
+    df %>% 
+        tidyr::gather(key = 'sample_group' , value = "FeatureValue", -1) %>% 
+        dplyr::select(-ID) %>% 
+        dplyr::distinct() %>% 
+        dplyr::mutate(FeatureName = FeatureValue) %>% 
+        dplyr::mutate(Characteristics = "") %>% 
+        dplyr::mutate(FeatureHex = NA) %>% 
+        dplyr::mutate(`TCGA Studies` = NA)
+}
+
+add_missing_plot_colors <- function(df){
+    result_df <- df %>% 
+        dplyr::group_by(`TCGA Studies`) %>% 
+        dplyr::mutate(
+            FeatureHex = suppressWarnings(
+                ifelse(
+                    is.na(FeatureHex),
+                    RColorBrewer::brewer.pal(
+                        length(FeatureValue), "Set1") %>%
+                        .[1:length(FeatureValue)],
+                    FeatureHex)
+            )
+        ) %>% 
+        dplyr::ungroup()
+    return(result_df)
+}
+
+translate_to_correct_group_name <- function(df){
+    df %>% 
+        mutate(
+            sample_group = if_else(
+                sample_group == "tcga_study", 
+                "Study",
+                if_else(
+                    sample_group == "immune_subtype", 
+                    "Subtype_Immune_Model_Based",
+                    "Subtype_Curated_Malta_Noushmehr_et_al")))
+}
 summarise_df_at_column <- function(df, column, grouping_columns, function_names){
     assert_df_has_columns(df, c(column, grouping_columns))
     result_df <- df %>% 

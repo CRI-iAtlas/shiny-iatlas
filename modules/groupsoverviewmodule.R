@@ -88,9 +88,10 @@ groupsoverview_UI <- function(id) {
     )
 }
 
+
+    
 groupsoverview <- function(
-    input, output, session, group_display_choice, group_internal_choice, 
-    subset_df, plot_colors, group_options, width) {
+    input, output, session, subset_data, width) {
     
     ns <- session$ns
     
@@ -114,7 +115,8 @@ groupsoverview <- function(
     
     
     output$mosaic_group_select <- renderUI({
-        choices <- setdiff(group_options(), group_display_choice())
+        choices <- setdiff(subset_data()$group_options, 
+                           subset_data()$group_display_choice)
         radioButtons(ns("sample_mosaic_group"), 
                      "Select second sample group to view overlap:",
                      choices = choices,
@@ -148,22 +150,20 @@ groupsoverview <- function(
         ))})
     
     output$sample_group_name <- renderText({
-        paste(group_display_choice(), "Groups")
+        paste(subset_data()$group_display_choice, "Groups")
     })
     
     output$user_group_df <- DT::renderDataTable(user_group_df())
     
     output$sample_group_table <- DT::renderDT({
         
-        req(subset_df(), 
-            group_internal_choice(), 
-            plot_colors(),
+        req(subset_data(), 
             cancelOutput = T)
         
         key_df <- build_sample_group_key_df(
-                group_df = subset_df(),
-                group_column = group_internal_choice(),
-                color_vector = plot_colors())
+                group_df = subset_data()$fmx_df,
+                group_column = subset_data()$group_internal_choice,
+                feature_df = subset_data()$sample_group_df)
         
         dt <- datatable(
             key_df,
@@ -179,30 +179,27 @@ groupsoverview <- function(
             dt,
             "Plot Color",
             backgroundColor = styleEqual(
-                plot_colors(), 
-                plot_colors()))
+                subset_data()$plot_colors, 
+                subset_data()$plot_colors))
     })
     
     # plots ----
     
     output$mosaicPlot <- renderPlotly({
         
-        req(input$sample_mosaic_group != group_display_choice(),
-            subset_df(),
-            group_internal_choice(),
-            group_display_choice(),
+        req(subset_data(),
+            input$sample_mosaic_group != subset_data()$group_display_choice,
             input$sample_mosaic_group, 
             input$study_subset_selection,
-            !is.null(user_group_df()),
             cancelOutput = T)
         
         display_x  <- input$sample_mosaic_group
-        display_y  <- group_display_choice()
+        display_y  <- subset_data()$group_display_choice
         internal_x <- get_group_internal_name(display_x)
-        internal_y <- group_internal_choice()
+        internal_y <- subset_data()$group_internal_choice
         
         mosaic_df <- build_group_group_mosaic_plot_df(
-            subset_df(),
+            subset_data()$fmx_df,
             x_column = internal_x,
             y_column = internal_y,
             study_option = input$study_subset_selection,
