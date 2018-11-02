@@ -26,19 +26,15 @@ shinyServer(function(input, output, session) {
     #     reactive(subset_df()),
     #     reactive(plot_colors()))
     # Groups
-    # user_group_df <- callModule(
-    #     groupsoverview,
-    #     "module3",
-    #     reactive(input$ss_choice),
-    #     reactive(group_internal_choice()),
-    #     reactive(subset_df()),
-    #     reactive(plot_colors()),
-    #     reactive(group_options()),
-    #     reactive(width()))
     user_group_df <- callModule(
         groupsoverview,
         "module3",
-        reactive(subset_data()),
+        reactive(input$ss_choice),
+        reactive(group_internal_choice()),
+        reactive(sample_group_df()),
+        reactive(subset_df()),
+        reactive(plot_colors()),
+        reactive(group_options()),
         reactive(width()))
     # Survival curves
     callModule(
@@ -158,64 +154,48 @@ shinyServer(function(input, output, session) {
         }
     })
     
-    # new style module data -----------------------------------------------------
+    group_internal_choice <- reactive({
+        req(input$ss_choice, cancelOutput = T)
+        get_group_internal_name(input$ss_choice)
+    })
     
-    subset_data <- reactive({
-        
+    sample_group_df <- reactive({
         req(
+            group_internal_choice(),  
             !is.null(user_group_df()),
-            group_options(),
-            input$ss_choice,
-            subset_df(),
-            plot_colors()
-        )
-        
-        group_internal_choice = get_group_internal_name(input$ss_choice)
+            cancelOutput = T)
         
         sample_group_df <- subset_sample_group_df(
             group_internal_choice(), 
             input$study_subset_selection, 
             user_group_df())
-        
-        plot_colors <- sample_group_df %>% 
-            dplyr::filter(sample_group == group_internal_choice()) %>% 
-            dplyr::select(FeatureValue, FeatureHex) %>% 
-            deframe
-        
-        subset_data <- list(
-            "group_options" = group_options(),
-            "group_display_choice" = input$ss_choice,
-            "group_internal_choice" = group_internal_choice,
-            "fmx_df" = subset_df(),
-            "sample_group_df" = sample_group_df,
-            "plot_colors" = plot_colors
-        )
-    })
-    
-    
-    # old style module data -----------------------------------------------------
-    
-    group_internal_choice <- reactive({
-        req(input$ss_choice)
-        get_group_internal_name(input$ss_choice)
     })
     
     subset_df <- reactive({
-        result_df <- subset_panimmune_df(
-            group_column = group_internal_choice(), 
-            study_option = input$study_subset_selection,
-            user_group_df = user_group_df()
-        )
-        if(nrow(result_df) > 0){
-            return(result_df)
-        } else {
-            return(NULL)
-        }
+        req(
+            group_internal_choice(), 
+            sample_group_df(), 
+            !is.null(user_group_df()),
+            cancelOutput = T)
         
+        subset_df <- subset_panimmune_df(
+            group_column = group_internal_choice(), 
+            user_group_df = user_group_df(),
+            sample_group_df = sample_group_df()
+        )
     })
     
-    plot_colors <- reactive(decide_plot_colors(group_internal_choice(), group_df = subset_df()))
-    
+    plot_colors <- reactive({
+        req(
+            group_internal_choice(), 
+            sample_group_df(), 
+            cancelOutput = T)
+        
+        plot_colors <- sample_group_df() %>% 
+            dplyr::filter(sample_group == group_internal_choice()) %>% 
+            dplyr::select(FeatureValue, FeatureHex) %>% 
+            deframe
+    })
     
 })
 ###############################################################################
