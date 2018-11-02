@@ -42,24 +42,20 @@ check_driver_violinplot_click_data <- function(
 }
 
 create_group_text_from_plotly <- function(
-    source_name, group_choice,
+    source_name, group_choice, sample_group_df,
     source_type = "plotly_click",
     prompt_text = "Click above plot for more group information.",
     key_column = "key"){
     
-    
-    allowed_group_choices <- c("Subtype_Immune_Model_Based", 
-                               "Subtype_Curated_Malta_Noushmehr_et_al", 
-                               "Study")
     data <- event_data(source_type, source = source_name)
     
     if (is.null(data)) return(prompt_text)
-    if (!group_choice %in% allowed_group_choices) return("")
    
     key_value <- data %>%
         slice(1) %>% 
         extract2(key_column)
-    text <- panimmune_data$sample_group_df %>% 
+    
+    text <- sample_group_df %>% 
         dplyr::filter(FeatureValue == key_value) %>%  
         distinct() %>% 
         slice(1) %>% 

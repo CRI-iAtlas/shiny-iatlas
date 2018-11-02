@@ -88,10 +88,20 @@ groupsoverview_UI <- function(id) {
     )
 }
 
-groupsoverview <- function(
-    input, output, session, group_display_choice, group_internal_choice, 
-    subset_df, plot_colors, group_options, width) {
+
     
+groupsoverview <- function(
+    input, 
+    output, 
+    session, 
+    group_display_choice, 
+    group_internal_choice,
+    sample_group_df,
+    subset_df, 
+    plot_colors, 
+    group_options, 
+    width
+){
     ns <- session$ns
     
     # reactives ----
@@ -114,7 +124,8 @@ groupsoverview <- function(
     
     
     output$mosaic_group_select <- renderUI({
-        choices <- setdiff(group_options(), group_display_choice())
+        choices <- setdiff(group_options(), 
+                           group_display_choice())
         radioButtons(ns("sample_mosaic_group"), 
                      "Select second sample group to view overlap:",
                      choices = choices,
@@ -123,12 +134,13 @@ groupsoverview <- function(
     })
     
     output$study_subset_select <- renderUI({
-        req(input$sample_mosaic_group, cancelOutput = TRUE)
+        req(input$sample_mosaic_group, panimmune_data$sample_group_df, cancelOutput = TRUE)
         if (input$sample_mosaic_group == "TCGA Subtype") {
             choices <- panimmune_data$sample_group_df %>% 
-                filter(sample_group == "tcga_subtype", !is.na(FeatureValue)) %>% 
-                distinct(`TCGA Studies`) %>% 
-                extract2("TCGA Studies")
+                dplyr::filter(sample_group == "Subtype_Curated_Malta_Noushmehr_et_al") %>% 
+                magrittr::use_series("TCGA Studies") %>% 
+                unique() %>% 
+                sort()
             
             optionsBox(
                 width = 4,
@@ -156,14 +168,15 @@ groupsoverview <- function(
     output$sample_group_table <- DT::renderDT({
         
         req(subset_df(), 
-            group_internal_choice(), 
+            group_internal_choice(),
+            sample_group_df(),
             plot_colors(),
             cancelOutput = T)
         
         key_df <- build_sample_group_key_df(
                 group_df = subset_df(),
                 group_column = group_internal_choice(),
-                color_vector = plot_colors())
+                feature_df = sample_group_df())
         
         dt <- datatable(
             key_df,
@@ -187,13 +200,14 @@ groupsoverview <- function(
     
     output$mosaicPlot <- renderPlotly({
         
-        req(input$sample_mosaic_group != group_display_choice(),
-            subset_df(),
-            group_internal_choice(),
+        req(subset_df(),
             group_display_choice(),
-            input$sample_mosaic_group, 
-            input$study_subset_selection,
+            group_internal_choice(),
+            input$sample_mosaic_group,
+            input$sample_mosaic_group != group_display_choice(),
             !is.null(user_group_df()),
+            sample_group_df(),
+            plot_colors(),
             cancelOutput = T)
         
         display_x  <- input$sample_mosaic_group
@@ -203,10 +217,11 @@ groupsoverview <- function(
         
         mosaic_df <- build_group_group_mosaic_plot_df(
             subset_df(),
-            x_column = internal_x,
-            y_column = internal_y,
-            study_option = input$study_subset_selection,
-            user_group_df()) 
+            internal_x,
+            internal_y,
+            user_group_df(),
+            sample_group_df(),
+            input$study_subset_selection) 
         
         validate(
             need(nrow(mosaic_df) > 0, "Group choices have no samples in common"))
@@ -214,7 +229,7 @@ groupsoverview <- function(
         create_mosaicplot(
             mosaic_df,
             title = str_c(display_y, "by", display_x, sep = " "),
-            fill_colors = decide_plot_colors(internal_y)) 
+            fill_colors = plot_colors()) 
     })
     
     return(user_group_df)

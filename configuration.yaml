@@ -93,11 +93,6 @@ immune_groups:
   - "Subtype_Curated_Malta_Noushmehr_et_al"
   - "Study"
   
-immune_group_colors:
-  "Subtype_Immune_Model_Based": "immune_subtype_colors"
-  "Subtype_Curated_Malta_Noushmehr_et_al": "tcga_subtype_colors"
-  "Study": "tcga_study_colors"
-  
 cell_type_aggregates:
   - "Immune Cell Proportion - Original"
   - "Immune Cell Proportion - Multipotent Progenitor Cell Derivative Class"
