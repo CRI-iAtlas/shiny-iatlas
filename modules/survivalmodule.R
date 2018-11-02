@@ -154,9 +154,10 @@ survival <- function(
               # ggsurvplot takes the subtype names and pastes the column name onto it 'variable='
               # and colors need to have this modified name.
               group_colors <- group_colors[names(group_colors) %in% survival_df$variable]
-              names(group_colors) <- sapply(names(group_colors), function(a) paste('variable=',a,sep='')) 
             }
-                        
+
+            names(group_colors) <- sapply(names(group_colors), function(a) paste('variable=',a,sep='')) 
+            
         } else {
             group_colors <- viridisLite::viridis(input$divk)
         }
