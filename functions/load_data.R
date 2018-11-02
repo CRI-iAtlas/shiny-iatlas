@@ -92,48 +92,6 @@ load_driver_mutation <- function() {
   }
 }
 
-# Helper functions ----
-
-# ** Color maps for sample groups ----
-
-create_immune_subtype_colors <- function(sample_group_df) {
-    immune_subtypes_df <- sample_group_df %>% 
-        filter(sample_group == "immune_subtype") %>% 
-        distinct()
-    
-    immune_subtypes_df$FeatureHex %>% 
-        set_names(immune_subtypes_df$FeatureValue)
-}
-
-create_tcga_study_colors <- function(sample_group_df) {
-    tcga_study_df <- sample_group_df %>% 
-        filter(sample_group == "tcga_study") %>% 
-        distinct()
-    
-    tcga_study_df$FeatureHex %>% 
-        set_names(tcga_study_df$FeatureValue)
-}
-
-create_tcga_subtype_colors <- function(sample_group_df) {
-    tcga_subtype_df <- sample_group_df %>%
-        dplyr::filter(sample_group == "tcga_subtype") %>% 
-        dplyr::filter(!is.na(FeatureValue)) %>% 
-        group_by(`TCGA Studies`) %>% 
-        dplyr::mutate(
-            FeatureHex = suppressWarnings(
-                if_else(is.na(FeatureHex),
-                        RColorBrewer::brewer.pal(length(FeatureValue), "Set1") %>%
-                            .[1:length(FeatureValue)],
-                        FeatureHex)
-                )
-            ) %>% 
-        ungroup() 
-    
-    tcga_subtype_df$FeatureHex %>%
-        set_names(tcga_subtype_df$FeatureValue)
-}
-
-
 ## selection choices for the cell fractions.  Lots of other choices possible.
 create_cell_fraction_options <- function() {
     if (!USE_REMOTE_BQ) {
@@ -159,12 +117,6 @@ load_data <- function() {
         feature_method_df = manifest_data$feature_method_df,
         sample_group_df = manifest_data$sample_group_df,
         fmx_df = feature_matrix_data$fmx_df,
-        tcga_study_colors = create_tcga_study_colors(
-            manifest_data$sample_group_df),
-        immune_subtype_colors = create_immune_subtype_colors(
-            manifest_data$sample_group_df),
-        tcga_subtype_colors = create_tcga_subtype_colors(
-            manifest_data$sample_group_df),
         im_direct_relationships = im_annotations_data$im_direct_relationships,
         im_potential_factors = im_annotations_data$im_potential_factors,
         im_expr_df = im_expression_data$im_expr_df,

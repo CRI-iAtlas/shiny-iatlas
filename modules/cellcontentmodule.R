@@ -86,7 +86,12 @@ cellcontent_UI <- function(id) {
 
 # Server ----
 cellcontent <- function(
-    input, output, session, group_display_choice, group_internal_choice, 
+    input,
+    output, 
+    session, 
+    group_display_choice, 
+    group_internal_choice, 
+    sample_group_df,
     subset_df) {
     
     ns <- session$ns
@@ -122,8 +127,15 @@ cellcontent <- function(
         )
     })
     
-    output$op_barplot_group_text <-
-        renderText(create_group_text_from_plotly("op_barplot", group_internal_choice()))
+    output$op_barplot_group_text <- renderText({
+        req(group_internal_choice(), sample_group_df(), cancelOutput = T)
+        
+        create_group_text_from_plotly(
+            "op_barplot", 
+            group_internal_choice(),
+            sample_group_df()
+        )
+    })
     
     # ** Overall proportions scatter plot renders ----
     output$lf_sf_corr_scatterplot <- renderPlotly({
@@ -191,7 +203,15 @@ cellcontent <- function(
         
     })
     
-    output$cf_barplot_group_text <- 
-        renderText(create_group_text_from_plotly("cf_barplot", group_internal_choice()))
+    output$cf_barplot_group_text <- renderText({
+        req(group_internal_choice(), sample_group_df(), cancelOutput = T)
+        
+        create_group_text_from_plotly(
+            "cf_barplot", 
+            group_internal_choice(),
+            sample_group_df = sample_group_df()
+        )
+    })
+        
 }
 

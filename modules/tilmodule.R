@@ -99,8 +99,16 @@ tilmap_UI <- function(id) {
 }
 
 # tilmap <- function(input, output, session, ss_choice, subset_df){
-tilmap <- function(input, output, session, group_display_choice, group_internal_choice, 
-                   subset_df, plot_colors, group_options){
+tilmap <- function(
+    input, 
+    output, 
+    session, 
+    group_display_choice, 
+    group_internal_choice, 
+    sample_group_df,
+    subset_df,
+    plot_colors, 
+    group_options){
     
     ns <- session$ns
     
@@ -141,12 +149,16 @@ tilmap <- function(input, output, session, group_display_choice, group_internal_
         
     })
     
-    output$plot_group_text <- 
-        renderText(create_group_text_from_plotly(
+    output$plot_group_text <- renderText({
+        req(group_internal_choice(), sample_group_df(), cancelOutput = T)
+        
+        create_group_text_from_plotly(
             "plot",
             group_internal_choice(),
+            sample_group_df(),
             prompt_text = "",
-            key_column = "x"))
+            key_column = "x")
+    })
     
     
     output$til_table <- DT::renderDT({
