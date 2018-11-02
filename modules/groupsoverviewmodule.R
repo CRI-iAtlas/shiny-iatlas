@@ -134,12 +134,13 @@ groupsoverview <- function(
     })
     
     output$study_subset_select <- renderUI({
-        req(input$sample_mosaic_group, cancelOutput = TRUE)
+        req(input$sample_mosaic_group, panimmune_data$sample_group_df, cancelOutput = TRUE)
         if (input$sample_mosaic_group == "TCGA Subtype") {
             choices <- panimmune_data$sample_group_df %>% 
-                filter(sample_group == "tcga_subtype", !is.na(FeatureValue)) %>% 
-                distinct(`TCGA Studies`) %>% 
-                extract2("TCGA Studies")
+                dplyr::filter(sample_group == "Subtype_Curated_Malta_Noushmehr_et_al") %>% 
+                magrittr::use_series("TCGA Studies") %>% 
+                unique() %>% 
+                sort()
             
             optionsBox(
                 width = 4,
@@ -168,7 +169,8 @@ groupsoverview <- function(
         
         req(subset_df(), 
             group_internal_choice(),
-            sample_group_df,
+            sample_group_df(),
+            plot_colors(),
             cancelOutput = T)
         
         key_df <- build_sample_group_key_df(
@@ -199,9 +201,13 @@ groupsoverview <- function(
     output$mosaicPlot <- renderPlotly({
         
         req(subset_df(),
+            group_display_choice(),
+            group_internal_choice(),
+            input$sample_mosaic_group,
             input$sample_mosaic_group != group_display_choice(),
-            input$sample_mosaic_group, 
-            input$study_subset_selection,
+            !is.null(user_group_df()),
+            sample_group_df(),
+            plot_colors(),
             cancelOutput = T)
         
         display_x  <- input$sample_mosaic_group

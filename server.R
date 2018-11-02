@@ -140,13 +140,14 @@ shinyServer(function(input, output, session) {
     })
     
     output$study_subset_UI <- renderUI({
-        req(input$ss_choice)
+        req(input$ss_choice, panimmune_data$sample_group_df, cancelOutput = TRUE)
         if (input$ss_choice == "TCGA Subtype") {
             choices <- panimmune_data$sample_group_df %>% 
-                filter(sample_group == "tcga_subtype", !is.na(FeatureValue)) %>% 
-                distinct(`TCGA Studies`) %>% 
-                extract2("TCGA Studies")
-            
+                dplyr::filter(sample_group == "Subtype_Curated_Malta_Noushmehr_et_al") %>% 
+                magrittr::use_series("TCGA Studies") %>% 
+                unique() %>% 
+                sort()
+    
             selectInput("study_subset_selection", 
                         "Choose study subset:",
                         choices = choices,
@@ -155,12 +156,14 @@ shinyServer(function(input, output, session) {
     })
     
     group_internal_choice <- reactive({
-        req(input$ss_choice, cancelOutput = T)
+        req(input$ss_choice, panimmune_data$feature_df, cancelOutput = T)
         get_group_internal_name(input$ss_choice)
     })
     
     sample_group_df <- reactive({
+        
         req(
+            panimmune_data$sample_group_df,
             group_internal_choice(),  
             !is.null(user_group_df()),
             cancelOutput = T)
@@ -169,6 +172,8 @@ shinyServer(function(input, output, session) {
             group_internal_choice(), 
             input$study_subset_selection, 
             user_group_df())
+        
+        return(sample_group_df)
     })
     
     subset_df <- reactive({

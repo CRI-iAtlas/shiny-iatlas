@@ -306,19 +306,14 @@ subset_sample_group_df <- function(
     group_column, study_option, user_group_df,
     sample_group_df = panimmune_data$sample_group_df
 ){
-
-    sample_group_df <- translate_to_correct_group_name(sample_group_df)
-
     if (group_column %in% c("Subtype_Immune_Model_Based", "Study")) {
         sample_group_df <- filter(sample_group_df, sample_group == group_column)
-
+        
     } else if (group_column == "Subtype_Curated_Malta_Noushmehr_et_al") {
+        if(is.null(study_option)) return(NULL)
         sample_group_df <- sample_group_df %>%
             filter(sample_group == group_column) %>%
-            filter(`TCGA Studies` == study_option) %>% 
-            add_missing_plot_colors
-
-
+            filter(`TCGA Studies` == study_option)
     } else {
         sample_group_df <- user_group_df %>% 
             user_group_df_to_sample_group_df() %>% 
@@ -448,64 +443,6 @@ build_mosaicplot_df <- function(df, x_column, y_column){
 ###############################################################################
 # Tests below this line do not have tests yet, newly writen functions 
 ###############################################################################
-# Global data transform ----
-# ** PanImmune data subsetting ----
-# subset by group choices -----
-subset_panimmune_df2 <- function(
-    df = panimmune_data$fmx_df, 
-    group_column, 
-    study_option,
-    user_group_df = NULL) {
-    
-    if (group_column %in% c("Subtype_Immune_Model_Based", "Study")) {
-    } else if (group_column == "Subtype_Curated_Malta_Noushmehr_et_al") {
-        df <- subset_panimmune_df_by_TCGA_subtype2(df, group_column, study_option)
-    } else {
-        df <- subset_panimmune_df_by_user_groups2(df, user_group_df, group_column)
-    }
-    
-    result_df <- wrapr::let(
-        alias = c(COL = group_column),
-        filter(df, !is.na(COL))
-    )
-    return(result_df)
-}
-
-subset_panimmune_df_by_TCGA_subtype2 <- function(df, group_column, study_option){
-    sample_groups <- panimmune_data$sample_group_df %>% 
-        filter(sample_group == "tcga_subtype", 
-               `TCGA Studies` %in% study_option) %>% 
-        extract2("FeatureValue")
-    
-    result_df <- wrapr::let(
-        alias = c(COL = group_column), {
-            
-            df %>% 
-                filter(COL %in% sample_groups) %>% 
-                mutate(COL = as.character(fct_drop(COL)))
-        }
-    )
-}
-
-subset_panimmune_df_by_user_groups2 <- function(df, user_group_df, group_column){
-    wrapr::let(
-        alias = c(
-            COL1 = colnames(user_group_df[1]),
-            COL2 = group_column), {
-                user_group_df %>% 
-                    select(COL1, COL2) %>% 
-                    rename("ParticipantBarcode" = COL1) %>% 
-                    inner_join(df) %>% 
-                    filter(!is.na(COL2))
-        }
-    )
-}
-
-# Module specific data transform ----
-
-# ** Sample groups overview module ----
-
-
 
 # ** Immune feature trends module ----
 
