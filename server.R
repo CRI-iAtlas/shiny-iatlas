@@ -16,6 +16,7 @@ shinyServer(function(input, output, session) {
         "module1", 
         reactive(input$ss_choice),
         reactive(group_internal_choice()),
+        reactive(sample_group_df()),
         reactive(subset_df()))
     # Clonal diversity
     # callModule(
@@ -43,6 +44,7 @@ shinyServer(function(input, output, session) {
         reactive(input$ss_choice),
         reactive(group_internal_choice()),
         reactive(group_options()),
+        reactive(sample_group_df()),
         reactive(subset_df()),
         reactive(plot_colors()))
     # Immunomodulators
@@ -51,6 +53,7 @@ shinyServer(function(input, output, session) {
         "module5", 
         reactive(input$ss_choice),
         reactive(group_internal_choice()),
+        reactive(sample_group_df()),
         reactive(subset_df()),
         reactive(plot_colors()))
     # Immune features
@@ -59,6 +62,7 @@ shinyServer(function(input, output, session) {
         "module6", 
         reactive(input$ss_choice),
         reactive(group_internal_choice()),
+        reactive(sample_group_df()),
         reactive(subset_df()),
         reactive(plot_colors()))
     # TILmap features
@@ -67,6 +71,7 @@ shinyServer(function(input, output, session) {
         "module7", 
         reactive(input$ss_choice),
         reactive(group_internal_choice()),
+        reactive(sample_group_df()),
         reactive(subset_df()),
         reactive(plot_colors()))
     # Driver associations

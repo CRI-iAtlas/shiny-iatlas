@@ -98,8 +98,15 @@ immunefeatures_UI <- function(id) {
 
 # Server ----
 immunefeatures <- function(
-    input, output, session, group_display_choice, group_internal_choice, 
-    subset_df, plot_colors) {
+    input,
+    output, 
+    session, 
+    group_display_choice, 
+    group_internal_choice, 
+    sample_group_df,
+    subset_df, 
+    plot_colors
+){
     
     ns <- session$ns
     
@@ -153,8 +160,15 @@ immunefeatures <- function(
     })
     
     
-    output$violin_group_text <- renderText(
-        create_group_text_from_plotly("violin", group_internal_choice()))
+    output$violin_group_text <- renderText({
+        req(group_internal_choice(), sample_group_df(), cancelOutput = T)
+        
+        create_group_text_from_plotly(
+            "violin", 
+            group_internal_choice(),
+            sample_group_df())
+    })
+        
     
     
     output$heatmap <- renderPlotly({
@@ -171,8 +185,16 @@ immunefeatures <- function(
         create_heatmap(immunefeatures_correlation_matrix, "heatplot")
     })
     
-    output$heatmap_group_text <- renderText(
-        create_group_text_from_plotly("heatplot", group_internal_choice(), key_column = "x"))
+    output$heatmap_group_text <- renderText({
+        req(group_internal_choice(), sample_group_df(), cancelOutput = T)
+        
+        create_group_text_from_plotly(
+            "heatplot", 
+            group_internal_choice(), 
+            sample_group_df(),
+            key_column = "x")
+    })
+        
     
     output$scatterPlot <- renderPlotly({
         
