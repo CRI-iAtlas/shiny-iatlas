@@ -196,6 +196,10 @@ survival <- function(
                 status_column = status_col
             )
         
+        validate(
+          need(nrow(ci_mat[!is.na(ci_mat)]) > 0, "No results to display, pick a different group.")
+        )
+        
         create_heatmap(ci_mat, "ci")
     })
     
