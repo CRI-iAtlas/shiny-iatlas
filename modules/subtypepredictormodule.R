@@ -26,9 +26,27 @@ subtypepredictor_UI <- function(id) {
         p("Notes on input data:"),
         tags$ul(
           tags$li("First column should contain gene symbols, after that, samples."), 
-          tags$li("Gene names (rows) must be unique (duplicated gene names not allowed)."),
-          tags$li("Gene expression values will be log2 transformed and median centered per sample."),
           tags$li("For an example of outputs, leave the input file blank, set ensemble size to a small number (32) and click GO.")
+        ),
+        p(""),
+        p("Notes on the data transforms for computing signatures:"),
+        tags$ul(
+          tags$li("1. Rows with duplicate gene names are removed."), 
+          tags$li("2. Data is transformed with log2(x+1."),
+          tags$li("3. Each gene is median centered, in the PanCancer and new-data sets independently."),
+          tags$li("4. TCGA EB++ data is joined to new data, subset to genes in signatures (2316 genes)."),
+          tags$li("5. Combat (in SVA package) used for batch correction."),
+          tags$li("6. Signatures are computed for each sample."),
+          tags$li("7. Signature scores are Z-scored by sample (column-wise)."),
+          tags$li("8. Normalized scores are given to the PanCancer pre-trained cluster model."),
+          tags$li("9. Called clusters are aligned with the reported TCGA immune subtypes in a greedy fashion.")
+        ),
+        p(""),
+        p("Outputs:"),
+        tags$ul(
+          tags$li("Table shows TCGA reported subtypes with new aligned subtype calls."), 
+          tags$li("Barplot shows subtypes given to the new data."),
+          tags$li("Table gives aligned subtypes, signature scores, and cluster probabilities (non-aligned).")
         ),
         p(""),
         p("Manuscript context:  See figure 1A.")
@@ -131,7 +149,7 @@ subtypepredictor <- function(
     
     
     output$barPlot <- renderPlot({
-      counts <- table(getCalls()$MaxCalls)
+      counts <- table(getCalls()$AlignedCalls)
       barplot(counts, main="New Cluster Label Calls", 
               xlab="Cluster Labels")
     })
