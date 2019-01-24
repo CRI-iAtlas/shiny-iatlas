@@ -6,7 +6,7 @@
 
 
 # this function computes scores given some expression data.
-newScores <- function(fileinfo, logflag, cores, ensemblesize) {
+newScores <- function(fileinfo, logflag, cores, ensemblesize, combatflag) {
   
   print(fileinfo)
   if(is.null(fileinfo)) {
@@ -76,26 +76,22 @@ newScores <- function(fileinfo, logflag, cores, ensemblesize) {
   
   # then join them at the genes
   joinDat      <- cbind(newDatSub, tcgaSubsetSub)
-
   
-  # then batch correction between scores...
-  batch <- c(rep(1,ncol(newDatSub)), rep(2,ncol(tcgaSubsetSub)))
-  modcombat = model.matrix(~1, data=as.data.frame(t(joinDat)))
-  combat_edata = ComBat(dat=joinDat, batch=batch, mod=modcombat, 
-                        par.prior=TRUE, prior.plots=FALSE, ref.batch = 2)
+  if (combatflag) {
+    # then batch correction between scores...
+    batch <- c(rep(1,ncol(newDatSub)), rep(2,ncol(tcgaSubsetSub)))
+    modcombat = model.matrix(~1, data=as.data.frame(t(joinDat)))
+    combat_edata = ComBat(dat=joinDat, batch=batch, mod=modcombat, 
+                          par.prior=TRUE, prior.plots=FALSE, ref.batch = 2)
+  } else {
+    combat_edata = joinDat    
+  }
   
-  
-  ### median scaled for each gene
-  #datmeds <- apply(tcgaSubset2, 1, median, na.rm=T)  
-  #datscaled <- sweep(tcgaSubset2,1,datmeds,'-')
-  #datmeds <- apply(combat_edata, 1, median, na.rm=T)  
-  #datsds  <- apply(combat_edata, 1, sd, na.rm=T)
-  #datscaled <- sweep(combat_edata,1,datmeds,'-')
-  #datscaled <- sweep(datscaled,1,datsds,'/')
+  ### compute scores.
   datScores <- ImmuneSigs_function(combat_edata, sigs1_2_eg2,sigs12_weighted_means,
-                                   sigs12_module_weights,sigs1_2_names2,sigs1_2_type2)
+                                   sigs12_module_weights,sigs1_2_names2,sigs1_2_type2,
+                                   cores)
 
-  
   
   # and we subset the 5 scores used in clustering
   idx <- c("LIexpression_score", "CSF1_response", "TGFB_score_21050467", "Module3_IFN_score", "CHANG_CORE_SERUM_RESPONSE_UP")
@@ -121,13 +117,18 @@ newScores <- function(fileinfo, logflag, cores, ensemblesize) {
   # then we can align the new calls to old calls.
   reported <- 1:6
   optcalls <- 1:6
+  otherway <- 1:6
   for (i in reported) {
     
     # for subtype i, where did most of the samples end up?
     j <- which(as.numeric(t1[i,]) == max(as.numeric(t1[i,])))
     # rename maxcall j <- i
     optcalls[i] <- j
+    otherway[j] <- i
   }
+  
+  print(optcalls)
+  print(otherway)
   
   # these are the re-mapped calls
   alignedCalls <- sapply(maxcalls, function(a) which(a == optcalls)[1])
@@ -140,6 +141,8 @@ newScores <- function(fileinfo, logflag, cores, ensemblesize) {
   jdx <- match(table=rownames(scores), x=colnames(dat))  # index to new data scores
   pcalls <- calls$.Data[jdx,]                            # get that table
   rownames(pcalls) <- colnames(dat)                      # name it from the new data
+  pcalls <- pcalls[,optcalls]
+  
   pcalls <- cbind(pcalls, data.frame(Call=alignedCalls[jdx]))  # bring in the aligned calls
   pcalls <- cbind(pcalls, zscores[jdx,])                       # and the scores
     

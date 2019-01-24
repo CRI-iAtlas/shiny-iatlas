@@ -19,7 +19,8 @@ subtypepredictor_UI <- function(id) {
         p("Tool settings:"),
         tags$ul(
           tags$li(shiny::em('Log 2'), ", if the data is not already log transformed, select this."), 
-          tags$li(shiny::em('Ensemble size'), ", try different ensemble sizes to check for robust results."),
+          tags$li(shiny::em('Combat'), ", if the data should be batch corrected when joined to the PanCancer data, select this."), 
+          tags$li(shiny::em('Ensemble size'), ", try different ensemble sizes to check for robust results (256 used in manuscript)."),
           tags$li(shiny::em('File separator'), ", select commas or tabs.")
         ),
         p(""),
@@ -32,21 +33,22 @@ subtypepredictor_UI <- function(id) {
         p("Notes on the data transforms for computing signatures:"),
         tags$ul(
           tags$li("1. Rows with duplicate gene names are removed."), 
-          tags$li("2. Data is transformed with log2(x+1."),
+          tags$li("2. Data is transformed with log2(x+1)."),
           tags$li("3. Each gene is median centered, in the PanCancer and new-data sets independently."),
-          tags$li("4. TCGA EB++ data is joined to new data, subset to genes in signatures (2316 genes)."),
-          tags$li("5. Combat (in SVA package) used for batch correction."),
-          tags$li("6. Signatures are computed for each sample."),
+          tags$li("4. TCGA EB++ data is joined to the new-data, and subset to genes needed for signatures (2316 genes)."),
+          tags$li("5. Combat (in SVA package) used for batch correction (optional)."),
+          tags$li("6. Signatures are computed for each sample independently."),
           tags$li("7. Signature scores are Z-scored by sample (column-wise)."),
           tags$li("8. Normalized scores are given to the PanCancer pre-trained cluster model."),
-          tags$li("9. Called clusters are aligned with the reported TCGA immune subtypes in a greedy fashion.")
+          tags$li("9. Called clusters are aligned with the reported TCGA immune subtypes in a greedy fashion."),
+          tags$li("10. Aligned subtype calls and signatures scores are reported in a final table.")
         ),
         p(""),
         p("Outputs:"),
         tags$ul(
           tags$li("Table shows TCGA reported subtypes with new aligned subtype calls."), 
           tags$li("Barplot shows subtypes given to the new data."),
-          tags$li("Table gives aligned subtypes, signature scores, and cluster probabilities (non-aligned).")
+          tags$li("Table gives aligned subtypes, signature scores, and cluster probabilities.")
         ),
         p(""),
         p("Manuscript context:  See figure 1A.")
@@ -58,7 +60,8 @@ subtypepredictor_UI <- function(id) {
               width = 2,
               radioButtons(ns("sep"), "File Separator",
                            choices = c(Comma = ",", Tab = "\t"), selected = ","),
-              checkboxInput(ns("logged"), "Apply Log2", TRUE)
+              checkboxInput(ns("logged"), "Apply Log2", TRUE),
+              checkboxInput(ns("combat"), "Apply Combat", TRUE)
           ),
           column(
             width = 4,
@@ -138,7 +141,7 @@ subtypepredictor <- function(
       #withProgress(message = 'Working...', value = 0, {
       #  newScores(newdat, input$logged, input$corenum)
       #})
-      newScores(newdat, input$logged, input$corenum, input$ensemblenum)
+      newScores(newdat, input$logged, input$corenum, input$ensemblenum, input$combat)
     })
     
     # plot of where a sample is in signature space X clusters    
