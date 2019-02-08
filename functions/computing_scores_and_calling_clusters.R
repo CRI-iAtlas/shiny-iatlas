@@ -6,28 +6,35 @@
 
 
 # this function computes scores given some expression data.
-newScores <- function(fileinfo, logflag, cores, ensemblesize, combatflag) {
+newScores <- function(fileinfo, logflag, ensemblesize, combatflag, sepflag) {
   
   print(fileinfo)
+  print(logflag)
+  print(ensemblesize)
+  print(combatflag)
+  print(sepflag)
+  
   if(is.null(fileinfo)) {
     print("HERE")
     fileinfo <- list(name='ivy20.csv',  size=1, type='text/csv', datapath='data/ivy20.csv')
   }
+  
   print(fileinfo)
   
   #source('functions/signature_mclust_ensemble.R')
   #source('functions/ImmuneSigs68_function.R')
   load('data/comparative_immuneSigs_geneLists4.rda')
   
-  if (fileinfo$type == 'text/csv') {
-    s1 <- ','
-  } else if (fileinfo$type == 'text/csv') {
-    s1 <- '\t'
-  } else {
-    s1 <- '\t'    
-  }
+  #if (fileinfo$type == 'text/csv') {
+  #  s1 <- ','
+  #} else if (fileinfo$type == 'text/tab-separated-values') {
+  #  s1 <- '\t'
+  #} else {
+  #  s1 <- '\t'    
+  #}
+  #``
   
-  newdata <- read.table(fileinfo$datapath, sep=s1, header=T, stringsAsFactors = F)
+  newdata <- read.table(fileinfo$datapath, sep=sepflag, header=T, stringsAsFactors = F)
   # write.table(tcgaSubset, file='data/ebppSubset.tsv', sep='\t', quote=F)
   # newdata <- newData
   
@@ -77,6 +84,11 @@ newScores <- function(fileinfo, logflag, cores, ensemblesize, combatflag) {
   # then join them at the genes
   joinDat      <- cbind(newDatSub, tcgaSubsetSub)
   
+  sampleIdx <- sample(1:ncol(tcgaSubsetSub), size=min(ncol(newDatSub)*2, 200), replace = F)
+  preCombat <- cbind(newDatSub, tcgaSubsetSub[,sampleIdx])
+  preCombatMelt <- melt(preCombat)
+  preCombatMelt$SampleSource <- ifelse(test = preCombatMelt$variable %in% colnames(newDatSub), yes = "New Data", no="TCGA Data")
+  
   if (combatflag) {
     # then batch correction between scores...
     batch <- c(rep(1,ncol(newDatSub)), rep(2,ncol(tcgaSubsetSub)))
@@ -87,10 +99,15 @@ newScores <- function(fileinfo, logflag, cores, ensemblesize, combatflag) {
     combat_edata = joinDat    
   }
   
+  postCombat <- combat_edata[,c(1:ncol(newDatSub), sampleIdx)]
+  postCombatMelt <- melt(postCombat)
+  postCombatMelt$SampleSource <- ifelse(test = postCombatMelt$variable %in% colnames(newDatSub), yes = "New Data", no="TCGA Data")
+  
+  
   ### compute scores.
   datScores <- ImmuneSigs_function(combat_edata, sigs1_2_eg2,sigs12_weighted_means,
                                    sigs12_module_weights,sigs1_2_names2,sigs1_2_type2,
-                                   cores)
+                                   4)
 
   
   # and we subset the 5 scores used in clustering
@@ -103,7 +120,7 @@ newScores <- function(fileinfo, logflag, cores, ensemblesize, combatflag) {
   load("data/wolf_set_slim1.rda")
   
   # make cluster calls using the models.
-  calls <- consensusEnsemble(mods2, zscores, cores, ensemblesize)
+  calls <- consensusEnsemble(mods2, zscores, 4, ensemblesize)
   
   # get the top scoring cluster for each sample
   maxcalls <- apply(calls$.Data, 1, function(a) which(a == max(a))[1])
@@ -146,7 +163,7 @@ newScores <- function(fileinfo, logflag, cores, ensemblesize, combatflag) {
   pcalls <- cbind(pcalls, data.frame(Call=alignedCalls[jdx]))  # bring in the aligned calls
   pcalls <- cbind(pcalls, zscores[jdx,])                       # and the scores
     
-  return(list(AlignedCalls=alignedCalls[jdx], Table=t2, ProbCalls=pcalls))
+  return(list(AlignedCalls=alignedCalls[jdx], Table=t2, ProbCalls=pcalls, PreCombat=preCombatMelt, PostCombat=postCombatMelt))
   
   
   ###########################################################################################

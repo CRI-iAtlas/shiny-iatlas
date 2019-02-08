@@ -3,7 +3,9 @@ subtypepredictor_UI <- function(id) {
   ns <- NS(id)
   
   tagList(
+    
     titleBox("iAtlas Tools — Immune Subtype Predictor"),
+    
     textBox(
       width = 12,
       p("Upload gene expression* and predict immune subtypes (* RSEM RPKM).")  
@@ -12,23 +14,42 @@ subtypepredictor_UI <- function(id) {
     # Immunomodulator distributions section ----
     sectionBox(
       title = "Model Based Clustering",
+      
       messageBox(
         width = 12,
+        
         p("Upload gene expression (csv or tsv). RSEM RPKM expression values were used to train the model, and for best results, your expression data should also be RSEM RPKMs (FPKMs will also work)."),
+        
         p(""),
-        p("Tool settings:"),
-        tags$ul(
-          tags$li(shiny::em('Log 2'), ", if the data is not already log transformed, select this."), 
-          tags$li(shiny::em('Combat'), ", if the data should be batch corrected when joined to the PanCancer data, select this."), 
-          tags$li(shiny::em('Ensemble size'), ", try different ensemble sizes to check for robust results (256 used in manuscript)."),
-          tags$li(shiny::em('File separator'), ", select commas or tabs.")
-        ),
         p(""),
         p("Notes on input data:"),
         tags$ul(
+          tags$li("First row should be a header, with a 'GeneSymbol' column label, followed by sample IDs."),
           tags$li("First column should contain gene symbols, after that, samples."), 
           tags$li("For an example of outputs, leave the input file blank, set ensemble size to a small number (32) and click GO.")
         ),
+        p(""),
+        tags$a(href="https://github.com/CRI-iAtlas/shiny-iatlas/blob/develop/data/ivy20.csv", "Get an example input file here."),
+        p(""),
+        tags$hr(),
+        p(tags$b("Data Formatting Example:")),
+        p(""),
+        p("GeneSymbol, Sample1, Sample2,..."),
+        p("RKK1,       14.5,    100.1,..."),
+        p("CMQ4,       1.10,    80.711,..."),
+        p("....,       ....,    and etc..."),
+        p(""),
+        p(""),
+        tags$hr(),
+        
+        p("Tool settings:"),
+        tags$ul(
+          tags$li(shiny::em('File separator'), ", select commas or tabs."),
+          tags$li(shiny::em('Log 2'), ", if the data is not already log transformed, select this."), 
+          tags$li(shiny::em('Combat'), ", if the data should be batch corrected when joined to the PanCancer data, select this."), 
+          tags$li(shiny::em('Ensemble size'), ", try different ensemble sizes to check for robust results (256 used in manuscript).")
+        ),
+        
         p(""),
         p("Notes on the data transforms for computing signatures:"),
         tags$ul(
@@ -57,15 +78,16 @@ subtypepredictor_UI <- function(id) {
         optionsBox(
           width = 12,
           column(
-              width = 2,
-              radioButtons(ns("sep"), "File Separator",
-                           choices = c(Comma = ",", Tab = "\t"), selected = ","),
-              checkboxInput(ns("logged"), "Apply Log2", TRUE),
-              checkboxInput(ns("combat"), "Apply Combat", TRUE)
+            width = 2,
+            radioButtons(ns("sepa"), "File Separator",
+                         choices = c(Comma = ",", Tab = "\t"), selected = ","),
+            checkboxInput(ns("logged"), "Apply Log2", TRUE),
+            checkboxInput(ns("combat"), "Apply Combat", TRUE)
           ),
+          
           column(
             width = 4,
-            fileInput(ns("expr_file_pred"), "Choose CSV file, First column gene symbols. Leave blank for example run.",
+            fileInput(ns("expr_file_pred"), "Choose file. Leave blank for example run.",
                       multiple = FALSE,
                       accept = c("text/csv",
                                  "text/comma-separated-values,text/plain",
@@ -77,17 +99,19 @@ subtypepredictor_UI <- function(id) {
                                  ".tsv.gz"),
                       placeholder = 'data/ivy20.csv')
           ),
+          
           column(
             width = 3,
-            numericInput(ns("ensemblenum"), "Ensemble Size (32-256)", 256, max = 256, min = 32, width = '100')
+            numericInput(ns("ensemblenum"), "Ensemble Size (64-256)", 256, max = 256, min = 64, width = '100')
           ),
+          
           column(
-              width = 3,
-              numericInput(ns("corenum"), "Cores (1-4)", 4, width = '100'),
-              actionButton(ns("subtypeGObutton"), "GO")
+            width = 3,
+            actionButton(ns("subtypeGObutton"), "GO")
           )
         )
       ),
+      
       fluidRow(
         plotBox(
           width = 12,
@@ -95,6 +119,23 @@ subtypepredictor_UI <- function(id) {
             shinycssloaders::withSpinner()
         )
       ),
+      
+      fluidRow(
+        plotBox(
+          width = 12,
+          plotOutput(ns("preCombat")) %>% 
+            shinycssloaders::withSpinner()
+        )
+      ),
+
+      fluidRow(
+        plotBox(
+          width = 12,
+          plotOutput(ns("postCombat")) %>% 
+            shinycssloaders::withSpinner()
+        )
+      ),
+      
       fluidRow(
         plotBox(
           width = 12,
@@ -121,7 +162,7 @@ subtypepredictor_UI <- function(id) {
         )
       )
     )
-  )
+  ) # taglist
 }
 
 
@@ -136,12 +177,12 @@ subtypepredictor <- function(
 
     # get new calls
     getCalls <- eventReactive(input$subtypeGObutton, {
+      
       newdat <- input$expr_file_pred
+      
       print(head(newdat))
-      #withProgress(message = 'Working...', value = 0, {
-      #  newScores(newdat, input$logged, input$corenum)
-      #})
-      newScores(newdat, input$logged, input$corenum, input$ensemblenum, input$combat)
+
+      newScores(newdat, input$logged, input$ensemblenum, input$combat, input$sepa)
     })
     
     # plot of where a sample is in signature space X clusters    
@@ -149,6 +190,20 @@ subtypepredictor <- function(
       #heatmap(as.matrix(getCalls()$Table), xlab = 'Reported Clusters', ylab = 'New Calls')
       imagePlot(getCalls()$Table)
     })
+    
+    
+    # plot of where a sample is in signature space X clusters    
+    output$preCombat <- renderPlot({
+      #heatmap(as.matrix(getCalls()$Table), xlab = 'Reported Clusters', ylab = 'New Calls')
+      qplot(data=getCalls()$preCombatMelt, col=SampleSource, x=value, geom='density', main = 'Distribution of expression values pre-batch-correction')
+    })
+    
+    # plot of where a sample is in signature space X clusters    
+    output$postCombat <- renderPlot({
+      #heatmap(as.matrix(getCalls()$Table), xlab = 'Reported Clusters', ylab = 'New Calls')
+      qplot(data=getCalls()$postCombatMelt, col=SampleSource, x=value, geom='density', main = 'Distribution of expression values post-batch-correction')
+    })
+    
     
     
     output$barPlot <- renderPlot({
