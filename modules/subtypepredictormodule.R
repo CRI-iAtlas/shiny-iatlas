@@ -195,13 +195,13 @@ subtypepredictor <- function(
     # plot of where a sample is in signature space X clusters    
     output$preCombat <- renderPlot({
       #heatmap(as.matrix(getCalls()$Table), xlab = 'Reported Clusters', ylab = 'New Calls')
-      qplot(data=getCalls()$preCombatMelt, col=SampleSource, x=value, geom='density', main = 'Distribution of expression values pre-batch-correction')
+      qplot(data=getCalls()$PreCombat, col=SampleSource, x=value, geom='density', main = 'Distribution of expression values pre-batch-correction')
     })
     
     # plot of where a sample is in signature space X clusters    
     output$postCombat <- renderPlot({
       #heatmap(as.matrix(getCalls()$Table), xlab = 'Reported Clusters', ylab = 'New Calls')
-      qplot(data=getCalls()$postCombatMelt, col=SampleSource, x=value, geom='density', main = 'Distribution of expression values post-batch-correction')
+      qplot(data=getCalls()$PostCombat, col=SampleSource, x=value, geom='density', main = 'Distribution of expression values post-batch-correction')
     })
     
     
