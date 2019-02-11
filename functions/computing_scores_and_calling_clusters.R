@@ -8,6 +8,10 @@
 # this function computes scores given some expression data.
 newScores <- function(fileinfo, logflag, ensemblesize, combatflag, sepflag) {
   
+  zscore.cols2<-function(x){
+    return((apply(x, 2, function(x) (x - median(na.omit(x)))/sd(na.omit(x)))))
+  }
+  
   print(fileinfo)
   print(logflag)
   print(ensemblesize)
@@ -21,8 +25,6 @@ newScores <- function(fileinfo, logflag, ensemblesize, combatflag, sepflag) {
   
   print(fileinfo)
   
-  #source('functions/signature_mclust_ensemble.R')
-  #source('functions/ImmuneSigs68_function.R')
   load('data/comparative_immuneSigs_geneLists4.rda')
   
   #if (fileinfo$type == 'text/csv') {
@@ -34,23 +36,44 @@ newScores <- function(fileinfo, logflag, ensemblesize, combatflag, sepflag) {
   #}
   #``
   
-  newdata <- read.table(fileinfo$datapath, sep=sepflag, header=T, stringsAsFactors = F)
-  # write.table(tcgaSubset, file='data/ebppSubset.tsv', sep='\t', quote=F)
-  # newdata <- newData
+  print("Reading Data")
   
-  zscore.cols2<-function(x){
-    return((apply(x, 2, function(x) (x - median(na.omit(x)))/sd(na.omit(x)))))
-  }
-  
+  #newdata <- read_csv('data/ivy20.csv')
+  newdata <- read.table(file=fileinfo$datapath, sep=sepflag, header=T, stringsAsFactors = F)
+
+  print("new data")
+  print(dim(newdata))
+    
   # 1. the EBPP expression data subset
-  tcgaSubset <- read.table('data/ebppSubset.tsv.bz2', header = T, sep = '\t', stringsAsFactors = F)
   reportedScores <- read.table('data/five_signature_mclust_ensemble_results.tsv.gz', sep='\t', header=T, stringsAsFactors = F)
   rownames(reportedScores) <- reportedScores$AliquotBarcode
+
+  
+  print("Loading TCGA Data")
+  # 1. the EBPP expression data subset
+  #tcgaSubset <- fread('data/ebppSubset.tsv.bz2', header = F)
+  tcgaSubset1 <- read_csv('data/tcgaSubset1.csv.bz2',
+                          col_types=cols(
+                            .default = col_double(),
+                            GeneSymbol = col_character()
+                          )) # already median centered
+  tcgaSubset2 <- read_csv('data/tcgaSubset2.csv.bz2',
+                          col_types=cols(
+                            .default = col_double()
+                          )) # already median centered
+  tcgaSubset3 <- read_csv('data/tcgaSubset3.csv.bz2',
+                          col_types=cols(
+                            .default = col_double()
+                          )) # already median centered
+  
+  tcgaSubset <- bind_cols(tcgaSubset1, tcgaSubset2, tcgaSubset3)
+  rm(tcgaSubset1, tcgaSubset2, tcgaSubset3)
+  print(gc())
   
   # done already
-  #tcgaSubset <- tcgaSubset[,colnames(tcgaSubset) %in% reportedScores$AliquotBarcode]
-  tcgaSubset <- log2(tcgaSubset + 1)
-  
+  # tcgaSubset <- tcgaSubset[,colnames(tcgaSubset) %in% reportedScores$AliquotBarcode]
+  # tcgaSubset <- log2(tcgaSubset[,-1] + 1)
+
   # 2 we get some new data in.. require:
   #    it is RPKM  
   #    and   log2 transformed 
@@ -58,40 +81,54 @@ newScores <- function(fileinfo, logflag, ensemblesize, combatflag, sepflag) {
   #    and   median centered
   didx <- !duplicated(as.character(newdata[,1]))
   dat <- newdata[didx,]
-  rownames(dat) <- dat[,1]
-  dat <- dat[,-1]  # needs row names as symbols
+  #datGenes <- newdataGenes[didx]
+  #rownames(dat) <- dat[,1]
+  #dat <- dat[,-1]  # needs row names as symbols
   
-  # just in case we need a log transform
   if (logflag) {
-    datlog2 <- log2(dat+1)
+    datlog2 <- log2(dat[,-1]+1)
   } else {
     datlog2 <- dat
   }
   
+  # medians of each gene
+  newDatMeds<- apply(datlog2, 1, median, na.rm=T)
+  # center each gene
+  datlog2Centered <- sweep(datlog2,  1, newDatMeds, '-')
+  # bring the genes back in
+  dat2 <- cbind(data.frame(GeneSymbol=dat[,1]), datlog2Centered)
   
   ### joining data sets ###
-  sharedGenes  <- intersect(rownames(tcgaSubset), rownames(dat))
+  colnames(tcgaSubset)[1] <- colnames(dat2)[1]
+  joinDat <- inner_join(dat2, tcgaSubset)
+  joinGenes <- joinDat$GeneSymbol
+  
+  # clean up
+  newdatSamples <- colnames(datlog2Centered)
+  dat2idx <- 1:(ncol(dat2)-1)
+  tcgaidx <- setdiff( (1: (ncol(joinDat)-1)), dat2idx)
 
-  # first median scale each data set
-  newDatSub    <- datlog2[sharedGenes,]
-  newDatSubMeds<- apply(newDatSub, 1, median, na.rm=T)  
-  newDatSub    <- sweep(newDatSub,1,newDatSubMeds,'-')
+  rm(tcgaSubset, datlog2, datlog2Centered, dat2, newdata, didx, newDatMeds)
+  print(gc())
+  gc()
+
   
-  tcgaSubsetSub <- tcgaSubset[sharedGenes,]
-  tcgaSubsetSubMeds <- apply(tcgaSubsetSub, 1, median, na.rm=T)  
-  tcgaSubsetSub <- sweep(tcgaSubsetSub,1,tcgaSubsetSubMeds,'-')
+  joinDat <- joinDat[,-1]
+  rownames(joinDat) <- joinGenes
+  print(gc())
   
-  # then join them at the genes
-  joinDat      <- cbind(newDatSub, tcgaSubsetSub)
+  print("Making data subsets")
   
-  sampleIdx <- sample(1:ncol(tcgaSubsetSub), size=min(ncol(newDatSub)*2, 200), replace = F)
-  preCombat <- cbind(newDatSub, tcgaSubsetSub[,sampleIdx])
-  preCombatMelt <- melt(preCombat)
-  preCombatMelt$SampleSource <- ifelse(test = preCombatMelt$variable %in% colnames(newDatSub), yes = "New Data", no="TCGA Data")
+  sampleIdx <- c(dat2idx, sample(tcgaidx, size=200, replace = F))
+  preCombat <- joinDat[,sampleIdx]
+  preCombatMelt <- reshape2::melt(preCombat)
+  preCombatMelt$SampleSource <- ifelse(test = preCombatMelt$variable %in% newdatSamples, yes = "New Data", no="TCGA Data")
   
+  print("Combat")
+    
   if (combatflag) {
     # then batch correction between scores...
-    batch <- c(rep(1,ncol(newDatSub)), rep(2,ncol(tcgaSubsetSub)))
+    batch <- c(rep(1,length(dat2idx)), rep(2,length(tcgaidx)))
     modcombat = model.matrix(~1, data=as.data.frame(t(joinDat)))
     combat_edata = ComBat(dat=joinDat, batch=batch, mod=modcombat, 
                           par.prior=TRUE, prior.plots=FALSE, ref.batch = 2)
@@ -99,16 +136,23 @@ newScores <- function(fileinfo, logflag, ensemblesize, combatflag, sepflag) {
     combat_edata = joinDat    
   }
   
-  postCombat <- combat_edata[,c(1:ncol(newDatSub), sampleIdx)]
-  postCombatMelt <- melt(postCombat)
-  postCombatMelt$SampleSource <- ifelse(test = postCombatMelt$variable %in% colnames(newDatSub), yes = "New Data", no="TCGA Data")
+  rm(modcombat, preCombat, joinDat)
+  gc()
   
+  print("Computing scores")
+  postCombat <- combat_edata[,sampleIdx]
+  postCombatMelt <- reshape2::melt(postCombat)
+  postCombatMelt$SampleSource <- ifelse(test = postCombatMelt$variable %in% newdatSamples, yes = "New Data", no="TCGA Data")
   
   ### compute scores.
-  datScores <- ImmuneSigs_function(combat_edata, sigs1_2_eg2,sigs12_weighted_means,
+  datScores <- ImmuneSigs_function(combat_edata,
+                                   sigs1_2_eg2,sigs12_weighted_means,
                                    sigs12_module_weights,sigs1_2_names2,sigs1_2_type2,
-                                   4)
+                                   2)
 
+  gc()
+
+  print("Calling subtypes")
   
   # and we subset the 5 scores used in clustering
   idx <- c("LIexpression_score", "CSF1_response", "TGFB_score_21050467", "Module3_IFN_score", "CHANG_CORE_SERUM_RESPONSE_UP")
@@ -120,7 +164,9 @@ newScores <- function(fileinfo, logflag, ensemblesize, combatflag, sepflag) {
   load("data/wolf_set_slim1.rda")
   
   # make cluster calls using the models.
-  calls <- consensusEnsemble(mods2, zscores, 4, ensemblesize)
+  calls <- consensusEnsemble(mods2, zscores, 2, ensemblesize)
+  
+  print("Reporting clusters")
   
   # get the top scoring cluster for each sample
   maxcalls <- apply(calls$.Data, 1, function(a) which(a == max(a))[1])
@@ -155,14 +201,16 @@ newScores <- function(fileinfo, logflag, ensemblesize, combatflag, sepflag) {
              NewCalls=as.numeric(alignedCalls[sharedIDs]))
 
   # assemble the results
-  jdx <- match(table=rownames(scores), x=colnames(dat))  # index to new data scores
+  jdx <- match(table=rownames(scores), x=colnames(dat)[-1])  # index to new data scores
   pcalls <- calls$.Data[jdx,]                            # get that table
-  rownames(pcalls) <- colnames(dat)                      # name it from the new data
+  rownames(pcalls) <- colnames(dat)[-1]                      # name it from the new data
   pcalls <- pcalls[,optcalls]
   
   pcalls <- cbind(pcalls, data.frame(Call=alignedCalls[jdx]))  # bring in the aligned calls
   pcalls <- cbind(pcalls, zscores[jdx,])                       # and the scores
     
+  print("Done")
+  
   return(list(AlignedCalls=alignedCalls[jdx], Table=t2, ProbCalls=pcalls, PreCombat=preCombatMelt, PostCombat=postCombatMelt))
   
   
