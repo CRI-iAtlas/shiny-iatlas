@@ -52,22 +52,15 @@ newScores <- function(fileinfo, logflag, ensemblesize, combatflag, sepflag) {
   print("Loading TCGA Data")
   # 1. the EBPP expression data subset
   #tcgaSubset <- fread('data/ebppSubset.tsv.bz2', header = F)
-  tcgaSubset1 <- read_csv('data/tcgaSubset1.csv.bz2',
-                          col_types=cols(
-                            .default = col_double(),
-                            GeneSymbol = col_character()
-                          )) # already median centered
-  tcgaSubset2 <- read_csv('data/tcgaSubset2.csv.bz2',
-                          col_types=cols(
-                            .default = col_double()
-                          )) # already median centered
-  tcgaSubset3 <- read_csv('data/tcgaSubset3.csv.bz2',
-                          col_types=cols(
-                            .default = col_double()
-                          )) # already median centered
   
-  tcgaSubset <- bind_cols(tcgaSubset1, tcgaSubset2, tcgaSubset3)
-  rm(tcgaSubset1, tcgaSubset2, tcgaSubset3)
+  tcgaSubset1 <- fread('data/tcgaSubset1.csv.bz2')
+  tcgaSubset2 <- fread('data/tcgaSubset2.csv.bz2')
+  tcgaSubset3 <- fread('data/tcgaSubset3.csv.bz2')
+    
+  tcgaSubsetA <- cbind(tcgaSubset1, tcgaSubset2) 
+  tcgaSubset  <- cbind(tcgaSubsetA, tcgaSubset3)
+
+  rm(tcgaSubset1, tcgaSubset2, tcgaSubset3, tcgaSubsetA)
   print(gc())
   
   # done already
