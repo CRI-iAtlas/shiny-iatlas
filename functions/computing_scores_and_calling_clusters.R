@@ -8,6 +8,9 @@
 # this function computes scores given some expression data.
 newScores <- function(fileinfo, logflag, ensemblesize, combatflag, sepflag) {
   
+  library(R.utils)
+  library(data.table)
+  
   zscore.cols2<-function(x){
     return((apply(x, 2, function(x) (x - median(na.omit(x)))/sd(na.omit(x)))))
   }

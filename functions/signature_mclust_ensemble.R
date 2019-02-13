@@ -62,7 +62,7 @@ ensemblePredict <- function(modList, dat, mode="list", cores, ensemblesize) {
   pred <- mclapply(modList[idx], function(a) mclust::predict.Mclust(a, dat)$classification, mc.cores=cores)
 
   # then unload mclust
-  detach(package:mclust, unload=TRUE)
+  detach("package:mclust", unload=TRUE)
   
   if (mode == "matrix") {
     return(do.call("cbind", pred))
