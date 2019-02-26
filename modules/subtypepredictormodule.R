@@ -4,11 +4,11 @@ subtypepredictor_UI <- function(id) {
 
   tagList(
 
-    titleBox("iAtlas Tools — Immune Subtype Predictor"),
+    titleBox("iAtlas Tools — Immune Subtype Classifier"),
 
     textBox(
       width = 12,
-      p("Upload gene expression* and predict immune subtypes (* RSEM ).")
+      p("Upload gene expression* and classify immune subtypes ( *RSEM expression ).")
     ),
 
     # Immunomodulator distributions section ----
@@ -142,10 +142,10 @@ subtypepredictor_UI <- function(id) {
 
     # Immunomodulator annotations section ----
     sectionBox(
-      title = "Subtype Prediction Results Table",
+      title = "Subtype Classification Table",
       messageBox(
         width = 12,
-        p("The table shows the results of subtype prediction. Use the Search box in the upper right to find sample of interest.")
+        p("The table shows the results of subtype classification. Use the Search box in the upper right to find sample of interest.")
       ),
       fluidRow(
         tableBox(

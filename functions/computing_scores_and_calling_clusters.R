@@ -30,6 +30,8 @@ newScores <- function(fileinfo, logflag, ensemblesize, combatflag, sepflag, norm
 
   load('data/comparative_immuneSigs_geneLists4.rda')
 
+  # problem here is that when the file is gzipped
+  # the fileinfo is not helpful in determing sep
   #if (fileinfo$type == 'text/csv') {
   #  s1 <- ','
   #} else if (fileinfo$type == 'text/tab-separated-values') {
@@ -89,7 +91,6 @@ newScores <- function(fileinfo, logflag, ensemblesize, combatflag, sepflag, norm
   } else {
     datnorm <- dat
   }
-
 
   if (logflag) {
     datlog2 <- log2(datnorm+1)
@@ -215,41 +216,11 @@ newScores <- function(fileinfo, logflag, ensemblesize, combatflag, sepflag, norm
   pcalls <- cbind(pcalls, data.frame(Call=alignedCalls[jdx]))  # bring in the aligned calls
   pcalls <- cbind(pcalls, zscores[jdx,])                       # and the scores
 
+
+  devtools::unload(package = 'R.utils')
   print("Done")
 
   return(list(AlignedCalls=alignedCalls[jdx], Table=t2, ProbCalls=pcalls, PreCombat=preCombatMelt, PostCombat=postCombatMelt))
-
-
-  ###########################################################################################
-  ### OLD CODE
-  #maxcalls <- apply(calls$.Data, 1, function(a) which(a == max(a))[1])
-
-  # and get the reported scores from the manuscript
-  #wolf <- read.table("data/five_signature_mclust_ensemble_results.tsv.gz", sep='\t', header=T, stringsAsFactors = F)
-  #wolfscrs <- wolf[,c(5:9)]
-  #wolfNames <- str_replace_all(wolf$AliquotBarcode, '\\.', '-')
-
-  # Then we make sure the pancan cluster labels have not changed *much*  *how much is OK?*
-  #idx <- match(table=rownames(scores), x = wolfNames)
-  #t1 <- table(New=maxcalls[idx], Wolf=wolf$ClusterModel1)
-  #t2 <- t1
-  #for (i in 1:6) {
-  #  kdx <- which(t1[,i] == max(t1[,i]))
-  #  t2[i,] <- round(t1[kdx,]/sum(t1[kdx,]), digits = 3)
-  #}
-  #rownames(t2) <- c('C1', 'C2', 'C3', 'C4', 'C5', 'C6')
-
-  #jdx <- match(table=rownames(scores), x=colnames(dat))
-  #pcalls <- calls$.Data[jdx,]
-  #rownames(pcalls) <- colnames(dat)
-  #pcalls <- cbind(pcalls, data.frame(Call=maxcalls[jdx]))
-  #pcalls <- cbind(pcalls, zscores[jdx,])
-
-  #newMaxCalls <- maxcalls[jdx]
-
-  #print(newMaxCalls)
-
-  #return(list(MaxCalls=newMaxCalls, Table=t2, ProbCalls=pcalls))
 
 }
 
