@@ -1,31 +1,30 @@
 subtypepredictor_UI <- function(id) {
-  
+
   ns <- NS(id)
-  
+
   tagList(
-    
+
     titleBox("iAtlas Tools — Immune Subtype Predictor"),
-    
+
     textBox(
       width = 12,
-      p("Upload gene expression* and predict immune subtypes (* RSEM RPKM).")  
+      p("Upload gene expression* and predict immune subtypes (* RSEM ).")
     ),
-    
+
     # Immunomodulator distributions section ----
     sectionBox(
       title = "Model Based Clustering",
-      
+
       messageBox(
         width = 12,
-        
-        p("Upload gene expression (csv or tsv). RSEM RPKM expression values were used to train the model, and for best results, your expression data should also be RSEM RPKMs (FPKMs will also work)."),
-        
+
+        p("Upload gene expression (csv or tsv). RSEM expression values were used to train the model, and for best results, your expression data should also be RSEM (RPKM and FPKMs may also work)."),
         p(""),
         p(""),
         p("Notes on input data:"),
         tags$ul(
           tags$li("First row should be a header, with a 'GeneSymbol' column label, followed by sample IDs."),
-          tags$li("First column should contain gene symbols, after that, samples."), 
+          tags$li("First column should contain gene symbols, after that, samples."),
           tags$li("For an example of outputs, leave the input file blank, set ensemble size to a small number (32) and click GO.")
         ),
         p(""),
@@ -41,33 +40,34 @@ subtypepredictor_UI <- function(id) {
         p(""),
         p(""),
         tags$hr(),
-        
+
         p("Tool settings:"),
         tags$ul(
           tags$li(shiny::em('File separator'), ", select commas or tabs."),
-          tags$li(shiny::em('Log 2'), ", if the data is not already log transformed, select this."), 
-          tags$li(shiny::em('Combat'), ", if the data should be batch corrected when joined to the PanCancer data, select this."), 
+          tags$li(shiny::em('Log 2'), ", if the data is not already log transformed, select this."),
+          tags$li(shiny::em('Combat'), ", if the data should be batch corrected when joined to the PanCancer data, select this."),
           tags$li(shiny::em('Ensemble size'), ", try different ensemble sizes to check for robust results (256 used in manuscript).")
         ),
-        
+
         p(""),
         p("Notes on the data transforms for computing signatures:"),
         tags$ul(
-          tags$li("1. Rows with duplicate gene names are removed."), 
-          tags$li("2. Data is transformed with log2(x+1)."),
-          tags$li("3. Each gene is median centered, in the PanCancer and new-data sets independently."),
-          tags$li("4. TCGA EB++ data is joined to the new-data, and subset to genes needed for signatures (2316 genes)."),
-          tags$li("5. Combat (in SVA package) used for batch correction (optional)."),
-          tags$li("6. Signatures are computed for each sample independently."),
-          tags$li("7. Signature scores are Z-scored by sample (column-wise)."),
-          tags$li("8. Normalized scores are given to the PanCancer pre-trained cluster model."),
-          tags$li("9. Called clusters are aligned with the reported TCGA immune subtypes in a greedy fashion."),
-          tags$li("10. Aligned subtype calls and signatures scores are reported in a final table.")
+          tags$li("1. Rows with duplicate gene names are removed."),
+          tags$li("2. Data is upper quantile normalized and multiplied by 1000"),
+          tags$li("3. Data is transformed with log2(x+1)."),
+          tags$li("4. Each gene is median centered, in the PanCancer and new-data sets independently."),
+          tags$li("5. TCGA EB++ data is joined to the new-data, and subset to genes needed for signatures (2316 genes)."),
+          tags$li("6. Combat (in SVA package) used for batch correction (optional)."),
+          tags$li("7. Signatures are computed for each sample independently."),
+          tags$li("8. Signature scores are Z-scored by sample (column-wise)."),
+          tags$li("9. Normalized scores are given to the PanCancer pre-trained cluster model."),
+          tags$li("10. Called clusters are aligned with the reported TCGA immune subtypes in a greedy fashion."),
+          tags$li("11. Aligned subtype calls and signatures scores are reported in a final table.")
         ),
         p(""),
         p("Outputs:"),
         tags$ul(
-          tags$li("Table shows TCGA reported subtypes with new aligned subtype calls."), 
+          tags$li("Table shows TCGA reported subtypes with new aligned subtype calls."),
           tags$li("Barplot shows subtypes given to the new data."),
           tags$li("Table gives aligned subtypes, signature scores, and cluster probabilities.")
         ),
@@ -76,17 +76,18 @@ subtypepredictor_UI <- function(id) {
       ),
       fluidRow(
         optionsBox(
-          width = 12,
+          width = 10,
           column(
-            width = 2,
+            width = 5,
             radioButtons(ns("sepa"), "File Separator",
                          choices = c(Comma = ",", Tab = "\t"), selected = ","),
+            checkboxInput(ns("normed"), "Apply UQ Norm.", TRUE),
             checkboxInput(ns("logged"), "Apply Log2", TRUE),
             checkboxInput(ns("combat"), "Apply Combat", TRUE)
           ),
-          
+
           column(
-            width = 4,
+            width = 5,
             fileInput(ns("expr_file_pred"), "Choose file. Leave blank for example run.",
                       multiple = FALSE,
                       accept = c("text/csv",
@@ -97,33 +98,19 @@ subtypepredictor_UI <- function(id) {
                                  "text/comma-separated-values,text/plain",
                                  ".tsv",
                                  ".tsv.gz"),
-                      placeholder = 'data/ivy20.csv')
-          ),
-          
-          column(
-            width = 3,
-            numericInput(ns("ensemblenum"), "Ensemble Size (64-256)", 256, max = 256, min = 64, width = '100')
-          ),
-          
-          column(
-            width = 3,
+                      placeholder = 'data/ivy20.csv'),
+
+            numericInput(ns("ensemblenum"), "Ensemble Size (64-256)", 256, max = 256, min = 64, width = '200'),
+
             actionButton(ns("subtypeGObutton"), "GO")
           )
         )
       ),
-      
+
       fluidRow(
         plotBox(
           width = 12,
-          plotOutput(ns("distPlot")) %>% 
-            shinycssloaders::withSpinner()
-        )
-      ),
-      
-      fluidRow(
-        plotBox(
-          width = 12,
-          plotOutput(ns("preCombat")) %>% 
+          plotOutput(ns("distPlot")) %>%
             shinycssloaders::withSpinner()
         )
       ),
@@ -131,26 +118,34 @@ subtypepredictor_UI <- function(id) {
       fluidRow(
         plotBox(
           width = 12,
-          plotOutput(ns("postCombat")) %>% 
+          plotOutput(ns("preCombat")) %>%
             shinycssloaders::withSpinner()
         )
       ),
-      
+
       fluidRow(
         plotBox(
           width = 12,
-          plotOutput(ns('barPlot')) %>% 
+          plotOutput(ns("postCombat")) %>%
+            shinycssloaders::withSpinner()
+        )
+      ),
+
+      fluidRow(
+        plotBox(
+          width = 12,
+          plotOutput(ns('barPlot')) %>%
             shinycssloaders::withSpinner()
         )
       )
     ),
-    
+
     # Immunomodulator annotations section ----
     sectionBox(
       title = "Subtype Prediction Results Table",
       messageBox(
         width = 12,
-        p("The table shows the results of subtype prediction. Use the Search box in the upper right to find sample of interest.")  
+        p("The table shows the results of subtype prediction. Use the Search box in the upper right to find sample of interest.")
       ),
       fluidRow(
         tableBox(
@@ -167,68 +162,68 @@ subtypepredictor_UI <- function(id) {
 
 
 subtypepredictor <- function(
-    input, output, session, group_display_choice, group_internal_choice, 
+    input, output, session, group_display_choice, group_internal_choice,
     subset_df, plot_colors) {
-    
+
     ns <- session$ns
-    
+
     # in src files ... have same path as app.R
     reportedClusters <- getSubtypeTable()
 
     # get new calls
     getCalls <- eventReactive(input$subtypeGObutton, {
-      
+
       newdat <- input$expr_file_pred
-      
+
       print(head(newdat))
 
-      newScores(newdat, input$logged, input$ensemblenum, input$combat, input$sepa)
+      newScores(newdat, input$logged, input$ensemblenum, input$combat, input$sepa, input$normed)
     })
-    
-    # plot of where a sample is in signature space X clusters    
+
+    # plot of where a sample is in signature space X clusters
     output$distPlot <- renderPlot({
       #heatmap(as.matrix(getCalls()$Table), xlab = 'Reported Clusters', ylab = 'New Calls')
       imagePlot(getCalls()$Table)
     })
-    
-    
-    # plot of where a sample is in signature space X clusters    
+
+
+    # plot of where a sample is in signature space X clusters
     output$preCombat <- renderPlot({
       #heatmap(as.matrix(getCalls()$Table), xlab = 'Reported Clusters', ylab = 'New Calls')
       qplot(data=getCalls()$PreCombat, col=SampleSource, x=value, geom='density', main = 'Distribution of expression values pre-batch-correction')
     })
-    
-    # plot of where a sample is in signature space X clusters    
+
+    # plot of where a sample is in signature space X clusters
     output$postCombat <- renderPlot({
       #heatmap(as.matrix(getCalls()$Table), xlab = 'Reported Clusters', ylab = 'New Calls')
       qplot(data=getCalls()$PostCombat, col=SampleSource, x=value, geom='density', main = 'Distribution of expression values post-batch-correction')
     })
-    
-    
-    
+
+
+
     output$barPlot <- renderPlot({
       counts <- table(getCalls()$AlignedCalls)
-      barplot(counts, main="New Cluster Label Calls", 
+      barplot(counts, main="New Cluster Label Calls",
               xlab="Cluster Labels")
     })
-    
-    
+
+
     # Filter data based on selections
     output$subtypetable <- DT::renderDataTable(
       DT::datatable(
         as.data.frame(getCalls()$ProbCalls),
         extensions = 'Buttons', options = list(
           dom = 'Bfrtip',
-          buttons = 
-            list('copy', 'print', 
+          buttons =
+            list('copy', 'print',
                  list(
                    extend = 'collection',
                    buttons = c('csv', 'excel', 'pdf'),
                    text = 'Download')
             )
         )
-        
+
       )
     )
-    
+
 }
