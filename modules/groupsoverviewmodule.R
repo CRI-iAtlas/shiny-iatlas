@@ -149,6 +149,7 @@ groupsoverview <- function(
                 width = 4,
                 selectInput(ns("study_subset_selection"), 
                             "Choose study subset:",
+                            choices = choices,
                             selected = names(choices[1])))
             
             }
