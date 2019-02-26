@@ -138,16 +138,20 @@ groupsoverview <- function(
         if (input$sample_mosaic_group == "TCGA Subtype") {
             choices <- panimmune_data$sample_group_df %>% 
                 dplyr::filter(sample_group == "Subtype_Curated_Malta_Noushmehr_et_al") %>% 
-                magrittr::use_series("TCGA Studies") %>% 
-                unique() %>% 
-                sort()
+                dplyr::select("FeatureDisplayName", "TCGA Studies") %>% 
+                dplyr::distinct() %>% 
+                dplyr::arrange(`TCGA Studies`) %>%
+                tibble::deframe()
+            
+            
             
             optionsBox(
                 width = 4,
                 selectInput(ns("study_subset_selection"), 
                             "Choose study subset:",
-                            choices = choices,
-                            selected = NULL))}
+                            selected = names(choices[1])))
+            
+            }
     })
     
     # other ----
