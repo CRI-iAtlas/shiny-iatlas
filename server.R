@@ -149,14 +149,15 @@ shinyServer(function(input, output, session) {
         if (input$ss_choice == "TCGA Subtype") {
             choices <- panimmune_data$sample_group_df %>% 
                 dplyr::filter(sample_group == "Subtype_Curated_Malta_Noushmehr_et_al") %>% 
-                magrittr::use_series("TCGA Studies") %>% 
-                unique() %>% 
-                sort()
+                dplyr::select("FeatureDisplayName", "TCGA Studies") %>% 
+                dplyr::distinct() %>% 
+                dplyr::arrange(`TCGA Studies`) %>%
+                tibble::deframe() 
     
             selectInput("study_subset_selection", 
                         "Choose study subset:",
                         choices = choices,
-                        selected = NULL)
+                        selected = names(choices[1]))
         }
     })
     

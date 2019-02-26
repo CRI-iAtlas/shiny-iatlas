@@ -10,6 +10,7 @@ USE_REMOTE_BQ <- config_yaml$bq_remote
 USE_REMOTE_GS <- config_yaml$gs_remote
 
 panimmune_data <- load_data()
+panimmune_data$sample_group_df$FeatureName[73:76] <- c("test_name")
 
 purrr::walk(config_yaml$module_files, source)
 purrr::walk(config_yaml$page_files, source)
