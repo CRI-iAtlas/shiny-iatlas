@@ -44,7 +44,8 @@ newScores <- function(fileinfo, logflag, ensemblesize, combatflag, sepflag, norm
   print("Reading Data")
 
   #newdata <- read_csv('data/ivy20.csv')
-  newdata <- read.table(file=fileinfo$datapath, sep=sepflag, header=T, stringsAsFactors = F)
+  #newdata <- read.table(file=fileinfo$datapath, sep=sepflag, header=T, stringsAsFactors = F)
+  newdata <- read.table('~/Work/iAtlas/Immune-Subtype-Clustering/ExtraData/ebpp_test1_1to20.tsv', sep='\t', header=T, stringsAsFactors = F)
 
   print("new data")
   print(dim(newdata))
@@ -58,9 +59,9 @@ newScores <- function(fileinfo, logflag, ensemblesize, combatflag, sepflag, norm
   # 1. the EBPP expression data subset
   #tcgaSubset <- fread('data/ebppSubset.tsv.bz2', header = F)
 
-  tcgaSubset1 <- fread('data/tcgaSubset1.csv.bz2')
-  tcgaSubset2 <- fread('data/tcgaSubset2.csv.bz2')
-  tcgaSubset3 <- fread('data/tcgaSubset3.csv.bz2')
+  tcgaSubset1 <- fread('data/ebpp_subset_1.tsv.bz2')
+  tcgaSubset2 <- fread('data/ebpp_subset_2.tsv.bz2')
+  tcgaSubset3 <- fread('data/ebpp_subset_3.tsv.bz2')
 
   tcgaSubsetA <- cbind(tcgaSubset1, tcgaSubset2)
   tcgaSubset  <- cbind(tcgaSubsetA, tcgaSubset3)
@@ -68,9 +69,10 @@ newScores <- function(fileinfo, logflag, ensemblesize, combatflag, sepflag, norm
   rm(tcgaSubset1, tcgaSubset2, tcgaSubset3, tcgaSubsetA)
   print(gc())
 
-  # done already
-  # tcgaSubset <- tcgaSubset[,colnames(tcgaSubset) %in% reportedScores$AliquotBarcode]
-  # tcgaSubset <- log2(tcgaSubset[,-1] + 1)
+
+  tcgaGenes <- tcgaSubset$GeneID
+  tcgaSubset <- log2(tcgaSubset[,-1] + 1)
+  tcgaSubset <- cbind(data.frame(GeneID=tcgaGenes), tcgaSubset)
 
   # 2 we get some new data in.. require:
   #    it is RSEM
@@ -99,26 +101,28 @@ newScores <- function(fileinfo, logflag, ensemblesize, combatflag, sepflag, norm
   }
 
   # medians of each gene
-  newDatMeds<- apply(datlog2, 1, median, na.rm=T)
+  #newDatMeds<- apply(datlog2, 1, median, na.rm=T)
   # center each gene
-  datlog2Centered <- sweep(datlog2,  1, newDatMeds, '-')
+  #datlog2Centered <- sweep(datlog2,  1, newDatMeds, '-')
   # bring the genes back in
-  dat2 <- cbind(data.frame(GeneSymbol=rownames(dat)), datlog2Centered)
+  #dat2 <- cbind(data.frame(GeneSymbol=rownames(dat)), datlog2Centered)
 
   ### joining data sets ###
-  colnames(tcgaSubset)[1] <- colnames(dat2)[1]
-  joinDat <- inner_join(dat2, tcgaSubset)
-  joinGenes <- joinDat$GeneSymbol
+
+  datlog2g <- cbind(data.frame(GeneID = newdata[,1]), datlog2)
+  colnames(tcgaSubset)[1] <- colnames(datlog2g)[1]
+  #joinDat <- inner_join(dat2, tcgaSubset)
+  joinDat <- inner_join(datlog2g, tcgaSubset)
+  joinGenes <- joinDat$GeneID
 
   # clean up
-  newdatSamples <- colnames(datlog2Centered)
-  dat2idx <- 1:(ncol(dat2)-1)
+  newdatSamples <- colnames(datlog2g)
+  dat2idx <- 1:(ncol(datlog2)-1)
   tcgaidx <- setdiff( (1: (ncol(joinDat)-1)), dat2idx)
 
-  rm(tcgaSubset, datlog2, datlog2Centered, dat2, newdata, didx, newDatMeds)
+  rm(tcgaSubset, datlog2, datlog2Centered, newdata, didx, newDatMeds)
   print(gc())
   gc()
-
 
   joinDat <- joinDat[,-1]
   rownames(joinDat) <- joinGenes
@@ -151,8 +155,14 @@ newScores <- function(fileinfo, logflag, ensemblesize, combatflag, sepflag, norm
   postCombatMelt <- reshape2::melt(postCombat)
   postCombatMelt$SampleSource <- ifelse(test = postCombatMelt$variable %in% newdatSamples, yes = "New Data", no="TCGA Data")
 
+  ### median center
+  joinMeds<- apply(combat_edata, 1, median, na.rm=T)
+  # center each gene
+  joinCentered <- sweep(combat_edata,  1, joinMeds, '-')
+  rownames(joinCentered) <- joinGenes
+
   ### compute scores.
-  datScores <- ImmuneSigs_function(combat_edata,
+  datScores <- ImmuneSigs_function(joinCentered,
                                    sigs1_2_eg2,sigs12_weighted_means,
                                    sigs12_module_weights,sigs1_2_names2,sigs1_2_type2,
                                    2)
