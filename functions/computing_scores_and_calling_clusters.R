@@ -44,8 +44,8 @@ newScores <- function(fileinfo, logflag, ensemblesize, combatflag, sepflag, norm
   print("Reading Data")
 
   #newdata <- read_csv('data/ivy20.csv')
-  #newdata <- read.table(file=fileinfo$datapath, sep=sepflag, header=T, stringsAsFactors = F)
-  newdata <- read.table('~/Work/iAtlas/Immune-Subtype-Clustering/ExtraData/ebpp_test1_1to20.tsv', sep='\t', header=T, stringsAsFactors = F)
+  newdata <- read.table(file=fileinfo$datapath, sep=sepflag, header=T, stringsAsFactors = F)
+  #newdata <- read.table('~/Work/iAtlas/Immune-Subtype-Clustering/ExtraData/ebpp_test1_1to20.tsv', sep='\t', header=T, stringsAsFactors = F)
 
   print("new data")
   print(dim(newdata))
@@ -218,9 +218,9 @@ newScores <- function(fileinfo, logflag, ensemblesize, combatflag, sepflag, norm
              NewCalls=as.numeric(alignedCalls[sharedIDs]))
 
   # assemble the results
-  jdx <- match(table=rownames(scores), x=colnames(dat)[-1])  # index to new data scores
+  jdx <- match(table=rownames(scores), x=colnames(dat))  # index to new data scores
   pcalls <- calls$.Data[jdx,]                            # get that table
-  rownames(pcalls) <- colnames(dat)[-1]                      # name it from the new data
+  rownames(pcalls) <- colnames(dat)                     # name it from the new data
   pcalls <- pcalls[,optcalls]
 
   pcalls <- cbind(pcalls, data.frame(Call=alignedCalls[jdx]))  # bring in the aligned calls
