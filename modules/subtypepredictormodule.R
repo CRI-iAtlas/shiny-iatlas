@@ -18,7 +18,7 @@ subtypepredictor_UI <- function(id) {
       messageBox(
         width = 12,
 
-        p("Upload gene expression (csv or tsv). RSEM expression values were used to train the model, and for best results, your expression data should also be RSEM (RPKM and FPKMs may also work)."),
+        p("Upload gene expression (csv or tsv). RSEM expression values were used to train the model, and for best results, your expression data should also be RSEM ( we are working on accepting RPKM, FPKMs, and etc )."),
         p(""),
         p(""),
         p("Notes on input data:"),
@@ -33,7 +33,7 @@ subtypepredictor_UI <- function(id) {
         tags$hr(),
         p("R notebook available:"),
         p(""),
-        tags$a(href="https://github.com/Gibbsdavidl/Immune-Subtype-Clustering/blob/master/Notebooks/Call_immune_subtypes_on_new_data.ipynb", "Get an example input file here."),
+        tags$a(href="https://github.com/Gibbsdavidl/Immune-Subtype-Clustering/blob/master/Notebooks/Call_immune_subtypes_on_new_data.ipynb", "Get an R notebook here."),
         p(""),
         tags$hr(),
         p(tags$b("Data Formatting Example:")),
@@ -85,7 +85,7 @@ subtypepredictor_UI <- function(id) {
           column(
             width = 5,
             radioButtons(ns("sepa"), "File Separator",
-                         choices = c(Comma = ",", Tab = "\t"), selected = ","),
+                         choices = c(Comma = ",", Tab = "\t"), selected = "\t"),
             checkboxInput(ns("normed"), "Apply UQ Norm.", TRUE),
             checkboxInput(ns("logged"), "Apply Log2", TRUE),
             checkboxInput(ns("combat"), "Apply Combat", TRUE)
@@ -103,7 +103,7 @@ subtypepredictor_UI <- function(id) {
                                  "text/comma-separated-values,text/plain",
                                  ".tsv",
                                  ".tsv.gz"),
-                      placeholder = 'data/ivy20.csv'),
+                      placeholder = 'data/ebpp_test1_1to20.tsv'),
 
             numericInput(ns("ensemblenum"), "Ensemble Size (64-256)", 256, max = 256, min = 64, width = '200'),
 

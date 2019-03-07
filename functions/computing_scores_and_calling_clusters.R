@@ -23,7 +23,7 @@ newScores <- function(fileinfo, logflag, ensemblesize, combatflag, sepflag, norm
 
   if(is.null(fileinfo)) {
     print("HERE")
-    fileinfo <- list(name='ivy20.csv',  size=1, type='text/csv', datapath='data/ivy20.csv')
+    fileinfo <- list(name='ebpp_test1_1to20.tsv',  size=1, type='text/tsv', datapath='data/ebpp_test1_1to20.tsv')
   }
 
   print(fileinfo)
