@@ -62,3 +62,10 @@ To run the app locally, clone this repository and use the following command in t
 ```
 shiny::runApp()
 ```
+
+## To deploy, run this line
+
+```
+options(repos = BiocInstaller::biocinstallRepos())
+```
+

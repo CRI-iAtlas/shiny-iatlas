@@ -93,6 +93,9 @@ rematch	1.0.1	CRAN
 reprex	0.1.1	CRAN
 reshape2	1.4.3	CRAN
 rlang	0.2.0.9001	github
+R.methodsS3	1.7.1	CRAN
+R.oo	1.22.0	CRAN
+R.utils  2.7.0  CRAN
 rmarkdown	1.8	CRAN
 rprojroot	1.2	CRAN
 rstudioapi	0.7	CRAN
@@ -125,3 +128,4 @@ zoo	1.8-1	CRAN
 sva 3.20.0  github
 clue  0.3-56  CRAN
 mclust  5.4.1 CRAN
+reshape2  1.4.3  CRAN

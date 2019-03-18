@@ -122,12 +122,14 @@ survival <- function(
         req(!is.null(subset_df()), cancelOutput = T)
         sample_groups <- get_unique_column_values(group_internal_choice(), subset_df())
         n_groups <- n_distinct(sample_groups)
+
         validate(
             need(input$var1_surv, "Waiting for input."),
             need(n_distinct(sample_groups) <= 10 | !input$var1_surv == group_internal_choice(), 
                  paste0("Too many sample groups (", n_groups, ") for KM plot; ",
                         "choose a continuous variable or select different sample groups."))
         )
+        
         survival_df <- subset_df() %>%
             build_survival_df(
                 group_column = input$var1_surv,
@@ -135,18 +137,31 @@ survival <- function(
                 time_column = input$timevar,
                 k = input$divk
             )
+
+        survival_df %>% group_by(variable) %>% summarize(Num1 = sum(status == 1), Num0 = sum(status == 0))
+        
         fit <- survival::survfit(Surv(time, status) ~ variable, data = survival_df)
+        
         title <- get_variable_display_name(input$var1_surv)
         if (identical(title, character(0))){
             title <- input$var1_surv
         }
         
-        print(sample_groups)
-        if (title %in% group_options()) {
+        if (title %in% group_options()) { 
             group_colors <- plot_colors()
+
+            if (title == "TCGA Subtype") {
+              # ggsurvplot takes the subtype names and pastes the column name onto it 'variable='
+              # and colors need to have this modified name.
+              group_colors <- group_colors[names(group_colors) %in% survival_df$variable]
+            }
+
+            names(group_colors) <- sapply(names(group_colors), function(a) paste('variable=',a,sep='')) 
+            
         } else {
             group_colors <- viridisLite::viridis(input$divk)
         }
+        
         create_kmplot(
             fit = fit, 
             df = survival_df, 
@@ -169,12 +184,9 @@ survival <- function(
             status_col <- "PFI_1"
         }
         
-        
         features <- get_factored_variables_from_feature_df(
             input$survival_class) %>% 
             as.character
-        
-        
         
         ci_mat <- subset_df() %>%
             build_ci_mat(
@@ -183,6 +195,11 @@ survival <- function(
                 time_column = time_col,
                 status_column = status_col
             )
+        
+        validate(
+          need(nrow(ci_mat[!is.na(ci_mat)]) > 0, "No results to display, pick a different group.")
+        )
+        
         create_heatmap(ci_mat, "ci")
     })
     
