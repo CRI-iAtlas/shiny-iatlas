@@ -16,6 +16,7 @@ iotarget_UI <- function(id) {
         width = 12,
         p("Select IO Target Gene to see its expression in the data set. Use Select Immumodulator Category (drop-down menu on the right) to organize the selection by particular categories. The categories will subsequently appear in the left drop-down menu. The Categories are:"),
         tags$ul(
+          tags$li(em('Therapy Type'), ", Type of therapy"),
           tags$li(em('Pathway'), ", Pathway")
 #          tags$li(em('Super Category'), ", such as Ligand, Receptor, or Antigen Presentation"),
 #          tags$li(em('Immune Checkpoint'), " classified as  Inhibitory or Stimulatory")
@@ -35,7 +36,7 @@ iotarget_UI <- function(id) {
               selectInput(
                   inputId = ns("io_target_category_choice_choice"),
                   label = "Select IO Target Category",
-                  choices = c("Pathway")
+                  choices = c("Therapy Type","Pathway")
               )
           )
         )

@@ -90,6 +90,7 @@ immunomodulator_groups:
   - "Function"
   
 immunotarget_groups:
+  - "Therapy Type"
   - "Pathway"
 
 immune_groups:
