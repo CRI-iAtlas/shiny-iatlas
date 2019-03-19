@@ -187,7 +187,7 @@ explorepage <- dashboardPage(
               width = 6,
               title = "IO Targets",
               linkId = "link_to_module9",
-              imgSrc = "images/immunomodulators.png",
+              imgSrc = "images/iotargets.png",
               boxText = "Explore the expression of genes that code for IO targets.",
               linkText = "Open Module"
             ),

@@ -6,20 +6,24 @@ iotarget_UI <- function(id) {
     titleBox("iAtlas Explorer — IO Targets"),
     textBox(
       width = 12,
-      p("Explore the expression of genes that code for IO targets of the IO Drug Development Landscape")  
-    ),
+      
+      p("This module allows you to examine how targets of agents being studied in ongoing clinical trials vary within tumors. IO targets are those from the compendium ",
+        tags$a(href="https://www.cancerresearch.org/scientists/clinical-accelerator/landscape-of-immuno-oncology-drug-development","IO Drug Development Landscape"),
+        " by the", 
+        tags$a(href="https://www.cancerresearch.org","Cancer Research Institute"), 
+        "Clinical Accelerator."
+         ) 
+       ), 
     
     # IO Target distributions section ----
     sectionBox(
       title = "IO Target Gene Expression Distributions",
       messageBox(
         width = 12,
-        p("Select IO Target Gene to see its expression in the data set. Use Select Immumodulator Category (drop-down menu on the right) to organize the selection by particular categories. The categories will subsequently appear in the left drop-down menu. The Categories are:"),
+        p("Select an IO target Gene to see its expression in tumor samples. Use Select IO Target Category (drop-down menu on the right) to organize the selection by particular categories. The categories will subsequently appear in the left drop-down menu. The Categories are:"),
         tags$ul(
-          tags$li(em('Therapy Type'), ", Type of therapy"),
-          tags$li(em('Pathway'), ", Pathway")
-#          tags$li(em('Super Category'), ", such as Ligand, Receptor, or Antigen Presentation"),
-#          tags$li(em('Immune Checkpoint'), " classified as  Inhibitory or Stimulatory")
+          tags$li(em('Therapy Type'), ", the type of therapy"),
+          tags$li(em('Pathway'), ", the molecular pathway to which the protein belongs")
         ),
         p(""),
         p("")
