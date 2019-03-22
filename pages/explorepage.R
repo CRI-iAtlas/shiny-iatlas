@@ -185,14 +185,6 @@ explorepage <- dashboardPage(
             ),
             imgLinkBox(
               width = 6,
-              title = "IO Targets",
-              linkId = "link_to_module9",
-              imgSrc = "images/iotargets.png",
-              boxText = "Explore the expression of genes that code for IO targets.",
-              linkText = "Open Module"
-            ),
-            imgLinkBox(
-              width = 6,
               title = "TIL Maps",
               linkId = "link_to_module7",
               imgSrc = "images/TILmap.png",
@@ -207,6 +199,14 @@ explorepage <- dashboardPage(
               linkId = "link_to_module8",
               imgSrc = "images/drivers.png",
               boxText = "Explore Associations of Microenvironment with Driver Mutations.",
+              linkText = "Open Module"
+            ),
+            imgLinkBox(
+              width = 6,
+              title = "IO Targets",
+              linkId = "link_to_module9",
+              imgSrc = "images/iotargets.png",
+              boxText = "Explore the expression of genes that code for immuno-oncological (IO) targets .",
               linkText = "Open Module"
             )
           )

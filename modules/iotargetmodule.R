@@ -6,27 +6,55 @@ iotarget_UI <- function(id) {
     titleBox("iAtlas Explorer — IO Targets"),
     textBox(
       width = 12,
-      
-      p("This module allows you to examine how targets of agents being studied in ongoing clinical trials vary within tumors. IO targets are those from the compendium ",
-        tags$a(href="https://www.cancerresearch.org/scientists/clinical-accelerator/landscape-of-immuno-oncology-drug-development","IO Drug Development Landscape"),
-        " by the", 
+      p("This module allows you to explore the tumor expression of some of the immuno-oncological (IO) targets discussed in ",
         tags$a(href="https://www.cancerresearch.org","Cancer Research Institute"), 
-        "Clinical Accelerator."
-         ) 
+        tags$a(href="https://www.cancerresearch.org/scientists/clinical-accelerator/leadership","Clinicial Accelerator"),
+        "publications:"
+        ),
+      
+      tags$ul(
+        tags$li("Comprehensive 2017 IO landscape analysis (",
+                tags$a(href="https://academic.oup.com/annonc/article/29/1/84/4693829","Annals of Oncology"),
+                ", December 2017)"),
+        tags$li("Comprehensive 2018 IO landscape analysis including a comparison to the previous year (",
+                tags$a(href="https://www.nature.com/articles/nrd.2018.167","Nature Reviews Drug Discovery"),
+                ", October 2018)")
+      ),
+      
+      p("All displayed targets and descriptions are compiled and annotated by the ",
+        tags$a(href="https://www.cancerresearch.org","Cancer Research Institute"), 
+        tags$a(href="https://www.cancerresearch.org/scientists/clinical-accelerator/leadership","Clinicial Accelerator"),
+        "management team using publicly available data e.g. NCBI."
+        ),
+      
+      p("For more information about publications and Cancer Research Institute’s IO Landscape, please go to",
+       tags$a(href="https://www.cancerresearch.org/scientists/clinical-accelerator/landscape-of-immuno-oncology-drug-development","Landscape of Immuno-Oncology Drug Development.")        
+        )
+  
        ), 
-    
+  
     # IO Target distributions section ----
     sectionBox(
       title = "IO Target Gene Expression Distributions",
       messageBox(
         width = 12,
-        p("Select an IO target Gene to see its expression in tumor samples. Use Select IO Target Category (drop-down menu on the right) to organize the selection by particular categories. The categories will subsequently appear in the left drop-down menu. The Categories are:"),
+        p("To explore expression distributions, vary sample grouping by selecting an option from Explorer Settings in the left panel. Options include Immune Subtype Groups (default), TCGA Subtype Groups, and TCGA Study.","\n"),
+        p("For more information about Sample Groups, refer to Sample Group Overview in the left panel.","\n"),      
+        p("Select an IO Target Gene below to see its expression in tumor samples. By default, IO Target Genes are grouped by therapy type. To vary IO Target Category, select a different option from IO Target Category (drop-down menu on the right) to re-organize the IO Target Gene list."),
+        p("The IO Target Categories are:"),
+        
+        p(em('Therapy Type'),", the type of therapy as described in",
+          tags$a(href="https://academic.oup.com/annonc/article/29/1/84/4693829","Annals of Oncology"),
+          ", December 2017"),
         tags$ul(
-          tags$li(em('Therapy Type'), ", the type of therapy"),
-          tags$li(em('Pathway'), ", the molecular pathway to which the protein belongs")
-        ),
-        p(""),
-        p("")
+          tags$li(strong('T-cell-targeted immunomodulators'), "that act on inhibitory or activating molecules expressed by T cells"),
+          tags$li(strong('Other immunomodulators'), " that act on other immune cells or the tumor immune microenvironment to unleash antitumor immunity"),
+          tags$li(strong('Targeted by Other Immuno-Oncology Therapy Type'), " (Cancer Vaccine, Cell therapy, Oncolytic Virus, and CD3-targeted bispecific antibody) to unleash antitumoral immunity")
+        ), 
+        p(em('Pathway'),", one of the molecular pathways to which the target protein belongs. Sourced from",
+          tags$a(href="https://www.ncbi.nlm.nih.gov/biosystems/","NCBI Biosystems"),
+          "(e.g. KEGG database, Reactome database, WikiPathways).")
+
       ),
       fluidRow(
         optionsBox(
