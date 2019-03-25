@@ -114,7 +114,7 @@ iotarget_UI <- function(id) {
 iotarget <- function(
     input, 
     output, 
-    session, 
+    session,
     group_display_choice, 
     group_internal_choice, 
     sample_group_df,
@@ -125,7 +125,6 @@ iotarget <- function(
     ns <- session$ns
     
     io_target_expr_plot_df <- reactive({
-        
         req(subset_df(), 
             input$io_target_gene_choice, 
             group_internal_choice(),
@@ -138,7 +137,6 @@ iotarget <- function(
     })
     
     output$violinPlot <- renderPlotly({
-        
         req(io_target_expr_plot_df(), cancelOutput = T)
         
         validate(
@@ -197,12 +195,18 @@ iotarget <- function(
     })
     
     output$gene_choices <- renderUI({
-        choices <- get_iotarget_nested_list(
-            class_column = input$io_target_category_choice_choice)
-        selectInput(
-            ns("io_target_gene_choice"),
-            label = "Select IO Target Gene",
-            choices = choices)
+      query <- parseQueryString(session$clientData$url_search)
+      selected_gene <- NULL
+      if (!is.null(query[['gene']])) {
+        selected_gene = query[['gene']]
+      }
+      choices <- get_iotarget_nested_list(
+        class_column = input$io_target_category_choice_choice)
+      selectInput(
+        ns("io_target_gene_choice"),
+        label = "Select IO Target Gene",
+        choices = choices,
+        selected = selected_gene)
     })
-    
+
 }
