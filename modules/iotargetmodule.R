@@ -9,7 +9,7 @@ iotarget_UI <- function(id) {
       p("This module allows you to explore the tumor expression of some of the immuno-oncological (IO) targets discussed in ",
         tags$a(href="https://www.cancerresearch.org","Cancer Research Institute"), 
         tags$a(href="https://www.cancerresearch.org/scientists/clinical-accelerator/leadership","Clinicial Accelerator"),
-        "publications:"
+        "publications"
         ),
       
       tags$ul(
@@ -21,17 +21,21 @@ iotarget_UI <- function(id) {
                 ", October 2018)")
       ),
       
-      p("All displayed targets and descriptions are compiled and annotated by the ",
-        tags$a(href="https://www.cancerresearch.org","Cancer Research Institute"), 
+      p("All displayed IO targets are compiled by the ",
+        tags$a(href="https://www.cancerresearch.org","Cancer Research Institute"), "(CRI)",
         tags$a(href="https://www.cancerresearch.org/scientists/clinical-accelerator/leadership","Clinicial Accelerator"),
-        "management team using publicly available data e.g. NCBI."
+        "management team. For more information on"
         ),
       
-      p("For more information about publications and Cancer Research Institute’s IO Landscape, please go to",
-       tags$a(href="https://www.cancerresearch.org/scientists/clinical-accelerator/landscape-of-immuno-oncology-drug-development","Landscape of Immuno-Oncology Drug Development.")        
-        )
-  
-       ), 
+     tags$ul(
+        tags$li("CRI’s IO Landscape"),
+        tags$li("additional publications"),
+        tags$li("clinical trial information for individual targets displayed in this module")
+      ),
+      p("please visit",
+        tags$a(href="https://www.cancerresearch.org/scientists/clinical-accelerator/landscape-of-immuno-oncology-drug-development","Landscape of Immuno-Oncology Drug Development"),"."        
+      )
+      ), 
   
     # IO Target distributions section ----
     sectionBox(
@@ -96,7 +100,7 @@ iotarget_UI <- function(id) {
       title = "IO Target Annotations",
       messageBox(
         width = 12,
-        p("The table shows annotations of the IO Targets. Use the Search box in the upper right to find an immumodulator of interest.")  
+        p("The table shows annotations of the IO Targets, with columns as described above and description based on public resources such as NCBI. Use the Search box in the upper right to find an IO target of interest.")  
       ),
       fluidRow(
         tableBox(
