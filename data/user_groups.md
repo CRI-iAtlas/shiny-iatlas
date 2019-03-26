@@ -51,3 +51,8 @@ The first column can have any heading. Column headings that follow will be appea
 
 ## Rows
 Rows can be supplied for any subset of TCGA samples. Rows will be filtered out if they have an `NA` value for the selected group. For example, if `Molecular Alteration` is selected, the bottom row will be removed. 
+
+## Example files
+[Example1](https://github.com/CRI-iAtlas/shiny-iatlas/blob/develop/data/example_user_group.csv)
+
+[Example2](https://github.com/CRI-iAtlas/shiny-iatlas/blob/develop/data/example_user_group2.csv)
