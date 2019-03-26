@@ -42,7 +42,7 @@ iotarget_UI <- function(id) {
       title = "IO Target Gene Expression Distributions",
       messageBox(
         width = 12,
-        p("To explore expression distributions, vary sample grouping by selecting an option from Explorer Settings in the left panel. Options include Immune Subtype Groups (default), TCGA Subtype Groups, and TCGA Study.","\n"),
+        p("To explore gene expression distributions, vary sample grouping by selecting an option from Explorer Settings in the left panel. Options include Immune Subtype Groups (default), TCGA Subtype Groups, and TCGA Study.","\n"),
         p("For more information about Sample Groups, refer to Sample Group Overview in the left panel.","\n"),      
         p("Select an IO Target Gene below to see its expression in tumor samples. By default, IO Target Genes are grouped by therapy type. To vary IO Target Category, select a different option from IO Target Category (drop-down menu on the right) to re-organize the IO Target Gene list."),
         p("The IO Target Categories are:"),
