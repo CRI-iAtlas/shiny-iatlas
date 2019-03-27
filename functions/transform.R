@@ -327,7 +327,7 @@ subset_sample_group_df <- function(
 user_group_df_to_sample_group_df <- function(df){
     df %>% 
         tidyr::gather(key = 'sample_group' , value = "FeatureValue", -1) %>% 
-        dplyr::select(-ID) %>% 
+        dplyr::select(-(1)) %>% 
         dplyr::distinct() %>% 
         dplyr::mutate(FeatureName = FeatureValue) %>% 
         dplyr::mutate(Characteristics = "") %>% 

@@ -168,7 +168,12 @@ groupsoverview <- function(
         paste(group_display_choice(), "Groups")
     })
     
-    output$user_group_df <- DT::renderDataTable(user_group_df())
+    output$user_group_df <- DT::renderDataTable({
+        
+        req(!is.na(user_group_df()), cancelOutput = T)
+        user_group_df()
+    })
+        
     
     output$sample_group_table <- DT::renderDT({
         
@@ -182,6 +187,7 @@ groupsoverview <- function(
                 group_df = subset_df(),
                 group_column = group_internal_choice(),
                 feature_df = sample_group_df())
+       
         
         dt <- datatable(
             key_df,
