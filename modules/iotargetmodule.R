@@ -21,20 +21,16 @@ iotarget_UI <- function(id) {
                 ", October 2018)")
       ),
       
-      p("All displayed IO targets are compiled by the ",
-        tags$a(href="https://www.cancerresearch.org","Cancer Research Institute"), "(CRI)",
-        tags$a(href="https://www.cancerresearch.org/scientists/clinical-accelerator/leadership","Clinicial Accelerator"),
-        "management team. For more information on"
-        ),
-      
-     tags$ul(
-        tags$li("CRI’s IO Landscape"),
-        tags$li("additional publications"),
-        tags$li("clinical trial information for individual targets displayed in this module")
-      ),
-      p("please visit",
-        tags$a(href="https://www.cancerresearch.org/scientists/clinical-accelerator/landscape-of-immuno-oncology-drug-development","Landscape of Immuno-Oncology Drug Development"),"."        
-      )
+     p("All displayed targets and descriptions are compiled and annotated by the",
+       tags$a(href="https://www.cancerresearch.org","Cancer Research Institute"),
+       tags$a(href="https://www.cancerresearch.org/scientists/clinical-accelerator/leadership","Clinicial Accelerator"),
+       "management team using publicly available data, 
+       including trade news, company press releases, academic publications, and NCBI."),
+     
+     p("For more information about publications and Cancer Research Institute’s IO Landscape, please go to",
+       tags$a(href="https://www.cancerresearch.org/scientists/clinical-accelerator/landscape-of-immuno-oncology-drug-development","Landscape of Immuno-Oncology Drug Development"),
+       "."
+        )
       ), 
   
     # IO Target distributions section ----
