@@ -309,9 +309,28 @@ get_numeric_classes_from_feature_df <- purrr::partial(
 
 
 ###############################################################################
-# Tests below this line do not have tests yet, newly writen functions 
+# Tests below this line do not have tests yet, newly written functions 
 ###############################################################################
+
+get_iotarget_nested_list <- function( ## added 24 Oct 2018
+  class_column = "Pathway",
+  display_column = "Gene",
+  internal_column = "HGNC Symbol"){
+  
+  panimmune_data$io_target_annotations %>%
+    dplyr::select(
+      CLASS = class_column,
+      DISPLAY = display_column,
+      INTERNAL = internal_column) %>% 
+    dplyr::mutate(CLASS = ifelse(is.na(CLASS), "Other", CLASS)) %>%
+    drop_na() %>% 
+    df_to_nested_list(
+      group_column = "CLASS",
+      key_column = "INTERNAL",
+      value_column = "DISPLAY")
+}
 
 se <- function(x){
     mean(x) / sqrt(length(x))
 }   
+

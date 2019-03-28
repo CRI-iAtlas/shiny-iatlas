@@ -723,3 +723,23 @@ compute_driver_associations <- function(df_for_regression,response_var,group_col
     res2 <- compute_effect_size_per_combo(df_for_regression,response_var, group_column)
     inner_join(res1,res2,by="mutation_group") ## returns df with combo,neglog_pval,effect_size
 }
+
+###############################################################################
+# Tests below this line do not have tests yet, newly written functions 
+###############################################################################
+
+# ** IO target module ----
+
+build_io_target_expr_plot_df <- function(df, filter_value, group_option) { # added Oct 24, 2018
+    result_df <- panimmune_data$io_target_expr_df %>%
+        dplyr::filter(Symbol == filter_value) %>%
+        dplyr::left_join(df) %>%
+        dplyr::mutate(log_count = log10(normalized_count + 1)) %>%
+        dplyr::select(x = group_option, y = log_count) %>% 
+        tidyr::drop_na()
+}
+
+
+
+
+
