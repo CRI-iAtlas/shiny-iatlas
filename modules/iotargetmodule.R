@@ -188,9 +188,13 @@ iotarget <- function(
     output$io_target_annotations_table <- DT::renderDT({
         
         panimmune_data$io_target_annotations %>% 
+          mutate(LinkText=.$IO_target_URL %>% str_split(";") %>% map(last) %>% flatten_chr()) %>%
+          mutate(`Link to IO Landscape`=paste("<a href=\"",IO_target_URL,"\">",LinkText,"</a>",
+                                                sep="")) %>% select(-IO_target_URL,-LinkText) %>% 
             datatable(
                 options = list(pageLength = 10),
-                rownames = FALSE
+                rownames = FALSE,
+                escape = setdiff(colnames(.),"Link to IO Landscape") ## To get hyperlink displayed
                 )
     })
     
