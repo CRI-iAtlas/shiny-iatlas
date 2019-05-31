@@ -8,7 +8,7 @@ iotarget_UI <- function(id) {
       width = 12,
       p("This module allows you to explore the tumor expression of some of the immuno-oncological (IO) targets discussed in ",
         tags$a(href="https://www.cancerresearch.org","Cancer Research Institute"), 
-        tags$a(href="https://www.cancerresearch.org/scientists/clinical-accelerator/leadership","Clinicial Accelerator"),
+        tags$a(href="https://www.cancerresearch.org/scientists/clinical-accelerator/leadership","Clinical Accelerator"),
         "publications"
         ),
       
@@ -20,10 +20,11 @@ iotarget_UI <- function(id) {
                 tags$a(href="https://www.nature.com/articles/nrd.2018.167","Nature Reviews Drug Discovery"),
                 ", October 2018)")
       ),
+     p("and to connect to additional resources on agents for those targets provided by those studies."),
       
      p("All displayed targets and descriptions are compiled and annotated by the",
        tags$a(href="https://www.cancerresearch.org","Cancer Research Institute"),
-       tags$a(href="https://www.cancerresearch.org/scientists/clinical-accelerator/leadership","Clinicial Accelerator"),
+       tags$a(href="https://www.cancerresearch.org/scientists/clinical-accelerator/leadership","Clinical Accelerator"),
        "management team using publicly available data, 
        including trade news, company press releases, academic publications, and NCBI."),
      
@@ -96,7 +97,8 @@ iotarget_UI <- function(id) {
       title = "IO Target Annotations",
       messageBox(
         width = 12,
-        p("The table shows annotations of the IO Targets, with columns as described above and description based on public resources such as NCBI. Use the Search box in the upper right to find an IO target of interest.")  
+        p("The table shows annotations of the IO Targets, with columns as described above and description based on public resources such as NCBI. Use the Search box in the upper right to find an IO target of interest."),
+        p("The last column provides a direct link to target information on the IO Landscape resource such as number of target agents under active development, and development stage.")  
       ),
       fluidRow(
         tableBox(
