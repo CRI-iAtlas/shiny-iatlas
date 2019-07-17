@@ -196,10 +196,10 @@ tilmap <- function(
                 sep="")) %>% select(-Slide)
         colnames(data_df) <- c("ParticipantBarcode", "Study", TIL_map_columns_display,"Image")
         data_df %>% 
-            datatable(
+            DT::datatable(
                 rownames = FALSE,
                 escape = setdiff(colnames(.),"Image") ## To get hyperlink displayed
-            ) %>% formatRound(TIL_map_columns_display, digits = 1)               
+            ) %>% DT::formatRound(TIL_map_columns_display, digits = 1)               
         
         #          ) %>% formatRound(c('til_percentage','NP_mean',"NP_sd","WCD_mean","WCD_sd","CE_mean",
         #                              "CE_sd","Ball_Hall","Banfeld_Raftery","C_index","Det_Ratio","Ball_Hall_Adjusted",

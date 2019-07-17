@@ -179,7 +179,7 @@ immunomodulator <- function(
         
         panimmune_data$im_direct_relationships %>% 
             select(-X10, -Notes) %>% 
-            datatable(
+            DT::datatable(
                 options = list(pageLength = 10),
                 rownames = FALSE
                 )

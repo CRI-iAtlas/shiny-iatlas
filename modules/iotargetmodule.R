@@ -193,7 +193,7 @@ iotarget <- function(
           dplyr::mutate(LinkText=.$IO_target_URL %>% stringr::str_split(";") %>% purrr::map(last) %>% purrr::flatten_chr()) %>%
           dplyr::mutate(`Link to IO Landscape`=paste("<a href=\"",IO_target_URL,"\">",LinkText,"</a>",
                                                 sep="")) %>% select(-IO_target_URL,-LinkText) %>% 
-            datatable(
+            DT::datatable(
                 options = list(pageLength = 10),
                 rownames = FALSE,
                 escape = setdiff(colnames(.),"Link to IO Landscape") ## To get hyperlink displayed

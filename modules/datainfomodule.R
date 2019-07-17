@@ -61,7 +61,7 @@ datainfo <- function(input, output, session) {
         if(input$class_choice != "All classes"){
             df <- dplyr::filter(df, `Variable Class` == input$class_choice)
         }
-        datatable(
+        DT::datatable(
             df, 
             selection = list(
                 mode = 'single'

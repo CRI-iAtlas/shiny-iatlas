@@ -199,10 +199,10 @@ groupsoverview <- function(
                     list(width = '50px',
                          targets = c(1)))))
         
-        formatStyle(
+        DT::formatStyle(
             dt,
             "Plot Color",
-            backgroundColor = styleEqual(
+            backgroundColor = DT::styleEqual(
                 plot_colors(), 
                 plot_colors()))
     })
