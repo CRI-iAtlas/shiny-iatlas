@@ -47,9 +47,9 @@ fetch_im_expression <- function(im_direct_relationships) {
     use_series("HGNC Symbol") %>%
     unique() %>%
     discard(is.na(.)) %>%
-    str_c(collapse = "', '") %>%
-    str_c("('", ., "')")
-  query <- str_c(
+    stringr::str_c(collapse = "', '") %>%
+    stringr::str_c("('", ., "')")
+  query <- stringr::str_c(
     "SELECT ParticipantBarcode, Symbol, normalized_count FROM [isb-cgc-01-0008:Filtered.EBpp_AdjustPANCAN_RNASeqV2_filtered] WHERE Symbol IN ",
     gene_string
   )
@@ -72,7 +72,7 @@ format_manifest <- function(manifest_data) {
              -FeatureValue, -FeatureHex, -FeatureName) %>%
       unite(Characteristic, characteristic, value, sep = ": ") %>% 
       group_by(FeatureValue) %>% 
-      mutate(Characteristics = str_c(Characteristic, collapse = "; ")) %>% 
+      mutate(Characteristics = stringr::str_c(Characteristic, collapse = "; ")) %>% 
       select(-Characteristic) %>% 
       ungroup() %>% 
       mutate(sample_group = "tcga_study") %>% 
@@ -80,12 +80,12 @@ format_manifest <- function(manifest_data) {
                   mutate(sample_group = "immune_subtype")) %>% 
       bind_rows(manifest_data$tcga_subtype_df %>% 
                   mutate(sample_group = "tcga_subtype",
-                         `TCGA Studies` = str_replace_all(
+                         `TCGA Studies` = stringr::str_replace_all(
                            `TCGA Studies`, ",", "/"
                          ))) %>% 
       mutate(
         FeatureHex = ifelse(!is.na(FeatureHex),
-                            str_c("#", FeatureHex),
+                            stringr::stringr::str_c("#", FeatureHex),
                             FeatureHex)
       )
   )
@@ -112,7 +112,7 @@ format_im_annotations <- function(im_annotations_data) {
 # Save data ----
 
 get_feather_name <- function(obj) {
-  str_c("data/", obj, ".feather")
+  stringr::str_c("data/", obj, ".feather")
 }
 
 save_local_feather <- function(df_list) {

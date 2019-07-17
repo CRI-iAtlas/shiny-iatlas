@@ -111,14 +111,14 @@ get_margins_plotly <- function(p, font_size = 12) {
   xlabmax <- 1
   if (class(p_data$x) == "character") {
     xlabs <- p_data$x
-    xlabangle <-  map(
+    xlabangle <-  purrr::map(
       p$x$layoutAttrs, 
       ~ .[["xaxis"]][["tickangle"]]
     ) %>% 
-      discard(is.null) %>% 
+      purrr::discard(is.null) %>% 
       unlist()
     xlabmax <- xlabs %>% 
-      map_int(str_length) %>% 
+      purrr::map_int(stringr::str_length) %>% 
       max(na.rm = TRUE)
   }
   xmultiplier <- abs(sin(xlabangle * pi/180))
@@ -127,7 +127,7 @@ get_margins_plotly <- function(p, font_size = 12) {
   if (p_data$type %in% c("heatmap")) {
     ylabs <- p_data$y
     ylabmax <- ylabs %>% 
-      map_int(str_length) %>% 
+      purrr::map_int(stringr::str_length) %>% 
       max(na.rm = TRUE)
   } else {
     ylabmax <- 1
@@ -152,7 +152,7 @@ get_margins <- function(p, font_size = 12) {
   if (!("xaxis" %in% names(p$x$layout))) {
     return(get_margins_plotly(p, font_size))
   }
-  if (str_length(p$x$layout$xaxis$title) > 0) {
+  if (stringr::str_length(p$x$layout$xaxis$title) > 0) {
     xlabbuffer <- (p$x$layout$xaxis$titlefont$size - 6) * 3  %>% 
       ceiling()
   } else {
@@ -162,9 +162,9 @@ get_margins <- function(p, font_size = 12) {
   xlabs <- p$x$layout$xaxis$categoryarray
   xlabangle <- p$x$layout$xaxis$tickangle
   xlabmax <- xlabs %>% 
-    map_int(str_length) %>% 
+    purrr::map_int(stringr::str_length) %>% 
     max(na.rm = TRUE)
-  xlabfontsize <- if_else(
+  xlabfontsize <- dplyr::if_else(
     !is.null(font_size), 
     min(font_size, p$x$layout$xaxis$tickfont$size),
     p$x$layout$xaxis$tickfont$size
@@ -172,7 +172,7 @@ get_margins <- function(p, font_size = 12) {
     ceiling()
   xmultiplier <- abs(sin(xlabangle * pi/180))
   
-  if (str_length(p$x$layout$yaxis$title) > 0) {
+  if (stringr::str_length(p$x$layout$yaxis$title) > 0) {
     ylabbuffer <- (p$x$layout$yaxis$titlefont$size - 6) * 3  %>% 
       ceiling()
   } else {
@@ -183,9 +183,9 @@ get_margins <- function(p, font_size = 12) {
 
   ylabangle <- p$x$layout$yaxis$tickangle
   ylabmax <- ylabs %>% 
-    map_int(str_length) %>% 
+    purrr::map_int(stringr::str_length) %>% 
     max(na.rm = TRUE)
-  ylabfontsize <- if_else(
+  ylabfontsize <- dplyr::if_else(
     !is.null(font_size), 
     min(font_size, p$x$layout$yaxis$tickfont$size),
     p$x$layout$yaxis$tickfont$size

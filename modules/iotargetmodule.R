@@ -177,8 +177,8 @@ iotarget <- function(
         validate(need(clicked_group %in% current_violin_groups, "Click violin plot above"))
         
         histplot_df <- io_target_expr_plot_df() %>% 
-            select(GROUP = x, log_count = y) %>% 
-            filter(GROUP == clicked_group)
+            dplyr::select(GROUP = x, log_count = y) %>% 
+            dplyr::filter(GROUP == clicked_group)
         
         create_histogram(
             histplot_df,
@@ -190,8 +190,8 @@ iotarget <- function(
     output$io_target_annotations_table <- DT::renderDT({
         
         panimmune_data$io_target_annotations %>% 
-          mutate(LinkText=.$IO_target_URL %>% str_split(";") %>% map(last) %>% flatten_chr()) %>%
-          mutate(`Link to IO Landscape`=paste("<a href=\"",IO_target_URL,"\">",LinkText,"</a>",
+          dplyr::mutate(LinkText=.$IO_target_URL %>% stringr::str_split(";") %>% purrr::map(last) %>% purrr::flatten_chr()) %>%
+          dplyr::mutate(`Link to IO Landscape`=paste("<a href=\"",IO_target_URL,"\">",LinkText,"</a>",
                                                 sep="")) %>% select(-IO_target_URL,-LinkText) %>% 
             datatable(
                 options = list(pageLength = 10),

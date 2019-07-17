@@ -239,7 +239,7 @@ groupsoverview <- function(
         
         create_mosaicplot(
             mosaic_df,
-            title = str_c(display_y, "by", display_x, sep = " "),
+            title = stringr::str_c(display_y, "by", display_x, sep = " "),
             fill_colors = plot_colors()) 
     })
     

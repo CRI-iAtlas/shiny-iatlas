@@ -23,7 +23,7 @@ check_immunefeatures_scatterplot_click_data <- function(
     } 
     column_name <- eventdata$x[[1]]
     row_name  <- eventdata$y[[1]]
-    column_name_valid <- column_name %in% extract2(subset_df, group_column)
+    column_name_valid <- column_name %in% magrittr::extract2(subset_df, group_column)
     row_name_valid <- any(
         get_variable_internal_names(row_name) %in% colnames(corr_df))
     all(column_name_valid, row_name_valid)
@@ -36,7 +36,7 @@ check_driver_violinplot_click_data <- function(
         return(FALSE)  
     } 
     group_selected <- eventdata[["key"]][[1]][1]
-    group_valid <- group_selected %in% extract2(df, "mutation_group")
+    group_valid <- group_selected %in% magrittr::extract2(df, "mutation_group")
     
     all(group_valid)
 }
@@ -52,21 +52,21 @@ create_group_text_from_plotly <- function(
     if (is.null(data)) return(prompt_text)
    
     key_value <- data %>%
-        slice(1) %>% 
-        extract2(key_column)
+        dplyr::slice(1) %>% 
+        magrittr::extract2(key_column)
     
     text <- sample_group_df %>% 
         dplyr::filter(FeatureValue == key_value) %>%  
-        distinct() %>% 
-        slice(1) %>% 
-        mutate(Characteristics = 
+        dplyr::distinct() %>% 
+        dplyr::slice(1) %>% 
+        dplyr::mutate(Characteristics = 
                    ifelse(is.na(Characteristics), 
                           "No additional information.", 
                           Characteristics)) %>% 
-        mutate(name = 
+        dplyr::mutate(name = 
                    ifelse(is.na(FeatureName), 
                           FeatureValue, 
                           FeatureName)) %>% 
-        mutate(text = str_c(name, ": ", Characteristics)) %>% 
-        use_series(text)
+        dplyr::mutate(text = stringr::str_c(name, ": ", Characteristics)) %>% 
+        magrittr::use_series(text)
 }

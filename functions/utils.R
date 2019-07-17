@@ -14,7 +14,7 @@ assert_df_has_columns <- function(df, columns){
     missing_columns <- columns[!columns %in% colnames(df)]
     if(length(missing_columns) != 0){
         stop("df has missing columns: ",
-             str_c(missing_columns, collapse = ", "))
+             stringr::str_c(missing_columns, collapse = ", "))
     }
 }
 
@@ -69,7 +69,7 @@ convert_value_between_columns <- function(
             stop("input value: ",
                  input_value, 
                  ", has multiple matches: ", 
-                 str_c(result, collapse = ", "))
+                 stringr::str_c(result, collapse = ", "))
         }
     }
 }
@@ -323,7 +323,7 @@ get_iotarget_nested_list <- function( ## added 24 Oct 2018
       DISPLAY = display_column,
       INTERNAL = internal_column) %>% 
     dplyr::mutate(CLASS = ifelse(is.na(CLASS), "Other", CLASS)) %>%
-    drop_na() %>% 
+    tidyr::drop_na() %>% 
     df_to_nested_list(
       group_column = "CLASS",
       key_column = "INTERNAL",

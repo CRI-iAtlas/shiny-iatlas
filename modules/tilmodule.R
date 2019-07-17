@@ -11,17 +11,17 @@ tilmap_UI <- function(id) {
     
     get_friendly_numeric_columns_by_group <- function() {
         panimmune_data$feature_df %>% 
-            select(Class = `Variable Class`, FriendlyLabel, FeatureMatrixLabelTSV) %>% 
-            filter(FriendlyLabel %in% get_friendly_numeric_columns()) %>% 
-            mutate(Class = ifelse(is.na(Class), "Other", Class)) %>% 
-            nest(-Class) %>% 
-            mutate(data = map(data, deframe)) %>% 
-            deframe()
+            dplyr::select(Class = `Variable Class`, FriendlyLabel, FeatureMatrixLabelTSV) %>% 
+            dplyr::filter(FriendlyLabel %in% get_friendly_numeric_columns()) %>% 
+            dplyr::mutate(Class = ifelse(is.na(Class), "Other", Class)) %>% 
+            tidyr::nest(-Class) %>% 
+            dplyr::mutate(data = purrr::map(data, tibble::deframe)) %>% 
+            tibble::deframe()
     }
     
     get_numeric_columns <- function(){
         panimmune_data$fmx_df %>% 
-            select_if(is.numeric) %>% 
+            dplyr::select_if(is.numeric) %>% 
             colnames()
     }
     
@@ -122,8 +122,8 @@ tilmap <- function(
         display_y  <- get_variable_display_name(input$violin_y)
         
         plot_df <- subset_df() %>%
-            select(x = group_internal_choice(), y = input$violin_y, label = "Slide") %>%
-            drop_na()
+            dplyr::select(x = group_internal_choice(), y = input$violin_y, label = "Slide") %>%
+            tidyr::drop_na()
         
         validate(
             need(nrow(plot_df) > 0, 
@@ -177,16 +177,16 @@ tilmap <- function(
         
         
         TIL_map_columns <- panimmune_data$feature_df %>% 
-            filter(`Variable Class` == "TIL Map Characteristic") %>% 
-            filter(VariableType == "Numeric") %>% 
-            use_series(FeatureMatrixLabelTSV)
+            dplyr::filter(`Variable Class` == "TIL Map Characteristic") %>% 
+            dplyr::filter(VariableType == "Numeric") %>% 
+            magrittr::use_series(FeatureMatrixLabelTSV)
         # Slide: column width/wrap problem at the moment for this
-        TIL_map_columns_display <- as.character(map(TIL_map_columns,get_variable_display_name))
+        TIL_map_columns_display <- as.character(purrr::map(TIL_map_columns,get_variable_display_name))
         
         data_df <- data_df %>% 
-            select("ParticipantBarcode", "Study", "Slide",TIL_map_columns) %>% 
+            dplyr::select("ParticipantBarcode", "Study", "Slide",TIL_map_columns) %>% 
             .[complete.cases(.),] %>% 
-            mutate(Image = paste(
+            dplyr::mutate(Image = paste(
                 "<a href=\"",
                 "http://quip1.bmi.stonybrook.edu:443/camicroscope/osdCamicroscope.php?tissueId=",
                 Slide,

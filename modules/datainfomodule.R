@@ -37,7 +37,7 @@ datainfo <- function(input, output, session) {
     
     output$classes <- renderUI({
         choices <- panimmune_data$feature_df %>% 
-            use_series(`Variable Class`) %>% 
+            magrittr::use_series(`Variable Class`) %>% 
             sort %>% 
             unique %>% 
             c("All classes", .)
@@ -52,14 +52,14 @@ datainfo <- function(input, output, session) {
     
     output$feature_table <- DT::renderDT({
         df <- panimmune_data$feature_df %>% 
-            select(
+            dplyr::select(
                 `Feature Name` = FriendlyLabel, 
                 `Variable Class`, 
                 Unit, 
                 VariableType
             ) 
         if(input$class_choice != "All classes"){
-            df <- filter(df, `Variable Class` == input$class_choice)
+            df <- dplyr::filter(df, `Variable Class` == input$class_choice)
         }
         datatable(
             df, 
@@ -79,21 +79,21 @@ datainfo <- function(input, output, session) {
         feature_row <- input$feature_table_rows_selected
         selected_class <- panimmune_data$feature_df[[feature_row, "Variable Class"]]
         panimmune_data$feature_df %>% 
-            filter(`Variable Class` == selected_class) %>% 
-            select(
+            dplyr::filter(`Variable Class` == selected_class) %>% 
+            dplyr::select(
                 `Variable Class Order`,
                 `Feature Name` = FriendlyLabel, 
                 Unit, 
                 VariableType,
                 Origin
             ) %>% 
-            left_join(
+            dplyr::left_join(
                 panimmune_data$feature_method_df %>% 
-                    select(`Feature Origin`, `Methods Tag`), 
+                    dplyr::select(`Feature Origin`, `Methods Tag`), 
                 by = c("Origin" = "Feature Origin")
             ) %>% 
-            select(-Origin) %>% 
-            arrange(`Variable Class Order`, `Feature Name`)
+            dplyr::select(-Origin) %>% 
+            dplyr::arrange(`Variable Class Order`, `Feature Name`)
     })
     
     output$variable_class_table <- renderTable({
@@ -102,10 +102,10 @@ datainfo <- function(input, output, session) {
     
     output$method_buttons <- renderUI({
         tag_list <- feature_class_df() %>% 
-            filter(!is.na(`Methods Tag`)) %>% 
-            distinct(`Methods Tag`) %>% 
-            pluck("Methods Tag") %>% 
-            map(function(tag) {
+            dplyr::filter(!is.na(`Methods Tag`)) %>% 
+            dplyr::distinct(`Methods Tag`) %>% 
+            purrr::pluck("Methods Tag") %>% 
+            purrr::map(function(tag) {
                 fluidRow(
                     actionButton(ns(paste0("show_", tag)), tag)
                 )
@@ -116,10 +116,10 @@ datainfo <- function(input, output, session) {
     
     observeEvent(input$feature_table_rows_selected, {
         feature_class_df() %>% 
-            filter(!is.na(`Methods Tag`)) %>% 
-            distinct(`Methods Tag`) %>% 
-            pluck("Methods Tag") %>% 
-            map(function(tag) {
+            dplyr::filter(!is.na(`Methods Tag`)) %>% 
+            dplyr::distinct(`Methods Tag`) %>% 
+            purrr::pluck("Methods Tag") %>% 
+            purrr::map(function(tag) {
                 observeEvent(input[[paste0("show_", tag)]], {
                     showModal(modalDialog(
                         title = "Methods",

@@ -236,7 +236,7 @@ shinyServer(function(input, output, session) {
         plot_colors <- sample_group_df() %>%
             dplyr::filter(sample_group == group_internal_choice()) %>%
             dplyr::select(FeatureValue, FeatureHex) %>%
-            deframe
+            tibble::deframe()
     })
     
 

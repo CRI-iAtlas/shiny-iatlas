@@ -163,7 +163,7 @@ drivers <- function(
         
         df <- 
             df_for_regression() %>% 
-            filter(mutation_group == mutation_group_selected)
+            dplyr::filter(mutation_group == mutation_group_selected)
         
         
         mutation <- as.character(df[1,"mutation"])
@@ -176,11 +176,14 @@ drivers <- function(
             round(4) %>% 
             as.character()
         
-        cohort <- stringr::str_replace(mutation_group_selected,fixed(paste(c(mutation,"."),collapse="")),"")
+        cohort <- stringr::str_replace(
+            mutation_group_selected,
+            stringr::fixed(paste(c(mutation,"."),collapse="")),
+            "")
         # cohort by string parsing above. For some reason, the following returns a number when working with TCGA Subtypes
         # cohort <- as.character(dff[1,group_internal_choice()])
         
-        dfb <- df %>% rename(x=value,y=input$response_variable) %>% select(x,y)
+        dfb <- df %>% rename(x=value,y=input$response_variable) %>% dplyr::select(x,y)
         
         
         plot_title = paste(c("Cohort:",cohort,

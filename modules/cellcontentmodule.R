@@ -189,7 +189,7 @@ cellcontent <- function(
                 cell_fraction_df,
                 y_column = "fraction",
                 x_column = "fraction_type") %>%
-            mutate(color = map_chr(color, get_variable_display_name))
+            mutate(color = purrr::map_chr(color, get_variable_display_name))
         
         create_barplot(
             barplot_df,
