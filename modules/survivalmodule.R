@@ -199,7 +199,7 @@ survival <- function(
             )
         
         validate(
-          need(nrow(ci_mat[!is.na(ci_mat)]) > 0, "No results to display, pick a different group.")
+          need(nrow(ci_mat[rowSums(is.na(ci_mat)) == 0,]) > 0, "No results to display, pick a different group.")
         )
         
         create_heatmap(ci_mat, "ci")

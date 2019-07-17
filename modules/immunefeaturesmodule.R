@@ -182,7 +182,7 @@ immunefeatures <- function(
                 immunefeatures_df(), 
                 input$correlation_method)
         
-        create_heatmap(immunefeatures_correlation_matrix, "heatplot")
+        create_heatmap(immunefeatures_correlation_matrix, "heatplot", scale_colors = T)
     })
     
     output$heatmap_group_text <- renderText({
