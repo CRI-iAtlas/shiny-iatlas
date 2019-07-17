@@ -144,7 +144,7 @@ cellcontent <- function(
         selected_plot_subgroup <- eventdata$x[[1]]
         validate(
             need(all(!is.null(eventdata),
-                     selected_plot_subgroup %in% extract2(subset_df(), group_internal_choice())),
+                     selected_plot_subgroup %in% magrittr::extract2(subset_df(), group_internal_choice())),
                  "Click bar plot"))
         
         scatterplot_df <- build_cellcontent_scatterplot_df(

@@ -16,7 +16,7 @@ create_histogram <- function(
         label_col <- x_col
     }
     
-    let(
+    wrapr::let(
         alias = c(
             X = x_col, 
             KEY = key_col,

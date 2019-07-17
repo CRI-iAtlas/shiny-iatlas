@@ -189,7 +189,7 @@ groupsoverview <- function(
                 feature_df = sample_group_df())
        
         
-        dt <- datatable(
+        dt <- DT::datatable(
             key_df,
             rownames = FALSE,
             options = list(

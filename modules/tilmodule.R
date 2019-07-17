@@ -168,7 +168,7 @@ tilmap <- function(
         d <- event_data("plotly_click", source = "plot")
         if (!is.null(d)) {
             slide_ids <- d %>% 
-                use_series(key)
+                magrittr::use_series(key)
             # print(slide_ids)
             data_df <- filter(panimmune_data$fmx_df, Slide %in% slide_ids)
         } else {

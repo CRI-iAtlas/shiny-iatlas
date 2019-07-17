@@ -7,9 +7,9 @@ create_mosaicplot <- function(
 
     plot <- df %>%
         ggplot() +
-        ggmosaic::geom_mosaic(aes_string(x = stringr::str_c("product(y, x)") ,fill = "y")) +
-        scale_y_productlist(expand = c(0, 0)) + 
-        scale_x_productlist(expand = c(0, 0)) + 
+        ggmosaic::geom_mosaic(aes_string(x = stringr::str_c("ggmosaic::product(y, x)") ,fill = "y")) +
+        ggmosaic::scale_y_productlist(expand = c(0, 0)) + 
+        ggmosaic::scale_x_productlist(expand = c(0, 0)) + 
         labs(title) +
         xlab(xlab) +
         ylab(ylab) +

@@ -267,7 +267,7 @@ create_label <- function(
     name_column = "name",
     group_column = "group") {
     
-    result_df <- let(
+    result_df <- wrapr::let(
         alias = c(
             namevar = name_column,
             groupvar = group_column),
@@ -581,7 +581,7 @@ build_mutation_df <- function(df, response_var, group_column, group_options){
     driver_mutation_df.long <-
         panimmune_data$driver_mutation_df %>%
         tidyr::gather(key = "mutation", value = "value", -c("ParticipantBarcode")) %>%
-        dplyr::mutate(value = fct_relevel(value, "Wt", "Mut"))
+        dplyr::mutate(value = forcats::fct_relevel(value, "Wt", "Mut"))
     mutation_df <- build_driver_mutation_df(driver_mutation_df.long, fmx_df.intermediate)
     if(nrow(mutation_df) == 0){
         mutation_df <- NULL

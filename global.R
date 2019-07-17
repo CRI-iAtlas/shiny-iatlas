@@ -10,3 +10,4 @@ panimmune_data <- load_data()
 
 purrr::walk(config_yaml$module_files, source)
 purrr::walk(config_yaml$page_files, source)
+

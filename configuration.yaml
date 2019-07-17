@@ -43,22 +43,8 @@ page_files:
 libraries:
   - "shinydashboard"
   - "shinycssloaders"
-  - "bigrquery"
   - "plotly"
-  - "survival"
-  - "survminer"
-  - "googlesheets"
-  - "feather"
-  - "ggmosaic"
   - "DT"
-  - "wrapr"
-  - "forcats"
-  - "viridis"
-  - "concordanceIndex"
-  - "sva"
-  - "clue"
-  - "parallel"
-  - "data.table"
 
 bq_remote: false # set data as remote (BigQuery) or local (on disk)
 gs_remote: false

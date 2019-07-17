@@ -4,8 +4,8 @@ load_manifest <- function() {
     if (!USE_REMOTE_GS) {
         list(
             feature_df = feather::read_feather("data/feature_df.feather"),
-            feature_method_df = read_feather("data/feature_method_df.feather"),
-            sample_group_df = read_feather("data/sample_group_df.feather")
+            feature_method_df = feather::read_feather("data/feature_method_df.feather"),
+            sample_group_df = feather::read_feather("data/sample_group_df.feather")
         )
     } else {
         fetch_manifest() %>% 
@@ -16,7 +16,7 @@ load_manifest <- function() {
 load_feature_matrix <- function() {
     if (!USE_REMOTE_GS) {
         fmx <- list(
-            fmx_df = read_feather("data/fmx_df.feather")
+            fmx_df = feather::read_feather("data/fmx_df.feather")
         )
     } else {
         fmx <- fetch_feature_matrix() %>% 
@@ -28,10 +28,10 @@ load_feature_matrix <- function() {
 load_im_annotations <- function() {
     if (!USE_REMOTE_GS) {
         list(
-            im_direct_relationships = read_feather(
+            im_direct_relationships = feather::read_feather(
                 "data/im_direct_relationships.feather"
             ),
-            im_potential_factors = read_feather(
+            im_potential_factors = feather::read_feather(
                 "data/im_potential_factors.feather"
             )
         )
@@ -44,10 +44,10 @@ load_im_annotations <- function() {
 load_io_target_annotations <- function() {
   if (!USE_REMOTE_GS) {
     list(
-      io_target_annotations = read_feather(
+      io_target_annotations = feather::read_feather(
         "data/io_target_annotations.feather"
       )
-#      im_potential_factors = read_feather(
+#      im_potential_factors = feather::read_feather(
 #        "data/im_potential_factors.feather"
 #      )
     )
@@ -61,7 +61,7 @@ load_io_target_annotations <- function() {
 load_im_expression <- function() {
     if (!USE_REMOTE_BQ) {
         list(
-            im_expr_df = read_feather("data/im_expr_df.feather")
+            im_expr_df = feather::read_feather("data/im_expr_df.feather")
         )
     } else {
         fetch_im_expression() %>% 
@@ -72,7 +72,7 @@ load_im_expression <- function() {
 load_io_target_expression <- function() {
   if (!USE_REMOTE_BQ) {
     list(
-      io_target_expr_df = read_feather("data/io_target_expr_df.feather")
+      io_target_expr_df = feather::read_feather("data/io_target_expr_df.feather")
     )
   } else {
     fetch_im_expression() %>% #### needs updating 
@@ -84,7 +84,7 @@ load_io_target_expression <- function() {
 load_driver_mutation <- function() {
   if (!USE_REMOTE_BQ) {
     list(
-      driver_mutation_df = read_feather("data/driver_mutations.feather")
+      driver_mutation_df = feather::read_feather("data/driver_mutations.feather")
     )
   } else {
     fetch_driver_mutation() %>% 

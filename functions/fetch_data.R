@@ -44,9 +44,9 @@ fetch_im_annotations <- function() {
 
 fetch_im_expression <- function(im_direct_relationships) {
   gene_string <- im_direct_relationships %>%
-    use_series("HGNC Symbol") %>%
+    magrittr::use_series("HGNC Symbol") %>%
     unique() %>%
-    discard(is.na(.)) %>%
+    dplyr::discard(is.na(.)) %>%
     stringr::str_c(collapse = "', '") %>%
     stringr::str_c("('", ., "')")
   query <- stringr::str_c(
@@ -67,23 +67,23 @@ format_manifest <- function(manifest_data) {
     feature_df = manifest_data$feature_df,
     feature_method_df = manifest_data$feature_method_df,
     sample_group_df = manifest_data$tcga_study_df %>% 
-      select(-Notes) %>% 
-      gather(characteristic, value, 
+      dplyr::select(-Notes) %>% 
+      tidyr::gather(characteristic, value, 
              -FeatureValue, -FeatureHex, -FeatureName) %>%
-      unite(Characteristic, characteristic, value, sep = ": ") %>% 
-      group_by(FeatureValue) %>% 
-      mutate(Characteristics = stringr::str_c(Characteristic, collapse = "; ")) %>% 
-      select(-Characteristic) %>% 
-      ungroup() %>% 
-      mutate(sample_group = "tcga_study") %>% 
-      bind_rows(manifest_data$immune_subtype_df %>% 
-                  mutate(sample_group = "immune_subtype")) %>% 
-      bind_rows(manifest_data$tcga_subtype_df %>% 
-                  mutate(sample_group = "tcga_subtype",
+      tidyr::unite(Characteristic, characteristic, value, sep = ": ") %>% 
+      dplyr::group_by(FeatureValue) %>% 
+      dplyr::mutate(Characteristics = stringr::str_c(Characteristic, collapse = "; ")) %>% 
+      dplyr::select(-Characteristic) %>% 
+      dplyr::ungroup() %>% 
+      dplyr::mutate(sample_group = "tcga_study") %>% 
+      dplyr::bind_rows(manifest_data$immune_subtype_df %>% 
+                  dplyr::mutate(sample_group = "immune_subtype")) %>% 
+      dplyr::bind_rows(manifest_data$tcga_subtype_df %>% 
+                  dplyr::mutate(sample_group = "tcga_subtype",
                          `TCGA Studies` = stringr::str_replace_all(
                            `TCGA Studies`, ",", "/"
                          ))) %>% 
-      mutate(
+      dplyr::mutate(
         FeatureHex = ifelse(!is.na(FeatureHex),
                             stringr::stringr::str_c("#", FeatureHex),
                             FeatureHex)
@@ -94,11 +94,11 @@ format_manifest <- function(manifest_data) {
 format_feature_matrix <- function(feature_mat_data) {
   list(
     fmx_df = feature_mat_data$fmx_df %>% 
-      mutate_at(
+      dplyr::mutate_at(
         c("age_at_initial_pathologic_diagnosis", "height", "weight"), 
         as.numeric
         ) %>% 
-      mutate_if(is.factor, as.character)
+      dplyr::mutate_if(is.factor, as.character)
   )
 }
 

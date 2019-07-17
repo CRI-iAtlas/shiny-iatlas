@@ -106,7 +106,7 @@ survival <- function(
     ns <- session$ns
     
     output$survplot_opts <- renderUI({
-        group_choice <- set_names(list(group_internal_choice()), ss_choice())
+        group_choice <- magrittr::set_names(list(group_internal_choice()), ss_choice())
         var_choices <- c(
             list("Current Sample Groups" = group_choice),
             get_feature_df_nested_list())
@@ -142,7 +142,7 @@ survival <- function(
           dplyr::group_by(variable) %>% 
           dplyr::summarize(Num1 = sum(status == 1), Num0 = sum(status == 0))
         
-        fit <- survival::survfit(Surv(time, status) ~ variable, data = survival_df)
+        fit <- survival::survfit(survival::Surv(time, status) ~ variable, data = survival_df)
         
         title <- get_variable_display_name(input$var1_surv)
         if (identical(title, character(0))){
