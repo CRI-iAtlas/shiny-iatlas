@@ -92,24 +92,7 @@ iotarget_UI <- function(id) {
       )
     ),
     
-    # IO Target annotations section ----
-    sectionBox(
-      title = "IO Target Annotations",
-      messageBox(
-        width = 12,
-        p("The table shows annotations of the IO Targets, with columns as described above and description based on public resources such as NCBI. Use the Search box in the upper right to find an IO target of interest."),
-        p("The last column provides a direct link to target information on the IO Landscape resource such as number of target agents under active development, and development stage.")  
-      ),
-      fluidRow(
-        tableBox(
-          width = 12,
-          div(style = "overflow-x: scroll",
-              DT::dataTableOutput(ns("io_target_annotations_table")) %>%
-                shinycssloaders::withSpinner()
-          )
-        )
-      )
-    )
+    io_targets_table_UI(ns("io_table"))
   )
 }
 
@@ -187,19 +170,6 @@ iotarget <- function(
             title = eventdata$x[[1]])
     })
     
-    output$io_target_annotations_table <- DT::renderDT({
-        
-        panimmune_data$io_target_annotations %>% 
-          dplyr::mutate(LinkText=.$IO_target_URL %>% stringr::str_split(";") %>% purrr::map(last) %>% purrr::flatten_chr()) %>%
-          dplyr::mutate(`Link to IO Landscape`=paste("<a href=\"",IO_target_URL,"\">",LinkText,"</a>",
-                                                sep="")) %>% select(-IO_target_URL,-LinkText) %>% 
-            DT::datatable(
-                options = list(pageLength = 10),
-                rownames = FALSE,
-                escape = setdiff(colnames(.),"Link to IO Landscape") ## To get hyperlink displayed
-                )
-    })
-    
     output$gene_choices <- renderUI({
       query <- parseQueryString(session$clientData$url_search)
       selected_gene <- NULL
@@ -214,5 +184,7 @@ iotarget <- function(
         choices = choices,
         selected = selected_gene)
     })
+    
+    callModule(io_targets_table, "io_table")
 
 }
