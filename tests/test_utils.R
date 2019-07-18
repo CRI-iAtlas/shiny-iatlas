@@ -1,14 +1,13 @@
-library(yaml)
-library(tidyverse)
+library(testthat)
+library(dplyr)
+source("../functions/utils.R")
+context("utils.R")
 
-config_yaml <- yaml::read_yaml("configuration.yaml")
-purrr::walk(config_yaml$libraries, library, character.only = T)
-purrr::walk(config_yaml$function_files, source)
 
 testthat::test_that("assert_df_has_columns", {
-    test_df1 <- data_frame("col1" = c("value1", "value2"),
-                           "col2" = c("A", "B"),
-                           "col3" = c("C", "C"))
+    test_df1 <- tibble("col1" = c("value1", "value2"),
+                       "col2" = c("A", "B"),
+                       "col3" = c("C", "C"))
     testthat::expect_that(
         assert_df_has_columns(test_df1, c("col1", "col2")), 
         testthat::is_identical_to(NULL))
@@ -21,9 +20,9 @@ testthat::test_that("assert_df_has_columns", {
 })
 
 testthat::test_that("assert_df_has_rows", {
-    test_df1 <- data_frame("col1" = c("value1", "value2"),
-                           "col2" = c("A", "B"),
-                           "col3" = c("C", "C"))
+    test_df1 <- tibble("col1" = c("value1", "value2"),
+                       "col2" = c("A", "B"),
+                       "col3" = c("C", "C"))
     test_df2 <- test_df1 %>% 
         filter(col1 == "value3")
     testthat::expect_that(
@@ -35,9 +34,9 @@ testthat::test_that("assert_df_has_rows", {
 })
 
 testthat::test_that("convert_values", {
-    test_df1 <- data_frame("col1" = c("value1", "value2"),
-                           "col2" = c("A", "B"),
-                           "col3" = c("C", "C"))
+    test_df1 <- tibble("col1" = c("value1", "value2"),
+                       "col2" = c("A", "B"),
+                       "col3" = c("C", "C"))
     testthat::expect_that(
         convert_values("value1", test_df1, "col1", "col2"), 
         testthat::is_identical_to("A"))
@@ -62,9 +61,9 @@ testthat::test_that("convert_values", {
 })
 
 testthat::test_that("convert_value_between_columns", {
-    test_df1 <- data_frame("col1" = c("value1", "value2"),
-                           "col2" = c("A", "B"),
-                           "col3" = c("C", "C"))
+    test_df1 <- tibble("col1" = c("value1", "value2"),
+                       "col2" = c("A", "B"),
+                       "col3" = c("C", "C"))
     testthat::expect_that(
         convert_value_between_columns("value1", test_df1, "col1", "col2"), 
         testthat::is_identical_to("A"))
@@ -88,10 +87,10 @@ testthat::test_that("convert_value_between_columns", {
 })
 
 testthat::test_that("convert_values_between_columns", {
-    test_df1 <- data_frame("col1" = c("value1", "value2"),
-                           "col2" = c("A", "B"),
-                           "col3" = c("C", NA),
-                           "col4" = c(NA, NA))
+    test_df1 <- tibble("col1" = c("value1", "value2"),
+                       "col2" = c("A", "B"),
+                       "col3" = c("C", NA),
+                       "col4" = c(NA, NA))
     testthat::expect_that(
         convert_values_between_columns("value1", test_df1, "col1", "col2"), 
         testthat::is_identical_to("A"))
@@ -107,17 +106,17 @@ testthat::test_that("convert_values_between_columns", {
 })
 
 testthat::test_that("get_complete_df_by_columns",{
-    test_df <- data_frame(
+    test_df <- tibble(
         "col1" = c("val1", "val2", "val3"),
         "col2" = c(NA, 1, 2),
         "col3" = c(NA, NA, NA))
     testthat::expect_that(
         get_complete_df_by_columns(test_df, c("col1")),
-        testthat::is_identical_to(data_frame(
+        testthat::is_identical_to(tibble(
             "col1" = c("val1", "val2", "val3"))))
     testthat::expect_that(
         get_complete_df_by_columns(test_df, c("col1", "col2")),
-        testthat::is_identical_to(data_frame(
+        testthat::is_identical_to(tibble(
             "col1" = c("val2", "val3"),
             "col2" = c(1, 2))))
     testthat::expect_that(
@@ -129,14 +128,14 @@ testthat::test_that("get_complete_df_by_columns",{
 })
 
 testthat::test_that("get_complete_class_df", {
-    test_df <- data_frame(
+    test_df <- tibble(
         "class col" = c("class1", "class1", "class1", "class2", "class2", "class2"),
         "variable col" = c("var1", "var2", "var3", "var4", "var5", "var6"),
         "order col" = c(1,2,3,3,2,1))
-    result_df1 <- data_frame(
+    result_df1 <- tibble(
         "variable col" = c("var1", "var2", "var3"),
         "order col" = c(1,2,3))
-    result_df2 <- data_frame(
+    result_df2 <- tibble(
         "variable col" = c("var4", "var5", "var6"),
         "order col" = c(3,2,1))
     testthat::expect_that(
@@ -154,24 +153,24 @@ testthat::test_that("get_complete_class_df", {
 })
 
 testthat::test_that("factor_variables_with_df", {
-    test_df1 <- data_frame(
+    test_df1 <- tibble(
         "variable_col" = c("var1", "var2", "var3"),
         "order_col" = c(1,2,3))
-    test_df2 <- data_frame(
+    test_df2 <- tibble(
         "variable_col" = c("var4", "var5", "var6"),
         "order_col" = c(3,2,1))
     testthat::expect_that(
         factor_variables_with_df(test_df1, "variable_col", "order_col"),
         testthat::is_identical_to(factor(c("var1", "var2", "var3"),
-                               levels = c("var1", "var2", "var3"))))
+                                         levels = c("var1", "var2", "var3"))))
     testthat::expect_that(
         factor_variables_with_df(test_df2, "variable_col", "order_col"),
         testthat::is_identical_to(factor(c("var6", "var5", "var4"),
-                               levels = c("var6", "var5", "var4"))))
+                                         levels = c("var6", "var5", "var4"))))
 })
 
 testthat::test_that("get_factored_variables_by_class", {
-    test_df <- data_frame(
+    test_df <- tibble(
         "class col" = c("class1", "class1", "class1", "class2", "class2", "class2"),
         "variable col" = c("var1", "var2", "var3", "var4", "var5", "var6"),
         "order col" = c(1,2,3,3,2,1))
@@ -192,7 +191,7 @@ testthat::test_that("get_factored_variables_by_class", {
 })
 
 testthat::test_that("df_to_nested_list", {
-    test_df1 <- data_frame(
+    test_df1 <- tibble(
         "class_col" = c("class1", "class1", "class1", "class2", "class2", "class3"),
         "internal_col" = c("name1", "name2", "name3", "name4", "name5", "name6"),
         "display_col" = c("value1", "value2", "value3", "value4", "value5", "value6"))
@@ -208,7 +207,7 @@ testthat::test_that("df_to_nested_list", {
 })
 
 testthat::test_that("get_column_names_of_type", {
-    test_df <- data_frame(
+    test_df <- tibble(
         "char_col" = c("class1"),
         "int_col" = c(1L),
         "double_col" = c(1.1),
@@ -228,7 +227,7 @@ testthat::test_that("get_column_names_of_type", {
 })
 
 testthat::test_that("create_nested_list_by_class", {
-    test_df <- data_frame(
+    test_df <- tibble(
         "class_col" = c(
             "class1", "class1", "class1", "class2", "class2", "class3",
             "class4", "class4", "class4", NA),
@@ -255,7 +254,7 @@ testthat::test_that("create_nested_list_by_class", {
 })
 
 testthat::test_that("create_filtered_nested_list_by_class", {
-    test_df <- data_frame(
+    test_df <- tibble(
         "CLASS" = c(
             "class1", "class1", "class1", "class2", "class2", "class3",
             "class4", "class4", "class4", NA),
@@ -278,11 +277,11 @@ testthat::test_that("create_filtered_nested_list_by_class", {
 })
 
 testthat::test_that("get_unique_column_values", {
-    test_df1 <- data_frame("col" = c("value1", "value2"))
-    test_df2 <- data_frame("col" = c("value1", "value1"))
-    test_df3 <- data_frame("col" = c("value1", NA))
-    test_df4 <- data_frame("col" = c(5, 6))
-    test_df5 <- data_frame("col" = c("value2", "value1"))
+    test_df1 <- tibble("col" = c("value1", "value2"))
+    test_df2 <- tibble("col" = c("value1", "value1"))
+    test_df3 <- tibble("col" = c("value1", NA))
+    test_df4 <- tibble("col" = c(5, 6))
+    test_df5 <- tibble("col" = c("value2", "value1"))
     testthat::expect_that(
         get_unique_column_values("col", test_df1),
         testthat::is_identical_to(c("value1", "value2")))
@@ -301,7 +300,7 @@ testthat::test_that("get_unique_column_values", {
 })
 
 testthat::test_that("get_variable_classes", {
-    test_df <- data_frame(
+    test_df <- tibble(
         "class" = c("class1", "class1", "class1", "class2", "class2", "class3",
                     "class4", "class4", "class4"),
         "type" = c("Numeric", "Numeric", "Numeric", "Factor", "Factor", 
