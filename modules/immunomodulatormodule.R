@@ -59,23 +59,7 @@ immunomodulator_UI <- function(id) {
       )
     ),
     
-    # Immunomodulator annotations section ----
-    sectionBox(
-      title = "Immunomodulator Annotations",
-      messageBox(
-        width = 12,
-        p("The table shows annotations of the immumodulators, and source. Use the Search box in the upper right to find an immumodulator of interest.")  
-      ),
-      fluidRow(
-        tableBox(
-          width = 12,
-          div(style = "overflow-x: scroll",
-              DT::dataTableOutput(ns("im_annotations_table")) %>%
-                shinycssloaders::withSpinner()
-          )
-        )
-      )
-    )
+    immunomodulator_table_UI(ns("im_table"))
   )
 }
 
@@ -175,16 +159,5 @@ immunomodulator <- function(
         
     })
     
-    output$im_annotations_table <- DT::renderDT({
-        
-        panimmune_data$im_direct_relationships %>% 
-            select(-X10, -Notes) %>% 
-            DT::datatable(
-                options = list(pageLength = 10),
-                rownames = FALSE
-                )
-    })
-    
-    
-    
+    callModule(immunomodulator_table, "im_table")
 }

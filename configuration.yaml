@@ -11,6 +11,7 @@ module_files:
   - "modules/datainfomodule.R"
   - "modules/drivermodule.R"
   - "modules/subtypepredictormodule.R"
+  - "modules/submodules.R"
   
 function_files:
   - "functions/load_data.R"
