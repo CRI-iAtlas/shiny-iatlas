@@ -1,3 +1,84 @@
+# immune_feature_distributions ----
+
+immune_feature_distributions_module_UI <- function(id){
+    
+    ns <- NS(id)
+    
+    sectionBox(
+        title = "Distributions",
+        messageBox(
+            width = 12,
+            p("This displays the value of immune readouts by sample group. Select a variable class to see the distribution of variables within that class displayed as as violin plot."),
+            p("Manuscript context: This allows you to display distributions such as those shown in Figures 1C and 1D.")
+        ),
+        fluidRow(
+            optionsBox(
+                width = 6,
+                selectInput(
+                    ns("violin_y"),
+                    "Select Violin Plot Y Variable",
+                    choices = get_feature_df_nested_list()
+                )
+            )
+        ),
+        fluidRow(
+            plotBox(
+                width = 12,
+                plotlyOutput(ns("violinPlot")) %>% 
+                    shinycssloaders::withSpinner(),
+                p(),
+                textOutput(ns("violin_group_text"))
+            )
+        )
+    )
+}
+
+immune_feature_distributions_module <- function(
+    input, 
+    output, 
+    session,
+    subset_df,
+    sample_group_df,
+    group_internal_choice,
+    group_display_choice,
+    plot_colors
+){
+    output$violinPlot <- renderPlotly({
+        
+        req(!is.null(subset_df()), cancelOutput = T)
+        
+        display_y  <- get_variable_display_name(input$violin_y)
+        
+        plot_df <- build_immunefeatures_violin_plot_df(
+            subset_df(), 
+            x_col = group_internal_choice(),
+            y_col = input$violin_y) 
+        
+        validate(
+            need(nrow(plot_df) > 0, 
+                 "Current selected group and selected variable have no overlap")
+        )
+        
+        create_violinplot(
+            plot_df,
+            xlab = group_display_choice(),
+            ylab = display_y,
+            fill_colors = plot_colors(),
+            source_name = "violin"
+        )
+    })
+    
+    
+    output$violin_group_text <- renderText({
+        req(group_internal_choice(), sample_group_df(), cancelOutput = T)
+        
+        create_group_text_from_plotly(
+            "violin", 
+            group_internal_choice(),
+            sample_group_df())
+    })
+}
+
 # immunomodulator_distributions_module ----
 
 immunomodulator_distributions_module_ui <- function(id){
