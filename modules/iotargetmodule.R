@@ -203,12 +203,11 @@ iotarget <- function(
     
     table_df <-         
       panimmune_data$io_target_annotations %>% 
-      dplyr::mutate(
-        LinkText = 
-          .$IO_target_URL %>% 
-          stringr::str_split(";") %>% 
-          purrr::map(last) %>% 
-          purrr::flatten_chr()) %>%
+      dplyr::mutate(LinkText = .$IO_target_URL%>% 
+                      stringr::str_split(";") %>% 
+                      purrr::map(rev) %>% 
+                      purrr::map_chr(1)
+      ) %>% 
       dplyr::mutate(
         `Link to IO Landscape`= paste(
           "<a href=\"",
