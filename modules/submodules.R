@@ -24,14 +24,25 @@ data_table_module <- function(
     output, 
     session,
     df,
+    options = list(pageLength = 10),
+    color = F,
+    color_column = NULL,
+    colors = NULL,
     ...
 ){
     output$data_table_module <- DT::renderDT({
-        DT::datatable(
+        dt <- DT::datatable(
             df,
-            options = list(pageLength = 10),
+            options = options,
             rownames = FALSE,
             ...
         )
+        if(color){
+           dt <-  DT::formatStyle(
+               dt,
+               color_column,
+               backgroundColor = DT::styleEqual(colors, colors))
+        }
+        return(dt)
     })
 }

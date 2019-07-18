@@ -43,23 +43,32 @@ groupsoverview_UI <- function(id) {
                 )
             )
         ),
-        sectionBox(
+        data_table_module_UI(
+            ns("sg_table"),
             title = "Group Key",
-            messageBox(
-                width = 12,
-                p("This displays attributes and annotations of your choice of groups.")  
-            ),
-            fluidRow(
-                tableBox(
-                    width = 12,
-                    title = textOutput(ns("sample_group_name")),
-                    div(style = "overflow-x: scroll",
-                        DT::dataTableOutput(ns("sample_group_table")) %>% 
-                            shinycssloaders::withSpinner()
-                    )
-                )
-            )
+            message_html = p(stringr::str_c(
+                "This displays attributes and annotations of your choice of",
+                "groups.",
+                sep = " "
+            ))
         ),
+        # sectionBox(
+        #     title = "Group Key",
+        #     messageBox(
+        #         width = 12,
+        #         p("This displays attributes and annotations of your choice of groups.")  
+        #     ),
+        #     fluidRow(
+        #         tableBox(
+        #             width = 12,
+        #             title = textOutput(ns("sample_group_name")),
+        #             div(style = "overflow-x: scroll",
+        #                 DT::dataTableOutput(ns("sample_group_table")) %>% 
+        #                     shinycssloaders::withSpinner()
+        #             )
+        #         )
+        #     )
+        # ),
         sectionBox(
             title = "Group Overlap",
             messageBox(
@@ -175,7 +184,7 @@ groupsoverview <- function(
     })
         
     
-    output$sample_group_table <- DT::renderDT({
+    table_df <- reactive({
         
         req(subset_df(), 
             group_internal_choice(),
@@ -183,29 +192,25 @@ groupsoverview <- function(
             plot_colors(),
             cancelOutput = T)
         
-        key_df <- build_sample_group_key_df(
+        build_sample_group_key_df(
                 group_df = subset_df(),
                 group_column = group_internal_choice(),
                 feature_df = sample_group_df())
-       
-        
-        dt <- DT::datatable(
-            key_df,
-            rownames = FALSE,
-            options = list(
-                dom = "tip",
-                pageLength = 10,
-                columnDefs = list(
-                    list(width = '50px',
-                         targets = c(1)))))
-        
-        DT::formatStyle(
-            dt,
-            "Plot Color",
-            backgroundColor = DT::styleEqual(
-                plot_colors(), 
-                plot_colors()))
     })
+    
+    callModule(
+        data_table_module, 
+        "sg_table", 
+        table_df(),
+        options = list(
+            dom = "tip",
+            pageLength = 10,
+            columnDefs = list(
+                list(width = '50px',
+                     targets = c(1)))),
+        color = T,
+        color_column = "Plot Color",
+        colors = plot_colors())
     
     # plots ----
     

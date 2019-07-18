@@ -210,7 +210,7 @@ tilmap <- function(
                 TIL_map_columns_display,
                 "Image"
             )) %>% 
-            dplyr::mutate_if(is.double, round, digits = 1)                          "Banfeld_Raftery_Adjusted","C_index_Adjusted","Det_Ratio_Adjusted"), digits = 1) 
+            dplyr::mutate_if(is.double, round, digits = 1)
     })
     
     callModule(data_table_module, "til_table", table_df(), escape = F)
