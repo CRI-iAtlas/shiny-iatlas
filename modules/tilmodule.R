@@ -78,29 +78,33 @@ tilmap_UI <- function(id) {
             )
         ),
         
-        # TIL Map annotations section ----
-        sectionBox(
+        data_table_module_UI(
+            ns("til_table"),
             title = "TIL Map Annotations",
-            messageBox(
-                width = 12,
-                p("The table shows annotations of the TIL Map characteristics. The rightmost column gives access to the ",
-                  tags$a(href="http://quip1.bmi.stonybrook.edu:443/select.php","TIL Maps superimposed on H&E images using the caMicroscope tool: "),
-                  "Zoom in to initiate the view of TIL spatial clusters. Colors show regions determined by spatial clustering - a view without cluster colors is available through the question mark / magnifiying glass selector on upper left in caMicroscope.")  
-            ),
-            fluidRow(
-                tableBox(
-                    width = 12,
-                    div(style = "overflow-x: scroll",
-                        DT::dataTableOutput(ns("til_table")) %>% 
-                            shinycssloaders::withSpinner()
-                    )
+            message_html = p(
+                stringr::str_c(
+                    "The table shows annotations of the TIL Map",
+                    "characteristics.",
+                    "The rightmost column gives access to the ",
+                    sep = " "
+                ),
+                tags$a(
+                    href = "http://quip1.bmi.stonybrook.edu:443/select.php",
+                    "TIL Maps superimposed on H&E images using the caMicroscope tool: "
+                ),
+                stringr::str_c(
+                    "Zoom in to initiate the view of TIL spatial clusters.",
+                    "Colors show regions determined by spatial clustering - a",
+                    "view without cluster colors is available through the",
+                    "question mark / magnifiying glass selector on upper left",
+                    "in caMicroscope.",
+                    sep = " "
                 )
             )
         )
     )
 }
 
-# tilmap <- function(input, output, session, ss_choice, subset_df){
 tilmap <- function(
     input, 
     output, 
@@ -163,7 +167,7 @@ tilmap <- function(
     })
     
     
-    output$til_table <- DT::renderDT({
+    table_df <- reactive({
         
         d <- event_data("plotly_click", source = "plot")
         if (!is.null(d)) {
@@ -183,9 +187,13 @@ tilmap <- function(
         # Slide: column width/wrap problem at the moment for this
         TIL_map_columns_display <- as.character(purrr::map(TIL_map_columns,get_variable_display_name))
         
-        data_df <- data_df %>% 
-            dplyr::select("ParticipantBarcode", "Study", "Slide",TIL_map_columns) %>% 
-            .[complete.cases(.),] %>% 
+        data_df %>% 
+            dplyr::select(
+                "ParticipantBarcode", 
+                "Study", 
+                "Slide",
+                TIL_map_columns) %>% 
+            tidyr::drop_na() %>% 
             dplyr::mutate(Image = paste(
                 "<a href=\"",
                 "http://quip1.bmi.stonybrook.edu:443/camicroscope/osdCamicroscope.php?tissueId=",
@@ -193,16 +201,20 @@ tilmap <- function(
                 "\">",
                 Slide,
                 "</a>",
-                sep="")) %>% select(-Slide)
-        colnames(data_df) <- c("ParticipantBarcode", "Study", TIL_map_columns_display,"Image")
-        data_df %>% 
-            DT::datatable(
-                rownames = FALSE,
-                escape = setdiff(colnames(.),"Image") ## To get hyperlink displayed
-            ) %>% DT::formatRound(TIL_map_columns_display, digits = 1)               
-        
-        #          ) %>% formatRound(c('til_percentage','NP_mean',"NP_sd","WCD_mean","WCD_sd","CE_mean",
-        #                              "CE_sd","Ball_Hall","Banfeld_Raftery","C_index","Det_Ratio","Ball_Hall_Adjusted",
-        #                              "Banfeld_Raftery_Adjusted","C_index_Adjusted","Det_Ratio_Adjusted"), digits = 1) 
+                sep="")
+            ) %>%
+            select(-Slide) %>% 
+            magrittr::set_colnames(c(
+                "ParticipantBarcode", 
+                "Study", 
+                TIL_map_columns_display,
+                "Image"
+            )) %>% 
+            dplyr::mutate_if(is.double, round, digits = 1)                          "Banfeld_Raftery_Adjusted","C_index_Adjusted","Det_Ratio_Adjusted"), digits = 1) 
     })
+    
+    callModule(data_table_module, "til_table", table_df(), escape = F)
+    
+    
+    
 }

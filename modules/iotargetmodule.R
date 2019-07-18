@@ -92,7 +92,23 @@ iotarget_UI <- function(id) {
       )
     ),
     
-    io_targets_table_UI(ns("io_table"))
+    data_table_module_UI(
+      ns("io_table"), 
+      title = "IO Target Annotations",
+      message_html = p(stringr::str_c(
+        "The table shows annotations of the IO Targets, with columns as",
+        "described above and description based on public resources such as",
+        "NCBI. Use the Search box in the upper right to find an IO target of",
+        "interest.",
+        "\n",
+        "The last column provides a direct link to target information on the",
+        "IO Landscape resource such as number of target agents under active",
+        "development, and development stage.",
+        sep = " "
+      ))
+    )
+    
+    
   )
 }
 
@@ -185,6 +201,24 @@ iotarget <- function(
         selected = selected_gene)
     })
     
-    callModule(io_targets_table, "io_table")
+    table_df <-         
+      panimmune_data$io_target_annotations %>% 
+      dplyr::mutate(
+        LinkText = 
+          .$IO_target_URL %>% 
+          stringr::str_split(";") %>% 
+          purrr::map(last) %>% 
+          purrr::flatten_chr()) %>%
+      dplyr::mutate(
+        `Link to IO Landscape`= paste(
+          "<a href=\"",
+          IO_target_URL,"\">",
+          LinkText,"</a>", 
+          sep=""
+        )
+      ) %>% 
+      dplyr::select(-IO_target_URL, -LinkText)
+    
+    callModule(data_table_module, "io_table", table_df, escape = F)
 
 }

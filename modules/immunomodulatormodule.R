@@ -59,7 +59,16 @@ immunomodulator_UI <- function(id) {
       )
     ),
     
-    immunomodulator_table_UI(ns("im_table"))
+    data_table_module_UI(
+      ns("im_table"),
+      title = "Immunomodulator Annotations",
+      message_html = p(stringr::str_c(
+        "The table shows annotations of the immumodulators, and source.",
+        "Use the Search box in the upper right to find an immumodulator of",
+        "interest.",
+        sep = " "
+      ))
+    )
   )
 }
 
@@ -159,5 +168,9 @@ immunomodulator <- function(
         
     })
     
-    callModule(immunomodulator_table, "im_table")
+    table_df <- 
+      panimmune_data$im_direct_relationships %>% 
+      dplyr::select(-X10, -Notes) 
+    
+    callModule(data_table_module, "im_table", table_df)
 }
