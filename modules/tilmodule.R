@@ -95,16 +95,6 @@ tilmap <- function(
     
     ns <- session$ns
     
-    # plot_data <- callModule(
-    #     TIL_map_characteristics,
-    #     "til_plot",
-    #     subset_df,
-    #     sample_group_df,
-    #     group_internal_choice,
-    #     group_display_choice,
-    #     plot_colors
-    # )
-    
     output$plot <- renderPlotly({
 
         req(!is.null(subset_df()), cancelOutput = T)
@@ -187,7 +177,7 @@ tilmap <- function(
             dplyr::select(-Slide)
     })
     
-    callModule(data_table_module, "til_table", table_df(), escape = F)
+    callModule(data_table_module, "til_table", table_df, escape = F)
     
     
     

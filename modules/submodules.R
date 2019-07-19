@@ -489,7 +489,7 @@ data_table_module <- function(
 ){
     output$data_table_module <- DT::renderDT({
         dt <- DT::datatable(
-            df,
+            df(),
             options = options,
             rownames = FALSE,
             ...
