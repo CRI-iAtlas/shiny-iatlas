@@ -488,7 +488,6 @@ data_table_module <- function(
     ...
 ){
     output$data_table_module <- DT::renderDT({
-        print(df)
         dt <- DT::datatable(
             df,
             options = options,
@@ -503,6 +502,117 @@ data_table_module <- function(
         }
         return(dt)
     })
+}
+
+# TIL_map_characteristics ----
+
+TIL_map_characteristics_UI <- function(id){
+    
+    ns <- NS(id)
+    
+    sectionBox(
+        title = "TIL Map Characteristics",
+        messageBox(
+            width = 12,
+            p("Select a TIL map characteristic to see its distribution over sample groups. Plots are available as violin plots, and box plots with full data points superimposed."),
+            p("Main immune manuscript context:  If you are looking at immune subtypes, select TIL Regional Fraction to get Figure 3B.")
+        ),
+        fluidRow(
+            optionsBox(
+                width = 12,
+                column(
+                    width = 4,
+                    selectInput( ## would be good to initiate on til_percentage/"TIL Regional Fraction (Percent)"
+                        ns("violin_y"),
+                        "Select TIL Map Characteristic",
+                        get_tilmap_nested_list()
+                    )
+                ),
+                column(
+                    width = 4,
+                    selectInput(
+                        ns("plot_type"),
+                        "Select Plot Type",
+                        choices = c("Violin", "Box")
+                    )
+                )
+            )
+        ),
+        fluidRow(
+            plotBox(
+                width = 12,
+                plotlyOutput(ns("plot")) %>% 
+                    shinycssloaders::withSpinner(),
+                p(),
+                textOutput(ns("plot_group_text")),
+                h4("Click point or violin/box to filter samples in table below")
+            )
+        )
+    )
+}
+
+TIL_map_characteristics <- function(
+    input, 
+    output, 
+    session,
+    subset_df,
+    sample_group_df,
+    group_internal_choice,
+    group_display_choice,
+    plot_colors
+){
+    output$plot <- renderPlotly({
+        
+        req(!is.null(subset_df()), cancelOutput = T)
+        
+        display_y  <- get_variable_display_name(input$violin_y)
+        
+        plot_df <- subset_df() %>%
+            dplyr::select(x = group_internal_choice(), y = input$violin_y, label = "Slide") %>%
+            tidyr::drop_na()
+        
+        validate(
+            need(nrow(plot_df) > 0, 
+                 "Group choices have no overlap with current variable choice"))
+        
+        if(input$plot_type == "Violin"){
+            plot_df %>%
+                create_violinplot(
+                    xlab = group_display_choice(),
+                    ylab = display_y,
+                    source_name = "plot",
+                    fill_colors = plot_colors(),
+                    key_col = "label"
+                )
+        } else {
+            plot_df %>% 
+                create_boxplot(
+                    xlab = group_display_choice(),
+                    ylab = display_y,
+                    source_name = "plot",
+                    fill_colors = plot_colors(),
+                    key_col = "label"
+                )
+        }
+    })
+    
+    output$plot_group_text <- renderText({
+        req(group_internal_choice(), sample_group_df(), cancelOutput = T)
+        
+        create_group_text_from_plotly(
+            "plot",
+            group_internal_choice(),
+            sample_group_df(),
+            prompt_text = "",
+            key_column = "x")
+    })
+    
+    plot_data <- reactive({
+        print("reactive")
+        event_data("plotly_click", source = "plot")
+    })
+    
+    return(plot_data)
 }
 
 # data_table_module2 ----
@@ -575,7 +685,6 @@ data_table_module <- function(
 #                 Unit, 
 #                 VariableType
 #             ) 
-#         print(input$class_choice)
 #         if(input$class_choice != "All classes"){
 #             df <- dplyr::filter(df, `Variable Class` == input$class_choice)
 #         }

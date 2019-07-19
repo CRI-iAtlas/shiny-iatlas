@@ -222,9 +222,11 @@ create_nested_list_by_class <- function(
     df, 
     class_column = "CLASS",
     display_column = "DISPLAY",
-    internal_column = "INTERNAL"){
-    
+    internal_column = "INTERNAL",
+    filter_expr = T)
+{
     df %>%
+        dplyr::filter({{filter_expr}}) %>% 
         dplyr::select(
             CLASS = class_column,
             DISPLAY = display_column,
@@ -242,6 +244,16 @@ get_immunomodulator_nested_list <- purrr::partial(
     display_column = "Gene",
     internal_column = "HGNC Symbol"
 )
+
+get_tilmap_nested_list <- purrr::partial(
+    create_nested_list_by_class,
+    df = panimmune_data$feature_df,
+    class_column = "Variable Class",
+    display_column = "FriendlyLabel",
+    internal_column = "FeatureMatrixLabelTSV",
+    filter_expr = `Variable Class` == "TIL Map Characteristic"
+)
+
 
 # get_nested_list_by_column_type ----------------------------------------------
 

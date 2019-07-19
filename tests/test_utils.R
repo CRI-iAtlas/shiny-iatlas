@@ -251,6 +251,16 @@ testthat::test_that("create_nested_list_by_class", {
                          "value8" = "name8",
                          "value9" = "name9"),
             "Other" = c("value10" = "name10"))))
+    testthat::expect_that(
+        create_nested_list_by_class(
+            test_df, "class_col", "display_col", "internal_col", class_col != "class1"),
+        testthat::is_identical_to(list(
+            "class2" = c("value4" = "name4",
+                         "value5" = "name5"),
+            "class3" = c("value6" = "name6"),
+            "class4" = c("value7" = "name7",
+                         "value8" = "name8",
+                         "value9" = "name9"))))
 })
 
 testthat::test_that("create_filtered_nested_list_by_class", {

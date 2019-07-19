@@ -1,30 +1,5 @@
 tilmap_UI <- function(id) {
     
-    get_friendly_numeric_columns <- function(){
-        get_numeric_columns() %>% 
-            convert_values_between_columns(
-                df = panimmune_data$feature_df,
-                from_column = "FeatureMatrixLabelTSV",
-                to_column = "FriendlyLabel"
-            )
-    }
-    
-    get_friendly_numeric_columns_by_group <- function() {
-        panimmune_data$feature_df %>% 
-            dplyr::select(Class = `Variable Class`, FriendlyLabel, FeatureMatrixLabelTSV) %>% 
-            dplyr::filter(FriendlyLabel %in% get_friendly_numeric_columns()) %>% 
-            dplyr::mutate(Class = ifelse(is.na(Class), "Other", Class)) %>% 
-            tidyr::nest(-Class) %>% 
-            dplyr::mutate(data = purrr::map(data, tibble::deframe)) %>% 
-            tibble::deframe()
-    }
-    
-    get_numeric_columns <- function(){
-        panimmune_data$fmx_df %>% 
-            dplyr::select_if(is.numeric) %>% 
-            colnames()
-    }
-    
     ns <- NS(id)
     
     tagList(
@@ -36,6 +11,8 @@ tilmap_UI <- function(id) {
             p("TCGA H&E digital pathology images were analyzed for tumor infiltrating lymphocytes (TILs) using deep learning. The analysis identifies small spatial regions on the slide image - patches - that are rich in TILs. The resulting pattern of TIL patches are then assessed in multiple ways: in terms of overall counts and spatial density, and patterns identified by computational analysis and scoring by pathologists."),
             p("These assessments are also available in other modules, and are found under the Variable Class: TIL Map Characteristic.")
         ),
+        
+        # TIL_map_characteristics_UI(ns("til_plot")),
         
         # TIL distributions section ----
         sectionBox(
@@ -53,7 +30,7 @@ tilmap_UI <- function(id) {
                         selectInput( ## would be good to initiate on til_percentage/"TIL Regional Fraction (Percent)"
                             ns("violin_y"),
                             "Select TIL Map Characteristic",
-                            choices = get_friendly_numeric_columns_by_group()["TIL Map Characteristic"]
+                            get_tilmap_nested_list()
                         )
                     ),
                     column(
@@ -69,7 +46,7 @@ tilmap_UI <- function(id) {
             fluidRow(
                 plotBox(
                     width = 12,
-                    plotlyOutput(ns("plot")) %>% 
+                    plotlyOutput(ns("plot")) %>%
                         shinycssloaders::withSpinner(),
                     p(),
                     textOutput(ns("plot_group_text")),
@@ -118,21 +95,30 @@ tilmap <- function(
     
     ns <- session$ns
     
+    # plot_data <- callModule(
+    #     TIL_map_characteristics,
+    #     "til_plot",
+    #     subset_df,
+    #     sample_group_df,
+    #     group_internal_choice,
+    #     group_display_choice,
+    #     plot_colors
+    # )
     
     output$plot <- renderPlotly({
-        
+
         req(!is.null(subset_df()), cancelOutput = T)
-        
+
         display_y  <- get_variable_display_name(input$violin_y)
-        
+
         plot_df <- subset_df() %>%
             dplyr::select(x = group_internal_choice(), y = input$violin_y, label = "Slide") %>%
             tidyr::drop_na()
-        
+
         validate(
-            need(nrow(plot_df) > 0, 
+            need(nrow(plot_df) > 0,
                  "Group choices have no overlap with current variable choice"))
-        
+
         if(input$plot_type == "Violin"){
             plot_df %>%
                 create_violinplot(
@@ -143,7 +129,7 @@ tilmap <- function(
                     key_col = "label"
                 )
         } else {
-            plot_df %>% 
+            plot_df %>%
                 create_boxplot(
                     xlab = group_display_choice(),
                     ylab = display_y,
@@ -152,12 +138,12 @@ tilmap <- function(
                     key_col = "label"
                 )
         }
-        
+
     })
     
     output$plot_group_text <- renderText({
         req(group_internal_choice(), sample_group_df(), cancelOutput = T)
-        
+
         create_group_text_from_plotly(
             "plot",
             group_internal_choice(),
@@ -169,48 +155,36 @@ tilmap <- function(
     
     table_df <- reactive({
         
-        d <- event_data("plotly_click", source = "plot")
-        if (!is.null(d)) {
-            slide_ids <- d %>% 
-                magrittr::use_series(key)
-            # print(slide_ids)
-            data_df <- filter(panimmune_data$fmx_df, Slide %in% slide_ids)
-        } else {
-            data_df <- panimmune_data$fmx_df
-        }
+        df <- panimmune_data$fmx_df
+        data <- event_data("plotly_click", source = "plot")
+        if (!is.null(data)) df <- dplyr::filter(df, Slide %in% data$key)
         
+        names_df <- panimmune_data$feature_df %>%
+            dplyr::filter(`Variable Class` == "TIL Map Characteristic") %>%
+            dplyr::filter(VariableType == "Numeric") %>%
+            dplyr::select(FeatureMatrixLabelTSV, FriendlyLabel)
         
-        TIL_map_columns <- panimmune_data$feature_df %>% 
-            dplyr::filter(`Variable Class` == "TIL Map Characteristic") %>% 
-            dplyr::filter(VariableType == "Numeric") %>% 
-            magrittr::use_series(FeatureMatrixLabelTSV)
-        # Slide: column width/wrap problem at the moment for this
-        TIL_map_columns_display <- as.character(purrr::map(TIL_map_columns,get_variable_display_name))
-        
-        data_df %>% 
+        df %>% 
             dplyr::select(
                 "ParticipantBarcode", 
                 "Study", 
                 "Slide",
-                TIL_map_columns) %>% 
+                names_df$FeatureMatrixLabelTSV) %>% 
             tidyr::drop_na() %>% 
-            dplyr::mutate(Image = paste(
+            tidyr::gather(FeatureMatrixLabelTSV, value, -c(ParticipantBarcode, Study, Slide)) %>% 
+            dplyr::full_join(names_df) %>% 
+            dplyr::mutate(value = round(value, digits = 1)) %>% 
+            dplyr::select(-FeatureMatrixLabelTSV) %>% 
+            tidyr::spread(FriendlyLabel, value) %>% 
+            dplyr::mutate(Image = stringr::str_c(
                 "<a href=\"",
                 "http://quip1.bmi.stonybrook.edu:443/camicroscope/osdCamicroscope.php?tissueId=",
                 Slide,
                 "\">",
                 Slide,
-                "</a>",
-                sep="")
-            ) %>%
-            select(-Slide) %>% 
-            magrittr::set_colnames(c(
-                "ParticipantBarcode", 
-                "Study", 
-                TIL_map_columns_display,
-                "Image"
-            )) %>% 
-            dplyr::mutate_if(is.double, round, digits = 1)
+                "</a>"
+            )) %>%
+            dplyr::select(-Slide)
     })
     
     callModule(data_table_module, "til_table", table_df(), escape = F)

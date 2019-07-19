@@ -41,7 +41,6 @@ datainfo <- function(input, output, session) {
             sort %>% 
             unique %>% 
             c("All classes", .)
-        print(choices)
         selectInput(
             ns("class_choice"),
             label = "Select Class",
