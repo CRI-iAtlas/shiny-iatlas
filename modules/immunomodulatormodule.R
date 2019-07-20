@@ -48,5 +48,5 @@ immunomodulator <- function(
       dplyr::select(panimmune_data$im_direct_relationships,-c(X10, Notes))
     })
     
-    callModule(data_table_module, "im_table", table_df())
+    callModule(data_table_module, "im_table", table_df)
 }

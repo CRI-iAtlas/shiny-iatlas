@@ -10,7 +10,7 @@ iotarget_UI <- function(id) {
         tags$a(href="https://www.cancerresearch.org","Cancer Research Institute"), 
         tags$a(href="https://www.cancerresearch.org/scientists/clinical-accelerator/leadership","Clinical Accelerator"),
         "publications"
-        ),
+      ),
       
       tags$ul(
         tags$li("Comprehensive 2017 IO landscape analysis (",
@@ -20,20 +20,20 @@ iotarget_UI <- function(id) {
                 tags$a(href="https://www.nature.com/articles/nrd.2018.167","Nature Reviews Drug Discovery"),
                 ", October 2018)")
       ),
-     p("and to connect to additional resources on agents for those targets provided by those studies."),
+      p("and to connect to additional resources on agents for those targets provided by those studies."),
       
-     p("All displayed targets and descriptions are compiled and annotated by the",
-       tags$a(href="https://www.cancerresearch.org","Cancer Research Institute"),
-       tags$a(href="https://www.cancerresearch.org/scientists/clinical-accelerator/leadership","Clinical Accelerator"),
-       "management team using publicly available data, 
+      p("All displayed targets and descriptions are compiled and annotated by the",
+        tags$a(href="https://www.cancerresearch.org","Cancer Research Institute"),
+        tags$a(href="https://www.cancerresearch.org/scientists/clinical-accelerator/leadership","Clinical Accelerator"),
+        "management team using publicly available data, 
        including trade news, company press releases, academic publications, and NCBI."),
-     
-     p("For more information about publications and Cancer Research Institute’s IO Landscape, please go to",
-       tags$a(href="https://www.cancerresearch.org/scientists/clinical-accelerator/landscape-of-immuno-oncology-drug-development","Landscape of Immuno-Oncology Drug Development"),
-       "."
-        )
-      ), 
-  
+      
+      p("For more information about publications and Cancer Research Institute’s IO Landscape, please go to",
+        tags$a(href="https://www.cancerresearch.org/scientists/clinical-accelerator/landscape-of-immuno-oncology-drug-development","Landscape of Immuno-Oncology Drug Development"),
+        "."
+      )
+    ), 
+    
     # IO Target distributions section ----
     sectionBox(
       title = "IO Target Gene Expression Distributions",
@@ -55,22 +55,22 @@ iotarget_UI <- function(id) {
         p(em('Pathway'),", one of the molecular pathways to which the target protein belongs. Sourced from",
           tags$a(href="https://www.ncbi.nlm.nih.gov/biosystems/","NCBI Biosystems"),
           "(e.g. KEGG database, Reactome database, WikiPathways).")
-
+        
       ),
       fluidRow(
         optionsBox(
           width = 12,
           column(
-              width = 6,
-              uiOutput(ns("gene_choices"))
+            width = 6,
+            uiOutput(ns("gene_choices"))
           ),
           column(
-              width = 6,
-              selectInput(
-                  inputId = ns("io_target_category_choice_choice"),
-                  label = "Select IO Target Category",
-                  choices = c("Therapy Type","Pathway")
-              )
+            width = 6,
+            selectInput(
+              inputId = ns("io_target_category_choice_choice"),
+              label = "Select IO Target Category",
+              choices = c("Therapy Type","Pathway")
+            )
           )
         )
       ),
@@ -113,96 +113,96 @@ iotarget_UI <- function(id) {
 }
 
 iotarget <- function(
-    input, 
-    output, 
-    session,
-    group_display_choice, 
-    group_internal_choice, 
-    sample_group_df,
-    subset_df, 
-    plot_colors
+  input, 
+  output, 
+  session,
+  group_display_choice, 
+  group_internal_choice, 
+  sample_group_df,
+  subset_df, 
+  plot_colors
 ) {
+  
+  ns <- session$ns
+  
+  io_target_expr_plot_df <- reactive({
+    req(subset_df(), 
+        input$io_target_gene_choice, 
+        group_internal_choice(),
+        cancelOutput = T)
     
-    ns <- session$ns
+    build_io_target_expr_plot_df(
+      subset_df(),
+      filter_value = input$io_target_gene_choice, 
+      group_option = group_internal_choice())
+  })
+  
+  output$violinPlot <- renderPlotly({
+    req(io_target_expr_plot_df(), cancelOutput = T)
     
-    io_target_expr_plot_df <- reactive({
-        req(subset_df(), 
-            input$io_target_gene_choice, 
-            group_internal_choice(),
-            cancelOutput = T)
-        
-        build_io_target_expr_plot_df(
-            subset_df(),
-            filter_value = input$io_target_gene_choice, 
-            group_option = group_internal_choice())
-    })
+    validate(
+      need(nrow(io_target_expr_plot_df()) > 0, 
+           "Current selected group and selected variable have no overlap")
+    )
     
-    output$violinPlot <- renderPlotly({
-        req(io_target_expr_plot_df(), cancelOutput = T)
-        
-        validate(
-            need(nrow(io_target_expr_plot_df()) > 0, 
-                 "Current selected group and selected variable have no overlap")
-        )
-        
-        create_violinplot(
-            io_target_expr_plot_df(),
-            xlab = group_display_choice(), 
-            ylab = "log10(count + 1)",
-            source_name = "violin",
-            fill_colors = plot_colors())
-    })
-        
+    create_violinplot(
+      io_target_expr_plot_df(),
+      xlab = group_display_choice(), 
+      ylab = "log10(count + 1)",
+      source_name = "io_violin",
+      fill_colors = plot_colors())
+  })
+  
+  
+  output$violin_group_text <- renderText({
+    req(group_internal_choice(), sample_group_df(), cancelOutput = T)
     
-    output$violin_group_text <- renderText({
-        req(group_internal_choice(), sample_group_df(), cancelOutput = T)
-        
-        create_group_text_from_plotly(
-            "violin", 
-            group_internal_choice(),
-            sample_group_df())  
-    })
+    create_group_text_from_plotly(
+      "io_violin", 
+      group_internal_choice(),
+      sample_group_df())  
+  })
+  
+  output$histPlot <- renderPlotly({
     
-    output$histPlot <- renderPlotly({
-        
-        eventdata <- event_data("plotly_click", source = "violin")
-        validate(need(!is.null(eventdata), "Click violin plot above"))
-        clicked_group <- eventdata$x[[1]]
-        
-        current_violin_groups <- io_target_expr_plot_df() %>% 
-            magrittr::use_series(x) %>% 
-            unique
-        
-        validate(need(clicked_group %in% current_violin_groups, "Click violin plot above"))
-        
-        histplot_df <- io_target_expr_plot_df() %>% 
-            dplyr::select(GROUP = x, log_count = y) %>% 
-            dplyr::filter(GROUP == clicked_group)
-        
-        create_histogram(
-            histplot_df,
-            x_col = "log_count",
-            x_lab = "log10(count + 1)",
-            title = eventdata$x[[1]])
-    })
+    eventdata <- event_data("plotly_click", source = "io_violin")
+    validate(need(!is.null(eventdata), "Click violin plot above"))
+    clicked_group <- eventdata$x[[1]]
     
-    output$gene_choices <- renderUI({
-      query <- parseQueryString(session$clientData$url_search)
-      selected_gene <- NULL
-      if (!is.null(query[['gene']])) {
-        selected_gene = query[['gene']]
-      }
-      choices <- get_iotarget_nested_list(
-        class_column = input$io_target_category_choice_choice)
-      selectInput(
-        ns("io_target_gene_choice"),
-        label = "Select IO Target Gene",
-        choices = choices,
-        selected = selected_gene)
-    })
+    current_violin_groups <- io_target_expr_plot_df() %>% 
+      magrittr::use_series(x) %>% 
+      unique
     
-    table_df <-         
-      panimmune_data$io_target_annotations %>% 
+    validate(need(clicked_group %in% current_violin_groups, "Click violin plot above"))
+    
+    histplot_df <- io_target_expr_plot_df() %>% 
+      dplyr::select(GROUP = x, log_count = y) %>% 
+      dplyr::filter(GROUP == clicked_group)
+    
+    create_histogram(
+      histplot_df,
+      x_col = "log_count",
+      x_lab = "log10(count + 1)",
+      title = eventdata$x[[1]])
+  })
+  
+  output$gene_choices <- renderUI({
+    query <- parseQueryString(session$clientData$url_search)
+    selected_gene <- NULL
+    if (!is.null(query[['gene']])) {
+      selected_gene = query[['gene']]
+    }
+    choices <- get_iotarget_nested_list(
+      class_column = input$io_target_category_choice_choice)
+    selectInput(
+      ns("io_target_gene_choice"),
+      label = "Select IO Target Gene",
+      choices = choices,
+      selected = selected_gene)
+  })
+  
+  table_df <- reactive({
+    panimmune_data$io_target_annotations %>% 
       dplyr::mutate(LinkText = .$IO_target_URL%>% 
                       stringr::str_split(";") %>% 
                       purrr::map(rev) %>% 
@@ -217,7 +217,9 @@ iotarget <- function(
         )
       ) %>% 
       dplyr::select(-IO_target_URL, -LinkText)
-    
-    callModule(data_table_module, "io_table", table_df, escape = F)
-
+  })       
+  
+  
+  callModule(data_table_module, "io_table", table_df, escape = F)
+  
 }

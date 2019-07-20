@@ -110,7 +110,7 @@ immunomodulator_distributions_module <- function(
             violin_plot_df,
             xlab = group_display_choice(), 
             ylab = "log10(count + 1)",
-            source_name = "violin",
+            source_name = "im_violin",
             fill_colors = plot_colors()
         )
     })
@@ -120,7 +120,7 @@ immunomodulator_distributions_module <- function(
         req(group_internal_choice(), sample_group_df(), cancelOutput = T)
         
         create_group_text_from_plotly(
-            "violin", 
+            "im_violin", 
             group_internal_choice(),
             sample_group_df())  
     })
@@ -131,7 +131,7 @@ immunomodulator_distributions_module <- function(
             nrow(expression_df()) > 0, 
             "Samples in current selected groups have no expression data for the currently selected gene."))
         
-        eventdata <- event_data("plotly_click", source = "violin")
+        eventdata <- event_data("plotly_click", source = "im_violin")
         validate(need(!is.null(eventdata), "Click violin plot above"))
         clicked_group <- eventdata$x[[1]]
         
