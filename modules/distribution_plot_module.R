@@ -21,7 +21,7 @@ distributions_plot_module_UI <- function(
                 optionsBox(
                     width = 12,
                     column(
-                        width = 8,
+                        width = 4,
                         selectInput(
                             ns("y_variable"),
                             y_variable_select_label,
@@ -35,6 +35,10 @@ distributions_plot_module_UI <- function(
                             "Select Plot Type",
                             choices = c("Violin", "Box")
                         )
+                    ),
+                    column(
+                        width = 4,
+                        checkboxInput(ns("log_scale"), "Log Scale Y Axis?", FALSE)
                     )
                 )
             ),
@@ -63,9 +67,13 @@ distributions_plot_module <- function(
     ...
 ){
     plot_df <- reactive({
-        data_df() %>% 
+        df <- data_df() %>% 
             dplyr::select(x, y = input$y_variable, label) %>% 
-            tidyr::drop_na()
+            tidyr::drop_na() 
+        if(input$log_scale){
+            df <- dplyr::mutate(df, y = log(y))
+        }
+        return(df)
     })
 
     output$plot <- renderPlotly({
