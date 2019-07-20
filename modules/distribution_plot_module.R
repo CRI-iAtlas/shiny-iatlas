@@ -1,22 +1,30 @@
-distributions_plot_module_UI <- function(id){
+distributions_plot_module_UI <- function(
+    id, 
+    y_variable_options,
+    y_variable_select_label = "Select Variable",
+    title_text = "Distributions",
+    message_text = stringr::str_c(
+        "Select variable to its to see its distribution over sample groups.",
+        "Plots are available as violin plots, and box plots with full data",
+        "points superimposed."
+    ),
+    click_text = "Click plot to see group information."
+    
+){
     
     ns <- NS(id)
     
     sectionBox(
-            title = "TIL Map Characteristics",
-            messageBox(
-                width = 12,
-                p("Select a TIL map characteristic to see its distribution over sample groups. Plots are available as violin plots, and box plots with full data points superimposed."),
-                p("Main immune manuscript context:  If you are looking at immune subtypes, select TIL Regional Fraction to get Figure 3B.")
-            ),
+            title = title_text,
+            messageBox(width = 12, p(message_text)),
             fluidRow(
                 optionsBox(
                     width = 12,
                     column(
-                        width = 4,
-                        selectInput( ## would be good to initiate on til_percentage/"TIL Regional Fraction (Percent)"
+                        width = 8,
+                        selectInput(
                             ns("y_variable"),
-                            "Select TIL Map Characteristic",
+                            y_variable_select_label,
                             get_tilmap_nested_list()
                         )
                     ),
@@ -37,7 +45,7 @@ distributions_plot_module_UI <- function(id){
                         shinycssloaders::withSpinner(),
                     p(),
                     textOutput(ns("plot_text")),
-                    h4("Click point or violin/box to filter samples in table below")
+                    h4(click_text)
                 )
             )
         )
@@ -48,8 +56,10 @@ distributions_plot_module <- function(
     input, 
     output, 
     session,
+    plot_source_name,
     data_df,
     sample_group_df,
+    plot_colors,
     ...
 ){
     plot_df <- reactive({
@@ -62,19 +72,20 @@ distributions_plot_module <- function(
         if(input$plot_type == "Violin") plot_func <- create_violinplot
         else if (input$plot_type == "Box") plot_func <- create_boxplot
         else stop("No plot selected")
-        plot_func(plot_df(), source_name = "plot", ...)
+        plot_func(
+            plot_df(), 
+            source_name = plot_source_name, 
+            fill_colors = plot_colors(), 
+            ...)
     })
     
-    sample_clicked <- reactive(get_eventdata_from_plotly("plotly_click", "plot"))
-        
-    plot_text   <- reactive(create_group_text_from_plotly(
-        "plot",
-        "",
-        sample_group_df(),
-        prompt_text = "",
-        key_column = "x"
-    ))
-    
-    output$plot_text <- renderText(plot_text())
-    return(sample_clicked)
+    output$plot_text <- renderText(
+        create_group_text_from_plotly(
+            plot_source_name,
+            "",
+            sample_group_df(),
+            prompt_text = "",
+            key_column = "x"
+        )
+    )
 }

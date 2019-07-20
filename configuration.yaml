@@ -12,6 +12,7 @@ module_files:
   - "modules/drivermodule.R"
   - "modules/subtypepredictormodule.R"
   - "modules/submodules.R"
+  - "modules/distribution_plot_module.R"
   
 function_files:
   - "functions/load_data.R"
