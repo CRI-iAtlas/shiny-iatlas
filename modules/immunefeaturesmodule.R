@@ -5,16 +5,29 @@ immunefeatures_UI <- function(id) {
         titleBox("iAtlas Explorer — Immune Feature Trends"),
         textBox(
             width = 12,
-            p("This module allows you to see how immune readouts vary across your groups, and how they relate to one another.")  
+            p(stringr::str_c(
+                "This module allows you to see how immune readouts vary",
+                "across your groups, and how they relate to one another."
+            ))  
         ),
-        
-        immune_feature_distributions_module_UI(ns("ifds")),
+        distributions_plot_module_UI(
+            ns("dist"),
+            y_variable_options = get_feature_df_nested_list(),
+            message_text = stringr::str_c(
+                "This displays the value of immune readouts by sample group.",
+                "Select a variable class to see the distribution of variables",
+                "within that class displayed as as violin plot. Manuscript",
+                "context: This allows you to display distributions such as",
+                "those shown in Figures 1C and 1D.",
+                sep = " "
+            ),
+        ),
+    
         sectionBox(
             title = "Correlations",
             messageBox(
                 width = 12,
-                p("Here, you can look at correlation of a response variable with other variables, within each sample group.  Select the response variable on the right. Select a variable class on the left to specify which other variable you would like to correlate the response variable with. The result will be a heatmap, with positive correlation shown with a red scale, absence of correlation in white, and negative correlation in blue.  Click on any cell in the heatmap to see the underlying data as a scatterplot. In the scatterplot, each point represents a tumor sample, the response variable is shown on the Y-axis and the row variable is shown on the X-axis.
-"),
+                p("Here, you can look at correlation of a response variable with other variables, within each sample group.  Select the response variable on the right. Select a variable class on the left to specify which other variable you would like to correlate the response variable with. The result will be a heatmap, with positive correlation shown with a red scale, absence of correlation in white, and negative correlation in blue.  Click on any cell in the heatmap to see the underlying data as a scatterplot. In the scatterplot, each point represents a tumor sample, the response variable is shown on the Y-axis and the row variable is shown on the X-axis."),
                 p("Manuscript context:  Select “Leukocyte Fraction” as the response variable, “DNA Alteration” as the variable class, and Spearman correlation. This will correspond to Figure 4A if you are looking at immune subtypes as your sample grouping.")
             ),
             fluidRow(
@@ -83,7 +96,24 @@ immunefeatures <- function(
     plot_colors
 ){
     
-    # reactives ----
+    data_df <- reactive({
+        dplyr::select(
+            subset_df(),
+            x = group_internal_choice(),
+            label = "ParticipantBarcode",
+            dplyr::everything()) 
+    })
+    
+    callModule(
+        distributions_plot_module,
+        "dist",
+        "immunefeatures_dist_plot",
+        data_df,
+        sample_group_df,
+        plot_colors,
+        key_col = "label"
+    )
+
     hm_variables  <- reactive({
         get_factored_variables_from_feature_df(input$heatmap_y) %>% 
             as.character
@@ -103,18 +133,8 @@ immunefeatures <- function(
             value1_column = input$heatmap_values,
             value2_columns = hm_variables(),
             group_options = sample_groups)
-
+        
     })
-    
-    callModule(
-        immune_feature_distributions_module,
-        "ifds",
-        subset_df,
-        sample_group_df,
-        group_internal_choice,
-        group_display_choice,
-        plot_colors
-    )
         
     
     

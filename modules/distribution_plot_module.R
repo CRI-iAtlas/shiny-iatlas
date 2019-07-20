@@ -1,7 +1,7 @@
 distributions_plot_module_UI <- function(
     id, 
     y_variable_options,
-    y_variable_select_label = "Select Variable",
+    y_variable_select_label = "Select plot Y Variable",
     title_text = "Distributions",
     message_text = stringr::str_c(
         "Select variable to its to see its distribution over sample groups.",
@@ -25,7 +25,7 @@ distributions_plot_module_UI <- function(
                         selectInput(
                             ns("y_variable"),
                             y_variable_select_label,
-                            get_tilmap_nested_list()
+                            y_variable_options
                         )
                     ),
                     column(
