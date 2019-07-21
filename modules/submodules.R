@@ -142,7 +142,7 @@ immunomodulator_distributions_module <- function(
         validate(need(clicked_group %in% current_violin_groups, "Click violin plot above"))
         
         histogram_df <-  build_immunomodulator_histogram_df(expression_df(), clicked_group) 
-        
+        print(histogram_df)
         
         create_histogram(
             histogram_df ,

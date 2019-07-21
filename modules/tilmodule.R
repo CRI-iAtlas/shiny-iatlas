@@ -34,17 +34,15 @@ tilmap_UI <- function(id) {
         
         distributions_plot_module_UI(
             ns("dist"),
-            y_variable_options = get_tilmap_nested_list(),
-            y_variable_select_label = "Select TIL Map Characteristic",
             title_text = "TIL Map Characteristics",
-            message_text = stringr::str_c(
+            message_html = p(stringr::str_c(
                 "Select a TIL map characteristic to see its distribution over", 
                 "sample groups. Plots are available as violin plots, and box",
                 "plots with full data points superimposed. Main immune",
                 "manuscript context:  If you are looking at immune",
                 "subtypes, select TIL Regional Fraction to get Figure 3B.",
                 sep = " "
-            ),
+            )),
             click_text = 
                 "Click point or violin/box to filter samples in table below"
         ),
@@ -88,14 +86,22 @@ tilmap <- function(
     plot_colors, 
     group_options){
     
-    ns <- session$ns
     
     data_df <- reactive({
-        subset_df() %>% 
+        dplyr::select(
+            subset_df(),
+            x = group_internal_choice(), 
+            label = "Slide", 
+            dplyr::everything()) 
+    })
+    
+    relationship_df <- reactive({
+        panimmune_data$feature_df %>% 
+            dplyr::filter(`Variable Class` == "TIL Map Characteristic") %>% 
             dplyr::select(
-                x = group_internal_choice(), 
-                label = "Slide", 
-                dplyr::everything()) 
+                INTERNAL = FeatureMatrixLabelTSV, 
+                DISPLAY = FriendlyLabel,
+                `Variable Class`)
     })
     
     callModule(
@@ -103,6 +109,7 @@ tilmap <- function(
         "dist",
         "tilmap_dist_plot",
         data_df,
+        relationship_df,
         sample_group_df,
         plot_colors,
         key_col = "label"

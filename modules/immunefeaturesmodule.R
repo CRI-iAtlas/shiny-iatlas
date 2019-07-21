@@ -12,15 +12,14 @@ immunefeatures_UI <- function(id) {
         ),
         distributions_plot_module_UI(
             ns("dist"),
-            y_variable_options = get_feature_df_nested_list(),
-            message_text = stringr::str_c(
+            message_html = p(stringr::str_c(
                 "This displays the value of immune readouts by sample group.",
                 "Select a variable class to see the distribution of variables",
                 "within that class displayed as as violin plot. Manuscript",
                 "context: This allows you to display distributions such as",
                 "those shown in Figures 1C and 1D.",
                 sep = " "
-            ),
+            )),
         ),
     
         sectionBox(
@@ -116,7 +115,6 @@ immunefeatures <- function(
     subset_df, 
     plot_colors
 ){
-    
     data_df <- reactive({
         dplyr::select(
             subset_df(),
@@ -125,11 +123,22 @@ immunefeatures <- function(
             dplyr::everything()) 
     })
     
+    relationship_df <- reactive({
+        panimmune_data$feature_df %>% 
+            dplyr::filter(VariableType == "Numeric") %>% 
+            dplyr::select(
+                INTERNAL = FeatureMatrixLabelTSV, 
+                DISPLAY = FriendlyLabel,
+                `Variable Class`,
+                Unit)
+    })
+    
     callModule(
         distributions_plot_module,
         "dist",
         "immunefeatures_dist_plot",
         data_df,
+        relationship_df,
         sample_group_df,
         plot_colors,
         key_col = "label"

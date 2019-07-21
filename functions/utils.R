@@ -230,8 +230,10 @@ create_nested_list_by_class <- function(
         dplyr::select(
             CLASS = class_column,
             DISPLAY = display_column,
-            INTERNAL = internal_column) %>%
+            INTERNAL = internal_column
+        ) %>%
         dplyr::mutate(CLASS = ifelse(is.na(CLASS), "Other", CLASS)) %>%
+        dplyr::mutate(CLASS = ifelse(CLASS == "", "Other", CLASS)) %>%
         df_to_nested_list(
             group_column = "CLASS",
             key_column = "INTERNAL",
