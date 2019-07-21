@@ -201,7 +201,7 @@ groupsoverview <- function(
     callModule(
         data_table_module, 
         "sg_table", 
-        table_df(),
+        table_df,
         options = list(
             dom = "tip",
             pageLength = 10,

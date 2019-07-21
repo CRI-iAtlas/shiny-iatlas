@@ -247,7 +247,7 @@ data_table_module <- function(
     input, 
     output, 
     session,
-    df,
+    data_df,
     options = list(pageLength = 10),
     color = F,
     color_column = NULL,
@@ -256,7 +256,7 @@ data_table_module <- function(
 ){
     output$data_table_module <- DT::renderDT({
         dt <- DT::datatable(
-            df(),
+            data_df(),
             options = options,
             rownames = FALSE,
             ...
