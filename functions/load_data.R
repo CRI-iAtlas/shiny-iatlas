@@ -61,7 +61,11 @@ load_io_target_annotations <- function() {
 load_im_expression <- function() {
     if (!USE_REMOTE_BQ) {
         list(
-            im_expr_df = feather::read_feather("data/im_expr_df.feather")
+            im_expr_df = feather::read_feather("data/im_expr_df.feather") %>% 
+              dplyr::group_by(ParticipantBarcode, Symbol) %>% 
+              dplyr::summarise(normalized_count = mean(normalized_count)) %>% 
+              dplyr::ungroup() %>% 
+              tidyr::spread(key = Symbol, value = normalized_count)
         )
     } else {
         fetch_im_expression() %>% 

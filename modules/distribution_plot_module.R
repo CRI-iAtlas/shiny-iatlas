@@ -6,7 +6,9 @@ distributions_plot_module_UI <- function(
         "Plots are available as violin plots, and box plots with full data",
         "points superimposed."
     )),
-    click_text = "Click plot to see group information."
+    click_text = "Click plot to see group information.",
+    log_scale_default = F,
+    plot_clicked_group_default = F
 ){
     
     ns <- NS(id)
@@ -36,7 +38,19 @@ distributions_plot_module_UI <- function(
                     ),
                     column(
                         width = 4,
-                        checkboxInput(ns("log_scale"), "Log Scale Y Axis?", FALSE)
+                        checkboxInput(
+                            ns("log_scale"), 
+                            "Log Scale Y Axis?", 
+                            log_scale_default
+                        )
+                    ),
+                    column(
+                        width = 4,
+                        checkboxInput(
+                            ns("see_drilldown"), 
+                            "Plot clicked group?", 
+                            plot_clicked_group_default
+                        )
                     )
                 )
             ),
@@ -50,11 +64,15 @@ distributions_plot_module_UI <- function(
                     h4(click_text)
                 )
             ),
-            fluidRow(
-                plotBox(
-                    width = 12,
-                    plotlyOutput(ns("histPlot")) %>% 
-                        shinycssloaders::withSpinner()
+            conditionalPanel(
+                condition =  "input.see_drilldown",
+                ns = ns,
+                fluidRow(
+                    plotBox(
+                        width = 12,
+                        plotlyOutput(ns("drilldown_plot")) %>% 
+                            shinycssloaders::withSpinner()
+                    )
                 )
             )
         )
@@ -151,7 +169,7 @@ distributions_plot_module <- function(
         )
     })
     
-    output$histPlot <- renderPlotly({
+    output$drilldown_plot <- renderPlotly({
         
         eventdata <- event_data("plotly_click", source = plot_source_name)
         validate(need(!is.null(eventdata), "Click plot above"))
@@ -167,10 +185,8 @@ distributions_plot_module <- function(
         
         df <- plot_df() %>% 
             dplyr::filter(x == clicked_group) %>% 
-            dplyr::select(x = y)
-            
-        print(df)
-        create_histogram(df, title = clicked_group)
+            dplyr::select(x = y) %>% 
+            create_histogram(title = clicked_group)
     })
     
     
