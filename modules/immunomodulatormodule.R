@@ -94,7 +94,8 @@ immunomodulator <- function(
     relationship_df,
     sample_group_df,
     plot_colors,
-    key_col = "label"
+    group_display_choice,
+    key_col = "label",
   )
 
     table_df <- reactive({

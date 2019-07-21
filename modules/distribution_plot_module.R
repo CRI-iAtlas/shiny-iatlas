@@ -88,6 +88,7 @@ distributions_plot_module <- function(
     relationship_df,
     sample_group_df,
     plot_colors,
+    group_display_choice,
     ...
 ){
     
@@ -145,6 +146,14 @@ distributions_plot_module <- function(
                 .
             )}
     })
+    
+    y_varible_display_name <- reactive({
+        convert_value_between_columns(
+            input$y_variable, 
+            relationship_df(),
+            "INTERNAL",
+            "DISPLAY")
+    })
 
     output$plot <- renderPlotly({
         req(plot_df(), input$plot_type)
@@ -153,6 +162,9 @@ distributions_plot_module <- function(
         else stop("No plot selected")
         plot_func(
             plot_df(), 
+            xlab = group_display_choice(),
+            ylab = y_varible_display_name(),
+            title = y_varible_display_name(),
             source_name = plot_source_name, 
             fill_colors = plot_colors(), 
             ...)
@@ -186,7 +198,10 @@ distributions_plot_module <- function(
         df <- plot_df() %>% 
             dplyr::filter(x == clicked_group) %>% 
             dplyr::select(x = y) %>% 
-            create_histogram(title = clicked_group)
+            create_histogram(
+                title = clicked_group, 
+                x_lab = y_varible_display_name()
+            )
     })
     
     

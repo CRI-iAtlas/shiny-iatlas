@@ -112,6 +112,7 @@ tilmap <- function(
         relationship_df,
         sample_group_df,
         plot_colors,
+        group_display_choice,
         key_col = "label"
     )
     
