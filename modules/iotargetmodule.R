@@ -59,64 +59,6 @@ iotarget_UI <- function(id) {
       ),
     ),
     
-    # # IO Target distributions section ----
-    # sectionBox(
-    #   title = "IO Target Gene Expression Distributions",
-    #   messageBox(
-    #     width = 12,
-    #     p("To explore gene expression distributions, vary sample grouping by selecting an option from Explorer Settings in the left panel. Options include Immune Subtype Groups (default), TCGA Subtype Groups, and TCGA Study.","\n"),
-    #     p("For more information about Sample Groups, refer to Sample Group Overview in the left panel.","\n"),      
-    #     p("Select an IO Target Gene below to see its expression in tumor samples. By default, IO Target Genes are grouped by therapy type. To vary IO Target Category, select a different option from IO Target Category (drop-down menu on the right) to re-organize the IO Target Gene list."),
-    #     p("The IO Target Categories are:"),
-    #     
-    #     p(em('Therapy Type'),", the type of therapy as described in",
-    #       tags$a(href="https://academic.oup.com/annonc/article/29/1/84/4693829","Annals of Oncology"),
-    #       ", December 2017"),
-    #     tags$ul(
-    #       tags$li(strong('T-cell-targeted immunomodulators'), "that act on inhibitory or activating molecules expressed by T cells"),
-    #       tags$li(strong('Other immunomodulators'), " that act on other immune cells or the tumor immune microenvironment to unleash antitumor immunity"),
-    #       tags$li(strong('Targeted by Other Immuno-Oncology Therapy Type'), " (Cancer Vaccine, Cell therapy, Oncolytic Virus, and CD3-targeted bispecific antibody) to unleash antitumoral immunity")
-    #     ), 
-    #     p(em('Pathway'),", one of the molecular pathways to which the target protein belongs. Sourced from",
-    #       tags$a(href="https://www.ncbi.nlm.nih.gov/biosystems/","NCBI Biosystems"),
-    #       "(e.g. KEGG database, Reactome database, WikiPathways).")
-    #     
-    #   ),
-    #   fluidRow(
-    #     optionsBox(
-    #       width = 12,
-    #       column(
-    #         width = 6,
-    #         uiOutput(ns("gene_choices"))
-    #       ),
-    #       column(
-    #         width = 6,
-    #         selectInput(
-    #           inputId = ns("io_target_category_choice_choice"),
-    #           label = "Select IO Target Category",
-    #           choices = c("Therapy Type","Pathway")
-    #         )
-    #       )
-    #     )
-    #   ),
-    #   fluidRow(
-    #     plotBox(
-    #       width = 12,
-    #       plotlyOutput(ns("violinPlot")) %>% 
-    #         shinycssloaders::withSpinner(),
-    #       p(),
-    #       textOutput(ns("violin_group_text"))
-    #     )
-    #   ),
-    #   fluidRow(
-    #     plotBox(
-    #       width = 12,
-    #       plotlyOutput(ns("histPlot")) %>% 
-    #         shinycssloaders::withSpinner()
-    #     )
-    #   )
-    # ),
-    
     data_table_module_UI(
       ns("io_table"), 
       title = "IO Target Annotations",
