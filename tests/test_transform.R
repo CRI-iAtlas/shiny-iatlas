@@ -4,55 +4,6 @@ source("../functions/transform.R")
 source("../functions/utils.R")
 context("transform.R")
 
-# immunomodulator functions ---------------------------------------------------
-
-testthat::test_that("build_immunomodulator_expression_df", {
-    expr_df <- tibble(
-        "ID" = c("a", "a", "b","b"),
-        "COUNT" = c(1, 10, 100, 100),
-        "GENE" = c("genea", "geneb", "genea", "geneb")
-    )
-    group_df <- tibble(
-        "ID" = c("a", "b", "c", "d"),
-        "GROUP" = c("group1", "group2", "group1", "group2")
-    )
-    testthat::expect_that(
-        build_immunomodulator_expression_df(
-            group_df, 
-            filter_value = "genea",
-            group_col = "GROUP",
-            expression_df = expr_df,
-            expression_filter_col = "GENE",
-            expression_col = "COUNT",
-            id_col = "ID"
-        ),
-        testthat::is_identical_to(tibble(
-            "GROUP" = c("group1", "group2"),
-            "LOG_COUNT" = c(log10(1+1), log10(100+1))
-        ))
-    )
-})
-
-testthat::test_that("filter_immunomodulator_expression_df", {
-    expr_df <- tibble(
-        "ID" = c("a", "a", "b","b"),
-        "COUNT" = c(1, 10, 100, 100),
-        "GENE" = c("genea", "geneb", "genea", "geneb")
-    )
-    testthat::expect_that(
-        filter_immunomodulator_expression_df(
-            expr_df, 
-            id_col = "ID",
-            filter_col = "GENE",
-            expression_col = "COUNT",
-            filter_value = "genea"
-        ),
-        testthat::is_identical_to(tibble(
-            "LOG_COUNT" = c(log10(1+1), log10(100+1)),
-            "ID" = c("a", "b")
-        ))
-    )
-})
                     
 
 # samplegroup functions -------------------------------------------------------
@@ -94,28 +45,6 @@ testthat::test_that("build_sample_group_key_df",{
         build_sample_group_key_df(group_df, "group_col3", feature_df),
         testthat::throws_error("df has missing columns: group_col3"))
 })
-
-# testthat::test_that("build_plot_color_df",{
-#     subset_df <- tibble(
-#         "group_col1" = c(rep("group1", 5), rep("group2", 3)),
-#         "group_col2" = c(rep("group2", 3), rep("group3", 4), NA))
-#     color_vector = c(
-#         "group1" = "red",
-#         "group2" = "blue",
-#         "group3" = "green")
-#     result_color_df1 <- tibble(
-#         "Group" = c("group1", "group2"),
-#         "Plot_Color" = c("red", "blue"))
-#     result_color_df2<- tibble(
-#         "Group" = c("group2", "group3"),
-#         "Plot_Color" = c("blue", "green"))
-#     testthat::expect_that(
-#         build_plot_color_df(color_vector, subset_df, "group_col1"),
-#         testthat::is_identical_to(result_color_df1))
-#     testthat::expect_that(
-#         build_plot_color_df(color_vector, subset_df, "group_col2"),
-#         testthat::is_identical_to(result_color_df2))
-# })
 
 testthat::test_that("build_group_size_df",{
     test_subset_df <- tibble(
@@ -214,3 +143,82 @@ testthat::test_that("summarise_df_at_column",{
         testthat::is_identical_to(result_df4))
 })
 
+
+
+##### deprecated tests --------------------------------------------------------
+
+
+# immunomodulator functions ---------------------------------------------------
+
+# testthat::test_that("build_immunomodulator_expression_df", {
+#     expr_df <- tibble(
+#         "ID" = c("a", "a", "b","b"),
+#         "COUNT" = c(1, 10, 100, 100),
+#         "GENE" = c("genea", "geneb", "genea", "geneb")
+#     )
+#     group_df <- tibble(
+#         "ID" = c("a", "b", "c", "d"),
+#         "GROUP" = c("group1", "group2", "group1", "group2")
+#     )
+#     testthat::expect_that(
+#         build_immunomodulator_expression_df(
+#             group_df, 
+#             filter_value = "genea",
+#             group_col = "GROUP",
+#             expression_df = expr_df,
+#             expression_filter_col = "GENE",
+#             expression_col = "COUNT",
+#             id_col = "ID"
+#         ),
+#         testthat::is_identical_to(tibble(
+#             "GROUP" = c("group1", "group2"),
+#             "LOG_COUNT" = c(log10(1+1), log10(100+1))
+#         ))
+#     )
+# })
+
+# testthat::test_that("filter_immunomodulator_expression_df", {
+#     expr_df <- tibble(
+#         "ID" = c("a", "a", "b","b"),
+#         "COUNT" = c(1, 10, 100, 100),
+#         "GENE" = c("genea", "geneb", "genea", "geneb")
+#     )
+#     testthat::expect_that(
+#         filter_immunomodulator_expression_df(
+#             expr_df, 
+#             id_col = "ID",
+#             filter_col = "GENE",
+#             expression_col = "COUNT",
+#             filter_value = "genea"
+#         ),
+#         testthat::is_identical_to(tibble(
+#             "LOG_COUNT" = c(log10(1+1), log10(100+1)),
+#             "ID" = c("a", "b")
+#         ))
+#     )
+# })
+
+
+# other ----
+
+# testthat::test_that("build_plot_color_df",{
+#     subset_df <- tibble(
+#         "group_col1" = c(rep("group1", 5), rep("group2", 3)),
+#         "group_col2" = c(rep("group2", 3), rep("group3", 4), NA))
+#     color_vector = c(
+#         "group1" = "red",
+#         "group2" = "blue",
+#         "group3" = "green")
+#     result_color_df1 <- tibble(
+#         "Group" = c("group1", "group2"),
+#         "Plot_Color" = c("red", "blue"))
+#     result_color_df2<- tibble(
+#         "Group" = c("group2", "group3"),
+#         "Plot_Color" = c("blue", "green"))
+#     testthat::expect_that(
+#         build_plot_color_df(color_vector, subset_df, "group_col1"),
+#         testthat::is_identical_to(result_color_df1))
+#     testthat::expect_that(
+#         build_plot_color_df(color_vector, subset_df, "group_col2"),
+#         testthat::is_identical_to(result_color_df2))
+# })

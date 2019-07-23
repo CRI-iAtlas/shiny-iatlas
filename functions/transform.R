@@ -12,131 +12,69 @@
 # original function.
 ###############################################################################
 
-# immunomodulator functions ---------------------------------------------------
 
-build_immunomodulator_expression_df <- function(
-    group_df, filter_value, group_col,
-    expression_df = panimmune_data$im_expr_df,
-    expression_filter_col = "Symbol",
-    expression_col = "normalized_count",
-    id_col = "ParticipantBarcode"){
-    
-    expression_df <- filter_immunomodulator_expression_df(
-        expression_df, 
-        id_col, 
-        expression_filter_col, 
-        expression_col, 
-        filter_value)
-    
-    group_df <- group_df %>% 
-        get_complete_df_by_columns(c(group_col, id_col)) %>% 
-        select(GROUP = group_col, ID = id_col)
-    
-    
-    result_df <- 
-        dplyr::inner_join(group_df, expression_df, by = "ID") %>%
-        dplyr::select(GROUP, LOG_COUNT)
-    
-}
-
-filter_immunomodulator_expression_df <- function(
-    df, id_col, filter_col, expression_col, filter_value){
-    
-    df %>% 
-        get_complete_df_by_columns(c(
-            id_col, 
-            filter_col, 
-            expression_col)) %>% 
-        dplyr::select(
-            FILTER = filter_col, 
-            COUNT = expression_col,
-            ID = id_col) %>% 
-        dplyr::filter(FILTER == filter_value) %>% 
-        dplyr::mutate(LOG_COUNT = log10(COUNT + 1)) %>% 
-        dplyr::select(LOG_COUNT, ID)
-}
-
-
-build_immunomodulator_violin_plot_df <- function(df){
-    df %>%
-        dplyr::select(x = GROUP, y = LOG_COUNT) %>% 
-        get_complete_df_by_columns(c("x", "y"))
-}
-
-build_immunomodulator_histogram_df <- function(df, selected_group){
-    df %>%
-        filter(GROUP == selected_group) %>% 
-        select(x = LOG_COUNT) %>% 
-        tidyr::drop_na()
-}
 
 # immunefeatures functions ----------------------------------------------------
 
 build_immunefeatures_df <- function(
-    df, 
-    group_column, 
-    value1_column, 
+    df,
+    group_column,
+    value1_column,
     value2_columns,
-    group_options, 
+    group_options,
     id_column = "ParticipantBarcode"){
-    
+
     assert_df_has_columns(
         df, c(group_column, value1_column, value2_columns, id_column))
-    
-    result_df <- df %>% 
+
+    result_df <- df %>%
         dplyr::select(
-            ID = id_column, 
-            GROUP = group_column, 
-            VALUE1 = value1_column, 
-            value2_columns) %>% 
-        dplyr::filter(GROUP %in% group_options) %>% 
+            ID = id_column,
+            GROUP = group_column,
+            VALUE1 = value1_column,
+            value2_columns) %>%
+        dplyr::filter(GROUP %in% group_options) %>%
         dplyr::filter(!is.na(VALUE1))
     assert_df_has_columns(result_df, c("ID", "GROUP", "VALUE1", value2_columns))
     return(result_df)
 }
 
 build_immunefeatures_correlation_matrix <- function(df, method = "spearman") {
-    long_df  <- df %>% 
-        dplyr::select(-ID) %>% 
+    long_df  <- df %>%
+        dplyr::select(-ID) %>%
         tidyr::gather(
-            key = "VARIABLE", 
-            value = "VALUE2", 
-            -c(GROUP, VALUE1)) %>% 
-        dplyr::group_by(GROUP, VARIABLE) %>% 
+            key = "VARIABLE",
+            value = "VALUE2",
+            -c(GROUP, VALUE1)) %>%
+        dplyr::group_by(GROUP, VARIABLE) %>%
         tidyr::drop_na()
-    
+
     if(nrow(long_df) == 0) return(long_df)
-    
-    result_matrix <- long_df %>% 
+
+    result_matrix <- long_df %>%
         dplyr::summarise(COR = cor(
-            VALUE1, 
+            VALUE1,
             VALUE2,
-            method = method, 
-            use = "pairwise.complete.obs")) %>% 
-        tidyr::spread(key = "GROUP", value = "COR", fill = NA) %>% 
-        dplyr::mutate(VARIABLE = purrr::map(VARIABLE, get_variable_display_name)) %>% 
-        as.data.frame() %>% 
-        tibble::column_to_rownames("VARIABLE") %>% 
+            method = method,
+            use = "pairwise.complete.obs")) %>%
+        tidyr::spread(key = "GROUP", value = "COR", fill = NA) %>%
+        dplyr::mutate(VARIABLE = purrr::map(VARIABLE, get_variable_display_name)) %>%
+        as.data.frame() %>%
+        tibble::column_to_rownames("VARIABLE") %>%
         as.matrix()
 }
 
 
-build_immunefeatures_violin_plot_df <- function(df, x_col, y_col){
-    df %>%
-        dplyr::select(x = x_col, y = y_col) %>%
-        tidyr::drop_na()
-}
-
 build_immunefeatures_scatter_plot_df <- function(df, x_col, group_filter_value){
     assert_df_has_columns(df, c(x_col, "VALUE1", "ID", "GROUP"))
     df %>%
-        select(ID, GROUP, y = "VALUE1", x = x_col) %>% 
-        filter(GROUP == group_filter_value) %>% 
+        select(ID, GROUP, y = "VALUE1", x = x_col) %>%
+        filter(GROUP == group_filter_value) %>%
         create_label(
             name_column = "ID",
             group_column = "GROUP",
             value_columns = c("x", "y")) %>%
-        select("x", "y", "label") %>% 
+        select("x", "y", "label") %>%
         get_complete_df_by_columns(c("x", "y", "label"))
 }
 
@@ -539,30 +477,6 @@ build_ci_mat <- function(
         magrittr::set_colnames(groups)
 }
 
-# ** Immune interface module ----
-
-# build_immuneinterface_df <- function(
-#     build_df, sample_group, diversity_vars
-# ) {
-#     df %>%
-#         select(sample_group, diversity_vars) %>%
-#         .[complete.cases(.), ] %>%
-#         gather(metric, diversity, -1) %>%
-#         separate(metric, into = c("receptor", "metric"), sep = "_")
-# }
-# 
-# ztransform_df <- function(df) {
-#     df %>%
-#         group_by(receptor, metric) %>%
-#         mutate(
-#             div_mean = mean(diversity),
-#             div_sd = sd(diversity)
-#         ) %>%
-#         ungroup() %>%
-#         mutate(diversity = (diversity - div_mean) / div_sd)
-# }
-
-# ** Immunomodulators module ----
 
 
 
@@ -731,21 +645,113 @@ compute_driver_associations <- function(df_for_regression,response_var,group_col
 }
 
 ###############################################################################
-# Tests below this line do not have tests yet, newly written functions 
+# Functions below this line do not have tests yet, newly written functions 
+###############################################################################
+
+
+
+###############################################################################
+# Functions below this line have been deprecated
 ###############################################################################
 
 # ** IO target module ----
 
-build_io_target_expr_plot_df <- function(df, filter_value, group_option) { # added Oct 24, 2018
-    result_df <- panimmune_data$io_target_expr_df %>%
-        dplyr::filter(Symbol == filter_value) %>%
-        dplyr::left_join(df) %>%
-        dplyr::mutate(log_count = log10(normalized_count + 1)) %>%
-        dplyr::select(x = group_option, y = log_count) %>% 
-        tidyr::drop_na()
-}
+# build_io_target_expr_plot_df <- function(df, filter_value, group_option) { # added Oct 24, 2018
+#     result_df <- panimmune_data$io_target_expr_df %>%
+#         dplyr::filter(Symbol == filter_value) %>%
+#         dplyr::left_join(df) %>%
+#         dplyr::mutate(log_count = log10(normalized_count + 1)) %>%
+#         dplyr::select(x = group_option, y = log_count) %>% 
+#         tidyr::drop_na()
+# }
 
 
+# ** Immune interface module ----
+
+# build_immuneinterface_df <- function(
+#     build_df, sample_group, diversity_vars
+# ) {
+#     df %>%
+#         select(sample_group, diversity_vars) %>%
+#         .[complete.cases(.), ] %>%
+#         gather(metric, diversity, -1) %>%
+#         separate(metric, into = c("receptor", "metric"), sep = "_")
+# }
+# 
+# ztransform_df <- function(df) {
+#     df %>%
+#         group_by(receptor, metric) %>%
+#         mutate(
+#             div_mean = mean(diversity),
+#             div_sd = sd(diversity)
+#         ) %>%
+#         ungroup() %>%
+#         mutate(diversity = (diversity - div_mean) / div_sd)
+# }
+
+# immunomodulator functions ---------------------------------------------------
+
+# build_immunomodulator_expression_df <- function(
+#     group_df, filter_value, group_col,
+#     expression_df = panimmune_data$im_expr_df,
+#     expression_filter_col = "Symbol",
+#     expression_col = "normalized_count",
+#     id_col = "ParticipantBarcode"){
+#     
+#     expression_df <- filter_immunomodulator_expression_df(
+#         expression_df, 
+#         id_col, 
+#         expression_filter_col, 
+#         expression_col, 
+#         filter_value)
+#     
+#     group_df <- group_df %>% 
+#         get_complete_df_by_columns(c(group_col, id_col)) %>% 
+#         select(GROUP = group_col, ID = id_col)
+#     
+#     
+#     result_df <- 
+#         dplyr::inner_join(group_df, expression_df, by = "ID") %>%
+#         dplyr::select(GROUP, LOG_COUNT)
+#     
+# }
+# 
+# filter_immunomodulator_expression_df <- function(
+#     df, id_col, filter_col, expression_col, filter_value){
+#     
+#     df %>% 
+#         get_complete_df_by_columns(c(
+#             id_col, 
+#             filter_col, 
+#             expression_col)) %>% 
+#         dplyr::select(
+#             FILTER = filter_col, 
+#             COUNT = expression_col,
+#             ID = id_col) %>% 
+#         dplyr::filter(FILTER == filter_value) %>% 
+#         dplyr::mutate(LOG_COUNT = log10(COUNT + 1)) %>% 
+#         dplyr::select(LOG_COUNT, ID)
+# }
+# 
+# 
+# build_immunomodulator_violin_plot_df <- function(df){
+#     df %>%
+#         dplyr::select(x = GROUP, y = LOG_COUNT) %>% 
+#         get_complete_df_by_columns(c("x", "y"))
+# }
+# 
+# build_immunomodulator_histogram_df <- function(df, selected_group){
+#     df %>%
+#         filter(GROUP == selected_group) %>% 
+#         select(x = LOG_COUNT) %>% 
+#         tidyr::drop_na()
+# }
 
 
+# immunefeatures -------------------------------------------
 
+# build_immunefeatures_violin_plot_df <- function(df, x_col, y_col){
+#   df %>%
+#     dplyr::select(x = x_col, y = y_col) %>%
+#     tidyr::drop_na()
+# }
