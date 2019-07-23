@@ -94,6 +94,7 @@ iotarget <- function(
   
   url_gene <- reactive({
     query <- parseQueryString(session$clientData$url_search)
+    print(query)
     gene  <- query[['gene']]
     if (!is.null(gene)) {
       url_gene <- gene
