@@ -216,5 +216,5 @@ format_plotly <- function(p) {
         size = font_size),
       margin = get_margins(p, font_size)
     ) %>% 
-    plotly::config(displayModeBar = F)
+    plotly::config(displayModeBar = T)
 }

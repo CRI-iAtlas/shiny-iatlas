@@ -71,6 +71,7 @@ distributions_plot_module_UI <- function(
                     h4(click_text)
                 )
             ),
+            downloadButton(ns('download_data'), 'Download'),
             conditionalPanel(
                 condition =  "input.see_drilldown",
                 ns = ns,
@@ -149,8 +150,6 @@ distributions_plot_module <- function(
         choices  <- metadata_df() %>% 
             dplyr::select("INTERNAL", "DISPLAY", "CLASS" = variable_column) %>% 
             create_nested_list_by_class()
-        
-        print(variable_selection_default)
 
         selectInput(
             ns("variable_choice"),
@@ -244,6 +243,11 @@ distributions_plot_module <- function(
             key_column = "x"
         )
     })
+    
+    output$download_data <- downloadHandler(
+        filename = function() stringr::str_c("data-", Sys.Date(), ".csv"),
+        content = function(con) readr::write_csv(plot_df(), con)
+    )
     
     output$drilldown_plot <- renderPlotly({
         
