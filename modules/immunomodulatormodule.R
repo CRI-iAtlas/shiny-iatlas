@@ -16,7 +16,7 @@ immunomodulator_UI <- function(id) {
     distributions_plot_module_UI(
       ns("dist"),
       title_text = "Immunomodulator Distributions",
-      log_scale_default = T,
+      scale_default = "Log10",
       plot_clicked_group_default = T,
       message_html = p(
         p(stringr::str_c(

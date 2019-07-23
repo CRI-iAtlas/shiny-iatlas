@@ -7,7 +7,7 @@ distributions_plot_module_UI <- function(
         "points superimposed."
     )),
     click_text = "Click plot to see group information.",
-    log_scale_default = F,
+    scale_default = "None",
     plot_clicked_group_default = F
 ){
     
@@ -38,10 +38,17 @@ distributions_plot_module_UI <- function(
                     ),
                     column(
                         width = 4,
-                        checkboxInput(
-                            ns("log_scale"), 
-                            "Log Scale Y Axis?", 
-                            log_scale_default
+                        selectInput(
+                            ns("scale_method"), 
+                            "Select variable scaling", 
+                            selected = scale_default,
+                            choices = c(
+                                "None", 
+                                "Log2", 
+                                "Log2 + 1",
+                                "Log10",
+                                "Log10 + 1"
+                            )
                         )
                     ),
                     column(
@@ -78,6 +85,15 @@ distributions_plot_module_UI <- function(
         )
 }
 
+# data_df
+# Each row respresents a sample
+# 1st col: "x", contains membership of current group selection, ie. "C1"
+# All other cols: numeric values 
+# metadata_df
+# Each row represents a variable, and of the columns in data_df
+# 1st col: "INTERNAL", internal name for variable
+# 2nd col: "DISPLAY", variable name used in the ui
+# All other cols: each column is a grouping of variables, to organize selection
 
 distributions_plot_module <- function(
     input, 
@@ -85,8 +101,8 @@ distributions_plot_module <- function(
     session,
     plot_source_name,
     data_df,
-    relationship_df,
-    sample_group_df,
+    metadata_df,
+    group_metadata_df,
     plot_colors,
     group_display_choice,
     ...
@@ -94,88 +110,132 @@ distributions_plot_module <- function(
     
     ns <- session$ns
     
-    num_group_columns <- reactive({
-        req(relationship_df())
-        relationship_df() %>% 
+    multiple_variable_columns <- reactive({
+        req(metadata_df())
+        num_group_columns <- metadata_df() %>% 
             dplyr::select(-c(INTERNAL, DISPLAY)) %>% 
             colnames() %>% 
             length
+        num_group_columns > 1
     })
     
-    output$display_group_choice <- reactive(num_group_columns() > 1)
+    # This is so that the conditional panel can see output$display_group_choice
+    output$display_group_choice <- reactive(multiple_variable_columns())
     outputOptions(output, "display_group_choice", suspendWhenHidden = FALSE)
 
     output$group_choice_ui <- renderUI({
-        req(relationship_df())
-        choices <- relationship_df() %>% 
+        req(metadata_df())
+        choices <- metadata_df() %>% 
             dplyr::select(-c(INTERNAL, DISPLAY)) %>% 
             colnames()
         selectInput(
-            ns("y_group"),
+            ns("group_choice"),
             label = "Select Group",
             choices = choices)
     })
     
+
     output$variable_choice_ui <- renderUI({
-        req(relationship_df(), num_group_columns())
-        if(num_group_columns() == 1){
-            choices  <- relationship_df() %>% 
-                dplyr::select("INTERNAL", "DISPLAY", "CLASS" = 3) %>% 
-                create_nested_list_by_class
-        } else {
-            req(input$y_group)
-            choices  <- relationship_df() %>% 
-                dplyr::select("INTERNAL", "DISPLAY", "CLASS" = input$y_group) %>% 
-                create_nested_list_by_class
-        }
+        req(metadata_df())
+
+        if(multiple_variable_columns()){
+            req(input$group_choice)
+            variable_column <- input$group_choice  
+        } else{
+            variable_column <- 3  
+        } 
+        
+        choices  <- metadata_df() %>% 
+            dplyr::select("INTERNAL", "DISPLAY", "CLASS" = variable_column) %>% 
+            create_nested_list_by_class()
 
         selectInput(
-            ns("y_variable"),
+            ns("variable_choice"),
             label = "Select Variable",
             choices = choices)
     })
     
-    plot_df <- reactive({
-        req(data_df(), input$y_variable, !is.null(input$log_scale))
-        data_df() %>% 
-            dplyr::select(x, y = input$y_variable, label) %>% 
-            tidyr::drop_na() %>% 
-            {`if`(
-                input$log_scale, 
-                dplyr::mutate(., y = log(y)),
-                .
-            )}
+    scale_expression <- reactive({
+        switch(
+            input$scale_method,
+            "None" = rlang::expr(identity(y)), 
+            "Log2" = rlang::expr(log2(y)),
+            "Log2 + 1" = rlang::expr(log2(y + 1)),
+            "Log10" = rlang::expr(log10(y)),
+            "Log10 + 1" = rlang::expr(log10(y + 1))
+        )
     })
     
-    y_varible_display_name <- reactive({
+    plot_df <- reactive({
+        req(data_df(), input$variable_choice, scale_expression())
+        
+        data_df() %>% 
+            dplyr::select(x, y = input$variable_choice, label) %>% 
+            tidyr::drop_na() %>% 
+            dplyr::mutate(y = !!scale_expression()) %>% 
+            tidyr::drop_na()
+    })
+    
+    varible_display_name <- reactive({
         convert_value_between_columns(
-            input$y_variable, 
-            relationship_df(),
+            input$variable_choice, 
+            metadata_df(),
             "INTERNAL",
             "DISPLAY")
     })
-
+    
+    varible_plot_label <- reactive({
+        switch(
+            input$scale_method,
+            "None" = varible_display_name(),
+            
+            "Log2" = stringr::str_c(
+                "Log2( ", 
+                varible_display_name(),
+                " )"),
+            
+            "Log2 + 1" = stringr::str_c(
+                "Log2( ", 
+                varible_display_name(),
+                " + 1 )"),
+            
+            "Log10" = stringr::str_c(
+                "Log10( ", 
+                varible_display_name(), 
+                " )"),
+            
+            "Log10 + 1" = stringr::str_c(
+                "Log10( ", 
+                varible_display_name(), 
+                " + 1 )")
+        )
+    })
+    
+    plot_function <- reactive({
+        switch(
+            input$plot_type,
+            "Violin" = create_violinplot,
+            "Box" = create_boxplot
+        )
+    })
+    
     output$plot <- renderPlotly({
-        req(plot_df(), input$plot_type)
-        if(input$plot_type == "Violin") plot_func <- create_violinplot
-        else if (input$plot_type == "Box") plot_func <- create_boxplot
-        else stop("No plot selected")
-        plot_func(
+        plot_function()(
             plot_df(), 
             xlab = group_display_choice(),
-            ylab = y_varible_display_name(),
-            title = y_varible_display_name(),
+            ylab = varible_plot_label(),
+            title = varible_display_name(),
             source_name = plot_source_name, 
             fill_colors = plot_colors(), 
             ...)
     })
     
     output$plot_text <- renderText({
-        req(sample_group_df())
+        req(group_metadata_df())
         create_group_text_from_plotly(
             plot_source_name,
             "",
-            sample_group_df(),
+            group_metadata_df(),
             prompt_text = "",
             key_column = "x"
         )
@@ -187,7 +247,6 @@ distributions_plot_module <- function(
         validate(need(!is.null(eventdata), "Click plot above"))
         clicked_group <- eventdata$x[[1]]
         
-        print(clicked_group)
         
         current_groups <- plot_df() %>% 
             magrittr::use_series(x) %>% 
@@ -200,18 +259,7 @@ distributions_plot_module <- function(
             dplyr::select(x = y) %>% 
             create_histogram(
                 title = clicked_group, 
-                x_lab = y_varible_display_name()
+                x_lab = varible_plot_label()
             )
     })
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
 }
