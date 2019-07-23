@@ -240,23 +240,6 @@ create_nested_list_by_class <- function(
             value_column = "DISPLAY")
 }
 
-get_immunomodulator_nested_list <- purrr::partial(
-    create_nested_list_by_class,
-    df = panimmune_data$im_direct_relationships,
-    display_column = "Gene",
-    internal_column = "HGNC Symbol"
-)
-
-get_tilmap_nested_list <- purrr::partial(
-    create_nested_list_by_class,
-    df = panimmune_data$feature_df,
-    class_column = "Variable Class",
-    display_column = "FriendlyLabel",
-    internal_column = "FeatureMatrixLabelTSV",
-    filter_expr = `Variable Class` == "TIL Map Characteristic"
-)
-
-
 # get_nested_list_by_column_type ----------------------------------------------
 
 
@@ -326,25 +309,7 @@ get_numeric_classes_from_feature_df <- purrr::partial(
 # Tests below this line do not have tests yet, newly written functions 
 ###############################################################################
 
-get_iotarget_nested_list <- function( ## added 24 Oct 2018
-  class_column = "Pathway",
-  display_column = "Gene",
-  internal_column = "HGNC Symbol"){
-  
-  panimmune_data$io_target_annotations %>%
-    dplyr::select(
-      CLASS = class_column,
-      DISPLAY = display_column,
-      INTERNAL = internal_column) %>% 
-    dplyr::mutate(CLASS = ifelse(is.na(CLASS), "Other", CLASS)) %>%
-    tidyr::drop_na() %>% 
-    df_to_nested_list(
-      group_column = "CLASS",
-      key_column = "INTERNAL",
-      value_column = "DISPLAY")
-}
-
 se <- function(x){
     mean(x) / sqrt(length(x))
-}   
+}
 
