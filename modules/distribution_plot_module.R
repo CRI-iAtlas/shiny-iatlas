@@ -105,6 +105,7 @@ distributions_plot_module <- function(
     group_metadata_df,
     plot_colors,
     group_display_choice,
+    variable_selection_default = NA,
     ...
 ){
     
@@ -148,11 +149,14 @@ distributions_plot_module <- function(
         choices  <- metadata_df() %>% 
             dplyr::select("INTERNAL", "DISPLAY", "CLASS" = variable_column) %>% 
             create_nested_list_by_class()
+        
+        print(variable_selection_default)
 
         selectInput(
             ns("variable_choice"),
             label = "Select Variable",
-            choices = choices)
+            choices = choices,
+            selected = variable_selection_default)
     })
     
     scale_expression <- reactive({

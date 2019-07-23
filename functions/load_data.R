@@ -76,7 +76,8 @@ load_im_expression <- function() {
 load_io_target_expression <- function() {
   if (!USE_REMOTE_BQ) {
     list(
-      io_target_expr_df = feather::read_feather("data/io_target_expr_df.feather")
+      io_target_expr_df = feather::read_feather("data/io_target_expr_df.feather") %>% 
+        tidyr::spread(key = Symbol, value = normalized_count)
     )
   } else {
     fetch_im_expression() %>% #### needs updating 

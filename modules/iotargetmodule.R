@@ -34,13 +34,14 @@ iotarget_UI <- function(id) {
       )
     ), 
     
-    # IO Target distributions section ----
-    sectionBox(
-      title = "IO Target Gene Expression Distributions",
-      messageBox(
-        width = 12,
+    distributions_plot_module_UI(
+      ns("dist"),
+      title_text = "IO Target Gene Expression Distributions",
+      scale_default = "Log10",
+      plot_clicked_group_default = T,
+      message_html = p(
         p("To explore gene expression distributions, vary sample grouping by selecting an option from Explorer Settings in the left panel. Options include Immune Subtype Groups (default), TCGA Subtype Groups, and TCGA Study.","\n"),
-        p("For more information about Sample Groups, refer to Sample Group Overview in the left panel.","\n"),      
+        p("For more information about Sample Groups, refer to Sample Group Overview in the left panel.","\n"),
         p("Select an IO Target Gene below to see its expression in tumor samples. By default, IO Target Genes are grouped by therapy type. To vary IO Target Category, select a different option from IO Target Category (drop-down menu on the right) to re-organize the IO Target Gene list."),
         p("The IO Target Categories are:"),
         
@@ -51,46 +52,70 @@ iotarget_UI <- function(id) {
           tags$li(strong('T-cell-targeted immunomodulators'), "that act on inhibitory or activating molecules expressed by T cells"),
           tags$li(strong('Other immunomodulators'), " that act on other immune cells or the tumor immune microenvironment to unleash antitumor immunity"),
           tags$li(strong('Targeted by Other Immuno-Oncology Therapy Type'), " (Cancer Vaccine, Cell therapy, Oncolytic Virus, and CD3-targeted bispecific antibody) to unleash antitumoral immunity")
-        ), 
+        ),
         p(em('Pathway'),", one of the molecular pathways to which the target protein belongs. Sourced from",
           tags$a(href="https://www.ncbi.nlm.nih.gov/biosystems/","NCBI Biosystems"),
           "(e.g. KEGG database, Reactome database, WikiPathways).")
-        
       ),
-      fluidRow(
-        optionsBox(
-          width = 12,
-          column(
-            width = 6,
-            uiOutput(ns("gene_choices"))
-          ),
-          column(
-            width = 6,
-            selectInput(
-              inputId = ns("io_target_category_choice_choice"),
-              label = "Select IO Target Category",
-              choices = c("Therapy Type","Pathway")
-            )
-          )
-        )
-      ),
-      fluidRow(
-        plotBox(
-          width = 12,
-          plotlyOutput(ns("violinPlot")) %>% 
-            shinycssloaders::withSpinner(),
-          p(),
-          textOutput(ns("violin_group_text"))
-        )
-      ),
-      fluidRow(
-        plotBox(
-          width = 12,
-          plotlyOutput(ns("histPlot")) %>% 
-            shinycssloaders::withSpinner()
-        )
-      )
     ),
+    
+    # # IO Target distributions section ----
+    # sectionBox(
+    #   title = "IO Target Gene Expression Distributions",
+    #   messageBox(
+    #     width = 12,
+    #     p("To explore gene expression distributions, vary sample grouping by selecting an option from Explorer Settings in the left panel. Options include Immune Subtype Groups (default), TCGA Subtype Groups, and TCGA Study.","\n"),
+    #     p("For more information about Sample Groups, refer to Sample Group Overview in the left panel.","\n"),      
+    #     p("Select an IO Target Gene below to see its expression in tumor samples. By default, IO Target Genes are grouped by therapy type. To vary IO Target Category, select a different option from IO Target Category (drop-down menu on the right) to re-organize the IO Target Gene list."),
+    #     p("The IO Target Categories are:"),
+    #     
+    #     p(em('Therapy Type'),", the type of therapy as described in",
+    #       tags$a(href="https://academic.oup.com/annonc/article/29/1/84/4693829","Annals of Oncology"),
+    #       ", December 2017"),
+    #     tags$ul(
+    #       tags$li(strong('T-cell-targeted immunomodulators'), "that act on inhibitory or activating molecules expressed by T cells"),
+    #       tags$li(strong('Other immunomodulators'), " that act on other immune cells or the tumor immune microenvironment to unleash antitumor immunity"),
+    #       tags$li(strong('Targeted by Other Immuno-Oncology Therapy Type'), " (Cancer Vaccine, Cell therapy, Oncolytic Virus, and CD3-targeted bispecific antibody) to unleash antitumoral immunity")
+    #     ), 
+    #     p(em('Pathway'),", one of the molecular pathways to which the target protein belongs. Sourced from",
+    #       tags$a(href="https://www.ncbi.nlm.nih.gov/biosystems/","NCBI Biosystems"),
+    #       "(e.g. KEGG database, Reactome database, WikiPathways).")
+    #     
+    #   ),
+    #   fluidRow(
+    #     optionsBox(
+    #       width = 12,
+    #       column(
+    #         width = 6,
+    #         uiOutput(ns("gene_choices"))
+    #       ),
+    #       column(
+    #         width = 6,
+    #         selectInput(
+    #           inputId = ns("io_target_category_choice_choice"),
+    #           label = "Select IO Target Category",
+    #           choices = c("Therapy Type","Pathway")
+    #         )
+    #       )
+    #     )
+    #   ),
+    #   fluidRow(
+    #     plotBox(
+    #       width = 12,
+    #       plotlyOutput(ns("violinPlot")) %>% 
+    #         shinycssloaders::withSpinner(),
+    #       p(),
+    #       textOutput(ns("violin_group_text"))
+    #     )
+    #   ),
+    #   fluidRow(
+    #     plotBox(
+    #       width = 12,
+    #       plotlyOutput(ns("histPlot")) %>% 
+    #         shinycssloaders::withSpinner()
+    #     )
+    #   )
+    # ),
     
     data_table_module_UI(
       ns("io_table"), 
@@ -125,82 +150,47 @@ iotarget <- function(
   
   ns <- session$ns
   
-  io_target_expr_plot_df <- reactive({
-    req(subset_df(), 
-        input$io_target_gene_choice, 
-        group_internal_choice(),
-        cancelOutput = T)
-    
-    build_io_target_expr_plot_df(
-      subset_df(),
-      filter_value = input$io_target_gene_choice, 
-      group_option = group_internal_choice())
-  })
-  
-  output$violinPlot <- renderPlotly({
-    req(io_target_expr_plot_df(), cancelOutput = T)
-    
-    validate(
-      need(nrow(io_target_expr_plot_df()) > 0, 
-           "Current selected group and selected variable have no overlap")
-    )
-    
-    create_violinplot(
-      io_target_expr_plot_df(),
-      xlab = group_display_choice(), 
-      ylab = "log10(count + 1)",
-      source_name = "io_violin",
-      fill_colors = plot_colors())
-  })
-  
-  
-  output$violin_group_text <- renderText({
-    req(group_internal_choice(), sample_group_df(), cancelOutput = T)
-    
-    create_group_text_from_plotly(
-      "io_violin", 
-      group_internal_choice(),
-      sample_group_df())  
-  })
-  
-  output$histPlot <- renderPlotly({
-    
-    eventdata <- event_data("plotly_click", source = "io_violin")
-    validate(need(!is.null(eventdata), "Click violin plot above"))
-    clicked_group <- eventdata$x[[1]]
-    
-    current_violin_groups <- io_target_expr_plot_df() %>% 
-      magrittr::use_series(x) %>% 
-      unique
-    
-    validate(need(clicked_group %in% current_violin_groups, "Click violin plot above"))
-    
-    histplot_df <- io_target_expr_plot_df() %>% 
-      dplyr::select(GROUP = x, log_count = y) %>% 
-      dplyr::filter(GROUP == clicked_group)
-    
-    create_histogram(
-      histplot_df,
-      x_col = "log_count",
-      x_lab = "log10(count + 1)",
-      title = eventdata$x[[1]])
-  })
-  
-  output$gene_choices <- renderUI({
+  url_gene <- reactive({
     query <- parseQueryString(session$clientData$url_search)
-    selected_gene <- NULL
-    if (!is.null(query[['gene']])) {
-      selected_gene = query[['gene']]
+    gene  <- query[['gene']]
+    if (!is.null(gene)) {
+      url_gene <- gene
+    } else {
+      url_gene <- NA
     }
-    choices <- get_iotarget_nested_list(
-      class_column = input$io_target_category_choice_choice)
-    selectInput(
-      ns("io_target_gene_choice"),
-      label = "Select IO Target Gene",
-      choices = choices,
-      selected = selected_gene)
+    return(url_gene)
   })
   
+  data_df <- reactive({
+    subset_df() %>%
+      dplyr::select(
+        x = group_internal_choice(),
+        "ParticipantBarcode") %>% 
+      dplyr::inner_join(panimmune_data$io_target_expr_df, by = "ParticipantBarcode") %>% 
+      dplyr::rename(label = "ParticipantBarcode")
+  })
+  
+  metadata_df <- reactive({
+    panimmune_data$io_target_annotations %>%  
+      dplyr::select(
+        INTERNAL = `HGNC Symbol`, 
+        DISPLAY = `Gene`,
+        Pathway, `Therapy Type`) 
+  })
+  
+  callModule(
+    distributions_plot_module,
+    "dist",
+    "io_targets_dist_plot",
+    data_df,
+    metadata_df,
+    sample_group_df,
+    plot_colors,
+    group_display_choice,
+    variable_selection_default = url_gene(),
+    key_col = "label",
+  )
+
   table_df <- reactive({
     panimmune_data$io_target_annotations %>% 
       dplyr::mutate(LinkText = .$IO_target_URL%>% 

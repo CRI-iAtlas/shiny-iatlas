@@ -75,7 +75,6 @@ immunomodulator <- function(
         "ParticipantBarcode") %>% 
       dplyr::inner_join(panimmune_data$im_expr_df, by = "ParticipantBarcode") %>% 
       dplyr::rename(label = "ParticipantBarcode")
-
   })
   
   relationship_df <- reactive({
