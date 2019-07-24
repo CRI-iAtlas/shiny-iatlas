@@ -15,32 +15,10 @@ immunomodulator_UI <- function(id) {
     
     distributions_plot_module_UI(
       ns("dist"),
+      message_html = includeMarkdown("data/markdown/im_dist.markdown"),
       title_text = "Immunomodulator Distributions",
       scale_default = "Log10",
       plot_clicked_group_default = T,
-      message_html = p(
-        p(stringr::str_c(
-          "Select Immumodulator Gene to see its expression in the data set.",
-          "Use Select Immumodulator Category (drop-down menu on the right) to",
-          "organize the selection by particular categories. The categories",
-          "will subsequently appear in the left drop-down menu. The Categories",
-          "are:"
-        )),
-        tags$ul(
-          tags$li(em('Gene Family'), ", such as TNF, MHC Class II, Immunoglobulin, or CXC chemokine"), 
-          tags$li(em('Super Category'), ", such as Ligand, Receptor, or Antigen Presentation"),
-          tags$li(em('Immune Checkpoint'), " classified as  Inhibitory or Stimulatory")
-        ),
-        p(""),
-        p(stringr::str_c(
-          "Manuscript context:  If you are looking at Immune Subtypes, select",
-          "EDNRB or CXCL10 to get figure 6B."
-          )),
-        p(stringr::str_c(
-          "You can view a histogram for any indvidual distributions by",
-          "clicking on its violin plot."
-          ))
-      ),
     ),
 
     data_table_module_UI(

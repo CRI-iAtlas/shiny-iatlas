@@ -12,14 +12,7 @@ immunefeatures_UI <- function(id) {
         ),
         distributions_plot_module_UI(
             ns("dist"),
-            message_html = p(stringr::str_c(
-                "This displays the value of immune readouts by sample group.",
-                "Select a variable class to see the distribution of variables",
-                "within that class displayed as as violin plot. Manuscript",
-                "context: This allows you to display distributions such as",
-                "those shown in Figures 1C and 1D.",
-                sep = " "
-            )),
+            message_html = includeMarkdown("data/markdown/immune_features_dist.markdown"),
         ),
     
         sectionBox(
