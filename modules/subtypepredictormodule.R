@@ -171,11 +171,6 @@ subtypepredictor <- function(
     subset_df, plot_colors) {
 
     ns <- session$ns
-    
-    library(dplyr)
-    library(sva)
-    library(mclust)
-    library(clue)
 
     # in src files ... have same path as app.R
     reportedClusters <- getSubtypeTable()

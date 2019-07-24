@@ -81,8 +81,8 @@ consensusEnsemble <- function(modList, dat, cores=2, ensemblesize) {
   # modList: list of mclust models
   preds <- ensemblePredict(modList,dat,"list", cores, ensemblesize)
   partitions <- lapply(preds, function(a) clue::as.cl_partition(a))
-  clpart <- cl_ensemble(list=partitions)
-  consensus <- cl_consensus(clpart, method="GV1")
+  clpart <- clue::cl_ensemble(list=partitions)
+  consensus <- clue::cl_consensus(clpart, method="GV1")
   consensus
 }
 
@@ -97,8 +97,8 @@ pred1 <- function(dat, klus, init) {
     s1 <- sample(1:nrow(dat), size=nrow(dat)/2, replace=F)
     s2 <- (1:nrow(dat))[! (1:nrow(dat)) %in% s1]
 
-    res1 <- Mclust(dat[s1,], G=klus, initialization=list(subset=sample(1:length(s1), size=(init * length(s1))))  )
-    res2 <- Mclust(dat[s2,], G=klus, initialization=list(subset=sample(1:length(s2), size=(init * length(s2))))  )
+    res1 <- mclust::Mclust(dat[s1,], G=klus, initialization=list(subset=sample(1:length(s1), size=(init * length(s1))))  )
+    res2 <- mclust::Mclust(dat[s2,], G=klus, initialization=list(subset=sample(1:length(s2), size=(init * length(s2))))  )
 
     # train classifier
     pre2a <- predict(res1, dat[s2,])
