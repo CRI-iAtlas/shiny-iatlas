@@ -112,7 +112,7 @@ newScores <- function(fileinfo, logflag, ensemblesize, combatflag, sepflag, norm
   datlog2g <- cbind(data.frame(GeneID = newdata[,1]), datlog2)
   colnames(tcgaSubset)[1] <- colnames(datlog2g)[1]
   #joinDat <- inner_join(dat2, tcgaSubset)
-  joinDat <- inner_join(datlog2g, tcgaSubset)
+  joinDat <- dplyr::inner_join(datlog2g, tcgaSubset)
   joinGenes <- joinDat$GeneID
 
   # clean up
@@ -141,7 +141,7 @@ newScores <- function(fileinfo, logflag, ensemblesize, combatflag, sepflag, norm
     # then batch correction between scores...
     batch <- c(rep(1,length(dat2idx)), rep(2,length(tcgaidx)))
     modcombat = model.matrix(~1, data=as.data.frame(t(joinDat)))
-    combat_edata = ComBat(dat=joinDat, batch=batch, mod=modcombat,
+    combat_edata = sva::ComBat(dat=joinDat, batch=batch, mod=modcombat,
                           par.prior=TRUE, prior.plots=FALSE, ref.batch = 2)
   } else {
     combat_edata = joinDat

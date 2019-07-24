@@ -80,7 +80,7 @@ consensusEnsemble <- function(modList, dat, cores=2, ensemblesize) {
   # dat: expression matrix, signature scores in columns
   # modList: list of mclust models
   preds <- ensemblePredict(modList,dat,"list", cores, ensemblesize)
-  partitions <- lapply(preds, function(a) as.cl_partition(a))
+  partitions <- lapply(preds, function(a) clue::as.cl_partition(a))
   clpart <- cl_ensemble(list=partitions)
   consensus <- cl_consensus(clpart, method="GV1")
   consensus
