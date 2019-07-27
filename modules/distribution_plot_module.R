@@ -8,6 +8,13 @@ distributions_plot_module_UI <- function(
     )),
     click_text = "Click plot to see group information.",
     scale_default = "None",
+    scale_options = c(
+        "None", 
+        "Log2", 
+        "Log2 + 1",
+        "Log10",
+        "Log10 + 1"
+    ),
     plot_clicked_group_default = F
 ){
     
@@ -42,13 +49,7 @@ distributions_plot_module_UI <- function(
                             ns("scale_method"), 
                             "Select variable scaling", 
                             selected = scale_default,
-                            choices = c(
-                                "None", 
-                                "Log2", 
-                                "Log2 + 1",
-                                "Log10",
-                                "Log10 + 1"
-                            )
+                            choices = scale_options
                         )
                     ),
                     column(
@@ -158,25 +159,12 @@ distributions_plot_module <- function(
             selected = variable_selection_default)
     })
     
-    scale_expression <- reactive({
-        switch(
-            input$scale_method,
-            "None" = rlang::expr(identity(y)), 
-            "Log2" = rlang::expr(log2(y)),
-            "Log2 + 1" = rlang::expr(log2(y + 1)),
-            "Log10" = rlang::expr(log10(y)),
-            "Log10 + 1" = rlang::expr(log10(y + 1))
-        )
-    })
-    
     plot_df <- reactive({
-        req(data_df(), input$variable_choice, scale_expression())
-        
-        data_df() %>% 
-            dplyr::select(x, y = input$variable_choice, label) %>% 
-            tidyr::drop_na() %>% 
-            dplyr::mutate(y = !!scale_expression()) %>% 
-            tidyr::drop_na()
+        req(data_df(), input$variable_choice, input$scale_method)
+        build_distribution_plot_df(
+            data_df(), 
+            input$variable_choice, 
+            input$scale_method)
     })
     
     varible_display_name <- reactive({
