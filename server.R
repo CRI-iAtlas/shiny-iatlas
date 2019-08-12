@@ -247,9 +247,9 @@ shinyServer(function(input, output, session) {
         df <- panimmune_data$driver_result_df
         if (group_internal_choice() == "Subtype_Curated_Malta_Noushmehr_et_al") {
             req(study_subset_groups(), cancelOutput = T)
-            df <- dplyr::filter(df, group1 %in% study_subset_groups())
+            df <- dplyr::filter(df, group2 %in% study_subset_groups())
         } else {
-            df <- dplyr::filter(df, group == group_internal_choice())
+            df <- dplyr::filter(df, group1 == group_internal_choice())
         }
         return(df)
     })
