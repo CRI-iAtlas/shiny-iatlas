@@ -46,8 +46,9 @@ build_immunefeatures_df <- function(
     value1_column,
     value2_columns,
     group_options,
-    id_column = "ParticipantBarcode"){
-
+    id_column = "ParticipantBarcode"
+){
+    
     assert_df_has_columns(
         df, c(group_column, value1_column, value2_columns, id_column))
 
