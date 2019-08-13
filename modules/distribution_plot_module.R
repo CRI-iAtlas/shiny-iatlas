@@ -151,6 +151,8 @@ distributions_plot_module <- function(
         choices  <- metadata_df() %>% 
             dplyr::select("INTERNAL", "DISPLAY", "CLASS" = variable_column) %>% 
             create_nested_list_by_class()
+        
+        print(choices)
 
         selectInput(
             ns("variable_choice"),

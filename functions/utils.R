@@ -220,13 +220,13 @@ get_column_names_of_type <- function(df, func){
 
 create_nested_list_by_class <- function(
     df, 
+    ...,
     class_column = "CLASS",
     display_column = "DISPLAY",
-    internal_column = "INTERNAL",
-    filter_expr = T)
-{
+    internal_column = "INTERNAL"
+){
     df %>%
-        dplyr::filter({{filter_expr}}) %>% 
+        dplyr::filter(...) %>% 
         dplyr::select(
             CLASS = class_column,
             DISPLAY = display_column,
@@ -245,31 +245,38 @@ create_nested_list_by_class <- function(
 
 create_filtered_nested_list_by_class <- function(
     feature_df,
-    filter_value,
+    ...,
     class_column = "CLASS",
     display_column = "DISPLAY",
-    internal_column = "INTERNAL",
-    filter_column = "FILTER"){
-    
+    internal_column = "INTERNAL"
+){
     feature_df %>%
+        dplyr::filter(...) %>% 
         dplyr::select(
             CLASS = class_column,
             DISPLAY = display_column,
-            INTERNAL = internal_column,
-            FILTER = filter_column) %>% 
-        dplyr::filter(FILTER == filter_value) %>%
-        select(CLASS, INTERNAL, DISPLAY) %>% 
+            INTERNAL = internal_column
+        ) %>% 
         create_nested_list_by_class()
 }
 
 get_feature_df_nested_list <- purrr::partial(
     create_filtered_nested_list_by_class,
     feature_df = panimmune_data$feature_df,
-    filter_value = "Numeric",
     class_column = "Variable Class",
     internal_column = "FeatureMatrixLabelTSV",
     display_column = "FriendlyLabel",
-    filter_column = "VariableType"
+    VariableType == "Numeric",
+    Is_feature
+)
+
+get_covariate_nested_list <- purrr::partial(
+    create_filtered_nested_list_by_class,
+    feature_df = panimmune_data$feature_df,
+    class_column = "Variable Class",
+    internal_column = "FeatureMatrixLabelTSV",
+    display_column = "FriendlyLabel",
+    Is_covariate
 )
 
 # get_unique_column_values ----------------------------------------------------
@@ -286,11 +293,10 @@ get_unique_column_values <- function(column, df){
 
 # get_variable_classes --------------------------------------------------------
 
-get_variable_classes <- function(df, class_column, type_column, value){
+get_variable_classes <- function(df, ..., class_column){
     df %>% 
-        dplyr::select(CLASS = class_column, TYPE = type_column) %>% 
-        dplyr::filter(TYPE == value) %>% 
-        magrittr::use_series(CLASS) %>% 
+        dplyr::filter(...) %>% 
+        dplyr::pull(class_column) %>% 
         unique %>% 
         purrr::discard(is.na(.))
 }
@@ -298,9 +304,9 @@ get_variable_classes <- function(df, class_column, type_column, value){
 get_numeric_classes_from_feature_df <- purrr::partial(
     get_variable_classes,
     df = panimmune_data$feature_df,
-    class_column = "Variable Class",
-    type_column = "VariableType", 
-    value = "Numeric"
+    VariableType == "Numeric",
+    Is_feature,
+    class_column = "Variable Class"
 )
 
 

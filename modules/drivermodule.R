@@ -1,6 +1,6 @@
 generate_covariate_selector <- function(
     name, 
-    ns_func, 
+    ns_func,
     choices,
     label = "Select Covariate:"
 ){
@@ -256,7 +256,7 @@ drivers <- function(
             covariate_names(),
             generate_covariate_selector,
             session$ns,
-            get_feature_df_nested_list()
+            get_covariate_nested_list()
         )
     })
     

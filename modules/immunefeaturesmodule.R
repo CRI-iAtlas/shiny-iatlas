@@ -118,7 +118,7 @@ immunefeatures <- function(
     
     relationship_df <- reactive({
         panimmune_data$feature_df %>% 
-            dplyr::filter(VariableType == "Numeric") %>% 
+            dplyr::filter(VariableType == "Numeric", Is_feature) %>% 
             dplyr::select(
                 INTERNAL = FeatureMatrixLabelTSV, 
                 DISPLAY = FriendlyLabel,
