@@ -10,6 +10,7 @@ classifySubtype <- function(fileinfo, sepflag) {
   
   library(R.utils)
   library(data.table)
+  library(ImmuneSubtypeClassifier)
   
   print(fileinfo)
   print(sepflag)
