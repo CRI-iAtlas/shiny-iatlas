@@ -58,6 +58,7 @@ libraries:
   - "clue"
   - "parallel"
   - "data.table"
+  - "ImmuneSubtypeClassifier"
 
 bq_remote: false # set data as remote (BigQuery) or local (on disk)
 gs_remote: false
