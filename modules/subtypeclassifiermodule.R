@@ -124,7 +124,7 @@ subtypeclassifier_UI <- function(id) {
 }
 
 
-subtypepredictor <- function(
+subtypeclassifier <- function(
     input, output, session, group_display_choice, group_internal_choice, 
     subset_df, plot_colors) {
     
