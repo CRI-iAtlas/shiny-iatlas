@@ -14,7 +14,7 @@ assert_df_has_columns <- function(df, columns){
     missing_columns <- columns[!columns %in% colnames(df)]
     if(length(missing_columns) != 0){
         stop("df has missing columns: ",
-             str_c(missing_columns, collapse = ", "))
+             stringr::str_c(missing_columns, collapse = ", "))
     }
 }
 
@@ -69,7 +69,7 @@ convert_value_between_columns <- function(
             stop("input value: ",
                  input_value, 
                  ", has multiple matches: ", 
-                 str_c(result, collapse = ", "))
+                 stringr::str_c(result, collapse = ", "))
         }
     }
 }
@@ -222,26 +222,23 @@ create_nested_list_by_class <- function(
     df, 
     class_column = "CLASS",
     display_column = "DISPLAY",
-    internal_column = "INTERNAL"){
-    
+    internal_column = "INTERNAL",
+    filter_expr = T)
+{
     df %>%
+        dplyr::filter({{filter_expr}}) %>% 
         dplyr::select(
             CLASS = class_column,
             DISPLAY = display_column,
-            INTERNAL = internal_column) %>%
+            INTERNAL = internal_column
+        ) %>%
         dplyr::mutate(CLASS = ifelse(is.na(CLASS), "Other", CLASS)) %>%
+        dplyr::mutate(CLASS = ifelse(CLASS == "", "Other", CLASS)) %>%
         df_to_nested_list(
             group_column = "CLASS",
             key_column = "INTERNAL",
             value_column = "DISPLAY")
 }
-
-get_immunomodulator_nested_list <- purrr::partial(
-    create_nested_list_by_class,
-    df = panimmune_data$im_direct_relationships,
-    display_column = "Gene",
-    internal_column = "HGNC Symbol"
-)
 
 # get_nested_list_by_column_type ----------------------------------------------
 
@@ -309,9 +306,10 @@ get_numeric_classes_from_feature_df <- purrr::partial(
 
 
 ###############################################################################
-# Tests below this line do not have tests yet, newly writen functions 
+# Tests below this line do not have tests yet, newly written functions 
 ###############################################################################
 
 se <- function(x){
     mean(x) / sqrt(length(x))
-}   
+}
+

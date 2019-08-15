@@ -20,7 +20,7 @@ create_violinplot <- function(
     if(is.na(label_col)) label_col <- x_col
     if(is.na(split_col)) split_col <- x_col
     
-    let(
+    wrapr::let(
         alias = c(
             X = x_col,
             Y = y_col,

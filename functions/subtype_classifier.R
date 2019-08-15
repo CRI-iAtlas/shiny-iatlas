@@ -39,7 +39,7 @@ classifySubtype <- function(fileinfo, sepflag) {
   print(dim(newdata))
     
   # make cluster calls using the models.
-  calls <- consensusEnsemble(mods2, zscores, 2, ensemblesize)
+  calls <- ImmuneSubtypeClassifier::callEnsemble(X=newdata, geneids='symbol')
   
   print("Done")
   

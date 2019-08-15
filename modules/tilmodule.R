@@ -1,106 +1,31 @@
 tilmap_UI <- function(id) {
     
-    get_friendly_numeric_columns <- function(){
-        get_numeric_columns() %>% 
-            convert_values_between_columns(
-                df = panimmune_data$feature_df,
-                from_column = "FeatureMatrixLabelTSV",
-                to_column = "FriendlyLabel"
-            )
-    }
-    
-    get_friendly_numeric_columns_by_group <- function() {
-        panimmune_data$feature_df %>% 
-            select(Class = `Variable Class`, FriendlyLabel, FeatureMatrixLabelTSV) %>% 
-            filter(FriendlyLabel %in% get_friendly_numeric_columns()) %>% 
-            mutate(Class = ifelse(is.na(Class), "Other", Class)) %>% 
-            nest(-Class) %>% 
-            mutate(data = map(data, deframe)) %>% 
-            deframe()
-    }
-    
-    get_numeric_columns <- function(){
-        panimmune_data$fmx_df %>% 
-            select_if(is.numeric) %>% 
-            colnames()
-    }
-    
     ns <- NS(id)
     
     tagList(
         titleBox("iAtlas Explorer — TIL Maps"),
         textBox(
             width = 12,
-            p("This module relates to the manuscript:"),
-            tags$a(href="https://www.cell.com/cell-reports/fulltext/S2211-1247(18)30447-9","Saltz et al. Spatial Organization And Molecular Correlation Of Tumor-Infiltrating Lymphocytes Using Deep Learning On Pathology Images; Cell Reports 23, 181-193, April 3 2018."),
-            p("TCGA H&E digital pathology images were analyzed for tumor infiltrating lymphocytes (TILs) using deep learning. The analysis identifies small spatial regions on the slide image - patches - that are rich in TILs. The resulting pattern of TIL patches are then assessed in multiple ways: in terms of overall counts and spatial density, and patterns identified by computational analysis and scoring by pathologists."),
-            p("These assessments are also available in other modules, and are found under the Variable Class: TIL Map Characteristic.")
+            includeMarkdown("data/markdown/tilmap.markdown")
         ),
         
-        # TIL distributions section ----
-        sectionBox(
-            title = "TIL Map Characteristics",
-            messageBox(
-                width = 12,
-                p("Select a TIL map characteristic to see its distribution over sample groups. Plots are available as violin plots, and box plots with full data points superimposed."),
-                p("Main immune manuscript context:  If you are looking at immune subtypes, select TIL Regional Fraction to get Figure 3B.")
-            ),
-            fluidRow(
-                optionsBox(
-                    width = 12,
-                    column(
-                        width = 4,
-                        selectInput( ## would be good to initiate on til_percentage/"TIL Regional Fraction (Percent)"
-                            ns("violin_y"),
-                            "Select TIL Map Characteristic",
-                            choices = get_friendly_numeric_columns_by_group()["TIL Map Characteristic"]
-                        )
-                    ),
-                    column(
-                        width = 4,
-                        selectInput(
-                            ns("plot_type"),
-                            "Select Plot Type",
-                            choices = c("Violin", "Box")
-                        )
-                    )
-                )
-            ),
-            fluidRow(
-                plotBox(
-                    width = 12,
-                    plotlyOutput(ns("plot")) %>% 
-                        shinycssloaders::withSpinner(),
-                    p(),
-                    textOutput(ns("plot_group_text")),
-                    h4("Click point or violin/box to filter samples in table below")
-                )
-            )
+        distributions_plot_module_UI(
+            ns("dist"),
+            message_html = includeMarkdown("data/markdown/tilmap_dist.markdown"),
+            title_text = "TIL Map Characteristics",
+            click_text = 
+                "Click point or violin/box to filter samples in table below"
         ),
+
         
-        # TIL Map annotations section ----
-        sectionBox(
+        data_table_module_UI(
+            ns("til_table"),
             title = "TIL Map Annotations",
-            messageBox(
-                width = 12,
-                p("The table shows annotations of the TIL Map characteristics. The rightmost column gives access to the ",
-                  tags$a(href="http://quip1.bmi.stonybrook.edu:443/select.php","TIL Maps superimposed on H&E images using the caMicroscope tool: "),
-                  "Zoom in to initiate the view of TIL spatial clusters. Colors show regions determined by spatial clustering - a view without cluster colors is available through the question mark / magnifiying glass selector on upper left in caMicroscope.")  
-            ),
-            fluidRow(
-                tableBox(
-                    width = 12,
-                    div(style = "overflow-x: scroll",
-                        DT::dataTableOutput(ns("til_table")) %>% 
-                            shinycssloaders::withSpinner()
-                    )
-                )
-            )
+            message_html = includeMarkdown("data/markdown/tilmap_table.markdown")
         )
     )
 }
 
-# tilmap <- function(input, output, session, ss_choice, subset_df){
 tilmap <- function(
     input, 
     output, 
@@ -112,97 +37,72 @@ tilmap <- function(
     plot_colors, 
     group_options){
     
-    ns <- session$ns
     
-    
-    output$plot <- renderPlotly({
-        
-        req(!is.null(subset_df()), cancelOutput = T)
-        
-        display_y  <- get_variable_display_name(input$violin_y)
-        
-        plot_df <- subset_df() %>%
-            select(x = group_internal_choice(), y = input$violin_y, label = "Slide") %>%
-            drop_na()
-        
-        validate(
-            need(nrow(plot_df) > 0, 
-                 "Group choices have no overlap with current variable choice"))
-        
-        if(input$plot_type == "Violin"){
-            plot_df %>%
-                create_violinplot(
-                    xlab = group_display_choice(),
-                    ylab = display_y,
-                    source_name = "plot",
-                    fill_colors = plot_colors(),
-                    key_col = "label"
-                )
-        } else {
-            plot_df %>% 
-                create_boxplot(
-                    xlab = group_display_choice(),
-                    ylab = display_y,
-                    source_name = "plot",
-                    fill_colors = plot_colors(),
-                    key_col = "label"
-                )
-        }
-        
+    data_df <- reactive({
+        dplyr::select(
+            subset_df(),
+            x = group_internal_choice(), 
+            label = "Slide", 
+            dplyr::everything()) 
     })
     
-    output$plot_group_text <- renderText({
-        req(group_internal_choice(), sample_group_df(), cancelOutput = T)
-        
-        create_group_text_from_plotly(
-            "plot",
-            group_internal_choice(),
-            sample_group_df(),
-            prompt_text = "",
-            key_column = "x")
+    relationship_df <- reactive({
+        panimmune_data$feature_df %>% 
+            dplyr::filter(`Variable Class` == "TIL Map Characteristic") %>% 
+            dplyr::select(
+                INTERNAL = FeatureMatrixLabelTSV, 
+                DISPLAY = FriendlyLabel,
+                `Variable Class`)
     })
     
+    callModule(
+        distributions_plot_module,
+        "dist",
+        "tilmap_dist_plot",
+        data_df,
+        relationship_df,
+        sample_group_df,
+        plot_colors,
+        group_display_choice,
+        key_col = "label"
+    )
     
-    output$til_table <- DT::renderDT({
+    table_df <- reactive({
         
-        d <- event_data("plotly_click", source = "plot")
-        if (!is.null(d)) {
-            slide_ids <- d %>% 
-                use_series(key)
-            # print(slide_ids)
-            data_df <- filter(panimmune_data$fmx_df, Slide %in% slide_ids)
-        } else {
-            data_df <- panimmune_data$fmx_df
-        }
+        df <- panimmune_data$fmx_df
+        data <- event_data("plotly_click", source = "tilmap_dist_plot")
+        if (!is.null(data)) df <- dplyr::filter(df, Slide %in% data$key)
         
+        names_df <- panimmune_data$feature_df %>%
+            dplyr::filter(`Variable Class` == "TIL Map Characteristic") %>%
+            dplyr::filter(VariableType == "Numeric") %>%
+            dplyr::select(FeatureMatrixLabelTSV, FriendlyLabel)
         
-        TIL_map_columns <- panimmune_data$feature_df %>% 
-            filter(`Variable Class` == "TIL Map Characteristic") %>% 
-            filter(VariableType == "Numeric") %>% 
-            use_series(FeatureMatrixLabelTSV)
-        # Slide: column width/wrap problem at the moment for this
-        TIL_map_columns_display <- as.character(map(TIL_map_columns,get_variable_display_name))
-        
-        data_df <- data_df %>% 
-            select("ParticipantBarcode", "Study", "Slide",TIL_map_columns) %>% 
-            .[complete.cases(.),] %>% 
-            mutate(Image = paste(
+        df %>% 
+            dplyr::select(
+                "ParticipantBarcode", 
+                "Study", 
+                "Slide",
+                names_df$FeatureMatrixLabelTSV) %>% 
+            tidyr::drop_na() %>% 
+            tidyr::gather(FeatureMatrixLabelTSV, value, -c(ParticipantBarcode, Study, Slide)) %>% 
+            dplyr::full_join(names_df) %>% 
+            dplyr::mutate(value = round(value, digits = 1)) %>% 
+            dplyr::select(-FeatureMatrixLabelTSV) %>% 
+            tidyr::spread(FriendlyLabel, value) %>% 
+            dplyr::mutate(Image = stringr::str_c(
                 "<a href=\"",
                 "http://quip1.bmi.stonybrook.edu:443/camicroscope/osdCamicroscope.php?tissueId=",
                 Slide,
                 "\">",
                 Slide,
-                "</a>",
-                sep="")) %>% select(-Slide)
-        colnames(data_df) <- c("ParticipantBarcode", "Study", TIL_map_columns_display,"Image")
-        data_df %>% 
-            datatable(
-                rownames = FALSE,
-                escape = setdiff(colnames(.),"Image") ## To get hyperlink displayed
-            ) %>% formatRound(TIL_map_columns_display, digits = 1)               
-        
-        #          ) %>% formatRound(c('til_percentage','NP_mean',"NP_sd","WCD_mean","WCD_sd","CE_mean",
-        #                              "CE_sd","Ball_Hall","Banfeld_Raftery","C_index","Det_Ratio","Ball_Hall_Adjusted",
-        #                              "Banfeld_Raftery_Adjusted","C_index_Adjusted","Det_Ratio_Adjusted"), digits = 1) 
+                "</a>"
+            )) %>%
+            dplyr::select(-Slide)
     })
+    
+    callModule(data_table_module, "til_table", table_df, escape = F)
+    
+    
+    
 }

@@ -34,6 +34,11 @@ explorepage <- dashboardPage(
                  tabName = "immunomodulators",
                  icon = icon("cog")
                ),
+               menuSubItem(
+                 "IO Targets",
+                 tabName = "iotargets",
+                 icon = icon("cog")
+               ),
                # menuSubItem(
                #   "Genomic State",
                #   icon = icon("chevron-circle-right")),
@@ -195,6 +200,14 @@ explorepage <- dashboardPage(
               imgSrc = "images/drivers.png",
               boxText = "Explore Associations of Microenvironment with Driver Mutations.",
               linkText = "Open Module"
+            ),
+            imgLinkBox(
+              width = 6,
+              title = "IO Targets",
+              linkId = "link_to_module9",
+              imgSrc = "images/iotargets.png",
+              boxText = "Explore the expression of genes that code for immuno-oncological (IO) targets .",
+              linkText = "Open Module"
             )
           )
         )
@@ -230,6 +243,10 @@ explorepage <- dashboardPage(
       tabItem(
         tabName = "tilmap_features",
         tilmap_UI("module7")
+      ),
+      tabItem(
+        tabName = "iotargets",
+        iotarget_UI("module9")
       ),
       tabItem(
         tabName = "datainfo",

@@ -1,6 +1,3 @@
-library(yaml)
-library(tidyverse)
-
 config_yaml <- yaml::read_yaml("configuration.yaml")
 purrr::walk(config_yaml$libraries, library, character.only = T)
 purrr::walk(config_yaml$function_files, source)
@@ -13,3 +10,4 @@ panimmune_data <- load_data()
 
 purrr::walk(config_yaml$module_files, source)
 purrr::walk(config_yaml$page_files, source)
+

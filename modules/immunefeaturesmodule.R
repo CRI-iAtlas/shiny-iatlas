@@ -5,42 +5,43 @@ immunefeatures_UI <- function(id) {
         titleBox("iAtlas Explorer — Immune Feature Trends"),
         textBox(
             width = 12,
-            p("This module allows you to see how immune readouts vary across your groups, and how they relate to one another.")  
+            p(stringr::str_c(
+                "This module allows you to see how immune readouts vary",
+                "across your groups, and how they relate to one another."
+            ))  
         ),
-        sectionBox(
-            title = "Distributions",
-            messageBox(
-                width = 12,
-                p("This displays the value of immune readouts by sample group. Select a variable class to see the distribution of variables within that class displayed as as violin plot."),
-                p("Manuscript context: This allows you to display distributions such as those shown in Figures 1C and 1D.")
-            ),
-            fluidRow(
-                optionsBox(
-                    width = 6,
-                    selectInput(
-                        ns("violin_y"),
-                        "Select Violin Plot Y Variable",
-                        choices = get_feature_df_nested_list()
-                    )
-                )
-            ),
-            fluidRow(
-                plotBox(
-                    width = 12,
-                    plotlyOutput(ns("violinPlot")) %>% 
-                        shinycssloaders::withSpinner(),
-                    p(),
-                    textOutput(ns("violin_group_text"))
-                )
-            )
+        distributions_plot_module_UI(
+            ns("dist"),
+            message_html = includeMarkdown("data/markdown/immune_features_dist.markdown"),
         ),
+    
         sectionBox(
             title = "Correlations",
             messageBox(
                 width = 12,
-                p("Here, you can look at correlation of a response variable with other variables, within each sample group.  Select the response variable on the right. Select a variable class on the left to specify which other variable you would like to correlate the response variable with. The result will be a heatmap, with positive correlation shown with a red scale, absence of correlation in white, and negative correlation in blue.  Click on any cell in the heatmap to see the underlying data as a scatterplot. In the scatterplot, each point represents a tumor sample, the response variable is shown on the Y-axis and the row variable is shown on the X-axis.
-"),
-                p("Manuscript context:  Select “Leukocyte Fraction” as the response variable, “DNA Alteration” as the variable class, and Spearman correlation. This will correspond to Figure 4A if you are looking at immune subtypes as your sample grouping.")
+                p(stringr::str_c(
+                    "Here, you can look at correlation of a response variable",
+                    "with other variables, within each sample group.  Select",
+                    "the response variable on the right. Select a variable",
+                    "class on the left to specify which other variable you",
+                    "would like to correlate the response variable with. The",
+                    "result will be a heatmap, with positive correlation",
+                    "shown with a red scale, absence of correlation in white,",
+                    "and negative correlation in blue.  Click on any cell in",
+                    "the heatmap to see the underlying data as a scatterplot.",
+                    "In the scatterplot, each point represents a tumor sample,",
+                    "the response variable is shown on the Y-axis and the row",
+                    "variable is shown on the X-axis.",
+                    sep = " "
+                )),
+                p(stringr::str_c(
+                    "Manuscript context:  Select “Leukocyte Fraction” as the",
+                    "response variable, “DNA Alteration” as the variable",
+                    "class, and Spearman correlation. This will correspond to",
+                    "Figure 4A if you are looking at immune subtypes as your",
+                    "sample grouping.",
+                    sep = " "
+                ))
             ),
             fluidRow(
                 optionsBox(
@@ -107,10 +108,35 @@ immunefeatures <- function(
     subset_df, 
     plot_colors
 ){
+    data_df <- reactive({
+        dplyr::select(
+            subset_df(),
+            x = group_internal_choice(),
+            label = "ParticipantBarcode",
+            dplyr::everything()) 
+    })
     
-    ns <- session$ns
+    relationship_df <- reactive({
+        panimmune_data$feature_df %>% 
+            dplyr::filter(VariableType == "Numeric") %>% 
+            dplyr::select(
+                INTERNAL = FeatureMatrixLabelTSV, 
+                DISPLAY = FriendlyLabel,
+                `Variable Class`)
+    })
     
-    # reactives ----
+    callModule(
+        distributions_plot_module,
+        "dist",
+        "immunefeatures_dist_plot",
+        data_df,
+        relationship_df,
+        sample_group_df,
+        plot_colors,
+        group_display_choice,
+        key_col = "label"
+    )
+
     hm_variables  <- reactive({
         get_factored_variables_from_feature_df(input$heatmap_y) %>% 
             as.character
@@ -130,43 +156,7 @@ immunefeatures <- function(
             value1_column = input$heatmap_values,
             value2_columns = hm_variables(),
             group_options = sample_groups)
-
-    })
-    
-    # output ----
-    output$violinPlot <- renderPlotly({
         
-        req(!is.null(subset_df()), cancelOutput = T)
-
-        display_y  <- get_variable_display_name(input$violin_y)
-        
-        plot_df <- build_immunefeatures_violin_plot_df(
-            subset_df(), 
-            x_col = group_internal_choice(),
-            y_col = input$violin_y) 
-        
-        validate(
-            need(nrow(plot_df) > 0, 
-                 "Current selected group and selected variable have no overlap")
-        )
-
-        create_violinplot(
-            plot_df,
-            xlab = group_display_choice(),
-            ylab = display_y,
-            fill_colors = plot_colors(),
-            source_name = "violin"
-        )
-    })
-    
-    
-    output$violin_group_text <- renderText({
-        req(group_internal_choice(), sample_group_df(), cancelOutput = T)
-        
-        create_group_text_from_plotly(
-            "violin", 
-            group_internal_choice(),
-            sample_group_df())
     })
         
     
@@ -182,7 +172,7 @@ immunefeatures <- function(
                 immunefeatures_df(), 
                 input$correlation_method)
         
-        create_heatmap(immunefeatures_correlation_matrix, "heatplot")
+        create_heatmap(immunefeatures_correlation_matrix, "heatplot", scale_colors = T)
     })
     
     output$heatmap_group_text <- renderText({

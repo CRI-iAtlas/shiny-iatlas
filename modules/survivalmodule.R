@@ -106,7 +106,7 @@ survival <- function(
     ns <- session$ns
     
     output$survplot_opts <- renderUI({
-        group_choice <- set_names(list(group_internal_choice()), ss_choice())
+        group_choice <- magrittr::set_names(list(group_internal_choice()), ss_choice())
         var_choices <- c(
             list("Current Sample Groups" = group_choice),
             get_feature_df_nested_list())
@@ -121,11 +121,11 @@ survival <- function(
     output$survPlot <- renderPlot({
         req(!is.null(subset_df()), cancelOutput = T)
         sample_groups <- get_unique_column_values(group_internal_choice(), subset_df())
-        n_groups <- n_distinct(sample_groups)
+        n_groups <- dplyr::n_distinct(sample_groups)
 
         validate(
             need(input$var1_surv, "Waiting for input."),
-            need(n_distinct(sample_groups) <= 10 | !input$var1_surv == group_internal_choice(), 
+            need(dplyr::n_distinct(sample_groups) <= 10 | !input$var1_surv == group_internal_choice(), 
                  paste0("Too many sample groups (", n_groups, ") for KM plot; ",
                         "choose a continuous variable or select different sample groups."))
         )
@@ -133,14 +133,16 @@ survival <- function(
         survival_df <- subset_df() %>%
             build_survival_df(
                 group_column = input$var1_surv,
-                group_options = map(group_options(), get_group_internal_name),
+                group_options = purrr::map(group_options(), get_group_internal_name),
                 time_column = input$timevar,
                 k = input$divk
             )
 
-        survival_df %>% group_by(variable) %>% summarize(Num1 = sum(status == 1), Num0 = sum(status == 0))
+        survival_df %>% 
+          dplyr::group_by(variable) %>% 
+          dplyr::summarize(Num1 = sum(status == 1), Num0 = sum(status == 0))
         
-        fit <- survival::survfit(Surv(time, status) ~ variable, data = survival_df)
+        fit <- survival::survfit(survival::Surv(time, status) ~ variable, data = survival_df)
         
         title <- get_variable_display_name(input$var1_surv)
         if (identical(title, character(0))){
@@ -197,7 +199,7 @@ survival <- function(
             )
         
         validate(
-          need(nrow(ci_mat[!is.na(ci_mat)]) > 0, "No results to display, pick a different group.")
+          need(nrow(ci_mat[rowSums(is.na(ci_mat)) == 0,]) > 0, "No results to display, pick a different group.")
         )
         
         create_heatmap(ci_mat, "ci")

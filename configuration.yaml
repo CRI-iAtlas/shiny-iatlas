@@ -7,9 +7,12 @@ module_files:
   - "modules/immunomodulatormodule.R"
   - "modules/tilmodule.R"
   - "modules/immunefeaturesmodule.R"
+  - "modules/iotargetmodule.R"
   - "modules/datainfomodule.R"
   - "modules/drivermodule.R"
   - "modules/subtypepredictormodule.R"
+  - "modules/submodules.R"
+  - "modules/distribution_plot_module.R"
   
 function_files:
   - "functions/load_data.R"
@@ -41,24 +44,8 @@ page_files:
 
 libraries:
   - "shinydashboard"
-  - "shinycssloaders"
-  - "bigrquery"
   - "plotly"
-  - "survival"
-  - "survminer"
-  - "googlesheets"
-  - "feather"
-  - "ggmosaic"
-  - "DT"
-  - "wrapr"
-  - "forcats"
-  - "viridis"
-  - "concordanceIndex"
-  - "sva"
-  - "clue"
-  - "parallel"
-  - "data.table"
-  - "ImmuneSubtypeClassifier"
+
 
 bq_remote: false # set data as remote (BigQuery) or local (on disk)
 gs_remote: false
@@ -90,6 +77,10 @@ immunomodulator_groups:
   - "Immune_Checkpoint"
   - "Function"
   
+immunotarget_groups:
+  - "Therapy Type"
+  - "Pathway"
+
 immune_groups:
   - "Subtype_Immune_Model_Based"
   - "Subtype_Curated_Malta_Noushmehr_et_al"
