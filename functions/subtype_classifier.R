@@ -39,12 +39,17 @@ classifySubtype <- function(fileinfo, sepflag) {
   print("new data")
   print(dim(newdata))
     
+  newX <- as.matrix(newdata[,-1])
+  rownames(newX) <- as.character(newdata[,1])
+  
   # make cluster calls using the models.
-  calls <- ImmuneSubtypeClassifier::callEnsemble(X=newdata, geneids='symbol')
+  calls <- ImmuneSubtypeClassifier::callEnsemble(X=newX, geneids='symbol')
+  
+  print(head(calls))
   
   print("Done")
   
-  return(calls)
+  return(list(Calls=calls))
   
 }
 

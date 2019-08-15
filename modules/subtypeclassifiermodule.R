@@ -145,7 +145,7 @@ subtypeclassifier <- function(
     
     
     output$barPlot <- renderPlot({
-      counts <- table(getCalls()$AlignedCalls)
+      counts <- table(getCalls()$Calls$BestCall)
       barplot(counts, main="New Cluster Label Calls", 
               xlab="Cluster Labels")
     })
@@ -154,7 +154,7 @@ subtypeclassifier <- function(
     # Filter data based on selections
     output$subtypetable <- DT::renderDataTable(
       DT::datatable(
-        as.data.frame(getCalls()$ProbCalls),
+        as.data.frame(getCalls()$Calls),
         extensions = 'Buttons', options = list(
           dom = 'Bfrtip',
           buttons = 
