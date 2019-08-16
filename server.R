@@ -254,22 +254,6 @@ shinyServer(function(input, output, session) {
         return(df)
     })
     
-    # driver_metric_df <- reactive({
-    #     req(
-    #         input$ss_choice,
-    #         group_internal_choice(),
-    #         panimmune_data$driver_metric_df,
-    #         cancelOutput = T
-    #     )
-    #     df <- panimmune_data$driver_metric_df
-    #     if (group_internal_choice() == "Subtype_Curated_Malta_Noushmehr_et_al") {
-    #         req(study_subset_groups(), cancelOutput = T)
-    #         df <- dplyr::filter(df, group_value %in% study_subset_groups())
-    #     } else {
-    #         df <- dplyr::filter(df, group_name == group_internal_choice())
-    #     }
-    #     return(df)
-    # })
 
     plot_colors <- reactive({
         req(

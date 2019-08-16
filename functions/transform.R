@@ -12,6 +12,150 @@
 # original function.
 ###############################################################################
 
+# Driver mutation functions ---------------------------------------------------
+
+build_mv_driver_mutation_tbl <- function(
+    subset_metric_tbl,
+    response_column,
+    covariate_columns,
+    group_mode,
+    group_column,
+    n_wt_min, 
+    n_mut_min,
+    driver_tbl = panimmune_data$driver_mutations_df,
+    metric_tbl = panimmune_data$fmx_df
+){
+    # subset_metric_tbl = panimmune_data$fmx_df
+    # response_column = "leukocyte_fraction"
+    # covariate_columns = "age_at_initial_pathologic_diagnosis"
+    # group_mode = "Across groups"
+    # group_column = "Study"
+    # n_wt_min = 40
+    # n_mut_min = 40
+    # driver_tbl = panimmune_data$driver_mutations_df
+    # metric_tbl = panimmune_data$fmx_df
+    
+    select_columns <- c("ParticipantBarcode", response_column, covariate_columns)
+    label_columns <-  c("GENE")
+    
+    if(group_mode == "By group"){
+        select_columns <- c(select_columns, group_column)
+        label_columns  <- c(label_columns, group_column)
+        metric_tbl <- subset_metric_tbl
+    }
+
+    assert_df_has_columns(metric_tbl, select_columns)
+    
+    driver_tbl <- tidyr::gather(driver_tbl, GENE, STATUS, -ParticipantBarcode)
+    
+    result_tbl <-
+        combine_metric_and_driver_tbl(
+            metric_tbl, 
+            driver_tbl,
+            response_column,
+            select_columns,
+            label_columns,
+            covariate_columns
+        ) %>% 
+        filter_driver_tbl_by_group_size(n_wt_min, n_mut_min) 
+}
+
+combine_metric_and_driver_tbl <- function(
+    metric_tbl, 
+    driver_tbl,
+    response_column,
+    select_columns,
+    label_columns,
+    covariate_columns,
+    join_columns = c("ParticipantBarcode")
+){
+    metric_tbl %>%
+        dplyr::select(select_columns) %>% 
+        dplyr::rename(RESPONSE = response_column) %>% 
+        tidyr::drop_na() %>% 
+        dplyr::inner_join(driver_tbl, by = join_columns) %>% 
+        tidyr::drop_na() %>%
+        tidyr::unite(LABEL, label_columns, sep = ":") %>%
+        dplyr::select(LABEL, RESPONSE, STATUS, covariate_columns)
+}
+
+filter_driver_tbl_by_group_size <- function(driver_tbl, n_wt_min, n_mut_min){
+    group_size_tbl <- driver_tbl %>% 
+        dplyr::group_by(LABEL) %>% 
+        dplyr::summarise(
+            n_total = dplyr::n(),
+            n_wt = sum(STATUS == "Wt"),
+            n_mut = n_total - n_wt
+        ) %>% 
+        dplyr::filter(n_mut >= n_mut_min & n_wt >= n_wt_min) %>%
+        dplyr::ungroup() %>% 
+        dplyr::select(-c(n_total, n_mut, n_wt))
+    
+    dplyr::inner_join(driver_tbl, group_size_tbl)
+}
+
+
+build_mv_driver_mutation_scatterplot_df <- function(
+    driver_tbl, 
+    covariates
+){
+    driver_tbl %>% 
+        add_log_ratio_effect_size(
+            "Wt", 
+            "Mut", 
+            value_column = "RESPONSE",
+            group_column = "STATUS") %>% 
+        add_driver_pvalues(covariates) %>% 
+        dplyr::select(y = PVALUE, x = EFFECT_SIZE, label = LABEL)
+}
+
+add_log_ratio_effect_size <- function(
+    tbl, 
+    group1, 
+    group2, 
+    value_column = "VALUE",
+    label_column = "LABEL",
+    group_column = "GROUP"
+){
+    tbl %>% 
+        dplyr::select(
+            GROUP = group_column, 
+            LABEL = label_column,
+            VALUE = value_column
+        ) %>% 
+        dplyr::group_by(LABEL, GROUP) %>%
+        dplyr::summarise(MEAN = mean(VALUE)) %>% 
+        dplyr::ungroup() %>%
+        dplyr::filter(MEAN > 0) %>%
+        tidyr::spread(GROUP, MEAN) %>%
+        dplyr::mutate(
+            EFFECT_SIZE = -log10( !!rlang::sym(group1) / !!rlang::sym(group2) )
+        ) %>% 
+        dplyr::select(-c(group1, group2)) %>% 
+        dplyr::inner_join(tbl, by = label_column)
+}
+
+
+add_driver_pvalues <- function(driver_tbl, covariates){
+    lm_forumula <- covariates %>%
+        stringr::str_c(collapse = " + ") %>% 
+        stringr::str_c("RESPONSE ~ STATUS + ", .)
+    
+    driver_tbl %>% 
+        tidyr::nest(RESPONSE, STATUS, covariates, .key = DATA) %>%
+        dplyr::mutate(PVALUE = as.double(parallel::mclapply(
+            DATA,
+            calculate_lm_pvalue,
+            lm_forumula,
+            "STATUSWt"
+        ))) %>%
+        dplyr::select(-DATA) %>% 
+        dplyr::mutate(PVALUE = -log10(PVALUE))
+}
+
+
+
+
 # distribution plot functions -------------------------------------------------
 
 build_distribution_plot_df <- function(

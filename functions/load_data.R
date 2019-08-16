@@ -85,18 +85,6 @@ load_io_target_expression <- function() {
     }
 }
 
-
-# load_driver_mutation <- function() {
-#   if (!USE_REMOTE_BQ) {
-#     list(
-#       driver_mutation_df = feather::read_feather("data/driver_mutations.feather")
-#     )
-#   } else {
-#     fetch_driver_mutation() %>% 
-#       format_driver_mutation()
-#   }
-# }
-
 load_driver_results <- function() {
     readRDS("data2/driver_results.rds")
 }

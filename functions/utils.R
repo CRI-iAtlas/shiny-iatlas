@@ -279,6 +279,15 @@ get_covariate_nested_list <- purrr::partial(
     Is_covariate
 )
 
+get_group_nested_list <- purrr::partial(
+    create_filtered_nested_list_by_class,
+    feature_df = panimmune_data$feature_df,
+    class_column = "Variable Class",
+    internal_column = "FeatureMatrixLabelTSV",
+    display_column = "FriendlyLabel",
+    `Variable Class` == "Sample Category"
+)
+
 # get_unique_column_values ----------------------------------------------------
 
 get_unique_column_values <- function(column, df){
@@ -317,5 +326,14 @@ get_numeric_classes_from_feature_df <- purrr::partial(
 
 se <- function(x){
     mean(x) / sqrt(length(x))
+}
+
+calculate_lm_pvalue <- function(data, lm_formula, term){
+    data %>% 
+        lm(formula = lm_formula, data = .) %>% 
+        summary %>% 
+        magrittr::use_series(coefficients) %>% 
+        .[term, "Pr(>|t|)"] %>% 
+        as.double()
 }
 
