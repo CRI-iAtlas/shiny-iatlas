@@ -337,3 +337,18 @@ calculate_lm_pvalue <- function(data, lm_formula, term){
         as.double()
 }
 
+get_effect_size_from_df <- function(df, method){
+    method(unlist(df$GROUP1), unlist(df$GROUP2))
+}
+
+log_ratio_effect_size <- function(v1, v2){
+    mean1 <- mean(v1)
+    mean2 <- mean(v2)
+    if(any(mean1 <= 0, mean2 <= 0)) return(NA)
+    -log10(mean1 / mean2)
+}
+
+
+
+
+

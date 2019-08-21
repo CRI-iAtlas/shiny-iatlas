@@ -1,19 +1,28 @@
 generate_covariate_selector <- function(
-    name, 
+    covariate_name,
+    transformation_name,
     ns_func,
-    choices,
-    label = "Select Covariate:"
+    covariate_choices
 ){
-    column(
-        width = 12,
-        selectInput(
-            ns_func(name),
-            label = label,
-            choices = choices
+    tagList(
+        column(
+            width = 8,
+            selectInput(
+                ns_func(covariate_name),
+                label = "Select Covariate:",
+                choices = covariate_choices
+            )
+        ),
+        column(
+            width = 4,
+            selectInput(
+                ns_func(transformation_name),
+                label = "Select Transformation:",
+                choices = c("None", "Squared", "Log10", "Reciprocal")
+            )
         )
     )
 }
-
 
 drivers_UI <- function(id) {
     ns <- NS(id)
@@ -91,69 +100,24 @@ drivers_UI <- function(id) {
                 width = 12,
                 includeMarkdown("data/markdown/driver_single.markdown")
             ),
+            model_selection_module_ui(ns("test2")),
             fluidRow(
                 optionsBox(
                     width = 12,
-                    column(
-                        width = 4,
-                        selectInput(
-                            ns("response_variable_mv"),
-                            "Select Response Variable",
-                            choices = get_feature_df_nested_list(),
-                            selected = "Leukocyte Fraction"
-                        )
-                    ),
-                    column(
-                        width = 4,
-                        numericInput(
-                            ns("min_mut_mv"),
-                            "Minimum number of mutant samples per group:", 
-                            20, 
-                            min = 2
-                        )
-                    ),
-                    column(
-                        width = 4,
-                        numericInput(
-                            ns("min_wt_mv"),
-                            "Minimum number of wild type samples per group:", 
-                            20, 
-                            min = 2
-                        )
-                    ),
-                    column(
-                        width = 4,
-                        numericInput(
-                            ns("n_covariates"),
-                            "Number of covariates in model:", 
-                            1,
-                            min = 1
-                        )
-                    ),
-                    column(
-                        width = 4,
-                        selectInput(
-                            ns("group_mode"),
-                            "Select mode", 
-                            choices = c("By group", "Across groups"),
-                            selected = "Across groups"
-                        )
-                    ),
-                    uiOutput(ns("covariate_choice_ui")),
                     column(
                         width = 6,
                         textOutput(ns("model_text"))
                     ),
                     column(
                         width = 6,
-                        actionButton(ns("mv_button"), "Calculate")
+                        actionButton(ns("calculate_button"), "Calculate")
                     )
                 )
             ),
             fluidRow(
                 plotBox(
                     width = 12,
-                    plotlyOutput(ns("scatter_plot2")) %>% 
+                    plotlyOutput(ns("scatter_plot2")) %>%
                         shinycssloaders::withSpinner()
                 )
             )
@@ -264,68 +228,81 @@ drivers <- function(
     
     ## multi-variable models ----
     
-    covariate_names <- reactive({
-        req(input$n_covariates)
-        1:input$n_covariates %>% 
-            as.character %>% 
-            stringr::str_c("covariate", .)
-    })
+    module_parameters <- callModule(model_selection_module, "test2")
     
-    output$covariate_choice_ui <- renderUI({
-        if(input$group_mode == "Across groups"){
-            choices = c(get_covariate_nested_list(), get_group_nested_list())
-        } else {
-            choices = get_covariate_nested_list()
-        }
-        purrr::map(
-            covariate_names(),
-            generate_covariate_selector,
-            session$ns,
-            choices
-        )
-    })
-    
-    covariates <- reactive({
-        req(covariate_names())
-        purrr::walk(covariate_names(), ~req(input[[.x]]))
-        purrr::map_chr(covariate_names(), ~magrittr::extract2(input, .x))
-    })
-    
-    model_text <- reactive({
-        req(covariates())
+    display_formula_string <- reactive({
+        response <- module_parameters()$response_variable
+        covs <-     module_parameters()$covariates
+        trans <-    module_parameters()$transformations
+        req(response, covs, trans)
         
-        covariates() %>% 
+        transform_variable <- function(var, trans){
+            if(trans == "None") res <- var
+            else if (trans == "Squared") res <- stringr::str_c(var, "**2)")
+            else if (trans == "Log10") res <- stringr::str_c("log10(", var, ")")
+            else if (trans == "Reciprocal")  res <- stringr::str_c("1/", var)
+            return(res)
+        }
+        
+        string <- covs %>% 
+            purrr::map(get_variable_display_name) %>% 
+            purrr::map2_chr(trans, transform_variable) %>% 
             stringr::str_c(collapse = " + ") %>% 
             stringr::str_c(
-                input$response_variable_mv, 
-                " ~ mutation_status + ",
+                get_variable_display_name(response),
+                " ~ Mutation status + ", 
                 .
             )
     })
     
+    model_formula_string <- reactive({
+        req(
+            module_parameters()$covariates, 
+            module_parameters()$transformations
+        )
+        transform_variable <- function(var, trans){
+            if(trans == "None") res <- var
+            else if (trans == "Squared") res <- stringr::str_c("I(", var, "**2)")
+            else if (trans == "Log10") res <- stringr::str_c("I(log10(", var, "))")
+            else if (trans == "Reciprocal")  res <- stringr::str_c("I(1/", var, ")")
+            return(res)
+        }
+        string <- 
+            purrr::map2_chr(
+                module_parameters()$covariates,
+                module_parameters()$transformations,
+                transform_variable
+            ) %>% 
+            stringr::str_c(collapse = " + ") %>% 
+            stringr::str_c("RESPONSE ~ STATUS + ", .) 
+    })
+
     output$model_text <- renderText({
-        model_text()
+        display_formula_string()
     })
 
     scatter_plot_df2 <- reactive({
         req(
-            metric_df(), 
-            covariates(), 
-            input$response_variable_mv,
+            metric_df(),
+            module_parameters(),
             group_internal_choice(),
-            input$group_mode,
-            input$min_wt_mv, 
-            input$min_mut_mv
         )
         
+        # no covariates not currently supported
+        validate(need(
+            !is.null(module_parameters()$covariates),
+            "Please select a covariate"
+        ))
+
         mv_driver_df <- build_mv_driver_mutation_tbl(
             metric_df(),
-            input$response_variable_mv,
-            covariates(),
-            input$group_mode,
+            module_parameters()$response_variable,
+            module_parameters()$covariates,
+            module_parameters()$group_mode,
             group_internal_choice(),
-            input$min_wt_mv, 
-            input$min_mut_mv
+            module_parameters()$min_wildtype,
+            module_parameters()$min_mutants,
+            module_parameters()$scale_response
         )
         
         # plot clicked on but event data stale due to parameter change
@@ -333,17 +310,19 @@ drivers <- function(
             nrow(mv_driver_df) > 0,
             "Response variable has no groups that meet current thresholding"
         ))
-        
+
         build_mv_driver_mutation_scatterplot_df(
-            mv_driver_df, 
-            covariates()
+            mv_driver_df,
+            module_parameters()$covariates,
+            model_formula_string()
         )
     })
 
     output$scatter_plot2 <- renderPlotly({
         
-        input$mv_button
-        
+        req(input$calculate_button > 0)
+        input$calculate_button
+
         isolate(create_scatterplot(
             scatter_plot_df2(),
             xlab = "- log10(Effect Size)",
