@@ -12,43 +12,47 @@ insert_remove_element_module <- function(
     session, 
     ui_creation_function, 
     output_function,
-    remove_buttons_event = reactive(NULL)
+    remove_ui_event = reactive(NULL)
 ){
-    params <- reactiveValues(current_ui_indeces = c())
+    params <- reactiveValues(ui_numbers = c())
     
     ns <- session$ns
     observeEvent(input$add_button, {
-        button_n <- input$add_button
-        params$current_ui_indeces <- c(params$current_ui_indeces, button_n)
-        remove_button_id <- ns(paste0('remove_button', button_n))
-        ui_div_id <- ns(paste0("new_input", button_n))
+        
+        ui_number           <- input$add_button
+        params$ui_numbers   <- c(params$ui_numbers, ui_number)
+        remove_button_id    <- ns(stringr::str_c('remove_button', ui_number))
+        ui_id               <- ns(stringr::str_c("ui", ui_number))
+        add_button_selector <- stringr::str_c("#", ns("add_button"))
+        ui_selector         <- stringr::str_c("#", ui_id)
+        
         insertUI(
-            selector = paste0("#", ns("add_button")),
+            selector = add_button_selector,
             where = "afterEnd",
             ui = div(
-                id = ui_div_id,
+                id = ui_id,
                 ui_creation_function()(
-                    ui_number = button_n, 
+                    ui_number = ui_number, 
                     remove_button_id = remove_button_id, 
                     ns_func = ns
                 )
             )
         )
         observeEvent(input[[remove_button_id]], {
-            shiny::removeUI(selector = paste0("#", ui_div_id))
-            params$current_ui_indeces <- params$current_ui_indeces %>% 
-                purrr::discard(. == button_n)
+            shiny::removeUI(selector = ui_selector)
+            params$ui_numbers <- params$ui_numbers %>% 
+                purrr::discard(. == ui_number)
         })
     })
     
-    observeEvent(remove_buttons_event(), {
+    observeEvent(remove_ui_event(), {
         button_selectors <-
-            stringr::str_c("new_input", params$current_ui_indeces) %>%
+            stringr::str_c("ui", params$ui_numbers) %>%
             ns() %>%
             stringr::str_c("#", .) %>%
             purrr::walk(removeUI)
-        params$current_ui_indeces <- c()
+        params$ui_numbers <- c()
     })
     
-    reactive(output_function()(input, params$current_ui_indeces))
+    reactive(output_function()(input, params$ui_numbers))
 }
