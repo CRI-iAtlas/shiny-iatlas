@@ -11,9 +11,9 @@ insert_remove_element_module <- function(
     output,
     session, 
     ui_creation_function, 
-    output_function
+    output_function,
+    remove_buttons_event = reactive(NULL)
 ){
-    
     params <- reactiveValues(current_ui_indeces = c())
     
     ns <- session$ns
@@ -27,7 +27,11 @@ insert_remove_element_module <- function(
             where = "afterEnd",
             ui = div(
                 id = ui_div_id,
-                ui_creation_function(button_n, remove_button_id, ns)
+                ui_creation_function()(
+                    ui_number = button_n, 
+                    remove_button_id = remove_button_id, 
+                    ns_func = ns
+                )
             )
         )
         observeEvent(input[[remove_button_id]], {
@@ -37,5 +41,14 @@ insert_remove_element_module <- function(
         })
     })
     
-    reactive(output_function(input, params$current_ui_indeces))
+    observeEvent(remove_buttons_event(), {
+        button_selectors <-
+            stringr::str_c("new_input", params$current_ui_indeces) %>%
+            ns() %>%
+            stringr::str_c("#", .) %>%
+            purrr::walk(removeUI)
+        params$current_ui_indeces <- c()
+    })
+    
+    reactive(output_function()(input, params$current_ui_indeces))
 }

@@ -279,6 +279,26 @@ get_covariate_nested_list <- purrr::partial(
     Is_covariate
 )
 
+get_numeric_covariate_nested_list <- purrr::partial(
+    create_filtered_nested_list_by_class,
+    feature_df = panimmune_data$feature_df,
+    class_column = "Variable Class",
+    internal_column = "FeatureMatrixLabelTSV",
+    display_column = "FriendlyLabel",
+    VariableType == "Numeric",
+    Is_covariate
+)
+
+get_categorical_covariate_nested_list <- purrr::partial(
+    create_filtered_nested_list_by_class,
+    feature_df = panimmune_data$feature_df,
+    class_column = "Variable Class",
+    internal_column = "FeatureMatrixLabelTSV",
+    display_column = "FriendlyLabel",
+    VariableType == "Categorical",
+    Is_covariate
+)
+
 get_group_nested_list <- purrr::partial(
     create_filtered_nested_list_by_class,
     feature_df = panimmune_data$feature_df,
@@ -347,6 +367,16 @@ log_ratio_effect_size <- function(v1, v2){
     if(any(mean1 <= 0, mean2 <= 0)) return(NA)
     -log10(mean1 / mean2)
 }
+
+get_categorical_covariate_nested_list_with_sample_groups <- function(){
+    c(
+        get_categorical_covariate_nested_list(),
+        get_group_nested_list()
+    )
+}
+
+
+
 
 
 

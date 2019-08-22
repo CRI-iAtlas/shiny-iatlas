@@ -1,29 +1,3 @@
-generate_covariate_selector <- function(
-    covariate_name,
-    transformation_name,
-    ns_func,
-    covariate_choices
-){
-    tagList(
-        column(
-            width = 8,
-            selectInput(
-                ns_func(covariate_name),
-                label = "Select Covariate:",
-                choices = covariate_choices
-            )
-        ),
-        column(
-            width = 4,
-            selectInput(
-                ns_func(transformation_name),
-                label = "Select Transformation:",
-                choices = c("None", "Squared", "Log10", "Reciprocal")
-            )
-        )
-    )
-}
-
 drivers_UI <- function(id) {
     ns <- NS(id)
     
@@ -100,7 +74,7 @@ drivers_UI <- function(id) {
                 width = 12,
                 includeMarkdown("data/markdown/driver_single.markdown")
             ),
-            model_selection_module_ui(ns("test2")),
+            model_selection_module_ui(ns("module1")),
             fluidRow(
                 optionsBox(
                     width = 12,
@@ -228,25 +202,37 @@ drivers <- function(
     
     ## multi-variable models ----
     
-    module_parameters <- callModule(model_selection_module, "test2")
+    module_parameters <- callModule(model_selection_module, "module1")
+    
+    covariates <- reactive({
+        c(
+            module_parameters()$numerical_covariates,
+            module_parameters()$categorical_covariates
+        )
+    })
+    
+    transformations <- reactive({
+        c(
+            module_parameters()$numerical_transformations,
+            module_parameters()$categorical_transformations
+        )
+    })
     
     display_formula_string <- reactive({
-        response <- module_parameters()$response_variable
-        covs <-     module_parameters()$covariates
-        trans <-    module_parameters()$transformations
-        req(response, covs, trans)
+        req(module_parameters(), covariates(), transformations())
+        response  <- module_parameters()$response_variable
         
         transform_variable <- function(var, trans){
             if(trans == "None") res <- var
-            else if (trans == "Squared") res <- stringr::str_c(var, "**2)")
+            else if (trans == "Squared") res <- stringr::str_c(var, "**2")
             else if (trans == "Log10") res <- stringr::str_c("log10(", var, ")")
             else if (trans == "Reciprocal")  res <- stringr::str_c("1/", var)
             return(res)
         }
         
-        string <- covs %>% 
+        string <-  covariates() %>% 
             purrr::map(get_variable_display_name) %>% 
-            purrr::map2_chr(trans, transform_variable) %>% 
+            purrr::map2_chr(transformations(), transform_variable) %>% 
             stringr::str_c(collapse = " + ") %>% 
             stringr::str_c(
                 get_variable_display_name(response),
@@ -256,10 +242,9 @@ drivers <- function(
     })
     
     model_formula_string <- reactive({
-        req(
-            module_parameters()$covariates, 
-            module_parameters()$transformations
-        )
+        
+        req(covariates(), transformations())
+        
         transform_variable <- function(var, trans){
             if(trans == "None") res <- var
             else if (trans == "Squared") res <- stringr::str_c("I(", var, "**2)")
@@ -267,12 +252,9 @@ drivers <- function(
             else if (trans == "Reciprocal")  res <- stringr::str_c("I(1/", var, ")")
             return(res)
         }
-        string <- 
-            purrr::map2_chr(
-                module_parameters()$covariates,
-                module_parameters()$transformations,
-                transform_variable
-            ) %>% 
+        
+        string <- covariates() %>% 
+            purrr::map2_chr(transformations(), transform_variable) %>% 
             stringr::str_c(collapse = " + ") %>% 
             stringr::str_c("RESPONSE ~ STATUS + ", .) 
     })
@@ -290,14 +272,14 @@ drivers <- function(
         
         # no covariates not currently supported
         validate(need(
-            !is.null(module_parameters()$covariates),
+            !is.null(covariates()),
             "Please select a covariate"
         ))
 
         mv_driver_df <- build_mv_driver_mutation_tbl(
             metric_df(),
             module_parameters()$response_variable,
-            module_parameters()$covariates,
+            covariates(),
             module_parameters()$group_mode,
             group_internal_choice(),
             module_parameters()$min_wildtype,
@@ -313,7 +295,7 @@ drivers <- function(
 
         build_mv_driver_mutation_scatterplot_df(
             mv_driver_df,
-            module_parameters()$covariates,
+            covariates(),
             model_formula_string()
         )
     })
