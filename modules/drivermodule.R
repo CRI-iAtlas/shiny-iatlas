@@ -5,11 +5,7 @@ drivers_UI <- function(id) {
         titleBox("iAtlas Explorer — Association with Driver Mutations"),
         textBox(
             width = 12,
-            p(
-                "This module can be used to test whether an immune readout is statistically associated with ",
-                ncol(panimmune_data$driver_mutation_df) - 1,
-                " cancer driver mutations, within each of your sample groups."
-            )  
+            includeMarkdown("data/markdown/driver.markdown")
         ),
         
         # single variable ----
@@ -51,20 +47,7 @@ drivers_UI <- function(id) {
                     )
                 )
             ),
-            fluidRow(
-                plotBox(
-                    width = 12,
-                    plotlyOutput(ns("scatter_plot")) %>% 
-                        shinycssloaders::withSpinner()
-                )
-            ),
-            fluidRow(
-                plotBox(
-                    width = 12,
-                    plotlyOutput(ns("violin_plot")) %>%
-                        shinycssloaders::withSpinner()
-                )
-            )
+            volcano_plot_module_ui(ns("single_variable"))
         ),
         
         # multi_variable ----
@@ -72,7 +55,7 @@ drivers_UI <- function(id) {
             title = "Immune Response Association With Driver Mutations -- multi-variable",
             messageBox(
                 width = 12,
-                includeMarkdown("data/markdown/driver_single.markdown")
+                includeMarkdown("data/markdown/driver_multi.markdown")
             ),
             model_selection_module_ui(ns("module1")),
             fluidRow(
@@ -110,95 +93,66 @@ drivers <- function(
 ){
     
     ## single variable models ----
-    scatter_plot_df <- reactive({
-        driver_result_df() %>% 
+    volcano_df <- reactive({
+        x <- driver_result_df() %>% 
             dplyr::filter(
                 metric == input$response_variable,
                 n_wt  >= input$min_wt,
                 n_mut >= input$min_mut
             ) %>% 
-            dplyr::select(x = effect_size, y = neg_log10_pvalue, label)
+            dplyr::rename(
+                LABEL = label,
+                METRIC = metric
+            )
+        print("Volcano df")
+        print(x)
+        return(x)
     })
     
-    output$scatter_plot <- renderPlotly({
-
-        create_scatterplot(
-            scatter_plot_df(),
-            xlab = "- log10(Effect Size)",
-            ylab = "- log10(P-value)",
-            title = "Immune Response Association With Driver Mutations",
-            source = "scatterplot",
-            key_col = "label",
-            label_col = "label",
-            horizontal_line = T,
-            horizontal_line_y = (- log10(0.05))
-        )
-    })
-    
-    output$violin_plot <- renderPlotly({
-
-        eventdata <- event_data("plotly_click", source = "scatterplot")
-        
-        # plot not clicked on yet
-        validate(need(
-            !is.null(eventdata),
-            "Click a point on the above scatterplot to see a violin plot for the comparison"
-        ))
-
-        selected_label <- eventdata$key[[1]]
-        split_label <- selected_label %>% 
-            stringr::str_split(";") %>% 
-            unlist()
-        
-        selected_gene   <- split_label[[1]]
-        selected_group  <- split_label[[2]]
-        selected_es     <- eventdata$x[[1]]
-        selected_pvalue <- eventdata$y[[1]]
-        
-        req(metric_df())
-        
-        metric_df <-  metric_df() %>% 
+    violin_df <- reactive({
+        mutation_df <-  panimmune_data$driver_mutations_df %>% 
             dplyr::select(
-                sample = "ParticipantBarcode",
-                group_value = group_internal_choice(),
-                metric_value = input$response_variable
-            ) %>% 
-            dplyr::filter(group_value == selected_group) %>% 
+                SAMPLE = "ParticipantBarcode",
+                dplyr::everything()) %>% 
+            tidyr::gather(GENE, STATUS, -SAMPLE) %>% 
             tidyr::drop_na()
         
-        # plot clicked on but event data stale due to parameter change
-        validate(need(
-            selected_group %in% metric_df$group_value,
-            "Click a point on the above scatterplot to see a violin plot for the comparison"
-        ))
-        
-        
-        violin_plot_df <- panimmune_data$driver_mutations_df %>% 
+        metric_df <- metric_df() %>% 
             dplyr::select(
-                sample = "ParticipantBarcode",
-                mutation_status = selected_gene
+                SAMPLE = "ParticipantBarcode",
+                GROUP = group_internal_choice(),
+                METRIC = input$response_variable
             ) %>% 
-            dplyr::inner_join(metric_df, by = "sample") %>% 
-            dplyr::select(x = mutation_status, y = metric_value)
+            tidyr::drop_na()
         
-        title <- stringr::str_c(
-            "Cohort:",
-            selected_group,
-            "; P-value:",
-            round(selected_pvalue, 4),
-            "; log10(Effect size):", 
-            round(selected_es, 4),
-            sep = " "
-        )
-
-        create_violinplot(
-            violin_plot_df,
-            xlab = stringr::str_c("Mutation status: ", selected_gene),
-            ylab = get_variable_display_name(input$response_variable),
-            title = title,
-            fill_colors = c("blue"),
-            showlegend = FALSE)
+        violin_df <- 
+            dplyr::inner_join(mutation_df, metric_df, by = "SAMPLE") %>% 
+            dplyr::select(-SAMPLE) %>% 
+            dplyr::mutate(LABEL = stringr::str_c(GENE, GROUP, sep = ";")) %>% 
+            dplyr::select(-c(GENE, GROUP)) %>% 
+            dplyr::rename(GROUP = STATUS) %>% 
+            dplyr::mutate(GROUP = forcats::fct_relevel(
+                GROUP,
+                "Wt",
+                "Mut"
+            ))
+        
+        print("Violin df")
+        print(violin_df)
+        return(violin_df)
     })
+    
+    callModule(
+        volcano_plot_module,
+        "single_variable",
+        volcano_df,
+        violin_df,
+        "Immune Response Association With Driver Mutations",
+        "driver_single_variable",
+        "Wt",
+        "Mut"
+    ) 
+
     
     ## multi-variable models ----
     
@@ -292,12 +246,17 @@ drivers <- function(
             nrow(mv_driver_df) > 0,
             "Response variable has no groups that meet current thresholding"
         ))
+        
+        print("Volcano df2")
+        print(mv_driver_df)
 
-        build_mv_driver_mutation_scatterplot_df(
+        x <- build_mv_driver_mutation_scatterplot_df(
             mv_driver_df,
             covariates(),
             model_formula_string()
         )
+        print(x)
+        return(x)
     })
 
     output$scatter_plot2 <- renderPlotly({
@@ -307,12 +266,14 @@ drivers <- function(
 
         isolate(create_scatterplot(
             scatter_plot_df2(),
-            xlab = "- log10(Effect Size)",
-            ylab = "- log10(P-value)",
+            xlab = "Log10(Fold Change)",
+            ylab = "- Log10(P-value)",
             title = "Immune Response Association With Driver Mutations",
             source = "scatterplot",
             key_col = "label",
             label_col = "label",
+            color_col = "color",
+            fill_colors = c("blue" = "blue", "red" = "red"),
             horizontal_line = T,
             horizontal_line_y = (- log10(0.05))
         ))

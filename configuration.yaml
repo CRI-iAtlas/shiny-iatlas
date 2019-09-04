@@ -15,6 +15,7 @@ module_files:
   - "modules/distribution_plot_module.R"
   - "modules/model_selection_module.R"
   - "modules/insert_remove_element_module.R"
+  - "modules/volcano_plot_module.R"
   
 function_files:
   - "functions/load_data.R"

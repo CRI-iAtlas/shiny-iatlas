@@ -68,7 +68,7 @@ combine_metric_and_driver_tbl <- function(
         tidyr::drop_na() %>% 
         dplyr::inner_join(driver_tbl, by = join_columns) %>% 
         tidyr::drop_na() %>%
-        tidyr::unite(LABEL, label_columns, sep = ":") %>%
+        tidyr::unite(LABEL, label_columns, sep = ":")  %>%
         dplyr::select(LABEL, RESPONSE, STATUS, covariate_columns)
     
 }
@@ -101,7 +101,12 @@ build_mv_driver_mutation_scatterplot_df <- function(
             value_column = "RESPONSE",
             group_column = "STATUS") %>% 
         add_driver_pvalues(covariates, model_formula) %>% 
-        dplyr::select(y = PVALUE, x = EFFECT_SIZE, label = LABEL)
+        dplyr::select(y = PVALUE, x = EFFECT_SIZE, label = LABEL) %>% 
+        dplyr::mutate(color = dplyr::if_else(
+            y < 1.3 | abs(x) < 0.1,
+            "blue",
+            "red"
+        ))
 }
 
 add_effect_size <- function(
