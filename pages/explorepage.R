@@ -7,59 +7,59 @@ explorepage <- dashboardPage(
                tabName = "dashboard",
                icon = icon("dashboard")
       ),
-      menuItem("Analysis Modules",
-               icon = icon("bar-chart"), startExpanded = TRUE,
-               menuSubItem(
-                 "Sample Group Overview",
-                 tabName = "groups_overview",
-                 icon = icon("cog")
-               ),
-               menuSubItem(
-                 "Tumor Microenvironment",
-                 tabName = "cell_content",
-                 icon = icon("cog")
-               ),
-               menuSubItem(
-                 "Immune Feature Trends",
-                 tabName = "immune_features",
-                 icon = icon("cog")
-               ),
-               menuSubItem(
-                 "Clinical Outcomes",
-                 tabName = "survival_curves",
-                 icon = icon("cog")
-               ),
-               menuSubItem(
-                 "Immunomodulators",
-                 tabName = "immunomodulators",
-                 icon = icon("cog")
-               ),
-               menuSubItem(
-                 "IO Targets",
-                 tabName = "iotargets",
-                 icon = icon("cog")
-               ),
-               # menuSubItem(
-               #   "Genomic State",
-               #   icon = icon("chevron-circle-right")),
-               # menuSubItem(
-               #   "Immune Interface",
-               #   tabName = "clonal_diversity",
-               #   icon = icon("chevron-circle-right")),
-               menuSubItem(
-                 "TIL Maps",
-                 tabName = "tilmap_features",
-                 icon = icon("cog")
-               ),
-               menuSubItem(
-                 "Driver Associations",
-                 tabName = "drivers",
-                 icon = icon("cog")
-               )
+      menuItem(
+          "Analysis Modules",
+          icon = icon("bar-chart"), startExpanded = TRUE,
+          menuSubItem(
+              "Sample Group Overview",
+              tabName = "groups_overview",
+              icon = icon("cog")
+          ),
+          menuSubItem(
+              "Tumor Microenvironment",
+              tabName = "cell_content",
+              icon = icon("cog")
+          ),
+          menuSubItem(
+              "Immune Feature Trends",
+              tabName = "immune_features",
+              icon = icon("cog")
+          ),
+          menuSubItem(
+              "Clinical Outcomes",
+              tabName = "survival_curves",
+              icon = icon("cog")
+          ),
+          menuSubItem(
+              "Immunomodulators",
+              tabName = "immunomodulators",
+              icon = icon("cog")
+          ),
+          menuSubItem(
+              "IO Targets",
+              tabName = "iotargets",
+              icon = icon("cog")
+          ),
+          menuSubItem(
+              "Clonal diversity",
+              tabName = "clonal_diversity",
+              icon = icon("cog")
+          ),
+          menuSubItem(
+              "TIL Maps",
+              tabName = "tilmap_features",
+              icon = icon("cog")
+          ),
+          menuSubItem(
+              "Driver Associations",
+              tabName = "drivers",
+              icon = icon("cog")
+          )
       ),
-      menuItem("Data Description",
-               icon = icon("th-list"),
-               tabName = "datainfo"
+      menuItem(
+          "Data Description",
+          icon = icon("th-list"),
+          tabName = "datainfo"
       ),
       shiny::hr(),
       span(h5(strong("Explorer Settings")), style = "text-align: center"),
@@ -167,12 +167,11 @@ explorepage <- dashboardPage(
             #   imgLinkBox(
             #     width = 6,
             #     linkId = "link_to_module2",
-            #     title = "Immune Interface",
+            #     title = "Clonal diversity",
             #     imgSrc = "images/cell_content.png",
             #     boxText = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
             #     linkText = "Open Module"
-            #   ),
-            
+            #   )
           ),
           fluidRow(
             imgLinkBox(
@@ -218,7 +217,7 @@ explorepage <- dashboardPage(
       ),
       tabItem(
         tabName = "clonal_diversity",
-        immuneinterface_UI("module2")
+        clonal_diversity_module_UI("module2")
       ),
       tabItem(
         tabName = "groups_overview",

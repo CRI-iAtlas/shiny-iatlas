@@ -27,14 +27,15 @@ shinyServer(function(input, output, session) {
         reactive(sample_group_df()),
         reactive(subset_df()))
     
-    # Clonal diversity
-    # callModule(
-    #     immuneinterface,
-    #     "module2",
-    #     reactive(input$ss_choice),
-    #     reactive(group_internal_choice()),
-    #     reactive(subset_df()),
-    #     reactive(plot_colors()))
+    #Clonal diversity
+    callModule(
+        clonal_diversity_module,
+        "module2"
+    )
+        # reactive(input$ss_choice),
+        # reactive(group_internal_choice()),
+        # reactive(subset_df()),
+        # reactive(plot_colors()))
     
     # Groups
     user_group_df <- callModule(
