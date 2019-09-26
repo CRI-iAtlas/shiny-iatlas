@@ -92,7 +92,7 @@ tilmap <- function(
             tidyr::spread(FriendlyLabel, value) %>% 
             dplyr::mutate(Image = stringr::str_c(
                 "<a href=\"",
-                "http://quip1.bmi.stonybrook.edu:443/camicroscope/osdCamicroscope.php?tissueId=",
+                "https://quip1.bmi.stonybrook.edu:443/camicroscope/osdCamicroscope.php?tissueId=",
                 Slide,
                 "\">",
                 Slide,
