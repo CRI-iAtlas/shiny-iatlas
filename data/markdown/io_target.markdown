@@ -4,6 +4,7 @@ This module allows you to explore the tumor expression of some of the immuno-onc
 
 - Comprehensive 2017 IO landscape analysis ([Annals of Oncology](https://academic.oup.com/annonc/article/29/1/84/4693829) December 2017)
 - Comprehensive 2018 IO landscape analysis including a comparison to the previous year ([Nature Reviews Drug Discovery](https://www.nature.com/articles/nrd.2018.167) October 2018)
+- Comprehensive 2019 IO landscape analysis ([Nature Reviews Drug Discovery](https://www.nature.com/nrd/) September 2019)
      
 and to connect to additional resources on agents for those targets provided by those studies.
       
