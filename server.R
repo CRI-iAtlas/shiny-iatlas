@@ -110,9 +110,9 @@ shinyServer(function(input, output, session) {
     
     # subtype predictor
     callModule(
-        subtypepredictor,
-        "module_subtypepredictor")
-    
+        subtypeclassifier, 
+        "module_subtypeclassifier")
+
     # Data info
     callModule(
         datainfo,
@@ -146,11 +146,8 @@ shinyServer(function(input, output, session) {
     observeEvent(input$link_to_module7, {
         shinydashboard::updateTabItems(session, "explorertabs", "tilmap_features")
     })
-    observeEvent(input$link_to_module9, {
-      shinydashboard::updateTabItems(session, "explorertabs", "iotargets")
-    })
-    observeEvent(input$link_to_module_subtypepredictor, {
-        updateNavlistPanel(session, "toolstabs", "Immune Subtype Predictor")
+    observeEvent(input$link_to_module_subtypeclassifier, {
+        updateNavlistPanel(session, "toolstabs", "Immune Subtype Classifier")
     })
 
     # group selection ui --------------------------------------------------------
