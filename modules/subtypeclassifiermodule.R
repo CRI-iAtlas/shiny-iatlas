@@ -84,7 +84,7 @@ subtypeclassifier_UI <- function(id) {
                                  "text/comma-separated-values,text/plain",
                                  ".tsv",
                                  ".tsv.gz"),
-                      placeholder = 'data/ivy20.csv')
+                      placeholder = 'data/ebpp_test1_1to20.tsv')
           ),
 
           column(
