@@ -55,6 +55,11 @@ explorepage <- dashboardPage(
                  "Driver Associations",
                  tabName = "drivers",
                  icon = icon("cog")
+               ),
+               menuSubItem(
+                 "Cytokine Network",
+                 tabName = "cytokine_network",
+                 icon = icon("cog")
                )
       ),
       menuItem("Data Description",
@@ -209,6 +214,17 @@ explorepage <- dashboardPage(
               boxText = "Explore the expression of genes that code for immuno-oncological (IO) targets .",
               linkText = "Open Module"
             )
+          ),
+          fluidRow(
+            imgLinkBox(
+              width = 6,
+              title = "Cytokine Network",
+              linkId = "link_to_module11",
+              imgSrc = "images/iotargets.png",
+              boxText = "Explore Cytokine Networks across different immune subtypes.",
+              linkText = "Open Module"
+            )
+            
           )
         )
       ),
@@ -247,6 +263,10 @@ explorepage <- dashboardPage(
       tabItem(
         tabName = "iotargets",
         iotarget_UI("module9")
+      ),
+      tabItem(
+        tabName = "cytokine_network",
+        cytokinenetwork_UI("module11")
       ),
       tabItem(
         tabName = "datainfo",
