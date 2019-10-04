@@ -14,18 +14,6 @@ styles <- c("Edges by Immune Type" = 'data/network/stylesEdges.js',
             "Black Edges" = "data/network/styles.js")
 node_type <- read_tsv("data/network/network_node_labels.tsv")
 
-filterNodes <- function(list_edges, annot){
-  colnames(annot) <- c("Type", "name")
-  annot[annot$name== "CD80"& annot$Type == "Ligand",] <- NA #hardcoded here the fact that CD80 is with two different annotations and this caused a problem in the JSON file
-  nodes <- append(list_edges$source, list_edges$target) %>% unique() %>% as.data.frame()
-  colnames(nodes) <- "name"
-
-  nodes <- merge(nodes, annot, all.x = TRUE) #we want to keep all nodes, even those that do not have annotations
-  
-  return(nodes)
-}
-
-
 
 cytokinenetwork_UI <- function(id) {
   
@@ -42,88 +30,113 @@ cytokinenetwork_UI <- function(id) {
     ),
     
     sectionBox(
-      title = "Here we go",
+      title = "Extracellular network",
       
       messageBox(
         width = 24,
-        p("Here is what you must do.")
+        p("Based on a network of documented ligand-receptor, cell-receptor, and cell-ligand pairs (Ramilowski et al., 2015), you can generate a Cell-to-Cell Communication Network."),
+        p("From this scaffold, interactions predicted to take place in the TME are identified first by a criterion for the nodes to be included (‘present’ in the network), then by a
+          criterion for inclusion of edges, potential interactions. In this tool, this can be set by the abundance and a concordance thresholds. "),
+        p("For nodes, the abundance threshold, in %, is the frequency of samples in the upper two tertiles of cell abundance or gene expression. For example, for an abundance of 66%, a node is entered into the subtype-network 
+          if at least 66% of samples within a subtype map to mid or high value bins in a tertile distribution."),
+        p("An edge present in the scaffold network between any two abundant nodes is then evaluated for inclusion. A contingency table is populated for the ternary values of the two nodes, 
+          over all samples in the subtype, and a concordance versus discordance ratio (‘‘concordance score’’) is calculated for the edge in terms of the values of ((high,high)+
+          (low,low))/((low,high)+(high,low)). Edges were retained with concordance score higher than the one set by the user."),
+        p("Manuscript context:  This module allows you to display networks similar to Figure 7A, 7B, 7C, and S7A. Selection of a 66% abundance threshold, and 1.62 for concordance 
+          score, generates the extracellular network for C4 present in Figure S7A")
+          
       ),
-      
-      fluidRow(
         optionsBox(
+          width=12,
           column(
-            width = 4,
-            selectInput(
-              ns("showGroup"), 
-              "Select Immune Subtype:", 
-              choices=c("All", "C1", "C2", "C3", "C4", "C5", "C6"), 
-              selected = "All")
+            width = 3,
+            verticalLayout(
+              numericInput(ns("abundance"), "Set Abundance Threshold (%)", value = 66, min = 0, max = 100),
+              numericInput(ns("concordance"), "Set Concordance Threshold", value = 2.94, step = 0.01)
+            )
           ),
           column(
-            width = 4,
-            selectInput(
-              ns("doLayout"), 
-              "Select Layout:",
-              choices=c("",
-                        "cose",
-                        "cola",
-                        "circle",
-                        "concentric",
-                        "breadthfirst",
-                        "grid",
-                        "random",
-                        "dagre",
-                        "cose-bilkent"),
-              selected = "dagre")
+            width = 1,
+            div(class = "form-group shiny-input-container", actionButton(ns("calculate_button"), "Calculate"))
+    
           ),
-         column(
-           width = 4,
-           selectInput(
-             ns("loadStyleFile"), 
-             "Select Style: ", 
-             choices = styles)
-         ),
-         column(
-           width = 4,
-           selectInput(ns("selectName"), "Select Node by ID:", choices = c("", node_type$Obj))
-           ),
-        fluidRow(
-          actionButton(ns("fit"), "Fit Graph"),
-          actionButton(ns("fitSelected"), "Fit Selected"),
-          actionButton(ns("sfn"), "Select First Neighbor"),
-          actionButton(ns("clearSelection"), "Unselect Nodes"),
-         # actionButton(ns("loopConditions"), "Loop Conditions"),
-          actionButton(ns("getSelectedNodes"), "Get Selected Nodes"),
-          actionButton(ns("removeGraphButton"), "Remove Graph")
-        ),
-        column(
-          width = 6,
-           numericInput(ns("abundance"), "Set Abundance Threshold (%)", value = 66, min = 0, max = 100),
-           numericInput(ns("concordance"), "Set Concordance Threshold", value = 2.94, step = 0.01) 
+          column(
+            width = 3,
+            verticalLayout(
+              selectInput(
+                ns("showGroup"), 
+                "Select Immune Subtype:", 
+                choices=c("All", "C1", "C2", "C3", "C4", "C5", "C6"), 
+                selected = "All"),
+
+              selectInput(ns("selectName"), "Select Node by ID:", choices = c("", node_type$Obj))
+              )
+            ),
+            column(
+              width = 3,
+              verticalLayout(
+                selectInput(
+                  ns("doLayout"), 
+                  "Select Layout:",
+                  choices=c("",
+                            "cose",
+                            "cola",
+                            "circle",
+                            "concentric",
+                            "breadthfirst",
+                            "grid",
+                            "random",
+                            "dagre",
+                            "cose-bilkent"),
+                  selected = "dagre"),
+                selectInput(
+                  ns("loadStyleFile"), 
+                  "Select Style: ", 
+                  choices = styles)
+              )
+            )
           ),
-        column(
-          width = 6,
-          actionButton(ns("calculate_button"), "Calculate")
-        )
-        
-        ),
       
         mainPanel(
           width = 12,
           fluidRow(
-            cyjShinyOutput(ns("cyjShiny"), height = 700)%>% 
-              shinycssloaders::withSpinner(),
-            
-            tableBox(
-              DT::DTOutput(ns("table")) %>% 
-                shinycssloaders::withSpinner()
-            ),
-          downloadButton(ns('download_data'), 'Download')
+            cyjShinyOutput(ns("cyjShiny"), height = 900)%>% 
+              shinycssloaders::withSpinner()
           )
-        )
-      )
-    )
-  ) 
+          ),
+            
+        optionsBox(
+          width=12,
+          column(
+            width = 1,
+            p(strong("Select Node:")) 
+          ),
+          column(
+            width = 4,
+            selectInput(ns("selectName"), NULL, choices = c("", node_type$Obj))
+          ),
+          column(
+            width = 7,
+            
+            actionButton(ns("fit"), "Fit Graph", width = "100px"),
+            actionButton(ns("fitSelected"), "Fit Selected"),
+            actionButton(ns("sfn"), "Select First Neighbor"),
+            actionButton(ns("clearSelection"), "Unselect Nodes"),
+            # actionButton(ns("loopConditions"), "Loop Conditions"),
+            actionButton(ns("getSelectedNodes"), "Get Selected Nodes"),
+            actionButton(ns("removeGraphButton"), "Remove Graph")
+          )
+        ),
+      
+      #mainPanel(
+        tableBox(
+          DT::DTOutput(ns("table")) %>% 
+            shinycssloaders::withSpinner()
+        
+      ),
+      downloadButton(ns('download_data'), 'Download')
+  )
+)
 }
 
 cytokinenetwork <- function(
@@ -242,10 +255,6 @@ cytokinenetwork <- function(
                                        autoWidth = TRUE
                                      ))
   
-
-  
-  #tried to use the data_table_module, but it didn't work
-  #callModule(data_table_module, "table", data_df = tbl.edges())
   
   output$download_data <- downloadHandler(
     filename = function() stringr::str_c("data-", Sys.Date(), ".csv"),

@@ -1,3 +1,65 @@
+##consolidation of scaffold
+
+get_scaffold <- function(node_type, scaffold, dfe_in, gois){
+  
+  ## identify ligands, receptor, and cells in the scaffold
+  node_type_of_node <- node_type$Type 
+  names(node_type_of_node) <- node_type$Obj
+  ligands <- get_nodes_of_type("Ligand", scaffold, node_type_of_node)
+  receptors <- get_nodes_of_type("Receptor", scaffold, node_type_of_node)
+  cells <- get_nodes_of_type("Cell", scaffold, node_type_of_node)
+  genes <- c(ligands,receptors)
+  genes <- intersect(genes, colnames(dfe_in))
+  scaffold.nodes <- c(cells,genes)
+  
+  ## By default all cells and genes are of interest
+  cois <- cells
+  #gois <- genes
+  # 
+  # ## Optional - Read cells or genes of interest
+  # #cois <- read_lines("data/cells_of_interest.txt")
+  # gois <- read_lines("data/network/immunomodulator_genes.txt")
+  # 
+  # gois <- c(gois, "CXCL10")
+  # 
+  ## Those which we have data for
+  gois <- intersect(gois,colnames(dfe_in))
+  genes <- gois 
+  
+  ## If genes or cells of interest are specified, scaffold edge must connect two items of interst
+  
+  ## Filter scaffold and cell and gene list to those of interest
+  if ( length(cois)>0 ){ ## needs a better test that acts on a vector
+    cells <- intersect(cells,cois)
+  }
+  if ( length(gois) >0 ){
+    genes <- intersect(genes,gois) 
+  }
+  if ( length(cois)>0 | length(gois) >0 ){
+    scaffold.immuno.nodes <- c(cells,genes)
+    
+    scaffold_cois <- scaffold %>%
+      filter(From %in% scaffold.immuno.nodes & To %in% scaffold.immuno.nodes) #filter edges with both nodes of interest (because cois need to be connected to a gois)
+    
+    scaffold_genes <- scaffold %>% 
+      filter(From %in% scaffold.nodes & To %in% scaffold.nodes) %>% #filter edges that we have data on
+      filter(!(From %in% cells) & !(To %in% cells)) %>% #we don't want edges with cells here
+      filter(From %in% genes | To %in% genes) #edges with at least one gois
+    
+    scaffold <- dplyr::union(scaffold_cois, scaffold_genes)
+  }
+  return(scaffold)
+}
+
+get_cells_scaffold <- function(
+  scaffold,
+  node_type
+){
+  node_type_of_node <- node_type$Type ; names(node_type_of_node) <- node_type$Obj
+  cells <- get_nodes_of_type("Cell", scaffold, node_type_of_node)
+  cells
+}
+
 
 ## this assert function should maybe go in functions/utils.R
 assert_list_has_names <- function(lst, names){
@@ -125,4 +187,19 @@ filterRatioWithIncludes <- function (rscores,from_node,to_node,feature_include,c
     mutate(RatioFiltered=map_dbl(RatioFiltered,h)) %>%
     select(Group,RatioFiltered)
 }
+
+
+
+## update list of nodes based on user selection
+filterNodes <- function(list_edges, annot){
+  colnames(annot) <- c("Type", "name")
+  annot[annot$name== "CD80"& annot$Type == "Ligand",] <- NA #hardcoded here the fact that CD80 is with two different annotations and this caused a problem in the JSON file
+  nodes <- append(list_edges$source, list_edges$target) %>% unique() %>% as.data.frame()
+  colnames(nodes) <- "name"
+  
+  nodes <- merge(nodes, annot, all.x = TRUE) #we want to keep all nodes, even those that do not have annotations
+  
+  return(nodes)
+}
+
 
