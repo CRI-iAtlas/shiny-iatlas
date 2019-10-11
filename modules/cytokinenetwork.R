@@ -1,18 +1,26 @@
 library(cyjShiny)
 
 #-------------------------------------------------------------------
-#TEMPORARY - reading in files - ATTENTION: columns cannot be factors 
+#TEMPORARY - reading in files 
 #-------------------------------------------------------------------
 
 # df_ternary_info <- readRDS("data/network/testRDS.rds")
-ternary <- readRDS("data/network/ternary.rds")
+#ternary <- readRDS("data/network/ternary.rds")
 
-upbin_ratio <- read_csv("data/network/upbinratio.csv")
-edges_scores <- read_csv("data/network/edgesScore.csv")
+#data when Immune Subtype is selected
+#upbin_ratio <- readr::read_csv("data/network/upbinratio.csv")
+#edges_scores <- readr::read_csv("data/network/edgesScore.csv")
+
+#data when TCGA Study is selected - with no Immune Subtype stratification
+upbin_ratio <- readr::read_csv("data/network/all_nodes_TCGAStudy.csv")
+edges_scores <- readr::read_csv("data/network/all_edges_TCGAStudy.csv")
+
+dfc_in <- readr::read_tsv("data/network/PanImmune_FMx.tsv")
+#group_df <- readr::read_tsv("data/PanImmune_FMx_ImmuneSubtypes.tsv")
 
 styles <- c("Edges by Immune Type" = 'data/network/stylesEdges.js',
             "Black Edges" = "data/network/styles.js")
-node_type <- read_tsv("data/network/network_node_labels.tsv")
+node_type <- readr::read_tsv("data/network/network_node_labels.tsv")
 
 
 cytokinenetwork_UI <- function(id) {
@@ -43,7 +51,7 @@ cytokinenetwork_UI <- function(id) {
           over all samples in the subtype, and a concordance versus discordance ratio (‘‘concordance score’’) is calculated for the edge in terms of the values of ((high,high)+
           (low,low))/((low,high)+(high,low)). Edges were retained with concordance score higher than the one set by the user."),
         p("Manuscript context:  This module allows you to display networks similar to Figure 7A, 7B, 7C, and S7A. Selection of a 66% abundance threshold, and 1.62 for concordance 
-          score, generates the extracellular network for C4 present in Figure S7A")
+          score, generates the extracellular network for C4 present in Figure S7A.")
           
       ),
         optionsBox(
@@ -52,7 +60,19 @@ cytokinenetwork_UI <- function(id) {
             width = 3,
             verticalLayout(
               numericInput(ns("abundance"), "Set Abundance Threshold (%)", value = 66, min = 0, max = 100),
-              numericInput(ns("concordance"), "Set Concordance Threshold", value = 2.94, step = 0.01)
+              numericInput(ns("concordance"), "Set Concordance Threshold", value = 2.94, step = 0.01),
+              conditionalPanel( 
+                condition = "input.ss_choice == 'TCGA Study'",
+                selectInput(
+                  ns("subtype"),
+                  "Select Study",
+                  choices = c("ACC", "BRCA"),
+                  selected = "ACC"),
+                checkboxInput(
+                  ns("byImmune"),
+                  "Stratify by Immune Subtype"
+                )
+              )
             )
           ),
           column(
@@ -60,6 +80,7 @@ cytokinenetwork_UI <- function(id) {
             div(class = "form-group shiny-input-container", actionButton(ns("calculate_button"), "Calculate"))
     
           ),
+          
           column(
             width = 3,
             verticalLayout(
@@ -88,7 +109,7 @@ cytokinenetwork_UI <- function(id) {
                             "random",
                             "dagre",
                             "cose-bilkent"),
-                  selected = "dagre"),
+                  selected = "cose"),
                 selectInput(
                   ns("loadStyleFile"), 
                   "Select Style: ", 
@@ -124,7 +145,8 @@ cytokinenetwork_UI <- function(id) {
             actionButton(ns("clearSelection"), "Unselect Nodes"),
             # actionButton(ns("loopConditions"), "Loop Conditions"),
             actionButton(ns("getSelectedNodes"), "Get Selected Nodes"),
-            actionButton(ns("removeGraphButton"), "Remove Graph")
+            actionButton(ns("removeGraphButton"), "Remove Graph"),
+            actionButton("savePNGbutton", "Save PNG")
           )
         ),
       
@@ -159,17 +181,17 @@ cytokinenetwork <- function(
   # group_col="Subtype_Immune_Model_Based"
   # 
   # ## Read available gene expression data 
-  dfe_in <- read_tsv("data/network/GenExp_All_CKine_genes.tsv")
+  dfe_in <- readr::read_tsv("data/network/GenExp_All_CKine_genes.tsv")
   
   ## Read file with available cell data
   #dfc_in <- panimmune_data$fmx_df #read_tsv("data/network/PanImmune_FMx.tsv") #is it the same as panimmune_data$fmx_df?
   
   ## Read scaffold interaction file and node type file
   #node_type <- read_tsv("data/network/network_node_labels.tsv")
-  scaffold <- read_tsv("data/network/try_3a.tsv")
+  scaffold <- readr::read_tsv("data/network/try_3a.tsv")
   
   ##Subsetting to genes of interest
-  gois <- read_lines("data/network/immunomodulator_genes.txt")
+  gois <- readr::read_lines("data/network/immunomodulator_genes.txt")
   gois <- c(gois, "CXCL10")
   
   #Scaffold and genes based on list of genes of interest (assuming all cells are of interest)
@@ -181,39 +203,35 @@ cytokinenetwork <- function(
   
   ##Subsetting ternary info to genes of interest
   
-  # df_ternary_info <- df_ternary_info %>% 
-  #                     filter(Node %in% cells | Node %in% genes)
-  
-  upbin_ratio <- upbin_ratio %>% 
+  upbin_ratio <- upbin_ratio %>%
                       filter(Node %in% cells | Node %in% genes)
   
   edges_scores <- merge(edges_scores, scaffold, by.x = c("From", "To"), by.y = c("From", "To") )
       
-  ternary <- ternary[names(ternary) %in% cells | names(ternary) %in% genes]
+  #ternary <- ternary[names(ternary) %in% cells | names(ternary) %in% genes]
   
-  # #preparing data to compute the quantiles
-  # group_participant <- get_participants(group_df, group_col)
-  # 
-  # dfclong.generic <- get_cell_long(dfc_in, group_participant, cells)
-  # dfelong.generic <- get_gene_long(dfe_in, group_participant, genes)
-  # 
-  # dfn <- dplyr::bind_rows(dfelong.generic, dfclong.generic)
+#--------------------------------------------------------------------------------
+# Selection of nodes and edges based on the abundance and concordance threshold
+#--------------------------------------------------------------------------------
   
-  ternary_info <- eventReactive(input$calculate_button,{
-    #get_abundant_nodes(df_ternary_info, ab_threshold = input$abundance/100)
+  abundant_nodes <- eventReactive(input$calculate_button,{
+    
     nodes <- upbin_ratio %>%
-      mutate(IncludeFeature=map_lgl(.x = UpBinRatio, upbinfrac.threshold = (input$abundance/100), keep.node)) %>% 
+      #filter(Study == input$subtype) %>% 
+      mutate(IncludeFeature = purrr::map_lgl(.x = UpBinRatio, upbinfrac.threshold = (input$abundance/100), keep.node)) %>% 
       filter(IncludeFeature == TRUE)
     
     nodes
   })
   
   predicted_network <- eventReactive(input$calculate_button, {
-    #get_network(scaffold, ternary_info(), ternary, conc_threshold = input$concordance) %>% as.data.frame()
-    network <- merge(edges_scores, ternary_info(), by.x = c("From", "Group"), by.y = c("Node", "Group")) %>% #filtering nodes that are abundant
-      merge(ternary_info(), by.x = c("To", "Group"), by.y = c("Node", "Group")) %>% 
-      filter(ratioScore > input$concordance) %>% #filtering concordant edges 
-      select(From, To, Group, ratioScore) %>% 
+    
+    network <- edges_scores %>% 
+      #dplyr::filter(Study == input$subtype) %>% 
+      merge(abundant_nodes(), by.x = c("From", "Group"), by.y = c("Node", "Group")) %>% #filtering nodes that are abundant
+      merge(abundant_nodes(), by.x = c("To", "Group"), by.y = c("Node", "Group")) %>% #filtering nodes that are abundant
+      dplyr::filter(ratioScore > input$concordance) %>% #filtering concordant edges 
+      dplyr::select(From, To, Group, ratioScore) %>% 
       as.data.frame()
     
     colnames(network) <- c("source", "target", "interaction", "score") #names required by cyjShiny package
@@ -221,16 +239,19 @@ cytokinenetwork <- function(
   })
   
 
-#--------------------------------------------------------------  
-#Consolidating the edges table with selection of Immune Subtype
-#--------------------------------------------------------------
+#------------------------------------------------------------------------------------------  
+#Consolidating the edges table with selection of Immune Subtype and displaying the network
+#------------------------------------------------------------------------------------------
   
   tbl_edges <- reactive({
 
     if(input$showGroup == "All" | is.null(input$showGroup)) return(predicted_network())
 
-    predicted_network() %>%
+    network <- predicted_network() %>%
       dplyr::filter(interaction == input$showGroup)
+    
+    shiny::validate(need(nrow(as.data.frame(network)) != 0, "No network for this Immune Subtype. Try changing the thresholds or selecting another subtype."))
+    network
   })
 
   
@@ -243,8 +264,8 @@ cytokinenetwork <- function(
     cyjShiny::dataFramesToJSON(tbl_edges(), tbl_nodes())
   })
   
-  output$cyjShiny <- renderCyjShiny({
-    cyjShiny(graph.json.v2(), layoutName = input$doLayout, style_file = "data/network/stylesEdges.js")
+  output$cyjShiny <- cyjShiny::renderCyjShiny({
+    cyjShiny::cyjShiny(graph.json.v2(), layoutName = input$doLayout, style_file = "data/network/stylesEdges.js")
     })
   
   #output$legend <- renderImage("www/images/legend_V1.png")
@@ -312,6 +333,29 @@ cytokinenetwork <- function(
   
   observeEvent(input$removeGraphButton, ignoreInit=TRUE, {
     removeGraph(session)
-  })  
+  })
+  
+  observeEvent(input$savePNGbutton, ignoreInit=TRUE, {
+    file.name <- tempfile(fileext=".png")
+    savePNGtoFile(session, file.name)
+  })
+  
+  observeEvent(input$pngData, ignoreInit=TRUE, {
+    #printf("received pngData")
+    png.parsed <- fromJSON(input$pngData)
+    substr(png.parsed, 1, 30) # [1] "data:image/png;base64,iVBORw0K"
+    nchar(png.parsed)  # [1] 768714
+    png.parsed.headless <- substr(png.parsed, 23, nchar(png.parsed))  # chop off the uri header
+    png.parsed.binary <- base64decode(png.parsed.headless)
+    #printf("writing png to foo.png")
+    conn <- file("savedNetwork.png", "wb")
+    writeBin(png.parsed.binary, conn)
+    close(conn)
+  })
+  
+  # input$savePNGbutton <- downloadHandler(
+  #   filename = function() stringr::str_c("network-", Sys.Date(), ".png"),
+  #   cyjShiny::savePNGtoFile(session, file.name)
+  # )
 
 }  
