@@ -4,19 +4,12 @@ library(cyjShiny)
 #TEMPORARY - reading in files 
 #-------------------------------------------------------------------
 
-# df_ternary_info <- readRDS("data/network/testRDS.rds")
-#ternary <- readRDS("data/network/ternary.rds")
-
-#data when Immune Subtype is selected
-#upbin_ratio <- readr::read_csv("data/network/upbinratio.csv")
-#edges_scores <- readr::read_csv("data/network/edgesScore.csv")
-
-#data when TCGA Study is selected - with no Immune Subtype stratification
-upbin_ratio <- readr::read_csv("data/network/all_nodes_TCGAStudy.csv")
-edges_scores <- readr::read_csv("data/network/all_edges_TCGAStudy.csv")
-
-dfc_in <- readr::read_tsv("data/network/PanImmune_FMx.tsv")
-#group_df <- readr::read_tsv("data/PanImmune_FMx_ImmuneSubtypes.tsv")
+## Loading all data of nodes abundance and edges scores
+all_net_info <- list(
+  "immune"= list("upbin_ratio" = readr::read_csv("data/network/upbinratio.csv"), edges_score = readr::read_csv("data/network/edgesScore.csv")),
+  "subtype"= list("upbin_ratio" = readr::read_csv("data/network/all_nodes_TCGASubtype.csv"), edges_score = readr::read_csv("data/network/all_edges_TCGASubtype.csv")),
+  "study"= list("upbin_ratio" = readr::read_csv("data/network/all_nodes_TCGAStudy.csv"), edges_score = readr::read_csv("data/network/all_edges_TCGAStudy.csv"))
+)
 
 styles <- c("Edges by Immune Type" = 'data/network/stylesEdges.js',
             "Black Edges" = "data/network/styles.js")
@@ -54,77 +47,57 @@ cytokinenetwork_UI <- function(id) {
           score, generates the extracellular network for C4 present in Figure S7A.")
           
       ),
+        
         optionsBox(
-          width=12,
-          column(
-            width = 3,
+          width=2,
             verticalLayout(
               numericInput(ns("abundance"), "Set Abundance Threshold (%)", value = 66, min = 0, max = 100),
               numericInput(ns("concordance"), "Set Concordance Threshold", value = 2.94, step = 0.01),
+              
               conditionalPanel( 
                 condition = "input.ss_choice == 'TCGA Study'",
-                selectInput(
-                  ns("subtype"),
-                  "Select Study",
-                  choices = c("ACC", "BRCA"),
-                  selected = "ACC"),
-                checkboxInput(
-                  ns("byImmune"),
-                  "Stratify by Immune Subtype"
-                )
-              )
-            )
-          ),
-          column(
-            width = 1,
-            div(class = "form-group shiny-input-container", actionButton(ns("calculate_button"), "Calculate"))
-    
-          ),
-          
-          column(
-            width = 3,
-            verticalLayout(
+                uiOutput(ns("showStudy"))
+              ),
+              conditionalPanel( 
+                condition = "input.ss_choice == 'TCGA Subtype'",
+                uiOutput(ns("showSubtype"))
+              ),
               selectInput(
                 ns("showGroup"), 
-                "Select Immune Subtype:", 
+                "Select Immune Subtype", 
                 choices=c("All", "C1", "C2", "C3", "C4", "C5", "C6"), 
                 selected = "All"),
-
-              selectInput(ns("selectName"), "Select Node by ID:", choices = c("", node_type$Obj))
-              )
-            ),
-            column(
-              width = 3,
-              verticalLayout(
-                selectInput(
-                  ns("doLayout"), 
-                  "Select Layout:",
-                  choices=c("",
-                            "cose",
-                            "cola",
-                            "circle",
-                            "concentric",
-                            "breadthfirst",
-                            "grid",
-                            "random",
-                            "dagre",
-                            "cose-bilkent"),
-                  selected = "cose"),
-                selectInput(
-                  ns("loadStyleFile"), 
-                  "Select Style: ", 
-                  choices = styles)
-              )
-            )
-          ),
+              div(class = "form-group shiny-input-container", actionButton(ns("calculate_button"), "Calculate")),
+              selectInput(ns("selectName"), "Select Node by ID", choices = c("", node_type$Obj)),
+              selectInput(
+                ns("doLayout"), 
+                "Select Layout",
+                choices=c("",
+                          "cose",
+                          "cola",
+                          "circle",
+                          "concentric",
+                          "breadthfirst",
+                          "grid",
+                          "random",
+                          "dagre",
+                          "cose-bilkent"),
+                selected = "cose"),
+              selectInput(
+                ns("loadStyleFile"), 
+                "Select Style", 
+                choices = styles)
+          
+          )
+        ),
       
         mainPanel(
-          width = 12,
+          width = 10,
           fluidRow(
             cyjShinyOutput(ns("cyjShiny"), height = 900)%>% 
               shinycssloaders::withSpinner()
           )
-          ),
+        ),
             
         optionsBox(
           width=12,
@@ -148,17 +121,25 @@ cytokinenetwork_UI <- function(id) {
             actionButton(ns("removeGraphButton"), "Remove Graph"),
             actionButton("savePNGbutton", "Save PNG")
           )
-        ),
+        )
+        ) ,
       
-      #mainPanel(
-        tableBox(
-          DT::DTOutput(ns("table")) %>% 
-            shinycssloaders::withSpinner()
+      sectionBox(
+        title = "Network information",
         
-      ),
-      downloadButton(ns('download_data'), 'Download')
-  )
-)
+        messageBox("Here it goes the table with edges."),
+      
+        fluidRow(
+          tableBox(
+            DT::DTOutput(ns("table")) %>% 
+              shinycssloaders::withSpinner()
+          ) 
+        ),
+        downloadButton(ns('download_data'), 'Download')
+        
+      )
+  
+)#taglist
 }
 
 cytokinenetwork <- function(
@@ -174,20 +155,47 @@ cytokinenetwork <- function(
 ){
   
   ns <- session$ns
+
   
-  #Loading data (to be changed)
-  ## Read data file containing group assignments - these will eventually come from the iAtlas app user choices
-  # group_df=read_tsv("data/network/PanImmune_FMx_ImmuneSubtypes.tsv")
-  # group_col="Subtype_Immune_Model_Based"
-  # 
-  # ## Read available gene expression data 
+#--------UI for TCGA Study and TCGA Subtype
+  
+  output$showStudy <- renderUI({
+    choices <- panimmune_data$sample_group_df %>% 
+      dplyr::filter(sample_group == "Study") %>% 
+      dplyr::select("FeatureValue") %>% 
+      dplyr::distinct() %>% 
+      arrange(FeatureValue)
+    
+    selectInput(ns("study_selection"), 
+                "Choose tumor type:",
+                choices = choices,
+                selected = choices[1])
+    
+    checkboxInput(
+      ns("byImmune"),
+      "Stratify by Immune Subtype")
+  })
+  
+  output$showSubtype <- renderUI({
+    #req(input$sample_mosaic_group, panimmune_data$sample_group_df, cancelOutput = TRUE)
+     
+      choices <- panimmune_data$sample_group_df %>% 
+        dplyr::filter(sample_group == "Subtype_Curated_Malta_Noushmehr_et_al" & `TCGA Studies` == study_subset_choice()) %>% 
+        dplyr::select("FeatureValue") %>% 
+        dplyr::distinct()
+      
+        selectInput(ns("study_subset_selection"), 
+                    "Choose subtype subset:",
+                    choices = choices,
+                    selected = choices[1])
+  })
+  
+  
+ #---- organizing the desired scaffold and cells of interest
+  
   dfe_in <- readr::read_tsv("data/network/GenExp_All_CKine_genes.tsv")
-  
-  ## Read file with available cell data
-  #dfc_in <- panimmune_data$fmx_df #read_tsv("data/network/PanImmune_FMx.tsv") #is it the same as panimmune_data$fmx_df?
-  
+ 
   ## Read scaffold interaction file and node type file
-  #node_type <- read_tsv("data/network/network_node_labels.tsv")
   scaffold <- readr::read_tsv("data/network/try_3a.tsv")
   
   ##Subsetting to genes of interest
@@ -201,40 +209,77 @@ cytokinenetwork <- function(
   cells <- get_cells_scaffold(scaffold, node_type)
   genes <- unique(c(scaffold$From, scaffold$To)) %>% setdiff(cells) #getting all the genes in the edges selected
   
+#------ Subsetting nodes and edge list based on the Sample Group Selection and cells of interest
+  
+get_netdata <- function(sample_group, all_net_info){
+  if(sample_group == "Subtype_Immune_Model_Based"){
+    sample_data <- all_net_info$immune
+  }else if(sample_group == "Subtype_Curated_Malta_Noushmehr_et_al"){
+    sample_data <- all_net_info$subtype
+  }else{
+    sample_data <- all_net_info$study
+  }
+}
+  
+subset_data <- reactive({
+  get_netdata(group_internal_choice(), all_net_info)
+})
+  
+upbin_ratio <- reactive({
+  subset_data()$upbin_ratio %>%
+    filter(Node %in% cells | Node %in% genes)
+})
+
+edges_scores <- reactive ({
+  merge(subset_data()$edges_score, scaffold, by.x = c("From", "To"), by.y = c("From", "To") )
+})
+
+
   ##Subsetting ternary info to genes of interest
   
-  upbin_ratio <- upbin_ratio %>%
-                      filter(Node %in% cells | Node %in% genes)
+  #upbin_ratio <- upbin_ratio %>%
+  #                   filter(Node %in% cells | Node %in% genes)
   
-  edges_scores <- merge(edges_scores, scaffold, by.x = c("From", "To"), by.y = c("From", "To") )
       
-  #ternary <- ternary[names(ternary) %in% cells | names(ternary) %in% genes]
-  
 #--------------------------------------------------------------------------------
 # Selection of nodes and edges based on the abundance and concordance threshold
 #--------------------------------------------------------------------------------
-  
+  subset_criteria <- reactive({
+    if(group_internal_choice() == "Subtype_Immune_Model_Based"){
+      if(input$showGroup == "All") return(c("C1","C2", "C3", "C4", "C5", "C6"))
+      input$showGroup
+    }else if(group_internal_choice() == "Subtype_Curated_Malta_Noushmehr_et_al"){
+      input$study_subset_selection
+    }else{
+      input$study_selection
+    }
+    
+  })  
+
   abundant_nodes <- eventReactive(input$calculate_button,{
     
-    nodes <- upbin_ratio %>%
-      #filter(Study == input$subtype) %>% 
+    nodes <- upbin_ratio() %>%
+      filter(Group %in% subset_criteria()) %>% 
       mutate(IncludeFeature = purrr::map_lgl(.x = UpBinRatio, upbinfrac.threshold = (input$abundance/100), keep.node)) %>% 
       filter(IncludeFeature == TRUE)
     
     nodes
   })
   
-  predicted_network <- eventReactive(input$calculate_button, {
+  tbl_edges <- eventReactive(input$calculate_button, {
     
-    network <- edges_scores %>% 
-      #dplyr::filter(Study == input$subtype) %>% 
+    network <- edges_scores() %>% 
+      dplyr::filter(Group %in% subset_criteria()) %>% 
       merge(abundant_nodes(), by.x = c("From", "Group"), by.y = c("Node", "Group")) %>% #filtering nodes that are abundant
       merge(abundant_nodes(), by.x = c("To", "Group"), by.y = c("Node", "Group")) %>% #filtering nodes that are abundant
       dplyr::filter(ratioScore > input$concordance) %>% #filtering concordant edges 
       dplyr::select(From, To, Group, ratioScore) %>% 
       as.data.frame()
     
+    shiny::validate(need(nrow(as.data.frame(network)) != 0, "No network for this selection. Try changing the thresholds or selecting another subset."))
+    
     colnames(network) <- c("source", "target", "interaction", "score") #names required by cyjShiny package
+    
     network
   })
   
@@ -243,16 +288,16 @@ cytokinenetwork <- function(
 #Consolidating the edges table with selection of Immune Subtype and displaying the network
 #------------------------------------------------------------------------------------------
   
-  tbl_edges <- reactive({
-
-    if(input$showGroup == "All" | is.null(input$showGroup)) return(predicted_network())
-
-    network <- predicted_network() %>%
-      dplyr::filter(interaction == input$showGroup)
-    
-    shiny::validate(need(nrow(as.data.frame(network)) != 0, "No network for this Immune Subtype. Try changing the thresholds or selecting another subtype."))
-    network
-  })
+  # tbl_edges <- reactive({
+  # 
+  #   if(input$showGroup == "All" | is.null(input$showGroup)) return(predicted_network())
+  # 
+  #   network <- predicted_network() %>%
+  #     dplyr::filter(interaction == input$showGroup)
+  #   
+  #   shiny::validate(need(nrow(as.data.frame(network)) != 0, "No network for this Immune Subtype. Try changing the thresholds or selecting another subtype."))
+  #   network
+  # })
 
   
   tbl_nodes <- reactive({
@@ -284,7 +329,7 @@ cytokinenetwork <- function(
 
   
   #---------------------------------  
-  # Network visualization -related 
+  # Network visualization-related 
   #----------------------------------
   observeEvent(input$loadStyleFile,  ignoreInit=TRUE, {
     if(input$loadStyleFile != ""){
