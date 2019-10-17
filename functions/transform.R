@@ -12,6 +12,30 @@
 # original function.
 ###############################################################################
 
+# distribution plot functions -------------------------------------------------
+
+build_distribution_plot_df <- function(
+  .df, 
+  ycol = "y", 
+  scale_func_choice = "None"
+){
+  
+  scale_function <- switch(
+    scale_func_choice,
+    "None" = identity, 
+    "Log2" = log2,
+    "Log2 + 1" = function(x) log2(x + 1),
+    "Log10" = log10,
+    "Log10 + 1" = function(x) log10(x + 1),
+  )
+  
+  .df %>% 
+    dplyr::select(x, y = ycol, label) %>% 
+    tidyr::drop_na() %>% 
+    dplyr::mutate(y = scale_function(y)) %>% 
+    tidyr::drop_na() %>% 
+    dplyr::filter(!is.infinite(y))
+}
 
 
 # immunefeatures functions ----------------------------------------------------

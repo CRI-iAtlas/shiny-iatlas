@@ -199,7 +199,7 @@ get_factored_variables_from_feature_df <- purrr::partial(
 df_to_nested_list <- function(df, group_column, key_column, value_column){
     df %>% 
         get_complete_df_by_columns(c(group_column, value_column, key_column)) %>% 
-        tidyr::nest(-1) %>%
+        tidyr::nest(data = c(value_column, key_column)) %>%
         dplyr::mutate(data = purrr::map(data, tibble::deframe)) %>%
         tibble::deframe()
 }
