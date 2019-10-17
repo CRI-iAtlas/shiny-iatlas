@@ -11,6 +11,8 @@ all_net_info <- list(
   "study"= list("upbin_ratio" = readr::read_csv("data/network/all_nodes_TCGAStudy.csv"), edges_score = readr::read_csv("data/network/all_edges_TCGAStudy.csv"))
 )
 
+scaffold <- readr::read_tsv("data/network/try_3a.tsv")
+immunogenes <- readr::read_lines("data/network/immunomodulator_genes.txt")
 styles <- c("Edges by Immune Type" = 'data/network/stylesEdges.js',
             "Black Edges" = "data/network/styles.js")
 node_type <- readr::read_tsv("data/network/network_node_labels.tsv")
@@ -51,24 +53,37 @@ cytokinenetwork_UI <- function(id) {
         optionsBox(
           width=2,
             verticalLayout(
-              numericInput(ns("abundance"), "Set Abundance Threshold (%)", value = 66, min = 0, max = 100),
-              numericInput(ns("concordance"), "Set Concordance Threshold", value = 2.94, step = 0.01),
               
               conditionalPanel( 
                 condition = "input.ss_choice == 'TCGA Study'",
-                uiOutput(ns("showStudy"))
+                uiOutput(ns("showStudy"),
+                         ),
+                checkboxInput(
+                ns("byImmune"),
+                "Stratify by Immune Subtype")
               ),
               conditionalPanel( 
                 condition = "input.ss_choice == 'TCGA Subtype'",
                 uiOutput(ns("showSubtype"))
               ),
-              selectInput(
-                ns("showGroup"), 
-                "Select Immune Subtype", 
-                choices=c("All", "C1", "C2", "C3", "C4", "C5", "C6"), 
-                selected = "All"),
-              div(class = "form-group shiny-input-container", actionButton(ns("calculate_button"), "Calculate")),
-              selectInput(ns("selectName"), "Select Node by ID", choices = c("", node_type$Obj)),
+              conditionalPanel(
+                condition = "input.ss_choice == 'Immune Subtype' || input.byImmune == 0",
+                selectizeInput(
+                  ns("showGroup"), 
+                  "Select Immune Subtype", 
+                  choices=c("All", "C1", "C2", "C3", "C4", "C5", "C6"), 
+                  selected = "All",
+                  multiple = TRUE)
+              ),
+              numericInput(ns("abundance"), "Set Abundance Threshold (%)", value = 66, min = 0, max = 100),
+              numericInput(ns("concordance"), "Set Concordance Threshold", value = 2.94, step = 0.01),
+              
+              selectizeInput(ns("cellInterest"), "Select cells of interest (optional)", choices = (node_type %>% dplyr::filter(Type == "Cell") %>% select("Obj")), 
+                             multiple = TRUE, options = list(placeholder = "Default: all cells")),
+              selectizeInput(ns("geneInterest"), "Select genes of interest (optional)", choices = (union(scaffold$From, scaffold$To) %>% as.data.frame() %>% unique() %>% dplyr::arrange()), 
+                             multiple = TRUE, options = list(placeholder = "Default: immunomodulator genes")),
+              div(class = "form-group shiny-input-container", actionButton(ns("calculate_button"), tags$b("GO"), width = "100%")),
+              hr(),
               selectInput(
                 ns("doLayout"), 
                 "Select Layout",
@@ -86,8 +101,17 @@ cytokinenetwork_UI <- function(id) {
               selectInput(
                 ns("loadStyleFile"), 
                 "Select Style", 
-                choices = styles)
-          
+                choices = styles),
+              selectInput(ns("selectName"), "Select Node:", choices = c("", node_type$Obj)),
+              
+              actionButton(ns("fit"), "Fit Graph"),
+              actionButton(ns("fitSelected"), "Fit Selected"),
+              actionButton(ns("sfn"), "Select First Neighbor"),
+              actionButton(ns("clearSelection"), "Unselect Nodes"),
+              # actionButton(ns("loopConditions"), "Loop Conditions"),
+              actionButton(ns("getSelectedNodes"), "Get Selected Nodes"),
+              actionButton(ns("removeGraphButton"), "Remove Graph"),
+              actionButton(ns("savePNGbutton"), "Save PNG")
           )
         ),
       
@@ -97,31 +121,31 @@ cytokinenetwork_UI <- function(id) {
             cyjShinyOutput(ns("cyjShiny"), height = 900)%>% 
               shinycssloaders::withSpinner()
           )
-        ),
-            
-        optionsBox(
-          width=12,
-          column(
-            width = 1,
-            p(strong("Select Node:")) 
-          ),
-          column(
-            width = 4,
-            selectInput(ns("selectName"), NULL, choices = c("", node_type$Obj))
-          ),
-          column(
-            width = 7,
-            
-            actionButton(ns("fit"), "Fit Graph", width = "100px"),
-            actionButton(ns("fitSelected"), "Fit Selected"),
-            actionButton(ns("sfn"), "Select First Neighbor"),
-            actionButton(ns("clearSelection"), "Unselect Nodes"),
-            # actionButton(ns("loopConditions"), "Loop Conditions"),
-            actionButton(ns("getSelectedNodes"), "Get Selected Nodes"),
-            actionButton(ns("removeGraphButton"), "Remove Graph"),
-            actionButton("savePNGbutton", "Save PNG")
-          )
         )
+            
+        # optionsBox(
+        #   width=12,
+        #   column(
+        #     width = 1,
+        #     p(strong("Select Node:")) 
+        #   ),
+        #   column(
+        #     width = 4,
+        #     selectInput(ns("selectName"), "Select Node:", choices = c("", node_type$Obj))
+        #   ),
+        #   column(
+        #     width = 7,
+        #     
+        #     actionButton(ns("fit"), "Fit Graph", width = "100px"),
+        #     actionButton(ns("fitSelected"), "Fit Selected"),
+        #     actionButton(ns("sfn"), "Select First Neighbor"),
+        #     actionButton(ns("clearSelection"), "Unselect Nodes"),
+        #     # actionButton(ns("loopConditions"), "Loop Conditions"),
+        #     actionButton(ns("getSelectedNodes"), "Get Selected Nodes"),
+        #     actionButton(ns("removeGraphButton"), "Remove Graph"),
+        #     actionButton("savePNGbutton", "Save PNG")
+        #   )
+        # )
         ) ,
       
       sectionBox(
@@ -170,10 +194,6 @@ cytokinenetwork <- function(
                 "Choose tumor type:",
                 choices = choices,
                 selected = choices[1])
-    
-    checkboxInput(
-      ns("byImmune"),
-      "Stratify by Immune Subtype")
   })
   
   output$showSubtype <- renderUI({
@@ -191,35 +211,50 @@ cytokinenetwork <- function(
   })
   
   
- #---- organizing the desired scaffold and cells of interest
+ #---- organizing the desired scaffold based on the cells and genes of interest
   
   dfe_in <- readr::read_tsv("data/network/GenExp_All_CKine_genes.tsv")
  
-  ## Read scaffold interaction file and node type file
-  scaffold <- readr::read_tsv("data/network/try_3a.tsv")
+  ## Read scaffold interaction file
+  main_scaffold <- readr::read_tsv("data/network/try_3a.tsv")
   
-  ##Subsetting to genes of interest
-  gois <- readr::read_lines("data/network/immunomodulator_genes.txt")
-  gois <- c(gois, "CXCL10")
+  ##Subsetting to cells and genes of interest
   
-  #Scaffold and genes based on list of genes of interest (assuming all cells are of interest)
-  scaffold <- get_scaffold(node_type, scaffold, dfe_in, gois)
+  gois <- reactive({
+    if (is.null(input$geneInterest))  return(as.vector(immunogenes))
+    
+    as.vector(input$geneInterest)
+  })
+
+  cois <- reactive({
+    if (is.null(input$cellInterest)) get_cells_scaffold(main_scaffold, node_type)
+    
+    as.vector(input$cellInterest)
+  })
   
-  #Getting list of genes and cells that are present in the selected scaffold #REACTIVE: selection of cells/genes of interest
-  cells <- get_cells_scaffold(scaffold, node_type)
-  genes <- unique(c(scaffold$From, scaffold$To)) %>% setdiff(cells) #getting all the genes in the edges selected
+  ##Scaffold and genes based on list of cells and genes of interest 
+  scaffold <- reactive({
+    sca <- get_scaffold(node_type, main_scaffold, dfe_in, cois(), gois())
+    #in case user only selected a cell of interest, get rid of the edges that have only genes
+    if (is.null(input$geneInterest) & !(is.null(input$cellInterest))) {
+      sca <- sca %>% 
+        filter(From %in% cois() | To %in% cois())
+    }
+    
+    return(sca)
+  }) 
+    
+  ##Getting list of genes and cells that are present in the selected scaffold
+  cells <- reactive({
+    as.vector(get_cells_scaffold(scaffold(), node_type))
+
+  })
+    
+  genes <- reactive({
+    unique(c(scaffold()$From, scaffold()$To)) %>% setdiff(cells()) #getting all the genes in the edges selected
+  })
   
 #------ Subsetting nodes and edge list based on the Sample Group Selection and cells of interest
-  
-get_netdata <- function(sample_group, all_net_info){
-  if(sample_group == "Subtype_Immune_Model_Based"){
-    sample_data <- all_net_info$immune
-  }else if(sample_group == "Subtype_Curated_Malta_Noushmehr_et_al"){
-    sample_data <- all_net_info$subtype
-  }else{
-    sample_data <- all_net_info$study
-  }
-}
   
 subset_data <- reactive({
   get_netdata(group_internal_choice(), all_net_info)
@@ -227,20 +262,13 @@ subset_data <- reactive({
   
 upbin_ratio <- reactive({
   subset_data()$upbin_ratio %>%
-    filter(Node %in% cells | Node %in% genes)
+    filter(Node %in% cells() | Node %in% genes())
 })
 
 edges_scores <- reactive ({
-  merge(subset_data()$edges_score, scaffold, by.x = c("From", "To"), by.y = c("From", "To") )
+  merge(subset_data()$edges_score, scaffold(), by.x = c("From", "To"), by.y = c("From", "To") )
 })
 
-
-  ##Subsetting ternary info to genes of interest
-  
-  #upbin_ratio <- upbin_ratio %>%
-  #                   filter(Node %in% cells | Node %in% genes)
-  
-      
 #--------------------------------------------------------------------------------
 # Selection of nodes and edges based on the abundance and concordance threshold
 #--------------------------------------------------------------------------------
@@ -384,7 +412,7 @@ edges_scores <- reactive ({
     file.name <- tempfile(fileext=".png")
     savePNGtoFile(session, file.name)
   })
-  
+
   observeEvent(input$pngData, ignoreInit=TRUE, {
     #printf("received pngData")
     png.parsed <- fromJSON(input$pngData)

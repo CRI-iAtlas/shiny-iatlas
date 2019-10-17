@@ -1,6 +1,6 @@
 ##consolidation of scaffold
 
-get_scaffold <- function(node_type, scaffold, dfe_in, gois){
+get_scaffold <- function(node_type, scaffold, dfe_in, cois, gois){
   
   ## identify ligands, receptor, and cells in the scaffold
   node_type_of_node <- node_type$Type 
@@ -13,20 +13,18 @@ get_scaffold <- function(node_type, scaffold, dfe_in, gois){
   scaffold.nodes <- c(cells,genes)
   
   ## By default all cells and genes are of interest
-  cois <- cells
+  #cois <- cells
   #gois <- genes
   # 
   # ## Optional - Read cells or genes of interest
   # #cois <- read_lines("data/cells_of_interest.txt")
   # gois <- read_lines("data/network/immunomodulator_genes.txt")
   # 
-  # gois <- c(gois, "CXCL10")
-  # 
   ## Those which we have data for
   gois <- intersect(gois,colnames(dfe_in))
   genes <- gois 
   
-  ## If genes or cells of interest are specified, scaffold edge must connect two items of interst
+  ## If genes or cells of interest are specified, scaffold edge must contain at least one item of interest
   
   ## Filter scaffold and cell and gene list to those of interest
   if ( length(cois)>0 ){ ## needs a better test that acts on a vector
@@ -60,6 +58,16 @@ get_cells_scaffold <- function(
   cells
 }
 
+#subset nodes and edges data based on sample group selection
+get_netdata <- function(sample_group, all_net_info){
+  if(sample_group == "Subtype_Immune_Model_Based"){
+    sample_data <- all_net_info$immune
+  }else if(sample_group == "Subtype_Curated_Malta_Noushmehr_et_al"){
+    sample_data <- all_net_info$subtype
+  }else{
+    sample_data <- all_net_info$study
+  }
+}
 
 ## this assert function should maybe go in functions/utils.R
 assert_list_has_names <- function(lst, names){
