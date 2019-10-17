@@ -55,6 +55,11 @@ explorepage <- dashboardPage(
                  "Driver Associations",
                  tabName = "drivers",
                  icon = icon("cog")
+               ),
+               menuSubItem(
+                 "CNV Associations",
+                 tabName = "cnvs",
+                 icon = icon("cog")
                )
       ),
       menuItem("Data Description",
@@ -91,21 +96,21 @@ explorepage <- dashboardPage(
         textBox(
           width = 12,
           p("Select a module to explore CRI iAtlas data through interactive visualizations. You can organize the data by choosing how to divide tumor samples using ",
-            strong("“Select Sample Groups”"), " on the left navigation bar.",  
+            strong("“Select Sample Groups”"), " on the left navigation bar.",
             "You can also select ",
-            strong("“Data Description”"), 
+            strong("“Data Description”"),
             "on the left navigation bar to learn which immune readouts are available.")
         ),
         sectionBox(
           title = "What's Inside",
           fluidRow(
-            infoBox("Immune Readouts:", 86, width = 3, color = "black", 
+            infoBox("Immune Readouts:", 86, width = 3, color = "black",
                     fill = FALSE, icon = icon("search")),
-            infoBox("Classes of Readouts:", 12, width = 3, color = "black", 
+            infoBox("Classes of Readouts:", 12, width = 3, color = "black",
                     fill = FALSE, icon = icon("filter")),
-            infoBox("TCGA Cancers:", 33, width = 3, color = "black", 
+            infoBox("TCGA Cancers:", 33, width = 3, color = "black",
                     fill = FALSE, icon = icon("flask")),
-            infoBox("TCGA Samples:", "11,080", width = 3, color = "black", 
+            infoBox("TCGA Samples:", "11,080", width = 3, color = "black",
                     fill = FALSE, icon = icon("users"))
           )
         ),
@@ -115,7 +120,7 @@ explorepage <- dashboardPage(
             width = 12,
             p("Each module presents information organized by theme, with multiple views and interactive controls.",
               "Within each module, you can find ",
-              strong("“Manuscript Context”"), " describing how that module can generate figures analogous to those in the manuscript ", 
+              strong("“Manuscript Context”"), " describing how that module can generate figures analogous to those in the manuscript ",
               em("Thorsson et al., The Immune Landscape of Cancer, Immunity (2018).")
             )
           ),
@@ -153,7 +158,7 @@ explorepage <- dashboardPage(
               imgSrc = "images/survival.png",
               boxText = "Plot survival curves based on immune characteristics and identify variables associated with outcome.",
               linkText = "Open Module"
-            )
+            ),
             #   imgLinkBox(
             #     width = 6,
             #     linkId = "#",
@@ -172,7 +177,7 @@ explorepage <- dashboardPage(
             #     boxText = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
             #     linkText = "Open Module"
             #   ),
-            
+
           ),
           fluidRow(
             imgLinkBox(
@@ -201,13 +206,23 @@ explorepage <- dashboardPage(
               boxText = "Explore Associations of Microenvironment with Driver Mutations.",
               linkText = "Open Module"
             ),
-            imgLinkBox(
-              width = 6,
-              title = "IO Targets",
-              linkId = "link_to_module9",
-              imgSrc = "images/iotargets.png",
-              boxText = "Explore the expression of genes that code for immuno-oncological (IO) targets .",
-              linkText = "Open Module"
+            fluidRow(
+              imgLinkBox(
+                width = 6,
+                title = "CNV Associations",
+                linkId = "link_to_module10",
+                imgSrc = "images/cnvs.png",
+                boxText = "Explore Associations of Microenvironment with Copy Number Variants.",
+                linkText = "Open Module"
+              ),
+              imgLinkBox(
+                width = 6,
+                title = "IO Targets",
+                linkId = "link_to_module9",
+                imgSrc = "images/iotargets.png",
+                boxText = "Explore the expression of genes that code for immuno-oncological (IO) targets .",
+                linkText = "Open Module"
+              )
             )
           )
         )
@@ -239,6 +254,10 @@ explorepage <- dashboardPage(
       tabItem(
         tabName = "drivers",
         drivers_UI("module8")
+      ),
+      tabItem(
+        tabName = "cnvs",
+        drivers_UI("module10")
       ),
       tabItem(
         tabName = "tilmap_features",

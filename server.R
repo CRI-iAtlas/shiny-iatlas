@@ -9,7 +9,7 @@ options(shiny.maxRequestSize = 100 * 1024^2)
 # Begin Shiny Server definition.
 ################################################################################
 shinyServer(function(input, output, session) {
-  
+
   observe({
   query <- parseQueryString(session$clientData$url_search)
     if (!is.null(query[['module']])) {
@@ -17,7 +17,7 @@ shinyServer(function(input, output, session) {
     }
   })
 
-  
+
     # Cell content
     callModule(
         cellcontent,
@@ -26,7 +26,7 @@ shinyServer(function(input, output, session) {
         reactive(group_internal_choice()),
         reactive(sample_group_df()),
         reactive(subset_df()))
-    
+
     # Clonal diversity
     # callModule(
     #     immuneinterface,
@@ -35,7 +35,7 @@ shinyServer(function(input, output, session) {
     #     reactive(group_internal_choice()),
     #     reactive(subset_df()),
     #     reactive(plot_colors()))
-    
+
     # Groups
     user_group_df <- callModule(
         groupsoverview,
@@ -47,7 +47,7 @@ shinyServer(function(input, output, session) {
         reactive(plot_colors()),
         reactive(group_options()),
         reactive(width()))
-    
+
     # Survival curves
     callModule(
         survival,
@@ -58,7 +58,7 @@ shinyServer(function(input, output, session) {
         reactive(sample_group_df()),
         reactive(subset_df()),
         reactive(plot_colors()))
-    
+
     # Immunomodulators
     callModule(
         immunomodulator,
@@ -68,7 +68,7 @@ shinyServer(function(input, output, session) {
         reactive(sample_group_df()),
         reactive(subset_df()),
         reactive(plot_colors()))
-    
+
     # Immune features
     callModule(
         immunefeatures,
@@ -78,7 +78,7 @@ shinyServer(function(input, output, session) {
         reactive(sample_group_df()),
         reactive(subset_df()),
         reactive(plot_colors()))
-    
+
     # TILmap features
     callModule(
         tilmap,
@@ -88,7 +88,7 @@ shinyServer(function(input, output, session) {
         reactive(sample_group_df()),
         reactive(subset_df()),
         reactive(plot_colors()))
-    
+
     # Driver associations
     callModule(
         drivers,
@@ -97,7 +97,16 @@ shinyServer(function(input, output, session) {
         reactive(group_internal_choice()),
         reactive(subset_df()),
         reactive(plot_colors()))
-    
+
+    # CNV associations
+    callModule(
+      cnvs,
+      "module10",
+      reactive(input$ss_choice),
+      reactive(group_internal_choice()),
+      reactive(subset_df()),
+      reactive(plot_colors()))
+
     # IO Target
     callModule(
         iotarget,
@@ -107,17 +116,17 @@ shinyServer(function(input, output, session) {
         reactive(sample_group_df()),
         reactive(subset_df()),
         reactive(plot_colors()))
-    
+
     # subtype predictor
     callModule(
-        subtypeclassifier, 
+        subtypeclassifier,
         "module_subtypeclassifier")
 
     # Data info
     callModule(
         datainfo,
         "moduleX")
-    
+
     output$ss_choice <- renderText({
         input$ss_choice
     })
@@ -142,6 +151,9 @@ shinyServer(function(input, output, session) {
     })
     observeEvent(input$link_to_module8, {
         shinydashboard::updateTabItems(session, "explorertabs", "drivers")
+    })
+    observeEvent(input$link_to_module10, {
+      shinydashboard::updateTabItems(session, "explorertabs", "cnvs")
     })
     observeEvent(input$link_to_module7, {
         shinydashboard::updateTabItems(session, "explorertabs", "tilmap_features")
@@ -238,7 +250,7 @@ shinyServer(function(input, output, session) {
             dplyr::select(FeatureValue, FeatureHex) %>%
             tibble::deframe()
     })
-    
+
 
 
 })
