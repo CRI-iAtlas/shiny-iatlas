@@ -257,7 +257,7 @@ explorepage <- dashboardPage(
       ),
       tabItem(
         tabName = "cnvs",
-        drivers_UI("module10")
+        cnvs_UI("module10")
       ),
       tabItem(
         tabName = "tilmap_features",
