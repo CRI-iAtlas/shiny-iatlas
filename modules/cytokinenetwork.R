@@ -7,7 +7,6 @@ library(cyjShiny)
 ## Loading all data of nodes abundance and edges scores
 all_net_info <- list(
   "immune"= list("upbin_ratio" = readr::read_csv("data/network/upbinratio.csv"), edges_score = readr::read_csv("data/network/edgesScore.csv")),
-  #"immune"= list("upbin_ratio" = readr::read_csv("data/network/upbinratio.csv"), edges_score = readr::read_csv("data/network/all_edges_Immune_noPseudocount_noNegative.csv")),
   "subtype"= list("upbin_ratio" = readr::read_csv("data/network/all_nodes_TCGASubtype.csv"), edges_score = readr::read_csv("data/network/all_edges_TCGASubtype.csv")),
   "study"= list("upbin_ratio" = readr::read_csv("data/network/all_nodes_TCGAStudy.csv"), edges_score = readr::read_csv("data/network/all_edges_TCGAStudy.csv")),
   "studyImmune" = list("upbin_ratio" = readr::read_csv("data/network/all_nodes_TCGAStudy_Immune.csv"), edges_score = readr::read_csv("data/network/all_edges_TCGAStudy_Immune.csv"))
