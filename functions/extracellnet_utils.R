@@ -59,13 +59,14 @@ get_cells_scaffold <- function(
 }
 
 #subset nodes and edges data based on sample group selection
-get_netdata <- function(sample_group, all_net_info){
+get_netdata <- function(sample_group, all_net_info, studyImmune = FALSE){
   if(sample_group == "Subtype_Immune_Model_Based"){
-    sample_data <- all_net_info$immune
+    all_net_info$immune
   }else if(sample_group == "Subtype_Curated_Malta_Noushmehr_et_al"){
     sample_data <- all_net_info$subtype
   }else{
-    sample_data <- all_net_info$study
+    if(studyImmune == TRUE) return(all_net_info$studyImmune)
+    else sample_data <- all_net_info$study
   }
 }
 
@@ -198,7 +199,7 @@ filterRatioWithIncludes <- function (rscores,from_node,to_node,feature_include,c
 
 
 
-## update list of nodes based on user selection
+## update list of nodes annotation based on user selection
 filterNodes <- function(list_edges, annot){
   colnames(annot) <- c("Type", "name")
   annot[annot$name== "CD80"& annot$Type == "Ligand",] <- NA #hardcoded here the fact that CD80 is with two different annotations and this caused a problem in the JSON file

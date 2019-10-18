@@ -7,8 +7,10 @@ library(cyjShiny)
 ## Loading all data of nodes abundance and edges scores
 all_net_info <- list(
   "immune"= list("upbin_ratio" = readr::read_csv("data/network/upbinratio.csv"), edges_score = readr::read_csv("data/network/edgesScore.csv")),
+  #"immune"= list("upbin_ratio" = readr::read_csv("data/network/upbinratio.csv"), edges_score = readr::read_csv("data/network/all_edges_Immune_noPseudocount_noNegative.csv")),
   "subtype"= list("upbin_ratio" = readr::read_csv("data/network/all_nodes_TCGASubtype.csv"), edges_score = readr::read_csv("data/network/all_edges_TCGASubtype.csv")),
-  "study"= list("upbin_ratio" = readr::read_csv("data/network/all_nodes_TCGAStudy.csv"), edges_score = readr::read_csv("data/network/all_edges_TCGAStudy.csv"))
+  "study"= list("upbin_ratio" = readr::read_csv("data/network/all_nodes_TCGAStudy.csv"), edges_score = readr::read_csv("data/network/all_edges_TCGAStudy.csv")),
+  "studyImmune" = list("upbin_ratio" = readr::read_csv("data/network/all_nodes_TCGAStudy_Immune.csv"), edges_score = readr::read_csv("data/network/all_edges_TCGAStudy_Immune.csv"))
 )
 
 scaffold <- readr::read_tsv("data/network/try_3a.tsv")
@@ -67,12 +69,12 @@ cytokinenetwork_UI <- function(id) {
                 uiOutput(ns("showSubtype"))
               ),
               conditionalPanel(
-                condition = "input.ss_choice == 'Immune Subtype' || input.byImmune == 0",
+                condition = paste("input.ss_choice == 'Immune Subtype' || (input.ss_choice == 'TCGA Study' &" , paste0("input['", ns("byImmune"), "'] == true)")),
                 selectizeInput(
                   ns("showGroup"), 
                   "Select Immune Subtype", 
-                  choices=c("All", "C1", "C2", "C3", "C4", "C5", "C6"), 
-                  selected = "All",
+                  choices=c( "C1", "C2", "C3", "C4", "C5", "C6"), 
+                  selected = c("C1", "C2"),
                   multiple = TRUE)
               ),
               numericInput(ns("abundance"), "Set Abundance Threshold (%)", value = 66, min = 0, max = 100),
@@ -98,18 +100,18 @@ cytokinenetwork_UI <- function(id) {
                           "dagre",
                           "cose-bilkent"),
                 selected = "cose"),
-              selectInput(
-                ns("loadStyleFile"), 
-                "Select Style", 
-                choices = styles),
-              selectInput(ns("selectName"), "Select Node:", choices = c("", node_type$Obj)),
+              # selectInput(
+              #   ns("loadStyleFile"), 
+              #   "Select Style", 
+              #   choices = styles),
               
+              uiOutput(ns("selectNode")),
               actionButton(ns("fit"), "Fit Graph"),
               actionButton(ns("fitSelected"), "Fit Selected"),
               actionButton(ns("sfn"), "Select First Neighbor"),
               actionButton(ns("clearSelection"), "Unselect Nodes"),
               # actionButton(ns("loopConditions"), "Loop Conditions"),
-              actionButton(ns("getSelectedNodes"), "Get Selected Nodes"),
+              #actionButton(ns("getSelectedNodes"), "Get Selected Nodes"),
               actionButton(ns("removeGraphButton"), "Remove Graph"),
               actionButton(ns("savePNGbutton"), "Save PNG")
           )
@@ -118,35 +120,12 @@ cytokinenetwork_UI <- function(id) {
         mainPanel(
           width = 10,
           fluidRow(
-            cyjShinyOutput(ns("cyjShiny"), height = 900)%>% 
-              shinycssloaders::withSpinner()
+            cyjShinyOutput(ns("cyjShiny"), height =1000)%>% 
+              shinycssloaders::withSpinner()#,
+#            img(src = "network_legend.png", height = 100, width = 800)
           )
         )
-            
-        # optionsBox(
-        #   width=12,
-        #   column(
-        #     width = 1,
-        #     p(strong("Select Node:")) 
-        #   ),
-        #   column(
-        #     width = 4,
-        #     selectInput(ns("selectName"), "Select Node:", choices = c("", node_type$Obj))
-        #   ),
-        #   column(
-        #     width = 7,
-        #     
-        #     actionButton(ns("fit"), "Fit Graph", width = "100px"),
-        #     actionButton(ns("fitSelected"), "Fit Selected"),
-        #     actionButton(ns("sfn"), "Select First Neighbor"),
-        #     actionButton(ns("clearSelection"), "Unselect Nodes"),
-        #     # actionButton(ns("loopConditions"), "Loop Conditions"),
-        #     actionButton(ns("getSelectedNodes"), "Get Selected Nodes"),
-        #     actionButton(ns("removeGraphButton"), "Remove Graph"),
-        #     actionButton("savePNGbutton", "Save PNG")
-        #   )
-        # )
-        ) ,
+      ),
       
       sectionBox(
         title = "Network information",
@@ -181,11 +160,11 @@ cytokinenetwork <- function(
   ns <- session$ns
 
   
-#--------UI for TCGA Study and TCGA Subtype
+#--------UIs
   
   output$showStudy <- renderUI({
     choices <- panimmune_data$sample_group_df %>% 
-      dplyr::filter(sample_group == "Study") %>% 
+      dplyr::filter(sample_group == "Study"& !(FeatureValue %in% c("LAML", "THYM", "DLBC"))) %>% 
       dplyr::select("FeatureValue") %>% 
       dplyr::distinct() %>% 
       arrange(FeatureValue)
@@ -208,6 +187,10 @@ cytokinenetwork <- function(
                     "Choose subtype subset:",
                     choices = choices,
                     selected = choices[1])
+  })
+  
+  output$selectNode <- renderUI({
+    selectInput(ns("selectName"), "Select Node:", choices = c("", tbl_nodes() %>% dplyr::select(name)))
   })
   
   
@@ -256,25 +239,25 @@ cytokinenetwork <- function(
   
 #------ Subsetting nodes and edge list based on the Sample Group Selection and cells of interest
   
-subset_data <- reactive({
-  get_netdata(group_internal_choice(), all_net_info)
-})
+  subset_data <- reactive({
+    get_netdata(group_internal_choice(), all_net_info, input$byImmune)
+  })
+    
+  upbin_ratio <- reactive({
+    subset_data()$upbin_ratio %>%
+      filter(Node %in% cells() | Node %in% genes())
+  })
   
-upbin_ratio <- reactive({
-  subset_data()$upbin_ratio %>%
-    filter(Node %in% cells() | Node %in% genes())
-})
-
-edges_scores <- reactive ({
-  merge(subset_data()$edges_score, scaffold(), by.x = c("From", "To"), by.y = c("From", "To") )
-})
+  edges_scores <- reactive ({
+    merge(subset_data()$edges_score, scaffold(), by.x = c("From", "To"), by.y = c("From", "To"))
+  })
 
 #--------------------------------------------------------------------------------
 # Selection of nodes and edges based on the abundance and concordance threshold
 #--------------------------------------------------------------------------------
   subset_criteria <- reactive({
     if(group_internal_choice() == "Subtype_Immune_Model_Based"){
-      if(input$showGroup == "All") return(c("C1","C2", "C3", "C4", "C5", "C6"))
+      #if(input$showGroup == "All") return(c("C1","C2", "C3", "C4", "C5", "C6"))
       input$showGroup
     }else if(group_internal_choice() == "Subtype_Curated_Malta_Noushmehr_et_al"){
       input$study_subset_selection
@@ -285,27 +268,46 @@ edges_scores <- reactive ({
   })  
 
   abundant_nodes <- eventReactive(input$calculate_button,{
-    
-    nodes <- upbin_ratio() %>%
-      filter(Group %in% subset_criteria()) %>% 
-      mutate(IncludeFeature = purrr::map_lgl(.x = UpBinRatio, upbinfrac.threshold = (input$abundance/100), keep.node)) %>% 
-      filter(IncludeFeature == TRUE)
+   
+    if(input$byImmune == FALSE){
+      nodes <- upbin_ratio() %>%
+        dplyr::filter(Group %in% subset_criteria()) %>% 
+        dplyr::mutate(IncludeFeature = purrr::map_lgl(.x = UpBinRatio, upbinfrac.threshold = (input$abundance/100), keep.node)) %>% 
+        dplyr::filter(IncludeFeature == TRUE)
+    }else{
+      nodes <- upbin_ratio() %>%
+        dplyr::filter(Group %in% subset_criteria() & Immune %in% input$showGroup) %>% 
+        dplyr::mutate(IncludeFeature = purrr::map_lgl(.x = UpBinRatio, upbinfrac.threshold = (input$abundance/100), keep.node)) %>% 
+        dplyr::filter(IncludeFeature == TRUE)
+    }
     
     nodes
   })
   
   tbl_edges <- eventReactive(input$calculate_button, {
     
-    network <- edges_scores() %>% 
-      dplyr::filter(Group %in% subset_criteria()) %>% 
-      merge(abundant_nodes(), by.x = c("From", "Group"), by.y = c("Node", "Group")) %>% #filtering nodes that are abundant
-      merge(abundant_nodes(), by.x = c("To", "Group"), by.y = c("Node", "Group")) %>% #filtering nodes that are abundant
-      dplyr::filter(ratioScore > input$concordance) %>% #filtering concordant edges 
-      dplyr::select(From, To, Group, ratioScore) %>% 
-      as.data.frame()
+    if(input$byImmune == FALSE){
+     
+       network <- edges_scores() %>% 
+        dplyr::filter(Group %in% subset_criteria()) %>% 
+        merge(abundant_nodes(), by.x = c("From", "Group"), by.y = c("Node", "Group")) %>% #filtering nodes that are abundant
+        merge(abundant_nodes(), by.x = c("To", "Group"), by.y = c("Node", "Group")) %>% #filtering nodes that are abundant
+        dplyr::filter(ratioScore > input$concordance) %>% #filtering concordant edges 
+        dplyr::select(From, To, Group, ratioScore) %>% 
+        as.data.frame()
+      
+    }else if(input$byImmune == TRUE){
+      
+      network <- edges_scores() %>% 
+        dplyr::filter(Group %in% subset_criteria() & Immune %in% input$showGroup) %>% 
+        merge(abundant_nodes(), by.x = c("From", "Group", "Immune"), by.y = c("Node", "Group", "Immune")) %>% #filtering nodes that are abundant
+        merge(abundant_nodes(), by.x = c("To", "Group", "Immune"), by.y = c("Node", "Group", "Immune")) %>% #filtering nodes that are abundant
+        dplyr::filter(ratioScore > input$concordance) %>% #filtering concordant edges 
+        dplyr::select(From, To, Immune, ratioScore) %>% 
+        as.data.frame()
+    }
     
     shiny::validate(need(nrow(as.data.frame(network)) != 0, "No network for this selection. Try changing the thresholds or selecting another subset."))
-    
     colnames(network) <- c("source", "target", "interaction", "score") #names required by cyjShiny package
     
     network
@@ -327,9 +329,10 @@ edges_scores <- reactive ({
   #   network
   # })
 
-  
+  #Getting the nodes annotation
   tbl_nodes <- reactive({
-    filterNodes(tbl_edges(), node_type)
+    nodes <- filterNodes(tbl_edges(), node_type)
+    
   })
 
   
