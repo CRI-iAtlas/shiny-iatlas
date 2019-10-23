@@ -6,17 +6,20 @@ library(cyjShiny)
 
 ## Loading all data of nodes abundance and edges scores
 all_net_info <- list(
-  "immune"= list("upbin_ratio" = readr::read_csv("data/network/upbinratio.csv"), edges_score = readr::read_csv("data/network/edgesScore.csv")),
+  "immune"= list("upbin_ratio" = readr::read_csv("data/network/all_nodes_Immune_noNegative.csv"), edges_score = readr::read_csv("data/network/all_edges_Immune_noNegative.csv")),
+  #"immune"= list("upbin_ratio" = readr::read_csv("data/network/upbinratio.csv"), edges_score = readr::read_csv("data/network/edgesScore.csv")),
   "subtype"= list("upbin_ratio" = readr::read_csv("data/network/all_nodes_TCGASubtype.csv"), edges_score = readr::read_csv("data/network/all_edges_TCGASubtype.csv")),
   "study"= list("upbin_ratio" = readr::read_csv("data/network/all_nodes_TCGAStudy.csv"), edges_score = readr::read_csv("data/network/all_edges_TCGAStudy.csv")),
   "studyImmune" = list("upbin_ratio" = readr::read_csv("data/network/all_nodes_TCGAStudy_Immune.csv"), edges_score = readr::read_csv("data/network/all_edges_TCGAStudy_Immune.csv"))
 )
 
-scaffold <- readr::read_tsv("data/network/try_3a.tsv")
-immunogenes <- readr::read_lines("data/network/immunomodulator_genes.txt")
+dfe_in <- readr::read_tsv("data/network/GenExp_All_CKine_genes.tsv")
+main_scaffold <- readr::read_tsv("data/network/try_3a.tsv")
+#immunogenes <- readr::read_lines("data/network/immunomodulator_genes.txt")
 styles <- c("Edges by Immune Type" = 'data/network/stylesEdges.js',
             "Black Edges" = "data/network/styles.js")
 node_type <- readr::read_tsv("data/network/network_node_labels.tsv")
+
 
 
 cytokinenetwork_UI <- function(id) {
@@ -24,31 +27,33 @@ cytokinenetwork_UI <- function(id) {
   ns <- NS(id)
   
   tagList(
-    titleBox("iAtlas Explorer — Cytokine Network"),
+    titleBox("iAtlas Explorer — Extracellular Networks"),
     textBox(
       width = 12,
       p(stringr::str_c(
-        "Explore the cytokine network for each immune subtype",
+        "Explore the extracellular networks modulating tumoral immune response, encompassing direct interaction among cells and communication via soluble proteins such as cytokines to mediate interactions among those cells.",
         sep = " "
-      ))  
+      )),
+      p('This module uses the network of documented ligand-receptor, cell-receptor, and cell-ligand pairs retrieved from FANTOM5, published by ', a(href = "http://fantom.gsc.riken.jp/5/suppl/Ramilowski_et_al_2015/", "Ramilowski et al., 2015."))
+      
     ),
     
     sectionBox(
-      title = "Extracellular network",
+      title = "Extracellular networks",
       
       messageBox(
         width = 24,
-        p("Based on a network of documented ligand-receptor, cell-receptor, and cell-ligand pairs (Ramilowski et al., 2015), you can generate a Cell-to-Cell Communication Network."),
-        p("From this scaffold, interactions predicted to take place in the TME are identified first by a criterion for the nodes to be included (‘present’ in the network), then by a
-          criterion for inclusion of edges, potential interactions. In this tool, this can be set by the abundance and a concordance thresholds. "),
-        p("For nodes, the abundance threshold, in %, is the frequency of samples in the upper two tertiles of cell abundance or gene expression. For example, for an abundance of 66%, a node is entered into the subtype-network 
-          if at least 66% of samples within a subtype map to mid or high value bins in a tertile distribution."),
-        p("An edge present in the scaffold network between any two abundant nodes is then evaluated for inclusion. A contingency table is populated for the ternary values of the two nodes, 
-          over all samples in the subtype, and a concordance versus discordance ratio (‘‘concordance score’’) is calculated for the edge in terms of the values of ((high,high)+
-          (low,low))/((low,high)+(high,low)). Edges were retained with concordance score higher than the one set by the user."),
-        p("Manuscript context:  This module allows you to display networks similar to Figure 7A, 7B, 7C, and S7A. Selection of a 66% abundance threshold, and 1.62 for concordance 
-          score, generates the extracellular network for C4 present in Figure S7A.")
-          
+        p("Select the subset of interest of analysis, depending on the Sample Group selected. The other two parameters required to build a network are:"),
+        tags$li("Abundance threshold (%): Nodes in the network are selected if they meet the selected abundance threshold. The abundance threshold, in %, is the frequency of samples 
+                in the upper two tertiles of cell abundance or gene expression distributions. For example, for an abundance of 66%, a node is entered into the subtype-network if at least 66% of samples within a subtype map to mid or high value bins in a tertile distribution."),
+        p(""),
+        tags$li("Concordance threshold: Edges in the scaffold network between any two abundant nodes is evaluated for inclusion based on the selected concordance threshold. A concordance 
+                threshold of 2, for example, selects edges that have both nodes simultaneously highly or lowly expressed at least twice as frequent than samples with one node highly expressed and the other lowly expressed."), 
+        p(""),
+        p("For more information on the method to compute these thresholds, refer to the Data Description module."),
+        p("In addition, a user can also select a set of cells or genes of interest. This selection will limit the network to the edges in the scaffold with the selected cells and genes, and then check if they meet the abundance and concordance thresholds. By default, a network will use all cells and the immunomodulator genes (as described in the Immunomodulators module)."),
+        p("Manuscript context:  This module allows you to display networks similar to Figure 7A, 7B, 7C, and S7A. 
+          If you are looking at Immune Subtypes, select Immune Subtype C4, 66% abundance threshold, and 1.62 for concordance score to get the extracellular network for C4 present in Figure S7A.")
       ),
         
         optionsBox(
@@ -81,7 +86,7 @@ cytokinenetwork_UI <- function(id) {
               
               selectizeInput(ns("cellInterest"), "Select cells of interest (optional)", choices = (node_type %>% dplyr::filter(Type == "Cell") %>% select("Obj")), 
                              multiple = TRUE, options = list(placeholder = "Default: all cells")),
-              selectizeInput(ns("geneInterest"), "Select genes of interest (optional)", choices = (union(scaffold$From, scaffold$To) %>% as.data.frame() %>% unique() %>% dplyr::arrange()), 
+              selectizeInput(ns("geneInterest"), "Select genes of interest (optional)", choices = (union(main_scaffold$From, main_scaffold$To) %>% as.data.frame() %>% unique() %>% dplyr::arrange()), 
                              multiple = TRUE, options = list(placeholder = "Default: immunomodulator genes")),
               div(class = "form-group shiny-input-container", actionButton(ns("calculate_button"), tags$b("GO"), width = "100%")),
               hr(),
@@ -115,30 +120,38 @@ cytokinenetwork_UI <- function(id) {
               actionButton(ns("savePNGbutton"), "Save PNG")
           )
         ),
-      
-        mainPanel(
+        
+        column(
           width = 10,
-          fluidRow(
-            cyjShinyOutput(ns("cyjShiny"), height =1000)%>% 
-              shinycssloaders::withSpinner()#,
-#            img(src = "network_legend.png", height = 100, width = 800)
-          )
+          mainPanel(
+            width = 10,
+            fluidRow(
+              cyjShinyOutput(ns("cyjShiny"), height =1000)%>% 
+                shinycssloaders::withSpinner()
+            )
+        ),
+        column(
+          width = 1,
+          img(src = "images/network_legend.png", width = 720)
+        )
         )
       ),
       
       sectionBox(
         title = "Network information",
         
-        messageBox("Here it goes the table with edges."),
-      
-        fluidRow(
+        messageBox(
+          width = 24,
+          "Here it goes the table with edges."),
+        
+        column(
+          width = 12,
           tableBox(
             DT::DTOutput(ns("table")) %>% 
               shinycssloaders::withSpinner()
-          ) 
-        ),
-        downloadButton(ns('download_data'), 'Download')
-        
+          ), 
+          downloadButton(ns('download_data'), 'Download')
+        )
       )
   
 )#taglist
@@ -195,10 +208,10 @@ cytokinenetwork <- function(
   
  #---- organizing the desired scaffold based on the cells and genes of interest
   
-  dfe_in <- readr::read_tsv("data/network/GenExp_All_CKine_genes.tsv")
+  immunogenes <- panimmune_data$im_direct_relationships$`HGNC Symbol`
  
   ## Read scaffold interaction file
-  main_scaffold <- readr::read_tsv("data/network/try_3a.tsv")
+  #main_scaffold <- readr::read_tsv("data/network/try_3a.tsv")
   
   ##Subsetting to cells and genes of interest
   
@@ -229,14 +242,13 @@ cytokinenetwork <- function(
   ##Getting list of genes and cells that are present in the selected scaffold
   cells <- reactive({
     as.vector(get_cells_scaffold(scaffold(), node_type))
-
   })
     
   genes <- reactive({
     unique(c(scaffold()$From, scaffold()$To)) %>% setdiff(cells()) #getting all the genes in the edges selected
   })
   
-#------ Subsetting nodes and edge list based on the Sample Group Selection and cells of interest
+#------ Subsetting nodes and edges list based on the Sample Group Selection and cells of interest
   
   subset_data <- reactive({
     get_netdata(group_internal_choice(), all_net_info, input$byImmune)
@@ -303,7 +315,7 @@ cytokinenetwork <- function(
         merge(abundant_nodes(), by.x = c("To", "Group", "Immune"), by.y = c("Node", "Group", "Immune")) %>% #filtering nodes that are abundant
         dplyr::filter(ratioScore > input$concordance) %>% #filtering concordant edges 
         dplyr::select(From, To, Immune, ratioScore) %>% 
-        as.data.frame()
+        as.data.frame() 
     }
     
     shiny::validate(need(nrow(as.data.frame(network)) != 0, "No network for this selection. Try changing the thresholds or selecting another subset."))
@@ -343,13 +355,24 @@ cytokinenetwork <- function(
     cyjShiny::cyjShiny(graph.json.v2(), layoutName = input$doLayout, style_file = "data/network/stylesEdges.js")
     })
   
-  #output$legend <- renderImage("www/images/legend_V1.png")
+  # output$table = reactive({
+  #   print(colnames(tbl_edges()))
+  #     tbl_edges() %>% 
+  #     DT::formatRound('score', digits=3) %>% 
+  #     DT::renderDataTable(
+  #       width="100%",
+  #       options = list(
+  #         autoWidth = TRUE
+  #       ))
+  # })
+    
   
-  output$table = DT::renderDataTable(tbl_edges(),
-                                     width="100%",
-                                     options = list(
-                                       autoWidth = TRUE
-                                     ))
+  output$table <- DT::renderDataTable(
+                      tbl_edges(),
+                      width="100%",
+                      options = list(
+                          autoWidth = TRUE)
+                      )
   
   
   output$download_data <- downloadHandler(

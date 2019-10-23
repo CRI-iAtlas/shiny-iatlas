@@ -57,7 +57,7 @@ explorepage <- dashboardPage(
                  icon = icon("cog")
                ),
                menuSubItem(
-                 "Cytokine Network",
+                 "Extracellular Networks",
                  tabName = "cytokine_network",
                  icon = icon("cog")
                )
@@ -218,10 +218,10 @@ explorepage <- dashboardPage(
           fluidRow(
             imgLinkBox(
               width = 6,
-              title = "Cytokine Network",
+              title = "Extracellular Networks",
               linkId = "link_to_module11",
-              imgSrc = "images/iotargets.png",
-              boxText = "Explore Cytokine Networks across different immune subtypes.",
+              imgSrc = "images/cytokinenet.png",
+              boxText = "Explore the extracellular networks modulating tumoral immune response.",
               linkText = "Open Module"
             )
             
