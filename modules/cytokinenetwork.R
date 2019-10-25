@@ -1,5 +1,8 @@
-library(cyjShiny)
+if(!require(cyjShiny)){
+  githubinstall::githubinstall(packages = "cytoscape/cyjShiny", ask = F)
+}
 
+library(cyjShiny)
 #-------------------------------------------------------------------
 #TEMPORARY - reading in files 
 #-------------------------------------------------------------------
@@ -8,9 +11,9 @@ library(cyjShiny)
 all_net_info <- list(
   "immune"= list("upbin_ratio" = readr::read_csv("data/network/all_nodes_Immune_noNegative.csv"), edges_score = readr::read_csv("data/network/all_edges_Immune_noNegative.csv")),
   #"immune"= list("upbin_ratio" = readr::read_csv("data/network/upbinratio.csv"), edges_score = readr::read_csv("data/network/edgesScore.csv")),
-  "subtype"= list("upbin_ratio" = readr::read_csv("data/network/all_nodes_TCGASubtype.csv"), edges_score = readr::read_csv("data/network/all_edges_TCGASubtype.csv")),
-  "study"= list("upbin_ratio" = readr::read_csv("data/network/all_nodes_TCGAStudy.csv"), edges_score = readr::read_csv("data/network/all_edges_TCGAStudy.csv")),
-  "studyImmune" = list("upbin_ratio" = readr::read_csv("data/network/all_nodes_TCGAStudy_Immune.csv"), edges_score = readr::read_csv("data/network/all_edges_TCGAStudy_Immune.csv"))
+  "subtype"= list("upbin_ratio" = readr::read_csv("data/network/nodes_TCGASubtype.csv"), edges_score = readr::read_csv("data/network/edges_TCGASubtype.csv")),
+  "study"= list("upbin_ratio" = readr::read_csv("data/network/nodes_TCGAStudy.csv"), edges_score = readr::read_csv("data/network/edges_TCGAStudy.csv")),
+  "studyImmune" = list("upbin_ratio" = readr::read_csv("data/network/nodes_TCGAStudy_Immune.csv"), edges_score = readr::read_csv("data/network/edges_TCGAStudy_Immune.csv"))
 )
 
 dfe_in <- readr::read_tsv("data/network/GenExp_All_CKine_genes.tsv")
@@ -114,6 +117,8 @@ cytokinenetwork_UI <- function(id) {
               actionButton(ns("fitSelected"), "Fit Selected"),
               actionButton(ns("sfn"), "Select First Neighbor"),
               actionButton(ns("clearSelection"), "Unselect Nodes"),
+              actionButton(ns("hideSelection"), "Hide Selected Nodes"),
+              actionButton(ns("showAll"), "Show All Nodes"),
               # actionButton(ns("loopConditions"), "Loop Conditions"),
               #actionButton(ns("getSelectedNodes"), "Get Selected Nodes"),
               actionButton(ns("removeGraphButton"), "Remove Graph"),
@@ -126,7 +131,7 @@ cytokinenetwork_UI <- function(id) {
           mainPanel(
             width = 10,
             fluidRow(
-              cyjShinyOutput(ns("cyjShiny"), height =1000)%>% 
+              cyjShiny::cyjShinyOutput(ns("cyjShiny"), height =1000)%>% 
                 shinycssloaders::withSpinner()
             )
         ),
@@ -179,7 +184,7 @@ cytokinenetwork <- function(
       dplyr::filter(sample_group == "Study"& !(FeatureValue %in% c("LAML", "THYM", "DLBC"))) %>% 
       dplyr::select("FeatureValue") %>% 
       dplyr::distinct() %>% 
-      arrange(FeatureValue)
+      dplyr::arrange(FeatureValue)
     
     selectInput(ns("study_selection"), 
                 "Choose tumor type:",
@@ -233,7 +238,7 @@ cytokinenetwork <- function(
     #in case user only selected a cell of interest, get rid of the edges that have only genes
     if (is.null(input$geneInterest) & !(is.null(input$cellInterest))) {
       sca <- sca %>% 
-        filter(From %in% cois() | To %in% cois())
+        dplyr::filter(From %in% cois() | To %in% cois())
     }
     
     return(sca)
@@ -256,7 +261,7 @@ cytokinenetwork <- function(
     
   upbin_ratio <- reactive({
     subset_data()$upbin_ratio %>%
-      filter(Node %in% cells() | Node %in% genes())
+      dplyr::filter(Node %in% cells() | Node %in% genes())
   })
   
   edges_scores <- reactive ({
@@ -425,6 +430,14 @@ cytokinenetwork <- function(
     })
   })
   
+  observeEvent(input$hideSelection,  ignoreInit=TRUE, {
+    session$sendCustomMessage(type="hideSelection", message=list())
+  })
+  
+  observeEvent(input$showAll,  ignoreInit=TRUE, {
+    session$sendCustomMessage(type="showAll", message=list())
+  })
+  
   observeEvent(input$clearSelection,  ignoreInit=TRUE, {
     session$sendCustomMessage(type="clearSelection", message=list())
   })
@@ -436,21 +449,25 @@ cytokinenetwork <- function(
   observeEvent(input$savePNGbutton, ignoreInit=TRUE, {
     file.name <- tempfile(fileext=".png")
     savePNGtoFile(session, file.name)
+
   })
 
   observeEvent(input$pngData, ignoreInit=TRUE, {
-    #printf("received pngData")
-    png.parsed <- fromJSON(input$pngData)
+    
+    R.utils::printf("received pngData")
+#    ns_png <- NS(id)
+#    pngData_ns <- ns_png(pngData)
+    png.parsed <- jsonlite::fromJSON(input$pngData)
     substr(png.parsed, 1, 30) # [1] "data:image/png;base64,iVBORw0K"
     nchar(png.parsed)  # [1] 768714
     png.parsed.headless <- substr(png.parsed, 23, nchar(png.parsed))  # chop off the uri header
-    png.parsed.binary <- base64decode(png.parsed.headless)
-    #printf("writing png to foo.png")
+    png.parsed.binary <- base64::base64decode(png.parsed.headless)
+    R.utils::printf("writing png to foo.png")
     conn <- file("savedNetwork.png", "wb")
     writeBin(png.parsed.binary, conn)
     close(conn)
-  })
-  
+ })
+
   # input$savePNGbutton <- downloadHandler(
   #   filename = function() stringr::str_c("network-", Sys.Date(), ".png"),
   #   cyjShiny::savePNGtoFile(session, file.name)
