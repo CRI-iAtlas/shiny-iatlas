@@ -25,15 +25,7 @@ Install:
 Open RStudio and install dev tools:
 
 ```R
-install.packages("devtools")
-install.packages("githubinstall")
-install.packages("shinydashboard")
-devtools::install_github("ropensci/plotly")
-devtools::install_github("th86/concordanceIndex")
 source("setup_installs.R")
-
-# when prompted, select: hartmast/concordances
-# when prompted, select: rstudio/shinyloadtest
 ```
 
 ## Data
