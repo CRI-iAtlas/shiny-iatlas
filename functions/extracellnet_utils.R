@@ -73,10 +73,54 @@ get_nodes_of_type <- function(type_of_node, scaffold, node_type_of_node){
 
 #----function to filter nodes based on abundance threshold
 
-keep.node <- function(val,upbinfrac.threshold){val>=upbinfrac.threshold} ## helper function for thresholding upper bin ratio
+get_nodes <- function(upbin_df, abund_thres, group_subset, byImmune = FALSE, immuneSubtype = NULL){
+  
+  if(byImmune == FALSE){
+    abnodes <- upbin_df %>%
+      dplyr::filter(Group %in% group_subset) %>% 
+      dplyr::filter(UpBinRatio > (abund_thres/100))%>% 
+      dplyr::mutate_if(is.numeric, round, digits = 3)   
+    
+  }else{
+    abnodes <- upbin_df %>%
+      dplyr::filter(Group %in% group_subset & Immune %in% immuneSubtype) %>% 
+      dplyr::filter(UpBinRatio > (abund_thres/100))%>% 
+      dplyr::mutate_if(is.numeric, round, digits = 3)   
+  }
+  abnodes
+}
 
 
-#---- update list of nodes annotation based on user selection
+#----function to filter edges based on concordance threshold
+
+get_conc_edges <- function(edges_df, ab_nodes, concordance_thres, group_subset, byImmune = FALSE, immuneSubtype = NULL){
+  
+  if(byImmune == FALSE){
+    
+    network <- edges_df %>% 
+      dplyr::filter(Group %in% group_subset) %>% 
+      merge(ab_nodes, by.x = c("From", "Group"), by.y = c("Node", "Group")) %>% #filtering nodes that are abundant
+      merge(ab_nodes, by.x = c("To", "Group"), by.y = c("Node", "Group")) %>% #filtering nodes that are abundant
+      dplyr::filter(ratioScore > concordance_thres) %>% #filtering concordant edges 
+      dplyr::select(From, To, Group, ratioScore) %>%
+      dplyr::mutate_if(is.numeric, round, digits = 3)%>% 
+      as.data.frame()
+    
+  }else if(byImmune == TRUE){
+    
+    network <- edges_df %>% 
+      dplyr::filter(Group %in% group_subset & Immune %in% immuneSubtype) %>% 
+      merge(ab_nodes, by.x = c("From", "Group", "Immune"), by.y = c("Node", "Group", "Immune")) %>% #filtering nodes that are abundant
+      merge(ab_nodes, by.x = c("To", "Group", "Immune"), by.y = c("Node", "Group", "Immune")) %>% #filtering nodes that are abundant
+      dplyr::filter(ratioScore > concordance_thres) %>% #filtering concordant edges 
+      dplyr::select(From, To, Immune, ratioScore) %>% 
+      dplyr::mutate_if(is.numeric, round, digits = 3) %>% 
+      as.data.frame() 
+  }
+  
+  network
+}
+#---- update list of nodes annotation based on user selection (for coloring nodes)
 
 filterNodes <- function(list_edges, annot){
   colnames(annot) <- c("Type", "name")
