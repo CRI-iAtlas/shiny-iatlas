@@ -535,7 +535,8 @@
   }, {
     "selector" : "node:selected",
     "css" : {
-      "background-color" : "rgb(255,255,0)"
+      "shape" : "ellipse",
+      "background-color" : "rgb(68,153,227)"
     }
   }, {
     "selector" : "edge",
@@ -543,7 +544,7 @@
         "line-color": "black",
         "target-arrow-shape": "triangle",
         "target-arrow-color": "black",
-        "width": 0.8,
+        "width": 1.1,
         "curve-style": "bezier"
     }
   }, {
@@ -2691,7 +2692,7 @@
   }, {
     "selector" : "edge:selected",
     "css" : {
-      "line-color" : "rgb(255,0,0)"
+      "line-color" : "rgb(255,128,0)"
     
   }
   

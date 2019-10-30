@@ -52,7 +52,6 @@ cytokinenetwork_UI <- function(id) {
         optionsBox(
           width=2,
             verticalLayout(
-              
               conditionalPanel( 
                 condition = "input.ss_choice == 'TCGA Study'",
                 uiOutput(ns("showStudy"),
@@ -103,19 +102,20 @@ cytokinenetwork_UI <- function(id) {
               #   "Select Style", 
               #   choices = styles),
               
-              uiOutput(ns("selectNode")),
-              actionButton(ns("fit"), "Fit Graph"),
-              actionButton(ns("fitSelected"), "Fit Selected"),
-              actionButton(ns("sfn"), "Select First Neighbor"),
-              actionButton(ns("clearSelection"), "Unselect Nodes"),
-              actionButton(ns("hideSelection"), "Hide Selected Nodes"),
-              actionButton(ns("showAll"), "Show All Nodes"),
+              uiOutput(ns("selectNode"), width = "90%"),
+              actionButton(ns("fit"), "Fit Graph", width = "90%"),
+              actionButton(ns("fitSelected"), "Fit Selected", width = "90%"),
+              actionButton(ns("sfn"), "Select First Neighbor", width = "90%"),
+              actionButton(ns("clearSelection"), "Unselect Nodes", width = "90%"),
+              actionButton(ns("hideSelection"), "Hide Selected Nodes", width = "90%"),
+              actionButton(ns("showAll"), "Show All Nodes", width = "90%"),
               #actionButton(ns("loopConditions"), "Loop Conditions"),
               #actionButton(ns("getSelectedNodes"), "Get Selected Nodes"),
-              actionButton(ns("removeGraphButton"), "Remove Graph"),
-              actionButton(ns("savePNGbutton"), "Save PNG")
-          )
-        ),
+              #actionButton(ns("savePNGbutton"), "Save PNG"),
+              actionButton(ns("removeGraphButton"), "Remove Graph", width = "90%")
+              
+          ) #verticalLayout
+        ), #optionsBox
         plotBox(
           width = 10,
           column(
@@ -142,11 +142,11 @@ cytokinenetwork_UI <- function(id) {
           width = 24,
           "Here it goes the tables with nodes and edges."),
         
-        splitLayout(
+        fluidRow(
           #column(
            # width = 10,
             tableBox(
-              width = 9,
+              #width = 9,
               DT::DTOutput(ns("table")) %>% 
                 shinycssloaders::withSpinner(),
               downloadButton(ns('download_data'), 'Download')
@@ -155,7 +155,7 @@ cytokinenetwork_UI <- function(id) {
           #column(
            # width = 8,
             tableBox(
-              width = 9,
+              #width = 9,
               DT::DTOutput(ns("tableNodes")) %>% 
                 shinycssloaders::withSpinner(),
               downloadButton(ns('download_data_nodes'), 'Download')
@@ -353,11 +353,13 @@ cytokinenetwork <- function(
     })
     
   output$table <- DT::renderDataTable(
-                      DT::datatable(tbl_edges(), colnames= c("From", "To", "Interaction", "ConcordanceScore"), caption = "Edges Table"),
+                      DT::datatable(tbl_edges(), colnames= c("From", "To", "Interaction", "Concordance"), 
+                                    caption = "Edges Table", width = "100%", rownames = FALSE)
+                      
                       )
   output$tableNodes <- DT::renderDataTable(
                           DT::datatable((merge(tbl_nodes(), abundant_nodes(), by.x = "name", by.y = "Node")), caption = "Nodes Table", 
-                                        colnames= c("Node", "Type", "Group", "AbundanceScore"))
+                                        colnames= c("Node", "Type", "Group", "Abundance"), width = "100%", rownames = FALSE)
                         )
   
   output$download_data <- downloadHandler(
