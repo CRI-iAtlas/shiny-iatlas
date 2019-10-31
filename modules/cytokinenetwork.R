@@ -9,18 +9,20 @@ library(cyjShiny)
 
 ## Loading all data of nodes abundance and edges scores
 all_net_info <- list(
-  "immune"= list("upbin_ratio" = readr::read_csv("data/network/all_nodes_Immune_noNegative.csv"), edges_score = readr::read_csv("data/network/all_edges_Immune_noNegative.csv")),
+  "immune"= list("upbin_ratio" = readr::read_csv("data/network/nodes_TCGAImmune_merged.csv"), edges_score = readr::read_csv("data/network/edges_TCGAImmune_merged.csv")),
   #"immune"= list("upbin_ratio" = readr::read_csv("data/network/upbinratio.csv"), edges_score = readr::read_csv("data/network/edgesScore.csv")),
   "subtype"= list("upbin_ratio" = readr::read_csv("data/network/nodes_TCGASubtype.csv"), edges_score = readr::read_csv("data/network/edges_TCGASubtype.csv")),
   "study"= list("upbin_ratio" = readr::read_csv("data/network/nodes_TCGAStudy.csv"), edges_score = readr::read_csv("data/network/edges_TCGAStudy.csv")),
   "studyImmune" = list("upbin_ratio" = readr::read_csv("data/network/nodes_TCGAStudy_Immune.csv"), edges_score = readr::read_csv("data/network/edges_TCGAStudy_Immune.csv"))
 )
 
-dfe_in <- readr::read_tsv("data/network/GenExp_All_CKine_genes.tsv")
+dfe_in <- readr::read_csv("data/network/merged_gene_exp.csv")
+#dfe_in <- readr::read_tsv("data/network/GenExp_All_CKine_genes.tsv")
 main_scaffold <- readr::read_tsv("data/network/try_3a.tsv")
 styles <- c("Edges by Immune Type" = 'data/network/stylesEdges.js',
             "Black Edges" = "data/network/styles.js")
 node_type <- readr::read_tsv("data/network/network_node_labels.tsv")
+node_type <- rbind(node_type, c("Ligand", "CD276"))
 
 
 
@@ -83,36 +85,42 @@ cytokinenetwork_UI <- function(id) {
               
               hr(),
               
-              selectInput(
-                ns("doLayout"), 
-                "Select Layout",
-                choices=c("",
-                          "cose",
-                          "cola",
-                          "circle",
-                          "concentric",
-                          "breadthfirst",
-                          "grid",
-                          "random",
-                          "dagre",
-                          "cose-bilkent"),
-                selected = "cose"),
-              # selectInput(
-              #   ns("loadStyleFile"), 
-              #   "Select Style", 
-              #   choices = styles),
-              
-              uiOutput(ns("selectNode"), width = "90%"),
-              actionButton(ns("fit"), "Fit Graph", width = "90%"),
-              actionButton(ns("fitSelected"), "Fit Selected", width = "90%"),
-              actionButton(ns("sfn"), "Select First Neighbor", width = "90%"),
-              actionButton(ns("clearSelection"), "Unselect Nodes", width = "90%"),
-              actionButton(ns("hideSelection"), "Hide Selected Nodes", width = "90%"),
-              actionButton(ns("showAll"), "Show All Nodes", width = "90%"),
-              #actionButton(ns("loopConditions"), "Loop Conditions"),
-              #actionButton(ns("getSelectedNodes"), "Get Selected Nodes"),
-              #actionButton(ns("savePNGbutton"), "Save PNG"),
-              actionButton(ns("removeGraphButton"), "Remove Graph", width = "90%")
+              fluidRow(
+                column(
+                  width = 12,
+                  selectInput(
+                    ns("doLayout"), 
+                    "Select Layout",
+                    choices=c("",
+                              "cose",
+                              "cola",
+                              "circle",
+                              "concentric",
+                              "breadthfirst",
+                              "grid",
+                              "random",
+                              "dagre",
+                              "cose-bilkent"),
+                    selected = "cose"),
+                  # selectInput(
+                  #   ns("loadStyleFile"), 
+                  #   "Select Style", 
+                  #   choices = styles),
+                  
+                  uiOutput(ns("selectNode")),
+                  actionButton(ns("fitSelected"), "Fit Selected", width = "100%"),
+                  actionButton(ns("fit"), "Fit Graph", width = "100%"),
+                  actionButton(ns("sfn"), "Select First Neighbor", width = "100%"),
+                  actionButton(ns("clearSelection"), "Unselect Nodes", width = "100%"),
+                  actionButton(ns("hideSelection"), "Hide Selected Nodes", width = "100%"),
+                  actionButton(ns("showAll"), "Show All Nodes", width = "100%"),
+                  #actionButton(ns("loopConditions"), "Loop Conditions"),
+                  #actionButton(ns("getSelectedNodes"), "Get Selected Nodes"),
+                  #actionButton(ns("savePNGbutton"), "Save PNG"),
+                  actionButton(ns("removeGraphButton"), "Remove Graph", width = "100%")
+                  
+                )
+              )
               
           ) #verticalLayout
         ), #optionsBox
@@ -147,18 +155,18 @@ cytokinenetwork_UI <- function(id) {
            # width = 10,
             tableBox(
               #width = 9,
-              DT::DTOutput(ns("table")) %>% 
+              DT::DTOutput(ns("tableNodes")) %>% 
                 shinycssloaders::withSpinner(),
-              downloadButton(ns('download_data'), 'Download')
+              downloadButton(ns('download_data_nodes'), 'Download')
             #) 
           ),
           #column(
            # width = 8,
             tableBox(
               #width = 9,
-              DT::DTOutput(ns("tableNodes")) %>% 
+              DT::DTOutput(ns("table")) %>% 
                 shinycssloaders::withSpinner(),
-              downloadButton(ns('download_data_nodes'), 'Download')
+              downloadButton(ns('download_data'), 'Download')
             )
           #)
         )
@@ -353,13 +361,14 @@ cytokinenetwork <- function(
     })
     
   output$table <- DT::renderDataTable(
-                      DT::datatable(tbl_edges(), colnames= c("From", "To", "Interaction", "Concordance"), 
+                      DT::datatable(tbl_edges(), colnames= c("From" = "source", "To" = "target", "Concordance" = "score"), 
                                     caption = "Edges Table", width = "100%", rownames = FALSE)
                       
                       )
   output$tableNodes <- DT::renderDataTable(
-                          DT::datatable((merge(tbl_nodes(), abundant_nodes(), by.x = "name", by.y = "Node")), caption = "Nodes Table", 
-                                        colnames= c("Node", "Type", "Group", "Abundance"), width = "100%", rownames = FALSE)
+                          
+                          DT::datatable((merge(tbl_nodes(), abundant_nodes(), by.x = "name", by.y = "Node")) , caption = "Nodes Table", 
+                                        colnames= c("Node" = "name", "Abundance" = "UpBinRatio"), width = "100%", rownames = FALSE)
                         )
   
   output$download_data <- downloadHandler(
