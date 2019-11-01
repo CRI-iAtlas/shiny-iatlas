@@ -27,15 +27,6 @@ shinyServer(function(input, output, session) {
         reactive(sample_group_df()),
         reactive(subset_df()))
     
-    # Clonal diversity
-    # callModule(
-    #     immuneinterface,
-    #     "module2",
-    #     reactive(input$ss_choice),
-    #     reactive(group_internal_choice()),
-    #     reactive(subset_df()),
-    #     reactive(plot_colors()))
-    
     # Groups
     user_group_df <- callModule(
         groupsoverview,
@@ -104,10 +95,10 @@ shinyServer(function(input, output, session) {
         iotarget,
         "module9",
         reactive(input$ss_choice),
-        reactive(group_internal_choice()),
-        reactive(sample_group_df()),
-        reactive(subset_df()),
-        reactive(plot_colors()))
+        group_con,
+        io_target_expr_con,
+        io_targets_con
+    )
     
     # subtype predictor
     callModule(
@@ -286,6 +277,30 @@ shinyServer(function(input, output, session) {
         req(PANIMMUNE_DB)
         PANIMMUNE_DB %>%
             dplyr::tbl("immunomodulators") 
+    })
+    
+    io_target_expr_con <- reactive({
+        req(PANIMMUNE_DB, group_internal_choice())
+        con <- PANIMMUNE_DB %>% 
+            dplyr::tbl("io_target_expr") %>% 
+            dplyr::select(
+                sample, 
+                group = local(group_internal_choice()), 
+                gene, 
+                value
+            ) %>% 
+            dplyr::filter_all(dplyr::all_vars(!is.na(.)))
+        if(group_internal_choice() == "Subtype_Curated_Malta_Noushmehr_et_al"){
+            req(subtypes())
+            con <- dplyr::filter(con, group %in% local(subtypes()))
+        }
+        return(con)
+    })
+    
+    io_targets_con <- reactive({
+        req(PANIMMUNE_DB)
+        PANIMMUNE_DB %>%
+            dplyr::tbl("io_targets") 
     })
     
     til_image_links_con <- reactive({

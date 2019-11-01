@@ -98,6 +98,47 @@ create_db <- function(panimmune_data){
     
     dplyr::copy_to(con, til_image_links, "til_image_links", temporary = FALSE)
     
+    io_target_expr <- panimmune_data$io_target_expr_df %>% 
+        dplyr::rename(sample = ParticipantBarcode) %>% 
+        tidyr::pivot_longer(
+            names_to = "gene",
+            values_to = "value",
+            -sample
+        ) %>% 
+        dplyr::inner_join(dplyr::select(feature_values_wide, 1:4))
+    
+    dplyr::copy_to(con, io_target_expr, "io_target_expr", temporary = FALSE)
+    
+    io_targets <- panimmune_data$io_target_annotations %>% 
+        dplyr::select(
+            display = Gene, 
+            gene = `HGNC Symbol`, 
+            display2 = `Friendly Name`,
+            entrez = `Entrez ID`,
+            pathway = Pathway,
+            therapy_type = `Therapy Type`,
+            description = Description,
+            url = IO_target_URL
+        ) %>% 
+        dplyr::mutate(
+            link_gene = .$url %>% 
+                stringr::str_split(";") %>% 
+                purrr::map(rev) %>% 
+                purrr::map_chr(1)
+        ) %>% 
+        dplyr::mutate(link = paste(
+            "<a href=\"",
+            url, 
+            "\">",
+            link_gene,
+            "</a>", 
+            sep = ""
+        )) %>% 
+        dplyr::select(-c(url, link_gene))
+        
+    
+    dplyr::copy_to(con, io_targets, "io_targets", temporary = FALSE)
+    
     
     return(con)
     

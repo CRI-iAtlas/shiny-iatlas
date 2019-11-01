@@ -13,7 +13,6 @@ module_files:
   - "modules/subtypeclassifiermodule.R"
   - "modules/submodules.R"
   - "modules/distribution_plot_module.R"
-  - "modules/distribution_plot_module_new.R"
   
 function_files:
   - "functions/load_data.R"

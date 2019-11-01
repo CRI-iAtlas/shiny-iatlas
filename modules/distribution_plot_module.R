@@ -102,20 +102,21 @@ distributions_plot_module <- function(
     output, 
     session,
     plot_source_name,
-    data_df,
-    metadata_df,
-    group_metadata_df,
-    plot_colors,
+    feature_value_con,
+    feature_metadata_con,
+    group_con,
     group_display_choice,
+    variable_group_names = NULL,
     variable_selection_default = NA,
     ...
 ){
     
     ns <- session$ns
     
+    # determines if there are multiple ways to group input variables
     multiple_variable_columns <- reactive({
-        req(metadata_df())
-        num_group_columns <- metadata_df() %>% 
+        req(feature_metadata_con())
+        num_group_columns <- feature_metadata_con() %>% 
             dplyr::select(-c(INTERNAL, DISPLAY)) %>% 
             colnames() %>% 
             length
@@ -125,80 +126,65 @@ distributions_plot_module <- function(
     # This is so that the conditional panel can see output$display_group_choice
     output$display_group_choice <- reactive(multiple_variable_columns())
     outputOptions(output, "display_group_choice", suspendWhenHidden = FALSE)
-
+    
+    # used when feature_metadata_con has more than one grouping column
     output$group_choice_ui <- renderUI({
-        req(metadata_df())
-        choices <- metadata_df() %>% 
+        req(feature_metadata_con())
+        choices <- feature_metadata_con() %>% 
             dplyr::select(-c(INTERNAL, DISPLAY)) %>% 
             colnames()
+        if(!is.null(variable_group_names)){
+            names(choices) <- variable_group_names
+        }
         selectInput(
             ns("group_choice"),
             label = "Select Group",
             choices = choices)
     })
     
-
-    output$variable_choice_ui <- renderUI({
-        req(metadata_df())
-
+    # used to determine what column to use for group choices
+    variable_choice_class_column <- reactive({
         if(multiple_variable_columns()){
             req(input$group_choice)
-            variable_column <- input$group_choice  
+            return(input$group_choice)
         } else{
-            variable_column <- 3  
+            return(3)
         } 
-        
-        choices  <- metadata_df() %>% 
-            dplyr::select("INTERNAL", "DISPLAY", "CLASS" = variable_column) %>% 
-            create_nested_list_by_class()
-
+    })
+    
+    output$variable_choice_ui <- renderUI({
+        req(variable_choice_class_column(), feature_metadata_con())
         selectInput(
             ns("variable_choice"),
             label = "Select Variable",
-            choices = choices,
-            selected = variable_selection_default)
+            selected = variable_selection_default,
+            choices = create_nested_named_list(
+                feature_metadata_con(),
+                names_col1 = variable_choice_class_column(),
+                names_col2 = "DISPLAY",
+                values_col = "INTERNAL"
+            )
+        )
     })
     
-    plot_df <- reactive({
-        req(data_df(), input$variable_choice, input$scale_method)
-        build_distribution_plot_df(
-            data_df(), 
+    distribution_plot_con <- reactive({
+        req(feature_value_con, input$variable_choice, input$scale_method)
+        build_distribution_plot_tbl(
+            feature_value_con(), 
             input$variable_choice, 
             input$scale_method)
     })
     
     varible_display_name <- reactive({
-        convert_value_between_columns(
-            input$variable_choice, 
-            metadata_df(),
-            "INTERNAL",
-            "DISPLAY")
+        feature_metadata_con() %>% 
+            dplyr::filter(INTERNAL == local(input$variable_choice)) %>% 
+            dplyr::pull(DISPLAY)
     })
     
     varible_plot_label <- reactive({
-        switch(
-            input$scale_method,
-            "None" = varible_display_name(),
-            
-            "Log2" = stringr::str_c(
-                "Log2( ", 
-                varible_display_name(),
-                " )"),
-            
-            "Log2 + 1" = stringr::str_c(
-                "Log2( ", 
-                varible_display_name(),
-                " + 1 )"),
-            
-            "Log10" = stringr::str_c(
-                "Log10( ", 
-                varible_display_name(), 
-                " )"),
-            
-            "Log10 + 1" = stringr::str_c(
-                "Log10( ", 
-                varible_display_name(), 
-                " + 1 )")
+        add_transformation_string_to_feature(
+            input$scale_method,  
+            varible_display_name()
         )
     })
     
@@ -210,9 +196,16 @@ distributions_plot_module <- function(
         )
     })
     
+    plot_colors <- reactive({
+        group_con() %>% 
+            dplyr::select(group, color) %>% 
+            dplyr::as_tibble() %>% 
+            tibble::deframe()
+    })
+    
     output$plot <- renderPlotly({
         plot_function()(
-            plot_df(), 
+            dplyr::as_tibble(distribution_plot_con()), 
             xlab = group_display_choice(),
             ylab = varible_plot_label(),
             title = varible_display_name(),
@@ -222,14 +215,15 @@ distributions_plot_module <- function(
     })
     
     output$plot_text <- renderText({
-        req(group_metadata_df())
-        create_group_text_from_plotly(
-            plot_source_name,
-            "",
-            group_metadata_df(),
-            prompt_text = "",
-            key_column = "x"
-        )
+        req(group_con)
+        eventdata <- event_data("plotly_click", source = plot_source_name)
+        validate(need(eventdata, "Click above plot"))
+        
+        group_con() %>% 
+            dplyr::filter(group == local(unique(dplyr::pull(eventdata, "x")))) %>% 
+            dplyr::mutate(text = paste0(group_name, ": ", characteristics)) %>%
+            dplyr::pull(text)
+
     })
     
     output$download_data <- downloadHandler(
@@ -244,15 +238,16 @@ distributions_plot_module <- function(
         clicked_group <- eventdata$x[[1]]
         
         
-        current_groups <- plot_df() %>% 
-            magrittr::use_series(x) %>% 
+        current_groups <- distribution_plot_con() %>% 
+            dplyr::pull(x) %>% 
             unique
         
         validate(need(clicked_group %in% current_groups, "Click plot above"))
         
-        df <- plot_df() %>% 
+        df <- distribution_plot_con() %>% 
             dplyr::filter(x == clicked_group) %>% 
             dplyr::select(x = y) %>% 
+            dplyr::as_tibble() %>% 
             create_histogram(
                 title = clicked_group, 
                 x_lab = varible_plot_label()

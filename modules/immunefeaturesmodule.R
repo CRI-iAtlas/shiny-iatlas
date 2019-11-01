@@ -10,7 +10,7 @@ immunefeatures_UI <- function(id) {
                 "across your groups, and how they relate to one another."
             ))  
         ),
-        distributions_plot_module_new_UI(
+        distributions_plot_module_UI(
             ns("dist"),
             message_html = includeMarkdown("data/markdown/immune_features_dist.markdown"),
         ),
@@ -43,7 +43,7 @@ immunefeatures <- function(
     })
     
     callModule(
-        distributions_plot_module_new,
+        distributions_plot_module,
         "dist",
         "immunefeatures_dist_plot",
         distributions_feature_value_con,

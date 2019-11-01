@@ -87,7 +87,7 @@ tilmap <- function(
     
 
     callModule(
-        distributions_plot_module_new,
+        distributions_plot_module,
         "dist",
         "tilmap_dist_plot",
         tilmap_value_con,
