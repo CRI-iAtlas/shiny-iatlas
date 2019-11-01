@@ -39,45 +39,61 @@ immunomodulator <- function(
     output, 
     session, 
     group_display_choice, 
-    group_internal_choice, 
-    sample_group_df,
-    subset_df, 
-    plot_colors
+    group_con,
+    immunomodulator_expr_con,
+    immunomodulators_con
 ){
   
   
-  data_df <- reactive({
-    subset_df() %>% 
-      dplyr::select(
-        x = group_internal_choice(), 
-        "ParticipantBarcode") %>% 
-      dplyr::inner_join(panimmune_data$im_expr_df, by = "ParticipantBarcode") %>% 
-      dplyr::rename(label = "ParticipantBarcode")
+  expression_con <- reactive({
+      req(immunomodulator_expr_con())
+      immunomodulator_expr_con() %>% 
+          dplyr::select(
+              label = sample,
+              x = group,
+              y = value,
+              feature = gene
+          )
   })
   
-  relationship_df <- reactive({
-    panimmune_data$im_direct_relationships %>%  
-      dplyr::select(
-        INTERNAL = `HGNC Symbol`, 
-        DISPLAY = Gene,
-        `Gene Family`, `Super Category`, `Immune Checkpoint`)
+  relationship_con <- reactive({
+      req(immunomodulators_con())
+      immunomodulators_con() %>% 
+          dplyr::select(
+              INTERNAL = gene,
+              DISPLAY = display,
+              gene_family, super_category, immune_checkpoint)
   })
   
   callModule(
-    distributions_plot_module,
+    distributions_plot_module_new,
     "dist",
     "immunomodulators_dist_plot",
-    data_df,
-    relationship_df,
-    sample_group_df,
-    plot_colors,
+    expression_con,
+    relationship_con,
+    group_con,
     group_display_choice,
     key_col = "label",
   )
 
-    table_df <- reactive({
-      dplyr::select(panimmune_data$im_direct_relationships,-c(X10, Notes))
+    im_tbl <- reactive({
+        req(immunomodulators_con())
+        x <- immunomodulators_con() %>% 
+            dplyr::select(
+                Gene = display, 
+                `HGNC Symbol` = gene, 
+                `Friendly Name` = display2,
+                `Entrez ID` =  entrez,
+                `Gene Family` = gene_family,
+                `Super Category` = super_category,
+                `Immune Checkpoint` = immune_checkpoint,
+                Function = gene_function,
+                `Reference(s) [PMID]` = reference
+            ) %>% 
+            dplyr::as_tibble()
+        print(x)
+        return(x)
     })
     
-    callModule(data_table_module, "im_table", table_df)
+    callModule(data_table_module, "im_table", im_tbl)
 }

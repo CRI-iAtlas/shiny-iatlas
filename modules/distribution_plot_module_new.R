@@ -154,7 +154,7 @@ distributions_plot_module_new <- function(
             ns("variable_choice"),
             label = "Select Variable",
             selected = variable_selection_default,
-            choices =  create_nested_named_list(
+            choices = create_nested_named_list(
                 feature_metadata_con(),
                 names_col1 = variable_choice_class_column(),
                 names_col2 = "DISPLAY",

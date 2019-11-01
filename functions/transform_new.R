@@ -71,31 +71,37 @@ build_immune_feature_scatterplot_tbl <- function(con, clicked_feature){
 build_distribution_plot_tbl <- function(
     con, 
     feature_name, 
-    scale_function = "None"
+    scale_method = "None"
 ){
-    
-    con <- con %>% 
+    con %>% 
         dplyr::filter(feature == feature_name) %>% 
         dplyr::select(x, y, label) %>% 
-        dplyr::filter_all(dplyr::all_vars(!is.na(.)))
-    if(scale_function != "None"){
+        dplyr::filter_all(dplyr::all_vars(!is.na(.))) %>% 
+        scale_db_connection(scale_method)
+}
+
+# scale db connection functions -----------------------------------------------
+
+scale_db_connection <- function(con, scale_method = "none", col = "value"){
+    if(scale_method %in% c("Log2", "Log2 + 1", "Log10 + 1", "Log10")){
         add_amt <- 0
         base    <- 10
-        if(scale_function %in% c("Log2", "Log2 + 1")){
+        if(scale_method %in% c("Log2", "Log2 + 1")){
             base <- 2
         }
-        if(scale_function %in% c("Log10 + 1", "Log2 + 1")){
+        if(scale_method %in% c("Log10 + 1", "Log2 + 1")){
             add_amt <- 1
         }
         con <- con %>% 
             log_db_connection("y", base, add_amt) %>% 
             dplyr::rename(y = value)
-            
+    } else if (scale_method == "None"){
+        con <- con
+    } else {
+        stop("scale method does not exist")
     }
     return(con)
 }
-
-# scale db connection functions -----------------------------------------------
 
 log_db_connection <- function(con, col = "value", base = 10, add_amt = 0){
     con %>% 

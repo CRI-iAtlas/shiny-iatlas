@@ -64,10 +64,15 @@ shinyServer(function(input, output, session) {
         immunomodulator,
         "module5",
         reactive(input$ss_choice),
-        reactive(group_internal_choice()),
-        reactive(sample_group_df()),
-        reactive(subset_df()),
-        reactive(plot_colors()))
+        group_con,
+        immunomodulator_expr_con,
+        immunomodulators_con
+    )
+        # reactive(input$ss_choice),
+        # reactive(group_internal_choice()),
+        # reactive(sample_group_df()),
+        # reactive(subset_df()),
+        # reactive(plot_colors()))
     
     # Immune features
     callModule(
@@ -262,6 +267,33 @@ shinyServer(function(input, output, session) {
         } 
         return(con)
     })
+    
+    
+    immunomodulator_expr_con <- reactive({
+        req(PANIMMUNE_DB, group_internal_choice())
+        con <- PANIMMUNE_DB %>% 
+            dplyr::tbl("immunomodulator_expr") %>% 
+            dplyr::select(
+                sample, 
+                group = local(group_internal_choice()), 
+                gene, 
+                value
+            ) %>% 
+            dplyr::filter_all(dplyr::all_vars(!is.na(.)))
+        if(group_internal_choice() == "Subtype_Curated_Malta_Noushmehr_et_al"){
+            req(subtypes())
+            con <- dplyr::filter(con, group %in% local(subtypes()))
+        }
+        return(con)
+    })
+
+    immunomodulators_con <- reactive({
+        req(PANIMMUNE_DB)
+        PANIMMUNE_DB %>%
+            dplyr::tbl("immunomodulators") 
+    })
+    
+    
     
     # old flat file formatting ------------------------------------------------
     

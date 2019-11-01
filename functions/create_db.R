@@ -52,6 +52,32 @@ create_db <- function(panimmune_data){
     
     dplyr::copy_to(con, subtype_groups, "subtype_groups", temporary = FALSE)
     
+    immunomodulator_expr <- panimmune_data$im_expr_df %>% 
+        dplyr::rename(sample = ParticipantBarcode) %>% 
+        tidyr::pivot_longer(
+            names_to = "gene",
+            values_to = "value",
+            -sample
+        ) %>% 
+        dplyr::inner_join(dplyr::select(feature_values_wide, 1:4))
+    
+    dplyr::copy_to(con, immunomodulator_expr, "immunomodulator_expr", temporary = FALSE)
+    
+    immunomodulators <- panimmune_data$im_direct_relationships %>% 
+        dplyr::select(
+            display = Gene, 
+            gene = `HGNC Symbol`, 
+            display2 = `Friendly Name`,
+            entrez = `Entrez ID`,
+            gene_family = `Gene Family`,
+            super_category = `Super Category`,
+            immune_checkpoint = `Immune Checkpoint`,
+            gene_function = Function,
+            reference = `Reference(s) [PMID]`
+        )
+    
+    dplyr::copy_to(con, immunomodulators, "immunomodulators", temporary = FALSE)
+    
     
     return(con)
     

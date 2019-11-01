@@ -13,6 +13,7 @@ create_nested_named_list <- function(
 ){
     con %>% 
         dplyr::select(n1 = names_col1, n2 = names_col2, v = values_col) %>% 
+        dplyr::filter(!is.na(n1)) %>% 
         dplyr::as_tibble() %>% 
         tidyr::nest(data = c(n2, v)) %>%
         dplyr::mutate(data = purrr::map(data, tibble::deframe)) %>%
