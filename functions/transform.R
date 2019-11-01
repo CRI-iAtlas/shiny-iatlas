@@ -12,95 +12,7 @@
 # original function.
 ###############################################################################
 
-# distribution plot functions -------------------------------------------------
 
-build_distribution_plot_df <- function(
-  .df, 
-  ycol = "y", 
-  scale_func_choice = "None"
-){
-  
-  scale_function <- switch(
-    scale_func_choice,
-    "None" = identity, 
-    "Log2" = log2,
-    "Log2 + 1" = function(x) log2(x + 1),
-    "Log10" = log10,
-    "Log10 + 1" = function(x) log10(x + 1),
-  )
-  
-  .df %>% 
-    dplyr::select(x, y = ycol, label) %>% 
-    tidyr::drop_na() %>% 
-    dplyr::mutate(y = scale_function(y)) %>% 
-    tidyr::drop_na() %>% 
-    dplyr::filter(!is.infinite(y))
-}
-
-
-# immunefeatures functions ----------------------------------------------------
-
-build_immunefeatures_df <- function(
-    df,
-    group_column,
-    value1_column,
-    value2_columns,
-    group_options,
-    id_column = "ParticipantBarcode"){
-
-    assert_df_has_columns(
-        df, c(group_column, value1_column, value2_columns, id_column))
-
-    result_df <- df %>%
-        dplyr::select(
-            ID = id_column,
-            GROUP = group_column,
-            VALUE1 = value1_column,
-            value2_columns) %>%
-        dplyr::filter(GROUP %in% group_options) %>%
-        dplyr::filter(!is.na(VALUE1))
-    assert_df_has_columns(result_df, c("ID", "GROUP", "VALUE1", value2_columns))
-    return(result_df)
-}
-
-build_immunefeatures_correlation_matrix <- function(df, method = "spearman") {
-    long_df  <- df %>%
-        dplyr::select(-ID) %>%
-        tidyr::gather(
-            key = "VARIABLE",
-            value = "VALUE2",
-            -c(GROUP, VALUE1)) %>%
-        dplyr::group_by(GROUP, VARIABLE) %>%
-        tidyr::drop_na()
-
-    if(nrow(long_df) == 0) return(long_df)
-
-    result_matrix <- long_df %>%
-        dplyr::summarise(COR = cor(
-            VALUE1,
-            VALUE2,
-            method = method,
-            use = "pairwise.complete.obs")) %>%
-        tidyr::spread(key = "GROUP", value = "COR", fill = NA) %>%
-        dplyr::mutate(VARIABLE = purrr::map(VARIABLE, get_variable_display_name)) %>%
-        as.data.frame() %>%
-        tibble::column_to_rownames("VARIABLE") %>%
-        as.matrix()
-}
-
-
-build_immunefeatures_scatter_plot_df <- function(df, x_col, group_filter_value){
-    assert_df_has_columns(df, c(x_col, "VALUE1", "ID", "GROUP"))
-    df %>%
-        select(ID, GROUP, y = "VALUE1", x = x_col) %>%
-        filter(GROUP == group_filter_value) %>%
-        create_label(
-            name_column = "ID",
-            group_column = "GROUP",
-            value_columns = c("x", "y")) %>%
-        select("x", "y", "label") %>%
-        get_complete_df_by_columns(c("x", "y", "label"))
-}
 
 
 # cellcontent functions -------------------------------------------------------
@@ -778,4 +690,67 @@ compute_driver_associations <- function(df_for_regression,response_var,group_col
 #   df %>%
 #     dplyr::select(x = x_col, y = y_col) %>%
 #     tidyr::drop_na()
+# }
+
+# 
+# build_immunefeatures_df <- function(
+#     df,
+#     group_column,
+#     value1_column,
+#     value2_columns,
+#     group_options,
+#     id_column = "ParticipantBarcode"){
+#     
+#     assert_df_has_columns(
+#         df, c(group_column, value1_column, value2_columns, id_column))
+#     
+#     result_df <- df %>%
+#         dplyr::select(
+#             ID = id_column,
+#             GROUP = group_column,
+#             VALUE1 = value1_column,
+#             value2_columns) %>%
+#         dplyr::filter(GROUP %in% group_options) %>%
+#         dplyr::filter(!is.na(VALUE1))
+#     assert_df_has_columns(result_df, c("ID", "GROUP", "VALUE1", value2_columns))
+#     return(result_df)
+# }
+# 
+# build_immunefeatures_correlation_matrix <- function(df, method = "spearman") {
+#     long_df  <- df %>%
+#         dplyr::select(-ID) %>%
+#         tidyr::gather(
+#             key = "VARIABLE",
+#             value = "VALUE2",
+#             -c(GROUP, VALUE1)) %>%
+#         dplyr::group_by(GROUP, VARIABLE) %>%
+#         tidyr::drop_na()
+#     
+#     if(nrow(long_df) == 0) return(long_df)
+#     
+#     result_matrix <- long_df %>%
+#         dplyr::summarise(COR = cor(
+#             VALUE1,
+#             VALUE2,
+#             method = method,
+#             use = "pairwise.complete.obs")) %>%
+#         tidyr::spread(key = "GROUP", value = "COR", fill = NA) %>%
+#         dplyr::mutate(VARIABLE = purrr::map(VARIABLE, get_variable_display_name)) %>%
+#         as.data.frame() %>%
+#         tibble::column_to_rownames("VARIABLE") %>%
+#         as.matrix()
+# }
+# 
+# 
+# build_immunefeatures_scatter_plot_df <- function(df, x_col, group_filter_value){
+#     assert_df_has_columns(df, c(x_col, "VALUE1", "ID", "GROUP"))
+#     df %>%
+#         select(ID, GROUP, y = "VALUE1", x = x_col) %>%
+#         filter(GROUP == group_filter_value) %>%
+#         create_label(
+#             name_column = "ID",
+#             group_column = "GROUP",
+#             value_columns = c("x", "y")) %>%
+#         select("x", "y", "label") %>%
+#         get_complete_df_by_columns(c("x", "y", "label"))
 # }

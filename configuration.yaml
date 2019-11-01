@@ -13,12 +13,16 @@ module_files:
   - "modules/subtypeclassifiermodule.R"
   - "modules/submodules.R"
   - "modules/distribution_plot_module.R"
+  - "modules/distribution_plot_module_new.R"
   
 function_files:
   - "functions/load_data.R"
+  - "functions/create_db.R"
   - "functions/transform.R"
+  - "functions/transform_new.R"
   - "functions/drilldown.R"
   - "functions/utils.R"
+  - "functions/utils_new.R"
   - "functions/boxplot.R"
   - "functions/heatmap.R"
   - "functions/kmplot.R"

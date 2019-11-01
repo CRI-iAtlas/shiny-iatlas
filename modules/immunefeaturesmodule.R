@@ -10,90 +10,11 @@ immunefeatures_UI <- function(id) {
                 "across your groups, and how they relate to one another."
             ))  
         ),
-        distributions_plot_module_UI(
+        distributions_plot_module_new_UI(
             ns("dist"),
             message_html = includeMarkdown("data/markdown/immune_features_dist.markdown"),
         ),
-    
-        sectionBox(
-            title = "Correlations",
-            messageBox(
-                width = 12,
-                p(stringr::str_c(
-                    "Here, you can look at correlation of a response variable",
-                    "with other variables, within each sample group.  Select",
-                    "the response variable on the right. Select a variable",
-                    "class on the left to specify which other variable you",
-                    "would like to correlate the response variable with. The",
-                    "result will be a heatmap, with positive correlation",
-                    "shown with a red scale, absence of correlation in white,",
-                    "and negative correlation in blue.  Click on any cell in",
-                    "the heatmap to see the underlying data as a scatterplot.",
-                    "In the scatterplot, each point represents a tumor sample,",
-                    "the response variable is shown on the Y-axis and the row",
-                    "variable is shown on the X-axis.",
-                    sep = " "
-                )),
-                p(stringr::str_c(
-                    "Manuscript context:  Select “Leukocyte Fraction” as the",
-                    "response variable, “DNA Alteration” as the variable",
-                    "class, and Spearman correlation. This will correspond to",
-                    "Figure 4A if you are looking at immune subtypes as your",
-                    "sample grouping.",
-                    sep = " "
-                ))
-            ),
-            fluidRow(
-                optionsBox(
-                    width = 12,
-                    column(
-                        width = 8,
-                        selectInput(
-                            ns("heatmap_y"),
-                            "Select Variable Class",
-                            get_numeric_classes_from_feature_df(),
-                            selected = "Immune Cell Proportion - Original"
-                        )
-                    ),
-                    column(
-                        width = 4,
-                        selectInput(
-                            ns("heatmap_values"),
-                            "Select Response Variable",
-                            choices = get_feature_df_nested_list(),
-                            selected = "Leukocyte Fraction"
-                        )
-                    ),
-                    column(
-                        width = 4,
-                        selectInput(
-                            ns("correlation_method"),
-                            "Select Correlation Method",
-                            choices = unlist(config_yaml$correlation_methods),
-                            selected = "Spearman"
-                        )
-                    )
-                )
-            ),
-            fluidRow(
-                plotBox(
-                    width = 12,
-                    fluidRow(
-                        plotlyOutput(ns("heatmap")) %>% 
-                            shinycssloaders::withSpinner(),
-                        p(),
-                        textOutput(ns("heatmap_group_text"))
-                    )
-                )
-            ),
-            fluidRow(
-                plotBox(
-                    width = 12,
-                    plotlyOutput(ns("scatterPlot")) %>%
-                        shinycssloaders::withSpinner()
-                )
-            )
-        )
+        immunefeatures_correlations_ui(ns("immunefeatures_correlations"))
     )
 }
 
@@ -103,119 +24,214 @@ immunefeatures <- function(
     output, 
     session, 
     group_display_choice, 
-    group_internal_choice, 
-    sample_group_df,
-    subset_df, 
-    plot_colors
+    group_con,
+    feature_values_con,
+    feature_con
 ){
-    data_df <- reactive({
-        dplyr::select(
-            subset_df(),
-            x = group_internal_choice(),
-            label = "ParticipantBarcode",
-            dplyr::everything()) 
+    
+    distributions_feature_value_con <- reactive({
+        req(feature_values_con())
+        feature_values_con() %>% 
+            dplyr::select(label = sample, x = group, feature, y = value) 
     })
     
-    relationship_df <- reactive({
-        panimmune_data$feature_df %>% 
-            dplyr::filter(VariableType == "Numeric") %>% 
-            dplyr::select(
-                INTERNAL = FeatureMatrixLabelTSV, 
-                DISPLAY = FriendlyLabel,
-                `Variable Class`)
+    distributions_feature_con <- reactive({
+        req(feature_con())
+        feature_con() %>% 
+            dplyr::select(DISPLAY = display, INTERNAL = feature, CLASS = class) %>% 
+            dplyr::filter_all(dplyr::all_vars(!is.na(.)))
     })
     
     callModule(
-        distributions_plot_module,
+        distributions_plot_module_new,
         "dist",
         "immunefeatures_dist_plot",
-        data_df,
-        relationship_df,
-        sample_group_df,
-        plot_colors,
+        distributions_feature_value_con,
+        distributions_feature_con,
+        group_con,
         group_display_choice,
         key_col = "label"
     )
+    
+    ### immune features correlations
+    
+    callModule(
+        immunefeatures_correlations,
+        "immunefeatures_correlations",
+        feature_values_con,
+        feature_con,
+        group_con
+    )
 
-    hm_variables  <- reactive({
-        get_factored_variables_from_feature_df(input$heatmap_y) %>% 
-            as.character
+}
+
+immunefeatures_correlations_ui <- function(id) {
+    ns <- NS(id)
+    
+    tagList()
+    
+    sectionBox(
+        title = "Correlations",
+        messageBox(
+            width = 12,
+            includeMarkdown("data/markdown/immune_features_correlations.markdown")
+        ),
+        fluidRow(
+            optionsBox(
+                width = 12,
+                column(
+                    width = 8,
+                    uiOutput(ns("heatmap_class_ui"))
+                ),
+                column(
+                    width = 4,
+                    uiOutput(ns("heatmap_response_ui"))
+                ),
+                column(
+                    width = 4,
+                    selectInput(
+                        ns("correlation_method"),
+                        "Select Correlation Method",
+                        choices = unlist(config_yaml$correlation_methods),
+                        selected = "Spearman"
+                    )
+                )
+            )
+        ),
+        fluidRow(
+            plotBox(
+                width = 12,
+                fluidRow(
+                    plotlyOutput(ns("heatmap")) %>% 
+                        shinycssloaders::withSpinner(),
+                    p(),
+                    textOutput(ns("heatmap_group_text"))
+                )
+            )
+        ),
+        fluidRow(
+            plotBox(
+                width = 12,
+                plotlyOutput(ns("scatterPlot")) %>%
+                    shinycssloaders::withSpinner()
+            )
+        )
+    )
+}
+
+immunefeatures_correlations <- function(
+    input,
+    output, 
+    session, 
+    feature_value_con,
+    feature_con,
+    group_con
+){
+    
+    ns <- session$ns
+    
+    heatmap_choices_con <- reactive({
+        req(feature_con())
+        feature_con() %>% 
+            dplyr::select(class, display, feature) %>% 
+            dplyr::filter_all(dplyr::all_vars(!is.na(.)))
     })
     
-    immunefeatures_df <- reactive({
-        
-        req(!is.null(subset_df()), cancelOutput = T)
-        
-        sample_groups <- get_unique_column_values(
-            group_internal_choice(), 
-            subset_df())
-        
-        build_immunefeatures_df(
-            subset_df(),
-            group_column = group_internal_choice(),
-            value1_column = input$heatmap_values,
-            value2_columns = hm_variables(),
-            group_options = sample_groups)
-        
+    output$heatmap_class_ui <- renderUI({
+        req(heatmap_choices_con)
+        selectInput(
+            ns("heatmap_class"),
+            "Select Variable Class",
+            selected = "Immune Cell Proportion - Original",
+            choices = get_unique_values_from_column(
+                heatmap_choices_con(),
+                "class"
+            )
+        )
     })
-        
     
+    output$heatmap_response_ui <- renderUI({
+        req(heatmap_choices_con)
+        selectInput(
+            ns("heatmap_response"),
+            "Select Response Variable",
+            choices = create_nested_named_list(heatmap_choices_con()),
+            selected = "Leukocyte Fraction"
+        )
+    })
+    
+    response_display_name <- reactive({
+        req(heatmap_choices_con, input$heatmap_response)
+        translate_value(
+            heatmap_choices_con(),
+            input$heatmap_response,
+            "feature",
+            "display"
+        )
+    })
+    
+    feature_choices <- reactive({
+        req(heatmap_choices_con, input$heatmap_class)
+        translate_values(
+            heatmap_choices_con(),
+            input$heatmap_class,
+            "class",
+            "feature"
+        )
+    })
+    
+    heatmap_con <- reactive({
+        req(
+            feature_value_con(),
+            heatmap_choices_con(),
+            feature_choices(),
+            input$heatmap_response
+        )
+        build_immune_feature_heatmap_con(
+            feature_value_con(),
+            heatmap_choices_con(),
+            feature_choices(),
+            input$heatmap_response
+        )
+    })
+    
+    heatmap_matrix <- reactive({
+        req(heatmap_con(), input$correlation_method)
+        build_immune_feature_heatmap_matrix(
+            heatmap_con(), 
+            input$correlation_method
+        )
+    })
     
     output$heatmap <- renderPlotly({
-        
-        validate(
-            need(nrow(immunefeatures_df()) > 0, 
-                 "Current selected group and selected variable have no overlap")
-        )
-        
-        immunefeatures_correlation_matrix <- build_immunefeatures_correlation_matrix(
-                immunefeatures_df(), 
-                input$correlation_method)
-        
-        create_heatmap(immunefeatures_correlation_matrix, "heatplot", scale_colors = T)
+        create_heatmap(heatmap_matrix(), "heatplot", scale_colors = T)
     })
+    
     
     output$heatmap_group_text <- renderText({
-        req(group_internal_choice(), sample_group_df(), cancelOutput = T)
-        
-        create_group_text_from_plotly(
-            "heatplot", 
-            group_internal_choice(), 
-            sample_group_df(),
-            key_column = "x")
+        req(group_con())
+        eventdata <- event_data("plotly_click", source =  "heatplot")
+        validate(need(eventdata, "Click above heatmap"))
+        create_immune_features_heatmap_text(eventdata, group_con())
     })
-        
+    
     
     output$scatterPlot <- renderPlotly({
-        
-        req(!is.null(subset_df()), cancelOutput = T)
-        
+        req(heatmap_con(), response_display_name())
         eventdata <- event_data("plotly_click", source = "heatplot")
+        validate(need(eventdata, "Click above heatmap"))
         
-        validate(need(
-            check_immunefeatures_scatterplot_click_data(
-                eventdata, 
-                subset_df(), 
-                group_internal_choice(), 
-                immunefeatures_df()),
-            "Click above heatmap"))
+        clicked_group <- eventdata$x[[1]]
+        clicked_feature <- eventdata$y[[1]]
         
-        
-        internal_variable_name <- eventdata$y[[1]] %>%
-            get_variable_internal_names() %>%
-            .[. %in% colnames(immunefeatures_df())]
-
-        scatterplot_df <- build_immunefeatures_scatter_plot_df(
-            immunefeatures_df(),
-            x_col = internal_variable_name,
-            group_filter_value = eventdata$x[[1]]
-        )
-        
-        create_scatterplot(
-            scatterplot_df,
-            xlab = eventdata$y[[1]],
-            ylab = get_variable_display_name(input$heatmap_values),
-            title = eventdata$x[[1]],
-            label_col = "label")
+        heatmap_con() %>% 
+            build_immune_feature_scatterplot_tbl(clicked_feature) %>% 
+            create_scatterplot(
+                xlab =  clicked_feature,
+                ylab =  response_display_name(),
+                title = clicked_group,
+                label_col = "label"
+            )
     })
 }
+

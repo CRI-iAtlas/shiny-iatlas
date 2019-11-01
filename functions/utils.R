@@ -8,23 +8,7 @@
 # original function.
 ###############################################################################
 
-# assert_df_has_columns ------------------------------------------------------------
 
-assert_df_has_columns <- function(df, columns){
-    missing_columns <- columns[!columns %in% colnames(df)]
-    if(length(missing_columns) != 0){
-        stop("df has missing columns: ",
-             stringr::str_c(missing_columns, collapse = ", "))
-    }
-}
-
-# assert_df_has_rows ----------------------------------------------------------
-
-assert_df_has_rows <- function(df){
-    if(nrow(df) == 0){
-        stop("result df is empty")
-    }
-}
 
 # convert_values --------------------------------------------------------------
 
