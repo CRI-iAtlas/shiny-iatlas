@@ -106,6 +106,7 @@ distributions_plot_module_new <- function(
     feature_metadata_con,
     group_con,
     group_display_choice,
+    variable_group_names = NULL,
     variable_selection_default = NA,
     ...
 ){
@@ -132,6 +133,9 @@ distributions_plot_module_new <- function(
         choices <- feature_metadata_con() %>% 
             dplyr::select(-c(INTERNAL, DISPLAY)) %>% 
             colnames()
+        if(!is.null(variable_group_names)){
+            names(choices) <- variable_group_names
+        }
         selectInput(
             ns("group_choice"),
             label = "Select Group",

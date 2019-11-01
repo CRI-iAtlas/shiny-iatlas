@@ -78,6 +78,26 @@ create_db <- function(panimmune_data){
     
     dplyr::copy_to(con, immunomodulators, "immunomodulators", temporary = FALSE)
     
+    til_image_links <- panimmune_data$fmx_df %>% 
+        dplyr::filter(!is.na(Slide)) %>%
+        dplyr::mutate(link = stringr::str_c(
+            "<a href=\"",
+            "https://quip1.bmi.stonybrook.edu:443/camicroscope/osdCamicroscope.php?tissueId=",
+            Slide,
+            "\">",
+            Slide,
+            "</a>"
+        )) %>% 
+        dplyr::select(
+            sample = "ParticipantBarcode", 
+            Study,
+            Subtype_Curated_Malta_Noushmehr_et_al,
+            Subtype_Immune_Model_Based,
+            link
+        ) 
+    
+    dplyr::copy_to(con, til_image_links, "til_image_links", temporary = FALSE)
+    
     
     return(con)
     

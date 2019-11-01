@@ -74,11 +74,16 @@ immunomodulator <- function(
     group_con,
     group_display_choice,
     key_col = "label",
+    variable_group_names = c(
+        "Gene Family", 
+        "Super Category", 
+        "Immune Checkpoint"
+    )
   )
 
     im_tbl <- reactive({
         req(immunomodulators_con())
-        x <- immunomodulators_con() %>% 
+        immunomodulators_con() %>% 
             dplyr::select(
                 Gene = display, 
                 `HGNC Symbol` = gene, 
@@ -91,8 +96,6 @@ immunomodulator <- function(
                 `Reference(s) [PMID]` = reference
             ) %>% 
             dplyr::as_tibble()
-        print(x)
-        return(x)
     })
     
     callModule(data_table_module, "im_table", im_tbl)

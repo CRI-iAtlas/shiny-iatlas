@@ -68,11 +68,6 @@ shinyServer(function(input, output, session) {
         immunomodulator_expr_con,
         immunomodulators_con
     )
-        # reactive(input$ss_choice),
-        # reactive(group_internal_choice()),
-        # reactive(sample_group_df()),
-        # reactive(subset_df()),
-        # reactive(plot_colors()))
     
     # Immune features
     callModule(
@@ -89,10 +84,11 @@ shinyServer(function(input, output, session) {
         tilmap,
         "module7",
         reactive(input$ss_choice),
-        reactive(group_internal_choice()),
-        reactive(sample_group_df()),
-        reactive(subset_df()),
-        reactive(plot_colors()))
+        group_con,
+        feature_values_long_con,
+        feature_con,
+        til_image_links_con
+    )
     
     # Driver associations
     callModule(
@@ -268,7 +264,6 @@ shinyServer(function(input, output, session) {
         return(con)
     })
     
-    
     immunomodulator_expr_con <- reactive({
         req(PANIMMUNE_DB, group_internal_choice())
         con <- PANIMMUNE_DB %>% 
@@ -292,6 +287,25 @@ shinyServer(function(input, output, session) {
         PANIMMUNE_DB %>%
             dplyr::tbl("immunomodulators") 
     })
+    
+    til_image_links_con <- reactive({
+        req(PANIMMUNE_DB, group_internal_choice())
+        con <- PANIMMUNE_DB %>% 
+            dplyr::tbl("til_image_links") %>% 
+            dplyr::select(
+                sample, 
+                group = local(group_internal_choice()), 
+                link
+            ) %>% 
+            dplyr::filter_all(dplyr::all_vars(!is.na(.)))
+        if(group_internal_choice() == "Subtype_Curated_Malta_Noushmehr_et_al"){
+            req(subtypes())
+            con <- dplyr::filter(con, group %in% local(subtypes()))
+        }
+        return(con)
+    })
+    
+    
     
     
     
