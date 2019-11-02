@@ -37,52 +37,66 @@ tilmap <- function(
     til_image_links_con
 ){
     
-    tilmap_features_con <- reactive({
+    tilmap_feature_con <- reactive({
         req(feature_con())
         feature_con() %>%  
             dplyr::filter(class == "TIL Map Characteristic") %>% 
-            dplyr::select(DISPLAY = display, INTERNAL = feature, CLASS = class) %>% 
+            dplyr::select(display, feature, class) %>% 
             dplyr::filter_all(dplyr::all_vars(!is.na(.)))
     })
     
+    tilmap_dist_feature_con <- reactive({
+        req(tilmap_feature_con())
+        dplyr::rename(
+            tilmap_feature_con(), 
+            DISPLAY = display, 
+            INTERNAL = feature, 
+            CLASS = class
+        )
+    })
+    
     tilmap_features <- reactive({
-        req(tilmap_features_con())
-        get_unique_values_from_column(tilmap_features_con(), "INTERNAL")
+        req(tilmap_feature_con())
+        get_unique_values_from_column(tilmap_feature_con(), "feature")
     })
     
     tilmap_value_con <- reactive({
         req(feature_values_con(), tilmap_features())
-        feature_values_con() %>% 
-            dplyr::select(label = sample, x = group, feature, y = value) %>% 
-            dplyr::filter(feature %in% local(tilmap_features()))
+        dplyr::filter(
+            feature_values_con(), 
+            feature %in% local(tilmap_features())
+        )
+    })
+    
+    tilmap_dist_value_con <- reactive({
+        req(tilmap_value_con())
+        dplyr::select(
+            tilmap_value_con(), 
+            label = sample, 
+            x = group, 
+            feature, 
+            y = value
+        )
     })
     
     tilmap_tbl <- reactive({
-        req(tilmap_value_con(), tilmap_features_con(), til_image_links_con())
+        req(tilmap_value_con(), tilmap_feature_con(), til_image_links_con())
+        
         tilmap_value_con() %>% 
-            dplyr::inner_join(
-                tilmap_features_con(), 
-                by = c("feature" = "INTERNAL")
-            ) %>% 
-            dplyr::select(
-                sample = label, 
-                group = x, 
-                feature = DISPLAY, 
-                value = y
-            ) %>% 
+            dplyr::inner_join(tilmap_feature_con(), by = "feature") %>% 
+            dplyr::select(sample, group, feature, value, display) %>% 
             dplyr::filter_all(dplyr::all_vars(!is.na(.))) %>% 
             dplyr::mutate(value = round(value, digits = 1)) %>%
-            dplyr::inner_join(
-                til_image_links_con(), 
-                by = c("sample", "group")
-            ) %>% 
-            dplyr::rename(
+            dplyr::inner_join(til_image_links_con(), by = "sample") %>% 
+            dplyr::select(
                 Link = link, 
                 Sample = sample, 
-                `Selected Group` = group
+                `Selected Group` = group,
+                display,
+                value
             ) %>% 
             dplyr::as_tibble() %>% 
-            tidyr::pivot_wider(names_from = feature, values_from = value)
+            tidyr::pivot_wider(names_from = display, values_from = value)
     })
     
 
@@ -90,8 +104,8 @@ tilmap <- function(
         distributions_plot_module,
         "dist",
         "tilmap_dist_plot",
-        tilmap_value_con,
-        tilmap_features_con,
+        tilmap_dist_value_con,
+        tilmap_dist_feature_con,
         group_con,
         group_display_choice,
         key_col = "label"

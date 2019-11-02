@@ -189,53 +189,58 @@ shinyServer(function(input, output, session) {
     # db table formatting -----------------------------------------------------
     
     subtypes <- reactive({
-        req(input$study_subset_selection, PANIMMUNE_DB)
-        PANIMMUNE_DB %>% 
-            dplyr::tbl("subtype_groups") %>% 
-            dplyr::filter(
-                subtype_group == local(input$study_subset_selection)
-            ) %>% 
-            dplyr::pull(group)
+        req(group_internal_choice())
+        if(group_internal_choice() == "Subtype_Curated_Malta_Noushmehr_et_al"){
+            req(input$study_subset_selection, PANIMMUNE_DB)
+            subtypes <- PANIMMUNE_DB %>% 
+                dplyr::tbl("subtype_groups") %>% 
+                dplyr::filter(
+                    subtype_group == local(input$study_subset_selection)
+                ) %>% 
+                dplyr::pull(group)
+        } else {
+            subtypes <- "none"
+        } 
+        return(subtypes)
     })
     
     feature_values_long_con <- reactive({
-        req(PANIMMUNE_DB, group_internal_choice())
-        con <- PANIMMUNE_DB %>% 
+        req(PANIMMUNE_DB, group_internal_choice(), subtypes())
+        PANIMMUNE_DB %>% 
             dplyr::tbl("feature_values_long") %>% 
-            dplyr::select(
-                sample, 
-                group = local(group_internal_choice()), 
-                feature, 
-                value
-            ) %>% 
-            dplyr::filter_all(dplyr::all_vars(!is.na(.)))
-        if(group_internal_choice() == "Subtype_Curated_Malta_Noushmehr_et_al"){
-            req(subtypes())
-            con <- dplyr::filter(con, group %in% local(subtypes()))
-        }
-        return(con)
+            subset_long_con_with_group(
+                group_internal_choice(), 
+                group_values = subtypes()
+            )
     })
     
-    feature_values_wide_con <- reactive({
-        req(PANIMMUNE_DB, group_internal_choice())
-        numeric_cols <- PANIMMUNE_DB %>% 
-            dplyr::tbl("feature_values_wide") %>% 
-            dplyr::select_if(is.numeric) %>%
-            colnames()
-        con <- PANIMMUNE_DB %>% 
-            dplyr::tbl("feature_values_wide") %>% 
-            dplyr::select(
-                sample, 
-                group = local(group_internal_choice()),
-                numeric_cols
-            ) %>% 
-            dplyr::filter(!is.na(group))
-        if(group_internal_choice() == "Subtype_Curated_Malta_Noushmehr_et_al"){
-            req(subtypes())
-            con <- dplyr::filter(con, group %in% local(subtypes()))
-        }
-        return(con)
+    immunomodulator_expr_con <- reactive({
+        req(PANIMMUNE_DB, group_internal_choice(), subtypes())
+        PANIMMUNE_DB %>% 
+            dplyr::tbl("immunomodulator_expr") %>% 
+            subset_long_con_with_group(
+                group_internal_choice(), 
+                group_values = subtypes(),
+                feature_col = "gene"
+            )
     })
+    
+    io_target_expr_con <- reactive({
+        req(PANIMMUNE_DB, group_internal_choice(), subtypes())
+        PANIMMUNE_DB %>% 
+            dplyr::tbl("io_target_expr") %>% 
+            subset_long_con_with_group(
+                group_internal_choice(), 
+                group_values = subtypes(),
+                feature_col = "gene"
+            )
+    })
+    
+    til_image_links_con <- reactive({
+        req(PANIMMUNE_DB)
+        dplyr::tbl( PANIMMUNE_DB, "til_image_links")
+    })
+
     
     feature_con <- reactive({
         req(PANIMMUNE_DB)
@@ -255,46 +260,11 @@ shinyServer(function(input, output, session) {
         return(con)
     })
     
-    immunomodulator_expr_con <- reactive({
-        req(PANIMMUNE_DB, group_internal_choice())
-        con <- PANIMMUNE_DB %>% 
-            dplyr::tbl("immunomodulator_expr") %>% 
-            dplyr::select(
-                sample, 
-                group = local(group_internal_choice()), 
-                gene, 
-                value
-            ) %>% 
-            dplyr::filter_all(dplyr::all_vars(!is.na(.)))
-        if(group_internal_choice() == "Subtype_Curated_Malta_Noushmehr_et_al"){
-            req(subtypes())
-            con <- dplyr::filter(con, group %in% local(subtypes()))
-        }
-        return(con)
-    })
 
     immunomodulators_con <- reactive({
         req(PANIMMUNE_DB)
         PANIMMUNE_DB %>%
             dplyr::tbl("immunomodulators") 
-    })
-    
-    io_target_expr_con <- reactive({
-        req(PANIMMUNE_DB, group_internal_choice())
-        con <- PANIMMUNE_DB %>% 
-            dplyr::tbl("io_target_expr") %>% 
-            dplyr::select(
-                sample, 
-                group = local(group_internal_choice()), 
-                gene, 
-                value
-            ) %>% 
-            dplyr::filter_all(dplyr::all_vars(!is.na(.)))
-        if(group_internal_choice() == "Subtype_Curated_Malta_Noushmehr_et_al"){
-            req(subtypes())
-            con <- dplyr::filter(con, group %in% local(subtypes()))
-        }
-        return(con)
     })
     
     io_targets_con <- reactive({
@@ -303,22 +273,28 @@ shinyServer(function(input, output, session) {
             dplyr::tbl("io_targets") 
     })
     
-    til_image_links_con <- reactive({
-        req(PANIMMUNE_DB, group_internal_choice())
-        con <- PANIMMUNE_DB %>% 
-            dplyr::tbl("til_image_links") %>% 
-            dplyr::select(
-                sample, 
-                group = local(group_internal_choice()), 
-                link
-            ) %>% 
-            dplyr::filter_all(dplyr::all_vars(!is.na(.)))
-        if(group_internal_choice() == "Subtype_Curated_Malta_Noushmehr_et_al"){
-            req(subtypes())
-            con <- dplyr::filter(con, group %in% local(subtypes()))
-        }
-        return(con)
-    })
+    # feature_values_wide_con <- reactive({
+    #     req(PANIMMUNE_DB, group_internal_choice())
+    #     numeric_cols <- PANIMMUNE_DB %>% 
+    #         dplyr::tbl("feature_values_wide") %>% 
+    #         dplyr::select_if(is.numeric) %>%
+    #         colnames()
+    #     con <- PANIMMUNE_DB %>% 
+    #         dplyr::tbl("feature_values_wide") %>% 
+    #         dplyr::select(
+    #             sample, 
+    #             group = local(group_internal_choice()),
+    #             numeric_cols
+    #         ) %>% 
+    #         dplyr::filter(!is.na(group))
+    #     if(group_internal_choice() == "Subtype_Curated_Malta_Noushmehr_et_al"){
+    #         req(subtypes())
+    #         con <- dplyr::filter(con, group %in% local(subtypes()))
+    #     }
+    #     return(con)
+    # })
+    
+
 
     # old flat file formatting ------------------------------------------------
     

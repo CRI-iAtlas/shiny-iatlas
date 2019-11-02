@@ -1,3 +1,22 @@
+# server ----------------------------------------------------------------------
+
+subset_long_con_with_group <- function(
+    con, 
+    group_col, 
+    group_values = "none",
+    feature_col = "feature",
+    value_col = "value"
+){
+    con <- con %>% 
+        dplyr::select("sample", "group" = group_col, feature_col, value_col) %>% 
+        dplyr::filter_all(dplyr::all_vars(!is.na(.)))
+    if(group_values[[1]] != "none"){
+        con <- dplyr::filter(con, group %in% group_values)
+    }
+    return(con)
+}
+
+
 # immunefeatures --------------------------------------------------------------
 
 

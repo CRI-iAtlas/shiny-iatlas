@@ -80,19 +80,18 @@ create_db <- function(panimmune_data){
     
     til_image_links <- panimmune_data$fmx_df %>% 
         dplyr::filter(!is.na(Slide)) %>%
-        dplyr::mutate(link = stringr::str_c(
-            "<a href=\"",
-            "https://quip1.bmi.stonybrook.edu:443/camicroscope/osdCamicroscope.php?tissueId=",
-            Slide,
-            "\">",
-            Slide,
-            "</a>"
-        )) %>% 
+        dplyr::mutate(
+            link = stringr::str_c(
+                "<a href=\"",
+                "https://quip1.bmi.stonybrook.edu:443/camicroscope/osdCamicroscope.php?tissueId=",
+                Slide,
+                "\">",
+                Slide,
+                "</a>"
+            )
+        ) %>% 
         dplyr::select(
             sample = "ParticipantBarcode", 
-            Study,
-            Subtype_Curated_Malta_Noushmehr_et_al,
-            Subtype_Immune_Model_Based,
             link
         ) 
     
