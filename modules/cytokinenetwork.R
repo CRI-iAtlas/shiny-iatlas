@@ -107,21 +107,19 @@ cytokinenetwork_UI <- function(id) {
                   #   "Select Style", 
                   #   choices = styles),
                   
-                  uiOutput(ns("selectNode")),
-                  actionButton(ns("fitSelected"), "Fit Selected", width = "100%"),
-                  actionButton(ns("fit"), "Fit Graph", width = "100%"),
-                  actionButton(ns("sfn"), "Select First Neighbor", width = "100%"),
-                  actionButton(ns("clearSelection"), "Unselect Nodes", width = "100%"),
-                  actionButton(ns("hideSelection"), "Hide Selected Nodes", width = "100%"),
-                  actionButton(ns("showAll"), "Show All Nodes", width = "100%"),
-                  #actionButton(ns("loopConditions"), "Loop Conditions"),
-                  #actionButton(ns("getSelectedNodes"), "Get Selected Nodes"),
-                  #actionButton(ns("savePNGbutton"), "Save PNG"),
-                  actionButton(ns("removeGraphButton"), "Remove Graph", width = "100%")
-                  
+                    uiOutput(ns("selectNode")),
+                    actionButton(ns("fitSelected"), "Fit Selected", width = "100%", style = 'white-space: pre-line'),
+                    actionButton(ns("fit"), "Fit Graph", width = "100%", style = 'white-space: pre-line'),
+                    actionButton(ns("sfn"), "Select First Neighbor", width = "100%", style = 'white-space: pre-line'),
+                    actionButton(ns("clearSelection"), "Unselect Nodes", width = "100%", style = 'white-space: pre-line'),
+                    actionButton(ns("hideSelection"), "Hide Selected Nodes", width = "100%", style = 'white-space: pre-line'),
+                    actionButton(ns("showAll"), "Show All Nodes", width = "100%", style = 'white-space: pre-line'),
+                    #actionButton(ns("loopConditions"), "Loop Conditions"),
+                    #actionButton(ns("getSelectedNodes"), "Get Selected Nodes"),
+                    #actionButton(ns("savePNGbutton"), "Save PNG"),
+                    actionButton(ns("removeGraphButton"), "Remove Graph", width = "100%", style = 'white-space: pre-line') 
                 )
               )
-              
           ) #verticalLayout
         ), #optionsBox
         plotBox(
@@ -149,29 +147,20 @@ cytokinenetwork_UI <- function(id) {
         messageBox(
           width = 24,
           "Here it goes the tables with nodes and edges."),
-        
+      
         fluidRow(
-          #column(
-           # width = 10,
             tableBox(
-              #width = 9,
               DT::DTOutput(ns("tableNodes")) %>% 
                 shinycssloaders::withSpinner(),
               downloadButton(ns('download_data_nodes'), 'Download')
-            #) 
           ),
-          #column(
-           # width = 8,
             tableBox(
-              #width = 9,
               DT::DTOutput(ns("table")) %>% 
                 shinycssloaders::withSpinner(),
               downloadButton(ns('download_data'), 'Download')
             )
-          #)
         )
       )
-  
 )#taglist
 }
 
@@ -240,18 +229,18 @@ cytokinenetwork <- function(
   })
   
   output$selectNode <- renderUI({
-    selectInput(ns("selectName"), "Select Node:", choices = c("", tbl_nodes() %>% dplyr::select(name)))
+    selectInput(ns("selectName"), "Select Node", choices = c("", tbl_nodes() %>% dplyr::select(name)))
   })
   
   
  #---- organizing the desired scaffold based on the cells and genes of interest
   
-  immunogenes <- panimmune_data$im_direct_relationships$`HGNC Symbol`
+  #immunogenes <- panimmune_data$im_direct_relationships$`HGNC Symbol`
   
   ##Subsetting to cells and genes of interest
   
   gois <- reactive({
-    if (is.null(input$geneInterest))  return(as.vector(immunogenes))
+    if (is.null(input$geneInterest))  return(as.vector(panimmune_data$im_direct_relationships$`HGNC Symbol`))
     
     as.vector(input$geneInterest)
   })
@@ -352,12 +341,12 @@ cytokinenetwork <- function(
   })
 
   
-  graph.json.v2 <- reactive({
+  graph.json <- reactive({
     cyjShiny::dataFramesToJSON(tbl_edges(), tbl_nodes())
   })
   
   output$cyjShiny <- cyjShiny::renderCyjShiny({
-    cyjShiny::cyjShiny(graph.json.v2(), layoutName = input$doLayout, style_file = "data/network/stylesEdges.js")
+    cyjShiny::cyjShiny(graph.json(), layoutName = input$doLayout, style_file = "data/network/stylesEdges.js")
     })
     
   output$table <- DT::renderDataTable(
@@ -366,9 +355,11 @@ cytokinenetwork <- function(
                       
                       )
   output$tableNodes <- DT::renderDataTable(
+                            DT::datatable(get_ab_nodes(abundant_nodes(), tbl_edges(), input$byImmune) , caption = "Nodes Table",
+                                          colnames= c("Abundance" = "UpBinRatio"), width = "100%", rownames = FALSE)
                           
-                          DT::datatable((merge(tbl_nodes(), abundant_nodes(), by.x = "name", by.y = "Node")) , caption = "Nodes Table", 
-                                        colnames= c("Node" = "name", "Abundance" = "UpBinRatio"), width = "100%", rownames = FALSE)
+                          # DT::datatable((merge(tbl_nodes(), abundant_nodes(), by.x = "name", by.y = "Node")) , caption = "Nodes Table",
+                          #               colnames= c("Node" = "name", "Abundance" = "UpBinRatio"), width = "100%", rownames = FALSE)
                         )
   
   output$download_data <- downloadHandler(

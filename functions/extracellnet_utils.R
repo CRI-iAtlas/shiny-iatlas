@@ -91,7 +91,7 @@ get_nodes <- function(upbin_df, abund_thres, group_subset, byImmune = FALSE, imm
 }
 
 
-#----function to filter edges based on concordance threshold
+#----function to filter edges based on concordance threshold and abundant nodes
 
 get_conc_edges <- function(edges_df, ab_nodes, concordance_thres, group_subset, byImmune = FALSE, immuneSubtype = NULL){
   
@@ -120,7 +120,24 @@ get_conc_edges <- function(edges_df, ab_nodes, concordance_thres, group_subset, 
   
   network
 }
-#---- update list of nodes annotation based on user selection (for coloring nodes)
+
+get_ab_nodes <- function(ab_nodes, conc_edges, byImmune = FALSE){
+  print(head(ab_nodes))
+  print(head(conc_edges))
+  all_nodes <- rbind(conc_edges %>% dplyr::select("Node" = "source" , "Group" = "interaction"), 
+                     conc_edges %>% dplyr::select("Node" = "target", "Group" = "interaction")) %>% 
+    dplyr::distinct()
+  
+  if(byImmune == FALSE){
+    all_nodes <- merge(all_nodes, ab_nodes, by = c("Node", "Group")) 
+  }else{
+    all_nodes <- merge(all_nodes, ab_nodes, by.x = c("Node", "Group"), by.y = c("Node","Immune")) %>% dplyr::select(Node, Group, UpBinRatio)
+  }
+  
+  all_nodes
+}
+
+#---- update list of nodes annotation based on user selection (for nodes color)
 
 filterNodes <- function(list_edges, annot){
   colnames(annot) <- c("Type", "name")
