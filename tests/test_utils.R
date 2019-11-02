@@ -239,7 +239,11 @@ testthat::test_that("create_nested_list_by_class", {
             "value7", "value8", "value9", "value10"))
     testthat::expect_that(
         create_nested_list_by_class(
-            test_df, "class_col", "display_col", "internal_col"),
+            test_df, 
+            class_column = "class_col",
+            display_column = "display_col",
+            internal_column = "internal_col"
+        ),
         testthat::is_identical_to(list(
             "class1" = c("value1" = "name1",
                          "value2" = "name2",
@@ -253,7 +257,12 @@ testthat::test_that("create_nested_list_by_class", {
             "Other" = c("value10" = "name10"))))
     testthat::expect_that(
         create_nested_list_by_class(
-            test_df, "class_col", "display_col", "internal_col", class_col != "class1"),
+            test_df, 
+            class_col != "class1",
+            class_column = "class_col",
+            display_column = "display_col",
+            internal_column = "internal_col"
+        ),
         testthat::is_identical_to(list(
             "class2" = c("value4" = "name4",
                          "value5" = "name5"),
@@ -277,7 +286,7 @@ testthat::test_that("create_filtered_nested_list_by_class", {
         "FILTER" = c(rep("numeric", 5), rep("categorical", 5))
     )
     testthat::expect_that(
-        create_filtered_nested_list_by_class(test_df, "numeric"),
+        create_filtered_nested_list_by_class(test_df, FILTER == "numeric"),
         testthat::is_identical_to(list(
             "class1" = c("value1" = "name1",
                          "value2" = "name2",
@@ -317,7 +326,10 @@ testthat::test_that("get_variable_classes", {
                    "Numeric", "Logical", "Logical", "Logical"))
     testthat::expect_that(
         get_variable_classes(
-            test_df, "class", "type", "Numeric"),
+            test_df, 
+            type == "Numeric",
+            class_column = "class" 
+        ),
         testthat::is_identical_to(c("class1", "class3")))
 })
 

@@ -85,10 +85,10 @@ shinyServer(function(input, output, session) {
     callModule(
         drivers,
         "module8",
-        reactive(input$ss_choice),
-        reactive(group_internal_choice()),
-        reactive(subset_df()),
-        reactive(plot_colors()))
+        driver_result_df,
+        subset_df,
+        group_internal_choice
+    )
     
     # IO Target
     callModule(
@@ -319,12 +319,14 @@ shinyServer(function(input, output, session) {
         }
         return(con)
     })
-    
-    
-    
-    
-    
+
     # old flat file formatting ------------------------------------------------
+    
+
+    study_subset_internal_choice <- reactive({
+        req(input$study_subset_selection, panimmune_data$feature_df, cancelOutput = T)
+        get_group_internal_name(input$study_subset_selection)
+    })
     
     sample_group_df <- reactive({
 
@@ -334,12 +336,17 @@ shinyServer(function(input, output, session) {
             !is.null(user_group_df()),
             cancelOutput = T)
 
-        sample_group_df <- subset_sample_group_df(
+       subset_sample_group_df(
             group_internal_choice(),
             input$study_subset_selection,
             user_group_df())
-
-        return(sample_group_df)
+    })
+    
+    study_subset_groups <- reactive({
+        req(sample_group_df(), study_subset_internal_choice())
+        sample_group_df() %>% 
+            dplyr::filter(`TCGA Studies` == study_subset_internal_choice()) %>% 
+            dplyr::pull(FeatureValue)
     })
 
     subset_df <- reactive({
@@ -355,6 +362,24 @@ shinyServer(function(input, output, session) {
             sample_group_df = sample_group_df()
         )
     })
+    
+    driver_result_df <- reactive({
+        req(
+            input$ss_choice,
+            group_internal_choice(),
+            panimmune_data$driver_result_df,
+            cancelOutput = T
+        )
+        df <- panimmune_data$driver_result_df
+        if (group_internal_choice() == "Subtype_Curated_Malta_Noushmehr_et_al") {
+            req(study_subset_groups(), cancelOutput = T)
+            df <- dplyr::filter(df, group2 %in% study_subset_groups())
+        } else {
+            df <- dplyr::filter(df, group1 == group_internal_choice())
+        }
+        return(df)
+    })
+    
 
     plot_colors <- reactive({
         req(
@@ -371,5 +396,5 @@ shinyServer(function(input, output, session) {
 
 
 })
-###############################################################################
+
 
