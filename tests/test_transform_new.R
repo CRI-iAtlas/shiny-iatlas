@@ -7,30 +7,9 @@ setwd("../")
 PANIMMUNE_DB   <- create_db2()
 setwd("tests")
 
-# driver module ---------------------------------------------------------------
 
-test_that("create_sv_driver_con",{
-    feature_con <- PANIMMUNE_DB %>% 
-        dplyr::tbl("feature_values_long") 
-        dplyr::select(sample, group = "Study", feature, value) %>% 
-        dplyr::filter_all(dplyr::all_vars(!is.na(.)))
-    
-    mutation_con <- PANIMMUNE_DB %>% 
-        dplyr::tbl("driver_mutations") %>% 
-        dplyr::select(sample, group = "Study", gene, status) %>% 
-        dplyr::filter_all(dplyr::all_vars(!is.na(.)))
-    
-    res <- 
-        create_sv_driver_con(
-            feature_con, 
-            mutation_con,  
-            "leukocyte_fraction"
-        ) 
-    
-    expect_that(colnames(res), is_identical_to(c("label", "status", "value")))
-})
 
-# volvano plot module ---------------------------------------------------------
+# volcano plot module ---------------------------------------------------------
 
 test_that("create_volcano_drilldown_plot_title",{
     volcano_con <- PANIMMUNE_DB %>%

@@ -2,17 +2,6 @@
 ## subset, arrange, or otherwise modify data prior to visualization with tables
 ## or plots
 
-###############################################################################
-# These functions have been refactored and/or have unit tests.
-# Do not make any modifications to these!
-# If you want to make a modification, please copy and paste the function the
-# lower section and call it <function_name>2.
-# Make any needed modifcations to the coipied function.
-# The new functionality will get unut tests and be folded back into the 
-# original function.
-###############################################################################
-
-
 
 # Driver mutation functions ---------------------------------------------------
 
@@ -457,9 +446,6 @@ build_mosaicplot_df <- function(df, x_column, y_column){
     return(result_df)
 }
 
-###############################################################################
-# Tests below this line do not have tests yet, newly writen functions 
-###############################################################################
 
 
 # ** Clinical outcomes module ----

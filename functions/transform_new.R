@@ -1,13 +1,3 @@
-# driver module ---------------------------------------------------------------
-
-create_sv_driver_con <- function(feature_con, mutation_con, feature_value){
-    feature_con %>% 
-        dplyr::filter(feature == feature_value) %>% 
-        dplyr::select(sample, value) %>% 
-        dplyr::inner_join(mutation_con, by = "sample") %>% 
-        dplyr::mutate(label = paste0(gene, ";", group)) %>% 
-        dplyr::select(label, status, value)
-}
 
 # volcano plot module ---------------------------------------------------------
 
