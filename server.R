@@ -87,7 +87,10 @@ shinyServer(function(input, output, session) {
         "module8",
         driver_result_df,
         subset_df,
-        group_internal_choice
+        group_internal_choice,
+        driver_results_con,
+        driver_mutations_con,
+        feature_values_long_con
     )
     
     # IO Target
@@ -236,6 +239,18 @@ shinyServer(function(input, output, session) {
             )
     })
     
+    driver_mutations_con <- reactive({
+        req(PANIMMUNE_DB, group_internal_choice(), subtypes())
+        PANIMMUNE_DB %>% 
+            dplyr::tbl("driver_mutations") %>% 
+            subset_long_con_with_group(
+                group_internal_choice(), 
+                group_values = subtypes(),
+                feature_col = "gene",
+                value_col = "status"
+            )
+    })
+    
     til_image_links_con <- reactive({
         req(PANIMMUNE_DB)
         dplyr::tbl( PANIMMUNE_DB, "til_image_links")
@@ -272,6 +287,19 @@ shinyServer(function(input, output, session) {
         PANIMMUNE_DB %>%
             dplyr::tbl("io_targets") 
     })
+    
+    driver_results_con <- reactive({
+        req(PANIMMUNE_DB, group_internal_choice())
+        con <- PANIMMUNE_DB %>%
+            dplyr::tbl("driver_results") %>% 
+            dplyr::filter(parent_group == local(group_internal_choice()))
+        if(group_internal_choice() == "Subtype_Curated_Malta_Noushmehr_et_al"){
+            req(subtypes())
+            con <- dplyr::filter(con, group %in% local(subtypes()))
+        } 
+        return(con)
+    })
+    
     
     # feature_values_wide_con <- reactive({
     #     req(PANIMMUNE_DB, group_internal_choice())
@@ -339,24 +367,6 @@ shinyServer(function(input, output, session) {
         )
     })
     
-    driver_result_df <- reactive({
-        req(
-            input$ss_choice,
-            group_internal_choice(),
-            panimmune_data$driver_result_df,
-            cancelOutput = T
-        )
-        df <- panimmune_data$driver_result_df
-        if (group_internal_choice() == "Subtype_Curated_Malta_Noushmehr_et_al") {
-            req(study_subset_groups(), cancelOutput = T)
-            df <- dplyr::filter(df, group2 %in% study_subset_groups())
-        } else {
-            df <- dplyr::filter(df, group1 == group_internal_choice())
-        }
-        return(df)
-    })
-    
-
     plot_colors <- reactive({
         req(
             group_internal_choice(),

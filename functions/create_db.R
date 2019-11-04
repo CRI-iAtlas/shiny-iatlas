@@ -138,6 +138,33 @@ create_db <- function(panimmune_data){
     
     dplyr::copy_to(con, io_targets, "io_targets", temporary = FALSE)
     
+    driver_results <- panimmune_data$driver_result_df %>% 
+        dplyr::select(
+            label,
+            feature = metric, 
+            group = group2,
+            parent_group = group1,
+            n_wt,
+            n_mut,
+            pvalue,
+            fold_change,
+            log10_pvalue,
+            log10_fold_change
+        )
+    
+    dplyr::copy_to(con, driver_results, "driver_results", temporary = FALSE)
+    
+    driver_mutations <- panimmune_data$driver_mutations_df %>% 
+        dplyr::rename(sample = ParticipantBarcode) %>% 
+        tidyr::pivot_longer(
+            names_to = "gene",
+            values_to = "status",
+            -sample
+        ) %>% 
+        tidyr::drop_na() %>% 
+        dplyr::mutate(status = dplyr::if_else(status == "Wt", F, T)) %>% 
+        dplyr::inner_join(dplyr::select(feature_values_wide, 1:4))
+    
     
     return(con)
     

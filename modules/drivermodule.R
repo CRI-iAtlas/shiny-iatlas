@@ -51,34 +51,34 @@ drivers_UI <- function(id) {
         ),
         
         # multi_variable ----
-        sectionBox(
-            title = "Immune Response Association With Driver Mutations -- multi-variable",
-            messageBox(
-                width = 12,
-                includeMarkdown("data/markdown/driver_multi.markdown")
-            ),
-            model_selection_module_ui(ns("module1")),
-            fluidRow(
-                optionsBox(
-                    width = 12,
-                    column(
-                        width = 6,
-                        textOutput(ns("model_text"))
-                    ),
-                    column(
-                        width = 6,
-                        actionButton(ns("calculate_button"), "Calculate")
-                    )
-                )
-            ),
-            fluidRow(
-                plotBox(
-                    width = 12,
-                    plotlyOutput(ns("scatter_plot2")) %>%
-                        shinycssloaders::withSpinner()
-                )
-            )
-        )
+        # sectionBox(
+        #     title = "Immune Response Association With Driver Mutations -- multi-variable",
+        #     messageBox(
+        #         width = 12,
+        #         includeMarkdown("data/markdown/driver_multi.markdown")
+        #     ),
+        #     model_selection_module_ui(ns("module1")),
+        #     fluidRow(
+        #         optionsBox(
+        #             width = 12,
+        #             column(
+        #                 width = 6,
+        #                 textOutput(ns("model_text"))
+        #             ),
+        #             column(
+        #                 width = 6,
+        #                 actionButton(ns("calculate_button"), "Calculate")
+        #             )
+        #         )
+        #     ),
+        #     fluidRow(
+        #         plotBox(
+        #             width = 12,
+        #             plotlyOutput(ns("scatter_plot2")) %>%
+        #                 shinycssloaders::withSpinner()
+        #         )
+        #     )
+        # )
     )
 }
 
@@ -89,64 +89,49 @@ drivers <- function(
     session, 
     driver_result_df,
     metric_df,
-    group_internal_choice
+    group_internal_choice,
+    driver_results_con,
+    driver_mutations_con,
+    feature_values_long_con
 ){
     
     ## single variable models ----
-    volcano_df <- reactive({
-        x <- driver_result_df() %>% 
+    volcano_con <- reactive({
+        req(
+            driver_results_con(),
+            input$response_variable,
+            input$min_wt,
+            input$min_mut
+        )
+        driver_results_con() %>% 
             dplyr::filter(
-                metric == input$response_variable,
-                n_wt  >= input$min_wt,
-                n_mut >= input$min_mut
-            ) %>% 
-            dplyr::rename(
-                LABEL = label,
-                METRIC = metric
+                feature == local(input$response_variable),
+                n_wt    >= local(input$min_wt),
+                n_mut   >= local(input$min_mut)
             )
-        print("Volcano df")
-        print(x)
-        return(x)
     })
     
-    violin_df <- reactive({
-        mutation_df <-  panimmune_data$driver_mutations_df %>% 
-            dplyr::select(
-                SAMPLE = "ParticipantBarcode",
-                dplyr::everything()) %>% 
-            tidyr::gather(GENE, STATUS, -SAMPLE) %>% 
-            tidyr::drop_na()
-        
-        metric_df <- metric_df() %>% 
-            dplyr::select(
-                SAMPLE = "ParticipantBarcode",
-                GROUP = group_internal_choice(),
-                METRIC = input$response_variable
-            ) %>% 
-            tidyr::drop_na()
-        
-        violin_df <- 
-            dplyr::inner_join(mutation_df, metric_df, by = "SAMPLE") %>% 
-            dplyr::select(-SAMPLE) %>% 
-            dplyr::mutate(LABEL = stringr::str_c(GENE, GROUP, sep = ";")) %>% 
-            dplyr::select(-c(GENE, GROUP)) %>% 
-            dplyr::rename(GROUP = STATUS) %>% 
-            dplyr::mutate(GROUP = forcats::fct_relevel(
-                GROUP,
-                "Wt",
-                "Mut"
-            ))
-        
-        print("Violin df")
-        print(violin_df)
-        return(violin_df)
+    violin_value_con <- reactive({
+        req(feature_values_long_con(), input$response_variable)
+        feature_values_long_con() %>% 
+            dplyr::filter(feature == local(input$response_variable)) %>% 
+            dplyr::select(sample, value) 
     })
     
+    violin_group_con <- reactive({
+        req(driver_mutations_con())
+        driver_mutations_con() %>% 
+            dplyr::mutate(label = paste0(gene, ";", group)) %>% 
+            dplyr::select(sample, label, status)
+    })
+    
+
     callModule(
         volcano_plot_module,
         "single_variable",
-        volcano_df,
-        violin_df,
+        volcano_con,
+        violin_value_con,
+        violin_group_con,
         "Immune Response Association With Driver Mutations",
         "driver_single_variable",
         "Wt",

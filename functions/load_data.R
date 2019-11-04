@@ -85,7 +85,7 @@ load_io_target_expression <- function() {
 }
 
 load_driver_results <- function() {
-    readRDS("data2/driver_results.rds")
+    readRDS("data/driver_results.rds")
 }
 
 load_driver_mutations <- function(){

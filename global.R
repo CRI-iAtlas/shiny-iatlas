@@ -7,7 +7,7 @@ USE_REMOTE_BQ <- config_yaml$bq_remote
 USE_REMOTE_GS <- config_yaml$gs_remote
 
 panimmune_data <- load_data()
-PANIMMUNE_DB   <- create_db(panimmune_data)
+PANIMMUNE_DB   <- create_db2()
 
 purrr::walk(config_yaml$module_files, source)
 purrr::walk(config_yaml$page_files, source)

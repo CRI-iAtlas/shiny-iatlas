@@ -1,3 +1,39 @@
+# driver module ---------------------------------------------------------------
+
+create_sv_driver_con <- function(feature_con, mutation_con, feature_value){
+    feature_con %>% 
+        dplyr::filter(feature == feature_value) %>% 
+        dplyr::select(sample, value) %>% 
+        dplyr::inner_join(mutation_con, by = "sample") %>% 
+        dplyr::mutate(label = paste0(gene, ";", group)) %>% 
+        dplyr::select(label, status, value)
+}
+
+# volcano plot module ---------------------------------------------------------
+
+create_volcano_drilldown_plot_title <- function(
+    volcano_plot_con, 
+    label_value,
+    numerator = "Wt",
+    denominator = "Mut"
+){
+    tbl <- volcano_plot_con %>% 
+        dplyr::filter(label == label_value) %>% 
+        dplyr::as_tibble()
+    feature <- get_unique_values_from_column(tbl, "feature")
+    pvalue  <- round(dplyr::pull(tbl, pvalue), 4)
+    fc      <- round(dplyr::pull(tbl, fold_change), 4)
+    if(fc >= 1){
+        fc_string   <- stringr::str_c(numerator, "/", denominator)
+    } else {
+        fc  <- round(1/fc, 4)
+        fc_string <- stringr::str_c(denominator,  "/", numerator)
+    }
+    title <- stringr::str_c(
+        "Cohort:", label_value, "; P = ", pvalue, ";", fc_string, ":", fc, sep = " "
+    )
+}
+
 # server ----------------------------------------------------------------------
 
 subset_long_con_with_group <- function(

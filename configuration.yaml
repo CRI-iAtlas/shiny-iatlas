@@ -18,8 +18,8 @@ module_files:
   - "modules/volcano_plot_module.R"
   
 function_files:
-  - "functions/load_data.R"
-  - "functions/create_db.R"
+  - "functions/load_data2.R"
+  - "functions/create_db2.R"
   - "functions/transform.R"
   - "functions/transform_new.R"
   - "functions/drilldown.R"

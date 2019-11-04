@@ -22,34 +22,34 @@ volcano_plot_module <- function(
     input, 
     output, 
     session, 
-    volcano_df,
-    violin_df,
+    volcano_con,
+    violin_value_con,
+    violin_group_con,
     volcano_title,
     volcano_source_name,
     fold_change_num,
     fold_change_dem,
     pval_threshold = 0.05,
-    log10_fold_change_threshold = log10(2)
+    fold_change_threshold = 2
 ){
-    volcano_plot_df <- reactive({
-        volcano_df() %>% 
+    volcano_plot_con <- reactive({
+        con <- volcano_con() %>% 
             dplyr::mutate(color = dplyr::if_else(
-                pvalue > pval_threshold |
-                    abs(log10_fold_change) < log10_fold_change_threshold,
-                "blue",
-                "red"
+                pvalue < pval_threshold & abs(fold_change) > fold_change_threshold,
+                "red",
+                "blue"
             )) %>% 
             dplyr::select(
                 x = log10_fold_change, 
                 y = log10_pvalue, 
-                label = LABEL,
+                label,
                 color
             )
     })
     
     output$volcano_plot <- renderPlotly({
         create_scatterplot(
-            volcano_plot_df(),
+            dplyr::as_tibble(volcano_plot_con()),
             xlab = "Log10(Fold Change)",
             ylab = "- Log10(P-value)",
             title = volcano_title,
@@ -57,71 +57,48 @@ volcano_plot_module <- function(
             key_col = "label",
             label_col = "label",
             color_col = "color",
-            fill_colors = c("blue" = "blue", "red" = "red"),
-            horizontal_line = T,
-            horizontal_line_y = (- log10(0.05))
+            fill_colors = c("blue" = "blue", "red" = "red")
         )
     })
     
     output$violin_plot <- renderPlotly({
         
         eventdata <- event_data("plotly_click", source = volcano_source_name)
-        
+
         # plot not clicked on yet
         validate(need(
             !is.null(eventdata),
             "Click a point on the above scatterplot to see a violin plot for the comparison"
         ))
         
-       
-        
-        group       <- eventdata$key[[1]]
-        df          <- dplyr::filter(volcano_df(), LABEL == group)
-        metric      <- get_variable_display_name(df$METRIC)
-        pvalue      <- round(df$pvalue, 4)
-        fc          <- round(df$fold_change, 4)
-        fc_string   <- stringr::str_c(
-            fold_change_num,
-            "/",
-            fold_change_dem
-        )
-        
-        
-        if(fc < 1) {
-            fc        <- round(1/fc, 4)
-            fc_string <- stringr::str_c(
-                fold_change_dem,
-                "/",
-                fold_change_num
-            )
-        }
-        
-        title <- stringr::str_c(
-            "Cohort:",
-            group,
-            "; P = ",
-            pvalue,
-            ";",
-            fc_string,
-            ":", 
-            fc,
-            sep = " "
-        )
+        label_value <- eventdata$key[[1]]
         
         # plot clicked on but event data stale due to parameter change
         validate(need(
-            group %in% violin_df()$LABEL,
+            label_value %in% dplyr::pull(violin_group_con(), label),
             "Click a point on the above scatterplot to see a violin plot for the comparison"
         ))
         
-        violin_plot_df <- violin_df() %>% 
-            dplyr::filter(LABEL == group) %>% 
-            dplyr::select(x = GROUP, y = METRIC)
+        title <- create_volcano_drilldown_plot_title(
+            volcano_con(), 
+            label_value,
+            fold_change_num,
+            fold_change_dem
+        )
+        
+        violin_plot_tbl <- violin_group_con() %>% 
+            dplyr::filter(label == label_value) %>% 
+            dplyr::inner_join(violin_value_con(), by = "sample") %>% 
+            dplyr::select(sample, x = status, y = value) %>% 
+            dplyr::as_tibble()
+        
+        print(nrow(violin_plot_tbl))
+            
 
         create_violinplot(
-            violin_plot_df,
-            xlab = group,
-            ylab = metric,
+            violin_plot_tbl,
+            xlab = label_value,
+            ylab = "feature",
             title = title,
             fill_colors = c("blue"),
             showlegend = FALSE)
