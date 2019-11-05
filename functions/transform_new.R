@@ -1,3 +1,69 @@
+# cell fractions module -------------------------------------------------------
+
+build_cell_fractions_barplot_tbl <- function(feature_con, value_con){
+    value_con %>% 
+        dplyr::inner_join(feature_con, by = "feature") %>% 
+        dplyr::group_by(display, group) %>% 
+        dplyr::arrange(order) %>% 
+        dplyr::summarise(mean = mean(value), count = dplyr::n()) %>%
+        dplyr::ungroup() %>% 
+        dplyr::mutate(se = mean / sqrt(count)) %>% 
+        dplyr::as_tibble() %>% 
+        create_label(
+            name_column = "display",
+            group_column = "group",
+            value_columns = c("mean", "se")
+        ) %>% 
+        dplyr::select(x = group, y = mean, color = display, label, error = se)
+}
+
+ 
+# overall cell proportions module ---------------------------------------------
+
+build_cell_proportion_con <- function(feature_con, value_con){
+
+    feature_con <- feature_con %>% 
+        dplyr::filter(class == "Overall Proportion") %>% 
+        dplyr::filter(feature != "til_percentage")
+    
+    value_con %>% 
+        dplyr::inner_join(feature_con) 
+        
+}
+
+build_cell_proportion_barplot_tbl <- function(con){
+    con %>%
+        dplyr::group_by(display, group) %>% 
+        dplyr::summarise(mean = mean(value), count = dplyr::n()) %>%
+        dplyr::mutate(se = mean / sqrt(count)) %>%
+        dplyr::as_tibble() %>%
+        create_label(
+            title = "Fraction",
+            name_column = "display",
+            group_column = "group",
+            value_columns = c("mean", "se")
+        ) %>%
+        dplyr::select(label, color = display, x = group, y = mean, error = se)
+}
+
+build_cell_proportion_scatterplot_tbl <- function(con){
+    con %>% 
+        dplyr::select(sample, group, feature = display, value) %>% 
+        dplyr::filter(
+            feature %in% c("Leukocyte Fraction", "Stromal Fraction")
+        ) %>%
+        dplyr::as_tibble() %>% 
+        tidyr::pivot_wider(values_from = value, names_from = feature) %>% 
+        tidyr::drop_na() %>% 
+        dplyr::rename(x = `Stromal Fraction`, y = `Leukocyte Fraction`) %>% 
+        create_label(
+            name_column = "sample",
+            group_column = "group",
+            value_columns = c("x", "y")
+        ) %>% 
+        dplyr::select(x, y, label)
+}
+
 
 # volcano plot module ---------------------------------------------------------
 

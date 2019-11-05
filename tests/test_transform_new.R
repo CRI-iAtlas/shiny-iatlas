@@ -7,6 +7,61 @@ setwd("../")
 PANIMMUNE_DB   <- create_db2()
 setwd("tests")
 
+# cell fractions module -------------------------------------------------------
+
+test_that("build_cell_fractions_barplot_tbl",{
+    feature_con <-  PANIMMUNE_DB %>% 
+        dplyr::tbl("features") %>% 
+        dplyr::filter(class == "Immune Cell Proportion - Original")
+    
+    value_con <- PANIMMUNE_DB %>% 
+        dplyr::tbl("feature_values_long") %>% 
+        dplyr::select(sample, group = Study, feature, value) 
+    
+    result_tbl <- build_cell_fractions_barplot_tbl(feature_con, value_con)
+    expect_that(
+        colnames(result_tbl),
+        is_identical_to(c("x", "y", "color", "label", "error"))
+    )
+})
+
+# cell proportions module -----------------------------------------------------
+
+test_that("build_cell_proportion_scatterplot_tbl",{
+    feature_con <-  PANIMMUNE_DB %>% 
+        dplyr::tbl("features") %>% 
+        dplyr::filter(class == "Overall Proportion") %>% 
+        dplyr::filter(feature != "til_percentage")
+    
+    value_con <- PANIMMUNE_DB %>% 
+        dplyr::tbl("feature_values_long") %>% 
+        dplyr::select(sample, group = Study, feature, value) %>% 
+        dplyr::inner_join(feature_con) 
+    
+    result_tbl <- build_cell_proportion_scatterplot_tbl(value_con)
+    expect_that(
+        colnames(result_tbl),
+        is_identical_to(c("x", "y", "label"))
+    )
+})
+
+# test_that("build_cell_proportion_con",{
+#     feature_con <- PANIMMUNE_DB %>% 
+#         dplyr::tbl("features") %>% 
+#         dplyr::filter(class == "Overall Proportion") %>% 
+#         dplyr::filter(feature != "til_percentage")
+#     
+#     value_con <-  PANIMMUNE_DB %>% 
+#         dplyr::tbl("feature_values_long") %>% 
+#         dplyr::select(sample, feature, group = Study, value)
+#     
+#     result_tbl <- build_cell_proportion_tbl(feature_con, value_con)
+#     expect_that(
+#         colnames(result_tbl),
+#         is_identical_to(c("label", "color", "x", "y", "error"))
+#     )
+#     
+# })
 
 
 # volcano plot module ---------------------------------------------------------

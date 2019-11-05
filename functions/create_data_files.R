@@ -14,11 +14,18 @@ features <- panimmune_data$feature_df %>%
         display = FriendlyLabel,
         class   = `Variable Class`,
         order   = `Variable Class Order`
-    )
+    ) %>% 
+    dplyr::bind_rows(dplyr::tibble(
+        feature  = "Tumor_fraction",
+        display  = "Tumor Fraction",
+        class    = "Overall Proportion",
+        order    = 4
+    ))
 
 feather::write_feather(features, "data2/features.feather")
 
 feature_values_wide <- panimmune_data$fmx_df %>% 
+    dplyr::mutate(Tumor_fraction = 1 - Stromal_Fraction) %>% 
     dplyr::select(
         sample = ParticipantBarcode, 
         Study,
@@ -26,6 +33,7 @@ feature_values_wide <- panimmune_data$fmx_df %>%
         Subtype_Immune_Model_Based,
         features$feature
     )
+    
 
 feature_values_wide %>% 
     tidyr::pivot_longer(

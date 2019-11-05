@@ -23,9 +23,10 @@ shinyServer(function(input, output, session) {
         cellcontent,
         "module1",
         reactive(input$ss_choice),
-        reactive(group_internal_choice()),
-        reactive(sample_group_df()),
-        reactive(subset_df()))
+        feature_values_long_con,
+        feature_con,
+        group_con
+    )
     
     # Groups
     user_group_df <- callModule(
