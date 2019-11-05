@@ -147,82 +147,7 @@ add_driver_pvalues <- function(driver_tbl, covariates, model_formula){
         dplyr::mutate(PVALUE = -log10(PVALUE))
 }
 
-# cellcontent functions -------------------------------------------------------
 
-build_cellcontent_df <- function(df, group_column){
-    assert_df_has_columns(df, c(group_column, "Stromal_Fraction", "leukocyte_fraction"))
-    long_df <- df %>% 
-        dplyr::select(
-            GROUP = group_column,
-            "Stromal_Fraction", 
-            "leukocyte_fraction") %>% 
-        tidyr::drop_na()
-    
-    if(nrow(long_df) == 0) return(long_df)
-    
-    result_df <- long_df %>% 
-        dplyr::mutate(Tumor_Fraction = 1 - Stromal_Fraction) %>% 
-        tidyr::gather(fraction_type, fraction, -GROUP)
-    assert_df_has_columns(result_df, c("GROUP", "fraction_type", "fraction"))
-    return(result_df)
-}
-
-build_cell_fraction_df <- function(df, group_column, value_columns){
-    assert_df_has_columns(df, c(group_column, value_columns))
-    result_df <- df %>% 
-        dplyr::select(GROUP = group_column, value_columns) %>% 
-        tidyr::gather(fraction_type, fraction, -GROUP) %>% 
-        tidyr::drop_na()
-    assert_df_has_columns(result_df, c("GROUP", "fraction_type", "fraction"))
-    return(result_df)
-}
-
-
-build_cellcontent_barplot_df <- function(df, x_column, y_column) {
-    assert_df_has_columns(df, c("GROUP", "fraction_type", "fraction"))
-    result_df <- df %>%
-        summarise_df_at_column(
-            column = "fraction",
-            grouping_columns = c("GROUP", "fraction_type"),
-            function_names = c("mean", "se")) %>% 
-        create_label(
-            title = stringr::str_to_title(y_column),
-            name_column = x_column,
-            group_column = "GROUP",
-            value_columns = c("mean", "se")) %>% 
-        dplyr::select(
-            x = "GROUP",
-            y = "mean",
-            color = "fraction_type",
-            error = "se",
-            label)
-    assert_df_has_columns(result_df, c("x", "y", "label", "color", "error"))
-    assert_df_has_rows(result_df)
-    return(result_df)
-}
-
-build_cellcontent_scatterplot_df <- function(
-    df, group_column, group_filter_value, 
-    id_column = "ParticipantBarcode",
-    x_column = "Stromal_Fraction",
-    y_column = "leukocyte_fraction") {
-    
-    result_df  <- df %>%
-        select(
-            GROUP = group_column, 
-            ID = id_column, 
-            x = x_column, 
-            y = y_column) %>%
-        filter(GROUP == group_filter_value) %>%
-        create_label(
-            name_column = "ID",
-            group_column = "GROUP",
-            value_columns = c("x", "y")) %>% 
-        select(x, y, "label")
-    assert_df_has_columns(result_df, c("x", "y", "label"))
-    assert_df_has_rows(result_df)
-    return(result_df)
-}
 
 # samplegroup functions -------------------------------------------------------
 
@@ -1041,4 +966,81 @@ build_ci_mat <- function(
 #     res1 <- compute_pvals_per_combo(df_for_regression,response_var, group_column)
 #     res2 <- compute_effect_size_per_combo(df_for_regression,response_var, group_column)
 #     dplyr::inner_join(res1,res2,by="mutation_group") ## returns df with combo,neglog_pval,effect_size
+# }
+
+# cellcontent functions -------------------------------------------------------
+
+# build_cellcontent_df <- function(df, group_column){
+#     assert_df_has_columns(df, c(group_column, "Stromal_Fraction", "leukocyte_fraction"))
+#     long_df <- df %>% 
+#         dplyr::select(
+#             GROUP = group_column,
+#             "Stromal_Fraction", 
+#             "leukocyte_fraction") %>% 
+#         tidyr::drop_na()
+#     
+#     if(nrow(long_df) == 0) return(long_df)
+#     
+#     result_df <- long_df %>% 
+#         dplyr::mutate(Tumor_Fraction = 1 - Stromal_Fraction) %>% 
+#         tidyr::gather(fraction_type, fraction, -GROUP)
+#     assert_df_has_columns(result_df, c("GROUP", "fraction_type", "fraction"))
+#     return(result_df)
+# }
+# 
+# build_cell_fraction_df <- function(df, group_column, value_columns){
+#     assert_df_has_columns(df, c(group_column, value_columns))
+#     result_df <- df %>% 
+#         dplyr::select(GROUP = group_column, value_columns) %>% 
+#         tidyr::gather(fraction_type, fraction, -GROUP) %>% 
+#         tidyr::drop_na()
+#     assert_df_has_columns(result_df, c("GROUP", "fraction_type", "fraction"))
+#     return(result_df)
+# }
+# 
+# 
+# build_cellcontent_barplot_df <- function(df, x_column, y_column) {
+#     assert_df_has_columns(df, c("GROUP", "fraction_type", "fraction"))
+#     result_df <- df %>%
+#         summarise_df_at_column(
+#             column = "fraction",
+#             grouping_columns = c("GROUP", "fraction_type"),
+#             function_names = c("mean", "se")) %>% 
+#         create_label(
+#             title = stringr::str_to_title(y_column),
+#             name_column = x_column,
+#             group_column = "GROUP",
+#             value_columns = c("mean", "se")) %>% 
+#         dplyr::select(
+#             x = "GROUP",
+#             y = "mean",
+#             color = "fraction_type",
+#             error = "se",
+#             label)
+#     assert_df_has_columns(result_df, c("x", "y", "label", "color", "error"))
+#     assert_df_has_rows(result_df)
+#     return(result_df)
+# }
+# 
+# build_cellcontent_scatterplot_df <- function(
+#     df, group_column, group_filter_value, 
+#     id_column = "ParticipantBarcode",
+#     x_column = "Stromal_Fraction",
+#     y_column = "leukocyte_fraction") {
+#     
+#     result_df  <- df %>%
+#         select(
+#             GROUP = group_column, 
+#             ID = id_column, 
+#             x = x_column, 
+#             y = y_column) %>%
+#         filter(GROUP == group_filter_value) %>%
+#         create_label(
+#             name_column = "ID",
+#             group_column = "GROUP",
+#             value_columns = c("x", "y")) %>% 
+#         select(x, y, "label")
+#     assert_df_has_columns(result_df, c("x", "y", "label"))
+#     assert_df_has_rows(result_df)
+#     return(result_df)
 # }

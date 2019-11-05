@@ -51,7 +51,7 @@ overall_cell_proportions_module_UI <- function(id){
         title = "Overall Cell Proportions",
         messageBox(
             width = 12,
-            p("The barplots show the mean proportion of the tumor fraction, overall stromal fraction (one minus tumor fractions) and the leukocyte fraction of samples with each group.  Error bars show standard error of the mean.")
+            includeMarkdown("data/markdown/cell_proportions1.markdown")
         ),
         fluidRow(
             plotBox(
@@ -67,8 +67,7 @@ overall_cell_proportions_module_UI <- function(id){
                 width = 12,
                 messageBox(
                     width = 6,
-                    p("Click on the bars for a sample group and you will get generate a scatter plot, showing leukocyte fraction on the Y-axis and stromal fraction on the X-axis. Points near the diagonal correspond to tumor samples in which non-tumor stromal cells are nearly all immune cells, and points away from the diagonal correspond to a more mixed or a non-immune stromal tumor microenvironment.  Points in the upper-left triangle of the plot are estimation artifacts."),
-                    p("Manuscript context:  Looking at TCGA tumor types, select PRAD and then SKCM and you will get what corresponds to Figure 2C.")
+                    includeMarkdown("data/markdown/cell_proportions2.markdown")
                 ),
                 column(
                     width = 6,
@@ -176,8 +175,7 @@ cell_type_fractions_module_UI <- function(id){
         title = "Cell Type Fractions",
         messageBox(
             width = 12,
-            p("This allows you to draw barplots for the estimate proportion of different cell types in the immune compartment.  Cellular proportions are estimated using CIBERSORT. In addition to the original CIBERSORT estimates (22 cell fractions), estimates combining related cell types are provided. (In the associated manuscript, these are referred to as Aggregates 1, 2, and 3.)"),
-            p("Manuscript context:  These bargraphs are similar to Figure 2A, and Figure S2A, but with a different arrangement of bars.")
+            includeMarkdown("data/markdown/cell_fractions.markdown")
         ),
         fluidRow(
             optionsBox(
