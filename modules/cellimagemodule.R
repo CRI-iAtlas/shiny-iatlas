@@ -63,6 +63,7 @@ cellimage <- function(
   ## "group_col"    "group_df"
   ## eg  "Subtype_Curated_Malta_Noushmehr_et_al" and fmx_df filtered to available group annotations 
   
+  group_col <- group_internal_choice()
   group_df <- sample_group_df() %>% mutate(Tumor_Fraction=1-Stromal_Fraction)
   
   ## Annotations of image objects
