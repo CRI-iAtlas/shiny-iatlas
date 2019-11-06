@@ -7,7 +7,22 @@ cellimage_UI <-function(id){
     textBox(
       width = 12,
       includeMarkdown("data/markdown/cell_image.markdown")
-    )
+    ),
+    
+    sectionBox(
+      title = "CIM",
+      messageBox(
+        width = 12,
+        p("Driving instructions")
+      ),
+      fluidRow(
+        plotBox(
+          width = 8,
+          plotOutput(ns("cellPlot"), height = 600) %>%
+          shinycssloaders::withSpinner()
+        )
+      )
+    ) # closes sectionBox
     
   ) # closes tagList
 }
@@ -24,4 +39,9 @@ cellimage <- function(
 ){
   
   ns <- session$ns
+  
+  output$cellPlot <- renderPlot({
+    plot(0,0)
+  })
+    
 }
