@@ -1,0 +1,1 @@
+This module allows you to explore the cellular receptor and ligand content in a sample set visualized on a well-known image
