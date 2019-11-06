@@ -33,6 +33,7 @@ function_files:
   - "functions/tablef_fun.R"
   - "functions/imageplot.R"
   - "functions/event_data_utils.R"
+  - "functions/cellimage_utils.R"
 
 page_files:
   - "pages/aboutpage.R"
