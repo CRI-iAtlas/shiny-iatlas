@@ -16,7 +16,7 @@ all_net_info <- list(
   "studyImmune" = list("upbin_ratio" = readr::read_csv("data/network/nodes_TCGAStudy_Immune.csv"), edges_score = readr::read_csv("data/network/edges_TCGAStudy_Immune.csv"))
 )
 
-dfe_in <- readr::read_csv("data/network/merged_gene_exp.csv")
+dfe_in <- readr::read_csv("data/network/expr_data_merged.csv")
 #dfe_in <- readr::read_tsv("data/network/GenExp_All_CKine_genes.tsv")
 main_scaffold <- readr::read_tsv("data/network/try_3a.tsv")
 styles <- c("Edges by Immune Type" = 'data/network/stylesEdges.js',
@@ -54,27 +54,39 @@ cytokinenetwork_UI <- function(id) {
         optionsBox(
           width=2,
             verticalLayout(
-              conditionalPanel( 
-                condition = "input.ss_choice == 'TCGA Study'",
-                uiOutput(ns("showStudy"),
-                         ),
-                checkboxInput(
-                ns("byImmune"),
-                "Stratify by Immune Subtype")
-              ),
-              conditionalPanel( 
-                condition = "input.ss_choice == 'TCGA Subtype'",
-                uiOutput(ns("showSubtype"))
-              ),
-              conditionalPanel(
-                condition = paste("input.ss_choice == 'Immune Subtype' || (input.ss_choice == 'TCGA Study' &" , paste0("input['", ns("byImmune"), "'] == true)")),
-                selectizeInput(
-                  ns("showGroup"), 
-                  "Select Immune Subtype", 
-                  choices=c( "C1", "C2", "C3", "C4", "C5", "C6"), 
-                  selected = c("C1", "C2"),
-                  multiple = TRUE)
-              ),
+               uiOutput(ns("select_ui")),
+              
+
+              # conditionalPanel(
+              #   condition = "input.ss_choice == 'TCGA Study'",
+              #   uiOutput(ns("showStudy")),
+              # 
+              #   checkboxInput(
+              #   ns("byImmune"),
+              #   "Stratify by Immune Subtype")
+              # ),
+              # conditionalPanel(
+              #   condition = "input.ss_choice == 'TCGA Subtype'",
+              #   uiOutput(ns("showSubtype"))
+              # ),
+              # conditionalPanel(
+              #   condition = "input.ss_choice != 'TCGA Subtype' & input.ss_choice != 'TCGA Study' & input.ss_choice != 'Immune Subtype'",
+              #   uiOutput(ns("showCustom")
+              # ),
+              #   checkboxInput(
+              #     ns("byImmune"),
+              #     "Stratify by Immune Subtype")
+              # ),
+              # conditionalPanel(
+              #   condition = paste("input.ss_choice == 'Immune Subtype' || (input.ss_choice != 'TCGA Subtype' &" , paste0("input['", ns("byImmune"), "'] == true)")),
+              #   selectizeInput(
+              #     ns("showGroup"),
+              #     "Select Immune Subtype",
+              #     choices=c("C1", "C2", "C3", "C4", "C5", "C6"),
+              #     selected = c("C1", "C2"),
+              #     multiple = TRUE)
+              # ),
+              
               numericInput(ns("abundance"), "Set Abundance Threshold (%)", value = 66, min = 0, max = 100),
               numericInput(ns("concordance"), "Set Concordance Threshold", value = 2.94, step = 0.01),
               
@@ -138,8 +150,8 @@ cytokinenetwork_UI <- function(id) {
               img(src = "images/network_legend.png", width = 720)
             )
           )
-        )
-      ),
+        )#plotBox
+      ),#sectionBox
       
       sectionBox(
         title = "Network information",
@@ -177,46 +189,152 @@ cytokinenetwork <- function(
 ){
   
   ns <- session$ns
-
   
 #--------UIs
-  
-  output$showStudy <- renderUI({
+
+  output$select_ui <- renderUI({
+
     req(
       panimmune_data$sample_group_df,
       group_internal_choice()
     )
-    
-    choices <- panimmune_data$sample_group_df %>% 
-      dplyr::filter(sample_group == "Study"& !(FeatureValue %in% c("LAML", "THYM", "DLBC"))) %>% 
-      dplyr::select("FeatureValue") %>% 
-      dplyr::distinct() %>% 
-      dplyr::arrange(FeatureValue)
-    
-    selectInput(ns("study_selection"), 
-                "Choose tumor type:",
-                choices = choices,
-                selected = choices[1])
-  })
-  
-  output$showSubtype <- renderUI({
-    
-    req(
-      panimmune_data$sample_group_df,
-      group_internal_choice(),
-      study_subset_choice()
-    )
-    
-      choices <- panimmune_data$sample_group_df %>% 
-        dplyr::filter(sample_group == "Subtype_Curated_Malta_Noushmehr_et_al" & `TCGA Studies` == study_subset_choice()) %>% 
-        dplyr::select("FeatureValue") %>% 
-        dplyr::distinct()
+
+    if(group_internal_choice() == "Subtype_Curated_Malta_Noushmehr_et_al"){
+      req(study_subset_choice())
+    }
+
+    if(group_internal_choice() %in% c("Study", "Subtype_Curated_Malta_Noushmehr_et_al", "Subtype_Immune_Model_Based")){
+      sample_group_vector <-  panimmune_data$sample_group_df %>%
+        dplyr::filter(sample_group ==  group_internal_choice()) %>%
+        `if`(
+          group_internal_choice() == "Subtype_Curated_Malta_Noushmehr_et_al",
+          dplyr::filter(., `TCGA Studies`== study_subset_choice()),
+          .
+        ) %>%
+        #dplyr::filter(!(FeatureValue %in% c("LAML", "THYM", "DLBC"))) %>%
+        dplyr::pull(FeatureValue) #%>%
+        #dplyr::arrange(FeatureValue)
+
+    }else{
+      sample_group_vector <- subset_df() %>%
+        dplyr::select_(group_internal_choice()) %>%
+        unique()
+    }
+
+    #Generating UI depending on the sample group
+    if(group_internal_choice() == "Subtype_Immune_Model_Based"){
       
-        selectInput(ns("study_subset_selection"), 
-                    "Choose subtype subset:",
-                    choices = choices,
-                    selected = choices[1])
+      selectizeInput(
+        ns("showGroup"),
+        "Select Immune Subtype",
+        choices= c("C1", "C2", "C3", "C4", "C5", "C6"),
+        selected = c("C1", "C2"),
+        multiple = TRUE)
+      
+    }else if(group_internal_choice() == "Subtype_Curated_Malta_Noushmehr_et_al"){
+      
+      selectInput(
+        ns("group_selected"),
+        "Choose subtype subset",
+        choices = sample_group_vector)
+      
+
+    }else if(!group_internal_choice() %in% c("Subtype_Curated_Malta_Noushmehr_et_al", "Subtype_Immune_Model_Based")){
+      #UI for TCGA Study and for custom groups - both allow stratification by Immune Subtype
+
+      tagList(
+        selectInput(ns("group_selected"),
+                    "Choose subset",
+                    choices = sample_group_vector,
+                    selected = sample_group_vector[1]),
+
+        checkboxInput(
+          ns("byImmune"),
+          "Stratify by Immune Subtype"),
+
+        conditionalPanel(
+          condition = paste("" , paste0("input['", ns("byImmune"), "'] == true")),
+          selectizeInput(
+            ns("showGroup"),
+            "Select Immune Subtype",
+            choices=c("C1", "C2", "C3", "C4", "C5", "C6"),
+            selected = c("C1", "C2"),
+            multiple = TRUE)
+        )
+      )
+    }
   })
+
+# output$showStudy <- renderUI({
+#   req(
+#     panimmune_data$sample_group_df,
+#     group_internal_choice()
+#   )
+# 
+#   choices <- panimmune_data$sample_group_df %>%
+#     dplyr::filter(sample_group == "Study"& !(FeatureValue %in% c("LAML", "THYM", "DLBC"))) %>%
+#     dplyr::select("FeatureValue") %>%
+#     dplyr::distinct() %>%
+#     dplyr::arrange(FeatureValue)
+# 
+# 
+# #  tagList(
+#     selectInput(ns("group_selected"),
+#                 "Choose tumor type:",
+#                 choices = choices,
+#                 selected = choices[1])
+
+      # checkboxInput(
+      #   ns("byImmune"),
+      #   "Stratify by Immune Subtype")#,
+#
+#       conditionalPanel(
+#         condition = paste("" , paste0("input['", ns("byImmune"), "'] == true")),
+#         selectizeInput(
+#           ns("showGroup"),
+#           "Select Immune Subtype",
+#           choices=c("C1", "C2", "C3", "C4", "C5", "C6"),
+#           selected = c("C1", "C2"),
+#           multiple = TRUE)
+
+#    )
+  # })
+  # 
+  # output$showSubtype <- renderUI({
+  # 
+  #   req(
+  #     panimmune_data$sample_group_df,
+  #     group_internal_choice(),
+  #     study_subset_choice()
+  #   )
+  # 
+  #     choices <- panimmune_data$sample_group_df %>%
+  #       dplyr::filter(sample_group == "Subtype_Curated_Malta_Noushmehr_et_al" & `TCGA Studies` == study_subset_choice()) %>%
+  #       dplyr::select("FeatureValue") %>%
+  #       dplyr::distinct()
+  # 
+  #       selectInput(ns("group_selected"),
+  #                   "Choose subtype subset:",
+  #                   choices = choices,
+  #                   selected = choices[1])
+  # })
+  # 
+  # output$showCustom <- renderUI({
+  #   req(subset_df())
+  # 
+  #   sample_group_vector <- subset_df() %>%
+  #     dplyr::select_(group_internal_choice()) %>%
+  #     unique()
+  # 
+  #           selectInput(ns("group_selected"),
+  #                 "Choose subset:",
+  #                 choices = sample_group_vector,
+  #                 selected = sample_group_vector[1])
+  # 
+  # })
+  # 
+  
+
   
   output$selectCell <- renderUI({
     selectizeInput(ns("cellInterest"), "Select cells of interest (optional)", choices = (node_type %>% dplyr::filter(Type == "Cell") %>% select("Obj")), 
@@ -235,11 +353,13 @@ cytokinenetwork <- function(
   
  #---- organizing the desired scaffold based on the cells and genes of interest
   
+  default_groups <- unique(panimmune_data$sample_group_df$sample_group)
   #immunogenes <- panimmune_data$im_direct_relationships$`HGNC Symbol`
   
   ##Subsetting to cells and genes of interest
   
   gois <- reactive({
+    
     if (is.null(input$geneInterest))  return(as.vector(panimmune_data$im_direct_relationships$`HGNC Symbol`))
     
     as.vector(input$geneInterest)
@@ -272,56 +392,119 @@ cytokinenetwork <- function(
     unique(c(scaffold()$From, scaffold()$To)) %>% setdiff(cells()) #getting all the genes in the edges selected
   })
   
+  
+  
+#------Computing scores for a custom grouping
+
+  ternary_info <- reactive({#eventReactive(input$calculate_button,{
+    req(!group_internal_choice() %in% default_groups)
+    print("calculando nodes scores")
+    compute_abundance(subset_df(),
+                       subset_col = group_internal_choice(),
+                       panimmune_data$fmx_df,
+                       dfe_in,
+                       cells(),
+                       genes(),
+                       stratify$byImmune)
+            
+})
+
+  scaffold_scores <- reactive({#eventReactive(input$calculate_button, {
+    req(!group_internal_choice() %in% default_groups, ternary_info())
+    print("calculando edges scores")
+    compute_concordance(scaffold(), 
+                        ternary_info(), 
+                        stratify$byImmune) %>%
+      as.data.frame()
+ 
+  })
+  
 #------ Subsetting nodes and edges list based on the Sample Group Selection and cells of interest
   
+  #adjusting the flag for stratification by Immune Subtype (available only for TCGA Study and Custom Groups)
+  
+  stratify <- reactiveValues(byImmune = FALSE)
+
+  observe({
+    try(
+      if(input$byImmune == FALSE){
+        stratify$byImmune = FALSE
+      }else if(input$byImmune == TRUE & group_internal_choice() %in% c("Subtype_Curated_Malta_Noushmehr_et_al", "Subtype_Immune_Model_Based")){
+        stratify$byImmune = FALSE
+      }else{
+        stratify$byImmune = TRUE
+      }
+    )
+  })
+  
   subset_data <- reactive({
-    get_netdata(group_internal_choice(), all_net_info, input$byImmune)
+    
+    if(group_internal_choice() %in% default_groups){
+      get_netdata(group_internal_choice(), all_net_info, stratify$byImmune)
+    }else{
+      return(NA)
+    }
   })
     
   upbin_ratio <- reactive({
-    subset_data()$upbin_ratio %>%
+    print(stratify$byImmune)
+    if(group_internal_choice() %in% default_groups){
+      
+      subset_data()$upbin_ratio %>%
+        dplyr::filter(Node %in% cells() | Node %in% genes())
+        
+    }else{
+      ternary_info() %>% 
+      dplyr::select(Node, IncludeFeature) %>% tidyr::unnest(c(IncludeFeature)) %>%
       dplyr::filter(Node %in% cells() | Node %in% genes())
+    }
+    
   })
   
   edges_scores <- reactive ({
-    merge(subset_data()$edges_score, scaffold(), by.x = c("From", "To"), by.y = c("From", "To"))
+   
+    if(group_internal_choice() %in% default_groups){
+      merge(subset_data()$edges_score, scaffold(), by.x = c("From", "To"), by.y = c("From", "To"))
+    }else{
+      merge(scaffold_scores(), scaffold(), by = c("From", "To"))
+    }
   })
 
 #--------------------------------------------------------------------------------
-# Selection of nodes and edges based on the abundance and concordance threshold
+# Selection of nodes and edges based on the abundance and concordance thresholds
 #--------------------------------------------------------------------------------
   subset_criteria <- reactive({
+    req(group_internal_choice())
     if(group_internal_choice() == "Subtype_Immune_Model_Based"){
-      #if(input$showGroup == "All") return(c("C1","C2", "C3", "C4", "C5", "C6"))
       input$showGroup
-    }else if(group_internal_choice() == "Subtype_Curated_Malta_Noushmehr_et_al"){
-      input$study_subset_selection
     }else{
-      input$study_selection
+      input$group_selected
     }
-    
   })  
 
   abundant_nodes <- eventReactive(input$calculate_button,{
     req(upbin_ratio(), edges_scores(), subset_criteria())
-    shiny::validate(need((is.numeric(input$abundance) & input$abundance <= 100 & input$abundance >= 0), "Abundance threshold input should be numeric, between 0 and 100. Please adjust it."))
-    shiny::validate(need(is.numeric(input$concordance), "Concordance threshold input should be numeric, please adjust it."))
+    shiny::validate(need((is.numeric(input$abundance) & input$abundance <= 100 & input$abundance >= 0), 
+                         "Abundance threshold input should be numeric, between 0 and 100. Please adjust it."))
+    shiny::validate(need(is.numeric(input$concordance), 
+                         "Concordance threshold input should be numeric, please adjust it."))
     
     get_nodes(upbin_ratio(), 
               input$abundance, 
               subset_criteria(), 
-              input$byImmune, 
+              stratify$byImmune, 
               input$showGroup)
    
   })
   
   tbl_edges <- eventReactive(input$calculate_button, {
-    req(abundant_nodes())
+    req(abundant_nodes(), subset_criteria())
+    
     network <- get_conc_edges(edges_scores(), 
                               abundant_nodes(), 
                               input$concordance, 
                               subset_criteria(), 
-                              byImmune = input$byImmune, 
+                              byImmune = stratify$byImmune, 
                               immuneSubtype = input$showGroup)
     
     shiny::validate(need(nrow(as.data.frame(network)) != 0, "No network for this selection. Try changing the thresholds or selecting another subset."))
@@ -337,6 +520,7 @@ cytokinenetwork <- function(
   
   #Getting the nodes annotation to send to cyjShiny
   tbl_nodes <- reactive({
+    req(tbl_edges())
     nodes <- filterNodes(tbl_edges(), node_type)
   })
 
@@ -350,16 +534,14 @@ cytokinenetwork <- function(
     })
     
   output$table <- DT::renderDataTable(
-                      DT::datatable(tbl_edges(), colnames= c("From" = "source", "To" = "target", "Concordance" = "score"), 
+                      DT::datatable(tbl_edges(), colnames= c("From" = "source", "To" = "target", "Concordance" = "score"),
                                     caption = "Edges Table", width = "100%", rownames = FALSE)
-                      
                       )
+  
+
   output$tableNodes <- DT::renderDataTable(
-                            DT::datatable(get_ab_nodes(abundant_nodes(), tbl_edges(), input$byImmune) , caption = "Nodes Table",
-                                          colnames= c("Abundance" = "UpBinRatio"), width = "100%", rownames = FALSE)
-                          
-                          # DT::datatable((merge(tbl_nodes(), abundant_nodes(), by.x = "name", by.y = "Node")) , caption = "Nodes Table",
-                          #               colnames= c("Node" = "name", "Abundance" = "UpBinRatio"), width = "100%", rownames = FALSE)
+                            DT::datatable(get_ab_nodes(abundant_nodes(), tbl_edges(), stratify$byImmune) , caption = "Nodes Table",
+                                        colnames= c("Abundance" = "UpBinRatio"), width = "100%", rownames = FALSE)
                         )
   
   output$download_data <- downloadHandler(
