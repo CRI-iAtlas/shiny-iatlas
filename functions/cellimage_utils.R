@@ -41,6 +41,13 @@ build_multi_imageprotein_expression_df <- function(
   expression_col = "normalized_count",
   id_col = "ParticipantBarcode"){
   
+  # current function was written for narrow format expression data
+  # use gather to turn wide input to narrow
+  expression_df <- tidyr::gather(expression_df,"Symbol",
+                                 "normalized_count",-ParticipantBarcode)
+  #expression_df <- tidyr::gather(expression_df,expression_filter_col,
+  #                               expression_col,-ParticipantBarcode)
+  
   expression_df <- multi_filter_imageprotein_expression_df(
     expression_df, 
     id_col, 
@@ -99,7 +106,7 @@ build_cellcontent_df <- function(
 
 
 ## For the variable of interest, get min max possible values, color range and color value
-getVarColor <- function(voi,soi,colormap){
+getVarColor <- function(voi,soi,colormap,minvec,maxvec,dfv){
   vmin <- minvec[voi]
   vmax <- maxvec[voi]
   vnstep <- 51

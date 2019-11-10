@@ -143,14 +143,13 @@ cellimage <- function(
   #########################################################################
   
   sois <- unique(group_df[[group_col]])
-  soi <- "BRCA.LumB"
   soi <- sois[5]
   
   for (ind in seq(1,length(image.object.labels))){
     ioa <- image.object.labels[ind]
     datavar <- variable.annotations %>% filter(ImageVariableID==ioa) %>% pluck("FeatureLabel")
     colormap <-   variable.annotations %>% filter(ImageVariableID==ioa) %>% pluck("ColorScale")
-    fill.color.new[ind] <- getVarColor(datavar,soi,colormap)
+    fill.color.new[ind] <- getVarColor(datavar,soi,colormap,minvec,maxvec,dfv)
   }
   for (s in pathlabels ){
     wnew$children[[gTree.name]]$children[[s]]$gp$fill <- fill.color.new[s]
