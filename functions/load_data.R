@@ -105,6 +105,20 @@ create_cell_fraction_options <- function() {
     }
 }
 
+load_cellimage_base <- function(){
+  pic <- grImport2::readPicture("data/tcell-svg-take3-cairo.svg")
+  w <- grImport2::pictureGrob(pic)
+  gTree.name <- grid::childNames(w) ## label of overall gTree object
+  pathlabels <- w$children[[gTree.name]]$childrenOrder ## labels and order of children 
+  cellimage_base <- list()
+  cellimage_base$w <- w
+  cellimage_base$pathlabels <- pathlabels
+  cellimage_base
+  list(cellimage_base)
+}
+  
+  
+
 # Load global data ----
 
 load_data <- function() {
@@ -116,6 +130,7 @@ load_data <- function() {
     io_target_annotations_data <- load_io_target_annotations()
     io_target_expression_data <- load_io_target_expression()
     driver_mutation_data <- load_driver_mutation()
+    cell_image_base_data <- load_cellimage_base()
     list(
         feature_df = manifest_data$feature_df,
         feature_method_df = manifest_data$feature_method_df,
@@ -126,6 +141,7 @@ load_data <- function() {
         im_expr_df = im_expression_data$im_expr_df,
         io_target_annotations = io_target_annotations_data$io_target_annotations,
         io_target_expr_df = io_target_expression_data$io_target_expr_df,
-        driver_mutation_df = driver_mutation_data$driver_mutation_df
+        driver_mutation_df = driver_mutation_data$driver_mutation_df,
+        cell_image_base =  cell_image_base_data$cellimage_base
     )
 }

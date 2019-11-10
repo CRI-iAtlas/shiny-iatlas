@@ -75,7 +75,6 @@ build_cellcontent_df <- function(
   id_col = "ParticipantBarcode"
   ){
   
-  #### WORK HERE
   assert_df_has_columns(df, c(group_column, cell_columns))
   long_df <- df %>% 
     dplyr::select(
@@ -91,19 +90,7 @@ build_cellcontent_df <- function(
   return(result_df)
 }
 
-## not sure why this is here .Seems like it is already in functions/transform.R and should be deleted
-#build_cell_fraction_df <- function(df, group_column, value_columns){
-#  assert_df_has_columns(df, c(group_column, value_columns))
-#  result_df <- df %>% 
-#    dplyr::select(GROUP = group_column, value_columns) %>% 
-#    tidyr::gather(fraction_type, fraction, -GROUP) %>% 
-#    tidyr::drop_na()
-#  assert_df_has_columns(result_df, c("GROUP", "fraction_type", "fraction"))
-#  return(result_df)
-#}
-
 #--------- color functions -----------
-
 
 ## For the variable of interest, get min max possible values, color range and color value
 getVarColor <- function(voi,soi,colormap,minvec,maxvec,dfv){
