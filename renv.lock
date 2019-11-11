@@ -11,7 +11,7 @@
   "Packages": {
     "AnnotationDbi": {
       "Package": "AnnotationDbi",
-      "Version": "1.46.1",
+      "Version": "1.48.0",
       "Source": "Bioconductor"
     },
     "BH": {
@@ -21,12 +21,12 @@
     },
     "Biobase": {
       "Package": "Biobase",
-      "Version": "2.44.0",
+      "Version": "2.46.0",
       "Source": "Bioconductor"
     },
     "BiocGenerics": {
       "Package": "BiocGenerics",
-      "Version": "0.30.0",
+      "Version": "0.32.0",
       "Source": "Bioconductor"
     },
     "BiocManager": {
@@ -36,12 +36,12 @@
     },
     "BiocParallel": {
       "Package": "BiocParallel",
-      "Version": "1.18.1",
+      "Version": "1.20.0",
       "Source": "Bioconductor"
     },
     "BiocVersion": {
       "Package": "BiocVersion",
-      "Version": "3.9.0",
+      "Version": "3.10.1",
       "Source": "Bioconductor"
     },
     "DBI": {
@@ -61,7 +61,7 @@
     },
     "IRanges": {
       "Package": "IRanges",
-      "Version": "2.18.3",
+      "Version": "2.20.0",
       "Source": "Bioconductor"
     },
     "ImmuneSubtypeClassifier": {
@@ -136,7 +136,7 @@
     },
     "S4Vectors": {
       "Package": "S4Vectors",
-      "Version": "0.22.1",
+      "Version": "0.24.0",
       "Source": "Bioconductor"
     },
     "XML": {
@@ -436,7 +436,7 @@
     },
     "genefilter": {
       "Package": "genefilter",
-      "Version": "1.66.0",
+      "Version": "1.68.0",
       "Source": "Bioconductor"
     },
     "generics": {
@@ -606,7 +606,7 @@
     },
     "limma": {
       "Package": "limma",
-      "Version": "3.40.6",
+      "Version": "3.42.0",
       "Source": "Bioconductor"
     },
     "lubridate": {
@@ -936,7 +936,7 @@
     },
     "sva": {
       "Package": "sva",
-      "Version": "3.32.1",
+      "Version": "3.34.0",
       "Source": "Bioconductor"
     },
     "sys": {
