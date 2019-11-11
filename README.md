@@ -48,6 +48,26 @@ To run the app locally:
    shiny::runApp()
    ```
 
+## Development
+
+When adding any new dependencies to the application, they may be added using:
+
+```R
+renv::install()
+```
+
+see [https://rstudio.github.io/renv/reference/install.html](https://rstudio.github.io/renv/reference/install.html) for more details.
+
+Once a new package is added, run:
+
+```R
+renv::snapshot()
+```
+
+This will ensure the new package is added to the renv.lock file.
+
+For more on package management with renv, please see [https://rstudio.github.io/renv/articles/renv.html](https://rstudio.github.io/renv/articles/renv.html)
+
 ## Deployment
 
 To deploy, run this line:
