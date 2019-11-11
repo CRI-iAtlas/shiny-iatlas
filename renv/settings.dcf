@@ -1,5 +1,5 @@
 external.libraries:
 ignored.packages:
-snapshot.type: packrat
+snapshot.type: simple
 use.cache: TRUE
 vcs.ignore.library: TRUE
