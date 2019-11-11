@@ -33,7 +33,8 @@ volcano_plot_module <- function(
     fold_change_threshold = 2
 ){
     volcano_plot_con <- reactive({
-        con <- volcano_con() %>% 
+        req(volcano_con(), pval_threshold, fold_change_threshold)
+        volcano_con() %>% 
             dplyr::mutate(color = dplyr::if_else(
                 pvalue < pval_threshold & abs(fold_change) > fold_change_threshold,
                 "red",
@@ -78,7 +79,7 @@ volcano_plot_module <- function(
             label_value %in% dplyr::pull(violin_group_con(), label),
             "Click a point on the above scatterplot to see a violin plot for the comparison"
         ))
-        
+
         title <- create_volcano_drilldown_plot_title(
             volcano_con(), 
             label_value,
@@ -92,9 +93,6 @@ volcano_plot_module <- function(
             dplyr::select(sample, x = status, y = value) %>% 
             dplyr::as_tibble()
         
-        print(nrow(violin_plot_tbl))
-            
-
         create_violinplot(
             violin_plot_tbl,
             xlab = label_value,

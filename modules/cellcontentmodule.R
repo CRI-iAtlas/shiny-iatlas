@@ -20,7 +20,7 @@ cellcontent <- function(
     group_display_choice, 
     feature_values_long_con,
     feature_con,
-    group_con
+    groups_con
 ) {
     
     callModule(
@@ -29,7 +29,7 @@ cellcontent <- function(
         group_display_choice, 
         feature_values_long_con,
         feature_con,
-        group_con
+        groups_con
     )
     
     callModule(
@@ -38,7 +38,7 @@ cellcontent <- function(
         group_display_choice, 
         feature_values_long_con,
         feature_con,
-        group_con
+        groups_con
     )
 }
 
@@ -90,7 +90,7 @@ overall_cell_proportions_module  <- function(
     group_display_choice, 
     feature_values_long_con,
     feature_con,
-    group_con
+    groups_con
 ){
     
     cp_feature_con <- reactive({
@@ -129,11 +129,11 @@ overall_cell_proportions_module  <- function(
     })
     
     output$barplot_text <- renderText({
-        req(group_con())
+        req(groups_con())
         eventdata <- event_data("plotly_click", source = "op_barplot")
         validate(need(eventdata, "Click above plot"))
         
-        group_con() %>% 
+        groups_con() %>% 
             dplyr::filter(group == local(unique(dplyr::pull(eventdata, "x")))) %>% 
             dplyr::mutate(text = paste0(group_name, ": ", characteristics)) %>%
             dplyr::pull(text)
@@ -207,7 +207,7 @@ cell_type_fractions_module <- function(
     group_display_choice, 
     feature_values_long_con,
     feature_con,
-    group_con
+    groups_con
 ){
     
     cf_feature_con <- reactive({
@@ -245,11 +245,11 @@ cell_type_fractions_module <- function(
     })
     
     output$barplot_text <- renderText({
-        req(group_con())
+        req(groups_con())
         eventdata <- event_data("plotly_click", source = "cf_barplot")
         validate(need(eventdata, "Click above plot"))
         
-        group_con() %>% 
+        groups_con() %>% 
             dplyr::filter(group == local(unique(dplyr::pull(eventdata, "x")))) %>% 
             dplyr::mutate(text = paste0(group_name, ": ", characteristics)) %>%
             dplyr::pull(text)

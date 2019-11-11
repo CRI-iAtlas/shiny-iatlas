@@ -1,9 +1,3 @@
-# overall_cell_proportions_module ----
-
-
-
-# data_table_module ----
-
 data_table_module_UI <- function(
     id, 
     title = "", 
@@ -46,10 +40,10 @@ data_table_module <- function(
             ...
         )
         if(color){
-           dt <-  DT::formatStyle(
-               dt,
-               color_column,
-               backgroundColor = DT::styleEqual(colors, colors))
+            dt <-  DT::formatStyle(
+                dt,
+                color_column,
+                backgroundColor = DT::styleEqual(colors, colors))
         }
         return(dt)
     })

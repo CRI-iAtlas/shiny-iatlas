@@ -28,16 +28,16 @@ feature_values_wide <- panimmune_data$fmx_df %>%
     dplyr::mutate(Tumor_fraction = 1 - Stromal_Fraction) %>% 
     dplyr::select(
         sample = ParticipantBarcode, 
-        Study,
-        Subtype_Curated_Malta_Noushmehr_et_al,
-        Subtype_Immune_Model_Based,
+        TCGA_Study = Study,
+        TCGA_Subtype = Subtype_Curated_Malta_Noushmehr_et_al,
+        Immune_Subtype = Subtype_Immune_Model_Based,
         features$feature
     )
     
 
 feature_values_wide %>% 
     tidyr::pivot_longer(
-        -c(sample, Study, Subtype_Curated_Malta_Noushmehr_et_al, Subtype_Immune_Model_Based),
+        -c(sample, TCGA_Study, Immune_Subtype, TCGA_Subtype),
         names_to = "feature",
         values_to = "value") %>% 
     dplyr::filter(!is.na(value)) %>% 
@@ -50,20 +50,26 @@ groups <- panimmune_data$sample_group_df %>%
         group_name = FeatureName,
         color = FeatureHex,
         parent_group = sample_group,
-        characteristics = Characteristics
-    )
-
-feather::write_feather(groups, "data2/groups.feather")
-
-subtype_groups <- panimmune_data$sample_group_df %>% 
-    dplyr::select(
-        group = FeatureValue,
+        characteristics = Characteristics,
         subtype_group = `TCGA Studies`,
         subtype_group_display = FeatureDisplayName
     ) %>% 
-    tidyr::drop_na()
+    dplyr::mutate(parent_group = dplyr::if_else(
+        parent_group == "Study",
+        "TCGA_Study",
+        dplyr::if_else(
+            parent_group == "Subtype_Immune_Model_Based",
+            "Immune_Subtype", 
+            "TCGA_Subtype"
+        )
+    )) %>% 
+    dplyr::mutate(parent_group_display = stringr::str_replace_all(
+        parent_group, 
+        "_",
+        " "
+    ))
 
-feather::write_feather(subtype_groups, "data2/subtype_groups.feather")
+feather::write_feather(groups, "data2/groups.feather")
 
 immunomodulator_expr <- panimmune_data$im_expr_df %>% 
     dplyr::rename(sample = ParticipantBarcode) %>% 
@@ -178,7 +184,17 @@ driver_results <- panimmune_data$driver_result_df %>%
         fold_change,
         log10_pvalue,
         log10_fold_change
-    )
+    ) %>% 
+    dplyr::mutate(parent_group = dplyr::if_else(
+        parent_group == "Study",
+        "TCGA_Study",
+        dplyr::if_else(
+            parent_group == "Subtype_Immune_Model_Based",
+            "Immune_Subtype", 
+            "TCGA_Subtype"
+        )
+    ))
+
 
 feather::write_feather(
     driver_results[1:700000,], 

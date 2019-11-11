@@ -1,3 +1,77 @@
+# survival module -------------------------------------------------------------
+
+build_survival_tbl <- function(
+    con,
+    group_list, 
+    group_feature, 
+    time_feature, 
+    n_groups
+){
+
+    if (time_feature == "OS_time") {
+        status_feature <- "OS"
+    } else {
+        status_feature <- "PFI_1"
+    }
+
+    if (group_feature %in% group_list){
+        tbl <- con %>% 
+            dplyr::filter(feature %in% c(time_feature, status_feature)) %>% 
+            dplyr::as_tibble() %>% 
+            tidyr::pivot_wider(values_from = value, names_from = feature) %>% 
+            dplyr::select(
+                group,
+                time = time_feature,
+                status = status_feature
+            ) %>% 
+            dplyr::filter_all(dplyr::all_vars(!is.na(.)))
+    } else {
+        tbl <- con %>% 
+            dplyr::filter(feature %in% c(time_feature, status_feature, group_feature)) %>% 
+            dplyr::as_tibble() %>% 
+            tidyr::pivot_wider(values_from = value, names_from = feature) %>% 
+            dplyr::filter_all(dplyr::all_vars(!is.na(.))) %>% 
+            dplyr::select(
+                group = group_feature,
+                time = time_feature,
+                status = status_feature
+            ) %>% 
+            dplyr::mutate(group = cut(group, n_groups, ordered_result = T))
+    }
+    return(tbl)
+}
+
+build_ci_matrix <- function(
+    con, features_con, features, time_feature, status_feature
+){
+    features_tbl <- features_con %>% 
+        dplyr::filter(feature %in% features) %>% 
+        dplyr::arrange(order) %>% 
+        dplyr::select(feature, display) %>% 
+        dplyr::as_tibble()
+    
+    con %>% 
+        dplyr::filter(feature %in% c(features, time_feature, status_feature)) %>% 
+        dplyr::as_tibble() %>% 
+        tidyr::pivot_wider(c(sample, group), names_from = feature, values_from = value) %>% 
+        tidyr::pivot_longer(features) %>% 
+        dplyr::select(-sample) %>% 
+        tidyr::nest(value = value, data = c(time_feature, status_feature)) %>% 
+        dplyr::mutate(
+            value = purrr::map(value, as.matrix),
+            data = purrr::map(data, as.matrix)
+        ) %>% 
+        dplyr::mutate(result = purrr::map2_dbl(value, data, concordanceIndex::concordanceIndex)) %>% 
+        dplyr::select(-c(value, data)) %>% 
+        tidyr::pivot_wider(name, names_from = group, values_from = result) %>% 
+        dplyr::inner_join(features_tbl, by = c("name" = "feature")) %>% 
+        dplyr::select(-name) %>% 
+        tidyr::drop_na() %>% 
+        as.data.frame() %>% 
+        tibble::column_to_rownames("display") %>% 
+        as.matrix()
+}
+
 # cell fractions module -------------------------------------------------------
 
 build_cell_fractions_barplot_tbl <- function(feature_con, value_con){
@@ -94,14 +168,30 @@ create_volcano_drilldown_plot_title <- function(
 
 subset_long_con_with_group <- function(
     con, 
+    user_group_tbl,
     group_col, 
     group_values = "none",
     feature_col = "feature",
     value_col = "value"
 ){
-    con <- con %>% 
-        dplyr::select("sample", "group" = group_col, feature_col, value_col) %>% 
-        dplyr::filter_all(dplyr::all_vars(!is.na(.)))
+    if(is.data.frame(user_group_tbl) & !(group_col %in% colnames(con))){
+        # needs to be a general solution to any backend
+        
+        # DBI::dbCreateTable(PANIMMUNE_DB, "user_groups", user_group_tbl)
+        # DBI::dbAppendTable(PANIMMUNE_DB, "user_groups", user_group_tbl)
+        # user_groups_con <- dplyr::tbl(PANIMMUNE_DB, "user_groups")
+        # 
+        # con <- con %>% 
+        #     dplyr::inner_join(user_groups_con, by = "sample") %>% 
+        #     dplyr::select("sample", "group" = group_col, feature_col, value_col) %>% 
+        #     dplyr::filter_all(dplyr::all_vars(!is.na(.)))
+        
+    } else {
+        con <- con %>% 
+            dplyr::select("sample", "group" = group_col, feature_col, value_col) %>% 
+            dplyr::filter_all(dplyr::all_vars(!is.na(.)))
+    }
+    
     if(group_values[[1]] != "none"){
         con <- dplyr::filter(con, group %in% group_values)
     }

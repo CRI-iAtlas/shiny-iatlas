@@ -26,7 +26,8 @@ immunefeatures <- function(
     group_display_choice, 
     group_con,
     feature_values_con,
-    feature_con
+    features_con,
+    plot_colors
 ){
     
     distributions_feature_value_con <- reactive({
@@ -37,8 +38,8 @@ immunefeatures <- function(
     
 
     distributions_feature_con <- reactive({
-        req(feature_con())
-        feature_con() %>% 
+        req(features_con())
+        features_con() %>% 
             dplyr::select(DISPLAY = display, INTERNAL = feature, CLASS = class) %>% 
             dplyr::filter_all(dplyr::all_vars(!is.na(.)))
     })
@@ -51,6 +52,7 @@ immunefeatures <- function(
         distributions_feature_con,
         group_con,
         group_display_choice,
+        plot_colors,
         key_col = "label"
     )
     
@@ -60,7 +62,7 @@ immunefeatures <- function(
         immunefeatures_correlations,
         "immunefeatures_correlations",
         feature_values_con,
-        feature_con,
+        features_con,
         group_con
     )
 
@@ -125,15 +127,15 @@ immunefeatures_correlations <- function(
     output, 
     session, 
     feature_value_con,
-    feature_con,
+    features_con,
     group_con
 ){
     
     ns <- session$ns
     
     heatmap_choices_con <- reactive({
-        req(feature_con())
-        feature_con() %>% 
+        req(features_con())
+        features_con() %>% 
             dplyr::select(class, display, feature) %>% 
             dplyr::filter_all(dplyr::all_vars(!is.na(.)))
     })
@@ -231,7 +233,8 @@ immunefeatures_correlations <- function(
                 xlab =  clicked_feature,
                 ylab =  response_display_name(),
                 title = clicked_group,
-                label_col = "label"
+                label_col = "label",
+                fill_colors = "blue"
             )
     })
 }

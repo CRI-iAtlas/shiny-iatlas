@@ -16,93 +16,99 @@ shinyServer(function(input, output, session) {
       shinydashboard::updateTabItems(session, "explorertabs", query[['module']])
     }
   })
-
-  
+    
+    # analysis modules --------------------------------------------------------
+    
     # Cell content
     callModule(
         cellcontent,
         "module1",
-        reactive(input$ss_choice),
-        feature_values_long_con,
-        feature_con,
-        group_con
+        group_display_choice,
+        subset_feature_values_long_con,
+        features_con,
+        subset_groups_con
     )
     
-    # Groups
-    user_group_df <- callModule(
+    user_group_tbl <- callModule(
         groupsoverview,
         "module3",
-        reactive(input$ss_choice),
-        reactive(group_internal_choice()),
-        reactive(sample_group_df()),
-        reactive(subset_df()),
-        reactive(plot_colors()),
-        reactive(group_options()),
-        reactive(width()))
-    
+        groups_con,
+        subset_feature_values_long_con,
+        groups_list,
+        tcga_subtypes_list,
+        reactive(input$group_internal_choice),
+        group_values_con,
+        subtypes,
+        plot_colors
+    )
+
     # Survival curves
     callModule(
         survival,
         "module4",
-        reactive(input$ss_choice),
-        reactive(group_internal_choice()),
-        reactive(group_options()),
-        reactive(sample_group_df()),
-        reactive(subset_df()),
-        reactive(plot_colors()))
-    
-    # Immunomodulators
-    callModule(
-        immunomodulator,
-        "module5",
-        reactive(input$ss_choice),
-        group_con,
-        immunomodulator_expr_con,
-        immunomodulators_con
+        features_named_list,
+        group_display_choice,
+        reactive(input$group_internal_choice),
+        subset_feature_values_long_con,
+        groups_list,
+        subset_groups_con,
+        features_con,
+        plot_colors
     )
+    
+    # # Immunomodulators
+    # callModule(
+    #     immunomodulator,
+    #     "module5",
+    #     group_display_choice,
+    #     subset_groups_con,
+    #     subset_immunomodulator_expr_con,
+    #     immunomodulators_con,
+    #     plot_colors
+    # )
     
     # Immune features
     callModule(
         immunefeatures,
         "module6",
-        reactive(input$ss_choice),
-        group_con,
-        feature_values_long_con,
-        feature_con
+        group_display_choice,
+        subset_groups_con,
+        subset_feature_values_long_con,
+        features_con, 
+        plot_colors
     )
     
     # TILmap features
     callModule(
         tilmap,
         "module7",
-        reactive(input$ss_choice),
-        group_con,
-        feature_values_long_con,
-        feature_con,
-        til_image_links_con
+        group_display_choice,
+        subset_groups_con,
+        til_image_links_con,
+        subset_feature_values_long_con,
+        features_con,
+        plot_colors
     )
     
-    # Driver associations
-    callModule(
-        drivers,
-        "module8",
-        driver_result_df,
-        subset_df,
-        group_internal_choice,
-        driver_results_con,
-        driver_mutations_con,
-        feature_values_long_con
-    )
-    
-    # IO Target
-    callModule(
-        iotarget,
-        "module9",
-        reactive(input$ss_choice),
-        group_con,
-        io_target_expr_con,
-        io_targets_con
-    )
+    # # Driver associations
+    # callModule(
+    #     drivers,
+    #     "module8",
+    #     subset_driver_results_con,
+    #     subset_driver_mutations_con,
+    #     subset_feature_values_long_con
+    # )
+    # 
+    # # IO Target
+    # callModule(
+    #     iotarget,
+    #     "module9",
+    #     group_display_choice,
+    #     subset_groups_con,
+    #     subset_io_target_expr_con,
+    #     io_targets_con,
+    #     plot_colors
+    # )
     
     # subtype predictor
     callModule(
@@ -114,8 +120,8 @@ shinyServer(function(input, output, session) {
         datainfo,
         "moduleX")
     
-    output$ss_choice <- renderText({
-        input$ss_choice
+    output$group_choice <- renderText({
+        group_display_choice()
     })
 
     observeEvent(input$link_to_module1, {
@@ -146,60 +152,93 @@ shinyServer(function(input, output, session) {
         updateNavlistPanel(session, "toolstabs", "Immune Subtype Classifier")
     })
     
-    # group selection ui ------------------------------------------------------
+    # create db connections ---------------------------------------------------
     
-    group_options <- reactive({
-        groups <-  c("Immune Subtype", "TCGA Subtype", "TCGA Study")
-        user_groups <- try(colnames(user_group_df()))
-        if(is.vector(user_groups)) groups <- c(groups, user_groups[-1])
-        return(groups)
+    con_function <- reactive({
+        if(DATAMODE == "SQLite_db"){
+            con_function <- purrr::partial(
+                dplyr::tbl,
+                src = PANIMMUNE_DB
+            )
+        } else {
+            stop("DATAMODE value not currently supported")
+        }
+    })
+    
+    groups_con               <- reactive(con_function()("groups"))
+    features_con             <- reactive(con_function()("features"))
+    feature_values_long_con  <- reactive(con_function()("feature_values_long"))
+    driver_mutations_con     <- reactive(con_function()("driver_mutations"))
+    driver_results_con       <- reactive(con_function()("driver_results"))
+    immunomodulator_expr_con <- reactive(con_function()("immunomodulator_expr"))
+    io_target_expr_con       <- reactive(con_function()("io_target_expr"))
+    immunomodulators_con     <- reactive(con_function()("immunomodulators"))
+    io_targets_con           <- reactive(con_function()("io_targets"))
+    til_image_links_con      <- reactive(con_function()("til_image_links"))
+    
+    # group selection ---------------------------------------------------------
+    
+    groups_list <- reactive({
+        req(groups_con(), user_group_tbl())
+        lst <- create_named_list(
+            groups_con(), 
+            "parent_group_display", 
+            "parent_group"
+        )
+        if(is.data.frame(user_group_tbl())){
+            lst <- user_group_tbl() %>% 
+                dplyr::select(-sample) %>% 
+                colnames() %>% 
+                purrr::set_names(., .) %>% 
+                c(lst, .)
+
+        }
+        return(lst)
+    })
+    
+    tcga_subtypes_list <- reactive({
+        req(groups_con())
+        create_named_list(
+            groups_con(), 
+            "subtype_group_display", 
+            "subtype_group"
+        )
     })
     
     output$select_group_UI <- renderUI({
-        
+        req(groups_list())
         selectInput(
-            inputId = "ss_choice",
+            inputId = "group_internal_choice",
             label = strong("Select Sample Groups"),
-            choices = as.character(
-                group_options()
-            ),
+            choices = groups_list(),
             selected = "Immune Subtype"
         )
     })
     
+    group_display_choice <- reactive({
+        req(input$group_internal_choice) 
+        stringr::str_replace_all(input$group_internal_choice, "_", " ")
+    })
+    
     output$study_subset_UI <- renderUI({
-        req(input$ss_choice, panimmune_data$sample_group_df, cancelOutput = TRUE)
-        if (input$ss_choice == "TCGA Subtype") {
-            
-            choices <- panimmune_data$sample_group_df %>%
-                dplyr::filter(sample_group == "Subtype_Curated_Malta_Noushmehr_et_al") %>%
-                dplyr::select("FeatureDisplayName", "TCGA Studies") %>%
-                dplyr::distinct() %>%
-                dplyr::arrange(`TCGA Studies`) %>%
-                tibble::deframe()
-            
-            selectInput("study_subset_selection",
-                        "Choose study subset:",
-                        choices = choices,
-                        selected = names(choices[1]))
+        req(input$group_internal_choice)
+        if (input$group_internal_choice == "TCGA_Subtype") {
+            req(tcga_subtypes_list())
+            selectInput(
+                "tcga_subset_choice",
+                "Choose study subset:",
+                choices = tcga_subtypes_list()
+            )
         }
     })
     
-    group_internal_choice <- reactive({
-        req(input$ss_choice, panimmune_data$feature_df, cancelOutput = T)
-        get_group_internal_name(input$ss_choice)
-    })
-    
-    # db table formatting -----------------------------------------------------
-    
     subtypes <- reactive({
-        req(group_internal_choice())
-        if(group_internal_choice() == "Subtype_Curated_Malta_Noushmehr_et_al"){
-            req(input$study_subset_selection, PANIMMUNE_DB)
-            subtypes <- PANIMMUNE_DB %>% 
-                dplyr::tbl("subtype_groups") %>% 
+        req(input$group_internal_choice)
+        if(input$group_internal_choice == "TCGA_Subtype"){
+            req(input$tcga_subset_choice, groups_con())
+            subtypes <- groups_con() %>%  
                 dplyr::filter(
-                    subtype_group == local(input$study_subset_selection)
+                    subtype_group == local(input$tcga_subset_choice)
                 ) %>% 
                 dplyr::pull(group)
         } else {
@@ -208,180 +247,95 @@ shinyServer(function(input, output, session) {
         return(subtypes)
     })
     
-    feature_values_long_con <- reactive({
-        req(PANIMMUNE_DB, group_internal_choice(), subtypes())
-        PANIMMUNE_DB %>% 
-            dplyr::tbl("feature_values_long") %>% 
-            subset_long_con_with_group(
-                group_internal_choice(), 
-                group_values = subtypes()
-            )
-    })
+    # connections subset by selected group ------------------------------------
+    # This includes using the current user group, but is currently disabled
     
-    immunomodulator_expr_con <- reactive({
-        req(PANIMMUNE_DB, group_internal_choice(), subtypes())
-        PANIMMUNE_DB %>% 
-            dplyr::tbl("immunomodulator_expr") %>% 
-            subset_long_con_with_group(
-                group_internal_choice(), 
-                group_values = subtypes(),
-                feature_col = "gene"
-            )
-    })
-    
-    io_target_expr_con <- reactive({
-        req(PANIMMUNE_DB, group_internal_choice(), subtypes())
-        PANIMMUNE_DB %>% 
-            dplyr::tbl("io_target_expr") %>% 
-            subset_long_con_with_group(
-                group_internal_choice(), 
-                group_values = subtypes(),
-                feature_col = "gene"
-            )
-    })
-    
-    driver_mutations_con <- reactive({
-        req(PANIMMUNE_DB, group_internal_choice(), subtypes())
-        PANIMMUNE_DB %>% 
-            dplyr::tbl("driver_mutations") %>% 
-            subset_long_con_with_group(
-                group_internal_choice(), 
-                group_values = subtypes(),
-                feature_col = "gene",
-                value_col = "status"
-            )
-    })
-    
-    til_image_links_con <- reactive({
-        req(PANIMMUNE_DB)
-        dplyr::tbl( PANIMMUNE_DB, "til_image_links")
-    })
-
-    
-    feature_con <- reactive({
-        req(PANIMMUNE_DB)
-        PANIMMUNE_DB %>% 
-            dplyr::tbl("features")
-    })
-    
-    group_con <- reactive({
-        req(PANIMMUNE_DB, group_internal_choice())
-        con <- PANIMMUNE_DB %>% 
-            dplyr::tbl("groups") %>% 
-            dplyr::filter(parent_group == local(group_internal_choice()))
-        if(group_internal_choice() == "Subtype_Curated_Malta_Noushmehr_et_al"){
-            req(subtypes())
-            con <- dplyr::filter(con, group %in% local(subtypes()))
-        } 
-        return(con)
-    })
-    
-
-    immunomodulators_con <- reactive({
-        req(PANIMMUNE_DB)
-        PANIMMUNE_DB %>%
-            dplyr::tbl("immunomodulators") 
-    })
-    
-    io_targets_con <- reactive({
-        req(PANIMMUNE_DB)
-        PANIMMUNE_DB %>%
-            dplyr::tbl("io_targets") 
-    })
-    
-    driver_results_con <- reactive({
-        req(PANIMMUNE_DB, group_internal_choice())
-        con <- PANIMMUNE_DB %>%
-            dplyr::tbl("driver_results") %>% 
-            dplyr::filter(parent_group == local(group_internal_choice()))
-        if(group_internal_choice() == "Subtype_Curated_Malta_Noushmehr_et_al"){
-            req(subtypes())
-            con <- dplyr::filter(con, group %in% local(subtypes()))
-        } 
-        return(con)
-    })
-    
-    
-    # feature_values_wide_con <- reactive({
-    #     req(PANIMMUNE_DB, group_internal_choice())
-    #     numeric_cols <- PANIMMUNE_DB %>% 
-    #         dplyr::tbl("feature_values_wide") %>% 
-    #         dplyr::select_if(is.numeric) %>%
-    #         colnames()
-    #     con <- PANIMMUNE_DB %>% 
-    #         dplyr::tbl("feature_values_wide") %>% 
-    #         dplyr::select(
-    #             sample, 
-    #             group = local(group_internal_choice()),
-    #             numeric_cols
-    #         ) %>% 
-    #         dplyr::filter(!is.na(group))
-    #     if(group_internal_choice() == "Subtype_Curated_Malta_Noushmehr_et_al"){
-    #         req(subtypes())
-    #         con <- dplyr::filter(con, group %in% local(subtypes()))
-    #     }
-    #     return(con)
-    # })
-    
-
-
-    # old flat file formatting ------------------------------------------------
-    
-
-    study_subset_internal_choice <- reactive({
-        req(input$study_subset_selection, panimmune_data$feature_df, cancelOutput = T)
-        get_group_internal_name(input$study_subset_selection)
-    })
-    
-    sample_group_df <- reactive({
-
-        req(
-            panimmune_data$sample_group_df,
-            group_internal_choice(),
-            !is.null(user_group_df()),
-            cancelOutput = T)
-
-       subset_sample_group_df(
-            group_internal_choice(),
-            input$study_subset_selection,
-            user_group_df())
-    })
-    
-    study_subset_groups <- reactive({
-        req(sample_group_df(), study_subset_internal_choice())
-        sample_group_df() %>% 
-            dplyr::filter(`TCGA Studies` == study_subset_internal_choice()) %>% 
-            dplyr::pull(FeatureValue)
-    })
-
-    subset_df <- reactive({
-        req(
-            group_internal_choice(),
-            sample_group_df(),
-            !is.null(user_group_df()),
-            cancelOutput = T)
-
-        subset_df <- subset_panimmune_df(
-            group_column = group_internal_choice(),
-            user_group_df = user_group_df(),
-            sample_group_df = sample_group_df()
+    subset_feature_values_long_con <- reactive({
+        req(feature_values_long_con(), input$group_internal_choice, subtypes())
+        subset_long_con_with_group(
+            feature_values_long_con(),
+            user_group_tbl(),
+            input$group_internal_choice, 
+            group_values = subtypes()
         )
     })
     
-    plot_colors <- reactive({
-        req(
-            group_internal_choice(),
-            sample_group_df(),
-            cancelOutput = T)
-
-        plot_colors <- sample_group_df() %>%
-            dplyr::filter(sample_group == group_internal_choice()) %>%
-            dplyr::select(FeatureValue, FeatureHex) %>%
-            tibble::deframe()
+    subset_immunomodulator_expr_con <- reactive({
+        req(immunomodulator_expr_con(), input$group_internal_choice, subtypes())
+        subset_long_con_with_group(
+            immunomodulator_expr_con(),
+            user_group_tbl(),
+            input$group_internal_choice, 
+            group_values = subtypes(),
+            feature_col = "gene"
+        )
     })
     
-
-
+    subset_io_target_expr_con <- reactive({
+        req(io_target_expr_con(), input$group_internal_choice, subtypes())
+        subset_long_con_with_group(
+            io_target_expr_con(),
+            user_group_tbl(),
+            input$group_internal_choice, 
+            group_values = subtypes(),
+            feature_col = "gene"
+        )
+    })
+    
+    subset_driver_mutations_con <- reactive({
+        req(driver_mutations_con(), input$group_internal_choice, subtypes())
+        subset_long_con_with_group(
+            driver_mutations_con(),
+            user_group_tbl(),
+            input$group_internal_choice,
+            group_values = subtypes(),
+            feature_col = "gene",
+            value_col = "status"
+        )
+    })
+    
+    subset_driver_results_con <- reactive({
+        req(driver_results_con(), input$group_internal_choice)
+        con <- driver_results_con() %>%
+            dplyr::filter(parent_group == local(input$group_internal_choice))
+        if(input$group_internal_choice == "TCGA_Subtype"){
+            req(subtypes())
+            con <- dplyr::filter(con, group %in% local(subtypes()))
+        }
+        return(con)
+    })
+    
+    subset_groups_con <- reactive({
+        req(groups_con(), input$group_internal_choice)
+        con <- groups_con() %>% 
+            dplyr::filter(parent_group == local(input$group_internal_choice))
+        if(input$group_internal_choice == "TCGA_Subtype"){
+            req(subtypes())
+            con <- dplyr::filter(con, group %in% local(subtypes()))
+        } 
+        return(con)
+    })
+    
+    # other connections -------------------------------------------------------
+    
+    group_values_con <- reactive({
+        req(feature_values_long_con(), groups_list())
+        feature_values_long_con() %>% 
+            dplyr::select(c("sample", local(groups_list()))) %>% 
+            dplyr::distinct()
+    })
+    
+    # other -------------------------------------------------------------------
+    
+    plot_colors <- reactive({
+        req(subset_groups_con())
+        create_named_list(subset_groups_con(), "group", "color") 
+    })
+    
+    features_named_list <- reactive({
+        req(features_con())
+        create_nested_named_list(features_con())
+    })
 })
 
 

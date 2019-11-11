@@ -30,16 +30,17 @@ tilmap <- function(
     input, 
     output, 
     session, 
-    group_display_choice, 
-    group_con,
+    group_display_choice,
+    groups_con,
+    til_image_links_con,
     feature_values_con,
-    feature_con,
-    til_image_links_con
+    features_con,
+    plot_colors
 ){
     
     tilmap_feature_con <- reactive({
-        req(feature_con())
-        feature_con() %>%  
+        req(features_con())
+        features_con() %>%  
             dplyr::filter(class == "TIL Map Characteristic") %>% 
             dplyr::select(display, feature, class) %>% 
             dplyr::filter_all(dplyr::all_vars(!is.na(.)))
@@ -106,8 +107,9 @@ tilmap <- function(
         "tilmap_dist_plot",
         tilmap_dist_value_con,
         tilmap_dist_feature_con,
-        group_con,
+        groups_con,
         group_display_choice,
+        plot_colors,
         key_col = "label"
     )
 

@@ -41,7 +41,8 @@ immunomodulator <- function(
     group_display_choice, 
     group_con,
     immunomodulator_expr_con,
-    immunomodulators_con
+    immunomodulators_con,
+    plot_colors
 ){
     
     expression_con <- reactive({
@@ -92,6 +93,7 @@ immunomodulator <- function(
         relationship_con,
         group_con,
         group_display_choice,
+        plot_colors,
         key_col = "label",
         variable_group_names = c(
             "Gene Family", 

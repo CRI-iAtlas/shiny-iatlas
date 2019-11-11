@@ -5,6 +5,16 @@ get_unique_values_from_column <- function(con, col){
         dplyr::pull()
 }
 
+create_named_list <- function(con, display_col, internal_col){
+    con %>%  
+        dplyr::select(d_col = display_col, i_col = internal_col) %>%
+        dplyr::filter_all(dplyr::all_vars(!is.na(.))) %>% 
+        dplyr::distinct() %>% 
+        dplyr::arrange(d_col) %>% 
+        dplyr::as_tibble() %>% 
+        tibble::deframe()
+}
+
 create_nested_named_list <- function(
     con,
     names_col1 = "class",

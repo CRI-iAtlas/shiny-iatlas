@@ -87,12 +87,9 @@ drivers <- function(
     input, 
     output, 
     session, 
-    driver_result_df,
-    metric_df,
-    group_internal_choice,
     driver_results_con,
     driver_mutations_con,
-    feature_values_long_con
+    feature_values_con
 ){
     
     ## single variable models ----
@@ -112,8 +109,8 @@ drivers <- function(
     })
     
     violin_value_con <- reactive({
-        req(feature_values_long_con(), input$response_variable)
-        feature_values_long_con() %>% 
+        req(feature_values_con(), input$response_variable)
+        feature_values_con() %>% 
             dplyr::filter(feature == local(input$response_variable)) %>% 
             dplyr::select(sample, value) 
     })
@@ -232,16 +229,13 @@ drivers <- function(
             "Response variable has no groups that meet current thresholding"
         ))
         
-        print("Volcano df2")
-        print(mv_driver_df)
 
-        x <- build_mv_driver_mutation_scatterplot_df(
+        build_mv_driver_mutation_scatterplot_df(
             mv_driver_df,
             covariates(),
             model_formula_string()
         )
-        print(x)
-        return(x)
+
     })
 
     output$scatter_plot2 <- renderPlotly({

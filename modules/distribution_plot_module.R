@@ -104,8 +104,9 @@ distributions_plot_module <- function(
     plot_source_name,
     feature_value_con,
     feature_metadata_con,
-    group_con,
+    groups_con,
     group_display_choice,
+    plot_colors,
     variable_group_names = NULL,
     variable_selection_default = NA,
     ...
@@ -196,13 +197,6 @@ distributions_plot_module <- function(
         )
     })
     
-    plot_colors <- reactive({
-        group_con() %>% 
-            dplyr::select(group, color) %>% 
-            dplyr::as_tibble() %>% 
-            tibble::deframe()
-    })
-    
     output$plot <- renderPlotly({
         plot_function()(
             dplyr::as_tibble(distribution_plot_con()), 
@@ -215,11 +209,11 @@ distributions_plot_module <- function(
     })
     
     output$plot_text <- renderText({
-        req(group_con)
+        req(groups_con)
         eventdata <- event_data("plotly_click", source = plot_source_name)
         validate(need(eventdata, "Click above plot"))
         
-        group_con() %>% 
+        groups_con() %>% 
             dplyr::filter(group == local(unique(dplyr::pull(eventdata, "x")))) %>% 
             dplyr::mutate(text = paste0(group_name, ": ", characteristics)) %>%
             dplyr::pull(text)
@@ -244,7 +238,7 @@ distributions_plot_module <- function(
         
         validate(need(clicked_group %in% current_groups, "Click plot above"))
         
-        df <- distribution_plot_con() %>% 
+        distribution_plot_con() %>% 
             dplyr::filter(x == clicked_group) %>% 
             dplyr::select(x = y) %>% 
             dplyr::as_tibble() %>% 

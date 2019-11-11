@@ -44,7 +44,8 @@ iotarget <- function(
     group_display_choice, 
     group_con,
     io_target_expr_con,
-    io_targets_con
+    io_targets_con,
+    plot_colors
 ) {
     
     ns <- session$ns
@@ -107,6 +108,7 @@ iotarget <- function(
         relationship_con,
         group_con,
         group_display_choice,
+        plot_colors,
         variable_selection_default = url_gene(),
         key_col = "label",
         variable_group_names = c("Pathway", "Therapy Type")

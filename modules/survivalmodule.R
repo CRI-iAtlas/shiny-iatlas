@@ -96,125 +96,168 @@ survival <- function(
     input, 
     output, 
     session, 
-    ss_choice,
+    features_named_list,
+    group_display_choice,
     group_internal_choice,
-    group_options, 
-    sample_group_df,
-    subset_df,
+    feature_values_con,
+    groups_list,
+    groups_con,
+    features_con,
     plot_colors
 ){
     ns <- session$ns
     
     output$survplot_opts <- renderUI({
-        group_choice <- magrittr::set_names(list(group_internal_choice()), ss_choice())
-        var_choices <- c(
-            list("Current Sample Groups" = group_choice),
-            get_feature_df_nested_list())
+        req(
+            features_named_list(), 
+            group_display_choice(), 
+            group_internal_choice()
+        )
+
+        choices <- 
+            group_internal_choice() %>% 
+            purrr::set_names(group_display_choice()) %>% 
+            list() %>% 
+            purrr::set_names("Current Sample Groups") %>% 
+            c(features_named_list())
+
         selectInput(
             ns("var1_surv"),
             "Variable",
-            var_choices,
+            choices,
             selected = group_internal_choice()
         )
     })
     
     output$survPlot <- renderPlot({
-        req(!is.null(subset_df()), cancelOutput = T)
-        sample_groups <- get_unique_column_values(group_internal_choice(), subset_df())
-        n_groups <- dplyr::n_distinct(sample_groups)
-
-        validate(
-            need(input$var1_surv, "Waiting for input."),
-            need(dplyr::n_distinct(sample_groups) <= 10 | !input$var1_surv == group_internal_choice(), 
-                 paste0("Too many sample groups (", n_groups, ") for KM plot; ",
-                        "choose a continuous variable or select different sample groups."))
+        req(
+            feature_values_con(), 
+            groups_list(),
+            input$var1_surv,
+            input$timevar,
+            input$divk,
+            groups_con(),
+            features_con(),
+            plot_colors()
         )
         
-        survival_df <- subset_df() %>%
-            build_survival_df(
-                group_column = input$var1_surv,
-                group_options = purrr::map(group_options(), get_group_internal_name),
-                time_column = input$timevar,
-                k = input$divk
+        survival_tbl <- build_survival_tbl(
+            feature_values_con(),
+            groups_list(),
+            input$var1_surv,
+            input$timevar,
+            input$divk
+        )
+        
+        validate(need(
+            nrow(survival_tbl) > 0, 
+            "Samples with selected variable don't have selected survival feature"
+        ))
+        
+        num_groups <- length(unique(survival_tbl$group))
+        
+        validate(need(
+            num_groups <= 10,
+            paste0(
+                "Too many sample groups (", num_groups, ") ",
+                "for KM plot; choose a continuous variable or select ",
+                "different sample groups."
             )
-
-        survival_df %>% 
-          dplyr::group_by(variable) %>% 
-          dplyr::summarize(Num1 = sum(status == 1), Num0 = sum(status == 0))
+        ))
         
-        fit <- survival::survfit(survival::Surv(time, status) ~ variable, data = survival_df)
+        fit <- survival::survfit(
+            survival::Surv(time, status) ~ group, 
+            data = survival_tbl
+        )
         
-        title <- get_variable_display_name(input$var1_surv)
-        if (identical(title, character(0))){
-            title <- input$var1_surv
-        }
-        
-        if (title %in% group_options()) { 
-            group_colors <- plot_colors()
-
-            if (title == "TCGA Subtype") {
-              # ggsurvplot takes the subtype names and pastes the column name onto it 'variable='
-              # and colors need to have this modified name.
-              group_colors <- group_colors[names(group_colors) %in% survival_df$variable]
-            }
-
-            names(group_colors) <- sapply(names(group_colors), function(a) paste('variable=',a,sep='')) 
-            
+        if (input$var1_surv %in% groups_list()){
+            group_colors <- purrr::set_names(
+                plot_colors(), 
+                stringr::str_c("group=", names(plot_colors()))
+            )
+            title <- groups_con() %>% 
+                translate_value(
+                    input$var1_surv,
+                    "parent_group",
+                    "parent_group_display"
+                ) %>% 
+                unique()
         } else {
             group_colors <- viridisLite::viridis(input$divk)
+            title <- features_con() %>% 
+                translate_value(
+                    input$var1_surv,
+                    "feature",
+                    "display"
+                ) %>% 
+                unique()
         }
         
         create_kmplot(
-            fit = fit, 
-            df = survival_df, 
-            confint = input$confint, 
-            risktable = input$risktable, 
-            title = title, 
-            group_colors = group_colors)
+            fit = fit,
+            df = survival_tbl,
+            confint = input$confint,
+            risktable = input$risktable,
+            title = title,
+            group_colors = unname(group_colors))
     })
     
     
     output$heatmapplot <- renderPlotly({
         
-        req(!is.null(subset_df()), cancelOutput = T)
-        
-        if(input$survival_type == "PFI"){
-            time_col <- "OS_time"
-            status_col <- "OS"
-        } else{
-            time_col <- "PFI_time_1"
-            status_col <- "PFI_1"
-        }
-        
-        features <- get_factored_variables_from_feature_df(
-            input$survival_class) %>% 
-            as.character
-        
-        ci_mat <- subset_df() %>%
-            build_ci_mat(
-                group_column = group_internal_choice(),
-                value_columns = features,
-                time_column = time_col,
-                status_column = status_col
-            )
-        
-        validate(
-          need(nrow(ci_mat[rowSums(is.na(ci_mat)) == 0,]) > 0, "No results to display, pick a different group.")
+        req(
+            feature_values_con(),
+            features_con(),
+            input$survival_type,
+            input$survival_class
         )
         
+        
+        if(input$survival_type == "PFI"){
+            time_feature <- "OS_time"
+            status_feature <- "OS"
+        } else{
+            time_feature <- "PFI_time_1"
+            status_feature <- "PFI_1"
+        }
+        
+        print(input$survival_class)
+        print(features_con())
+        
+        features <- features_con() %>% 
+            dplyr::filter(class == local(input$survival_class)) %>% 
+            dplyr::arrange(order) %>% 
+            dplyr::pull(feature)
+        
+        
+        ci_mat <- build_ci_matrix(
+            feature_values_con(),
+            features_con(),
+            features,
+            time_feature,
+            status_feature
+        )
+        
+
+        validate(need(
+            nrow(ci_mat > 0) & ncol(ci_mat > 0), 
+            "No results to display, pick a different group."
+        ))
+
         create_heatmap(ci_mat, "ci")
     })
     
     output$heatmap_group_text <- renderText({
-        req(group_internal_choice(), sample_group_df(), cancelOutput = T)
-      
-        create_group_text_from_plotly(
-            "ci",
-            group_internal_choice(), 
-            sample_group_df(),
-            key_column = "x")
-    })
+        req(groups_con)
+        eventdata <- event_data("plotly_click", source = "ci")
+        validate(need(eventdata, "Click above plot"))
         
+        groups_con() %>% 
+            dplyr::filter(group == local(unique(dplyr::pull(eventdata, "x")))) %>% 
+            dplyr::mutate(text = paste0(group_name, ": ", characteristics)) %>%
+            dplyr::pull(text)
+    })
+    
     
 }
 
