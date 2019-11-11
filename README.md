@@ -4,11 +4,11 @@ Shiny-iAtlas is an interactive web portal that provides multiple analysis module
 
 The portal is built entirely in **R** and **Shiny** using the **RStudio** development environment. Layout and interactivity within the portal are achieved by heavy use of the following packages:
 
-- **`shinydashboard`**
-- **`plotly`**
-- **`crosstalk`**
+- [shinydashboard](https://rstudio.github.io/shinydashboard/)
+- [plotly](https://plot.ly/r/)
+- [crosstalk](https://rstudio.github.io/crosstalk/)
 
-## Install
+## Requirements
 
 Install:
 
@@ -16,8 +16,45 @@ Install:
 
 - RStudio: [https://rstudio.com/products/rstudio/download/](https://rstudio.com/products/rstudio/download/)
 
-Opening RStudio should execute `source("renv/activate.R")`.\
-This command is initially called from the .Rprofile file and will get all dependencies.
+## Local Shiny-iAtlas Session
+
+To run the app locally:
+
+1. Clone this repository
+
+1. Start Rstudio
+
+1. Create a "New Project..." from the "File" menu
+
+1. Create a project from an "Existing Directory"
+
+1. Navigate to the cloned project folder.
+
+1. Select the project folder.
+
+1. In the "console" tab in Rstudio, a new R session will start. This will execute `source("renv/activate.R")` from the `.Rprofile` file and `renv` will bootstrap itself in.
+
+1. At the prompt in the "console" tab, restore the dependecies by running:
+
+   ```R
+   renv::restore()`
+   ```
+
+   This may take some time to complete - get something nice to drink :)
+
+1. Start the app by running:
+
+   ```R
+   shiny::runApp()
+   ```
+
+## Deployment
+
+To deploy, run this line:
+
+```R
+options(repos = BiocInstaller::biocinstallRepos())
+```
 
 ## Data
 
@@ -35,7 +72,7 @@ Input data for the Shiny-iAtlas portal were accessed from multiple remote source
 
 While many of the results presented in tables and plots are taken directly from IRWG data (including the main **feature matrix** and various feature and group annotations), we compute some values internally. Unless otherwise noted, the following methods/tools were used to compute summary statistics:
 
-### Correlation — Spearman's rank-order correlation:
+### Correlation — Spearman's rank-order correlation
 
 ```R
 stats::cor(x, y, method = "spearman", use = "pairwise.complete.obs")
@@ -50,17 +87,3 @@ concordanceIndex::concordanceIndex(predictions, observations)
 ```
 
 ... where `predictions` and `observations` are numerical vectors of the same length.
-
-## Local Shiny-iAtlas Session
-
-To run the app locally, clone this repository and use the following command in the `shiny-iatlas` directory:
-
-```R
-shiny::runApp()
-```
-
-## To deploy, run this line
-
-```R
-options(repos = BiocInstaller::biocinstallRepos())
-```
