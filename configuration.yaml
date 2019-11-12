@@ -18,13 +18,10 @@ module_files:
   - "modules/volcano_plot_module.R"
   
 function_files:
-  - "functions/load_data2.R"
   - "functions/create_db2.R"
   - "functions/transform.R"
-  - "functions/transform_new.R"
   - "functions/drilldown.R"
   - "functions/utils.R"
-  - "functions/utils_new.R"
   - "functions/boxplot.R"
   - "functions/heatmap.R"
   - "functions/kmplot.R"
@@ -50,55 +47,5 @@ libraries:
   - "shinydashboard"
   - "plotly"
 
-
-bq_remote: false # set data as remote (BigQuery) or local (on disk)
-gs_remote: false
-  
-cell_content_local:
-  - "Lymphocytes.Aggregate1"
-  - "T.cells.CD8"
-  - "T_cells_CD4.Aggregate2"
-  - "Macrophage.Aggregate1"
-
-cell_content_bq:
-  - "Lymphocytes.Aggregate1"
-  - "T_cells_CD8"
-  - "T_cells_CD4_Aggregate2"
-  - "Macrophage_Aggregate1"
- 
-diversity_metric_choices:
-  - "Evenness"
-  - "Shannon"
-  - "Richness"
-
-receptor_type_choices:
-  - "TCR"
-  - "BCR"
-  
-immunomodulator_groups:
-  - "Gene_Family"
-  - "Super_Category"
-  - "Immune_Checkpoint"
-  - "Function"
-  
-immunotarget_groups:
-  - "Therapy Type"
-  - "Pathway"
-
-immune_groups:
-  - "Subtype_Immune_Model_Based"
-  - "Subtype_Curated_Malta_Noushmehr_et_al"
-  - "Study"
-  
-cell_type_aggregates:
-  - "Immune Cell Proportion - Original"
-  - "Immune Cell Proportion - Multipotent Progenitor Cell Derivative Class"
-  - "Immune Cell Proportion - Common Lymphoid and Myeloid Cell Derivative Class"
-  - "Immune Cell Proportion - Differentiated Lymphoid and Myeloid Cell Derivative Class"
-
-correlation_methods:
-  - "Spearman": "spearman" 
-  - "Pearson": "pearson"
-  - "Kendall": "kendall"
 
 

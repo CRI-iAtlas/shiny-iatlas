@@ -10,7 +10,7 @@ immuneinterface_UI <- function(id) {
                        selectInput(
                            inputId = ns("diversity_metric_choice"),
                            label = "Select Receptor Type(s)",
-                           choices = as.character(panimmune_data$diversity_metric_choices),
+                           choices = "",
                            selected = "Shannon"
                        ),
                        
@@ -18,7 +18,7 @@ immuneinterface_UI <- function(id) {
                        checkboxGroupInput(
                            inputId = ns("receptor_type_choices"),
                            label = "Select Receptor Type(s)",
-                           choices = as.character(panimmune_data$receptor_type_choices),
+                           choices = "",
                            selected = "TCR"
                        ),
                        

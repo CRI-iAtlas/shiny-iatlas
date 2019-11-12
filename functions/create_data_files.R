@@ -8,19 +8,25 @@ source("functions/load_data.R")
 panimmune_data <- load_data()
 
 features <- panimmune_data$feature_df %>% 
+    dplyr::inner_join(
+        panimmune_data$feature_method_df, 
+        by = c("Origin" = "Feature Origin")
+    ) %>% 
     dplyr::filter(VariableType == "Numeric") %>%
     dplyr::select(
         feature = FeatureMatrixLabelTSV,
         display = FriendlyLabel,
-        class   = `Variable Class`,
-        order   = `Variable Class Order`
+        class   = `Variable Class.x`,
+        order   = `Variable Class Order`,
+        unit    = Unit,
+        methods_tag = `Methods Tag`
     ) %>% 
     dplyr::bind_rows(dplyr::tibble(
         feature  = "Tumor_fraction",
         display  = "Tumor Fraction",
         class    = "Overall Proportion",
         order    = 4
-    ))
+    )) 
 
 feather::write_feather(features, "data2/features.feather")
 

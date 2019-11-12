@@ -20,12 +20,7 @@ drivers_UI <- function(id) {
                     width = 12,
                     column(
                         width = 4,
-                        selectInput(
-                            ns("response_variable"),
-                            "Select Response Variable",
-                            choices = get_feature_df_nested_list(),
-                            selected = "Leukocyte Fraction"
-                        )
+                        uiOutput(ns("response_options"))
                     ),
                     column(
                         width = 4,
@@ -89,10 +84,24 @@ drivers <- function(
     session, 
     driver_results_con,
     driver_mutations_con,
-    feature_values_con
+    feature_values_con,
+    features_named_list
 ){
+    ns <- session$ns
     
     ## single variable models ----
+    
+    output$response_options <- renderUI({
+        req(features_named_list())
+        selectInput(
+            ns("response_variable"),
+            "Select Response Variable",
+            choices = features_named_list(),
+            selected = "Leukocyte Fraction"
+        )
+    })
+    
+    
     volcano_con <- reactive({
         req(
             driver_results_con(),

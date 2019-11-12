@@ -32,92 +32,92 @@ datainfo_UI <- function(id) {
     )
 }
 
-datainfo <- function(input, output, session) {
+datainfo <- function(
+    input, 
+    output, 
+    session,
+    features_con,
+    features_named_list
+){
     ns <- session$ns
     
     output$classes <- renderUI({
-        choices <- panimmune_data$feature_df %>% 
-            magrittr::use_series(`Variable Class`) %>% 
-            sort %>% 
-            unique %>% 
+        req(features_named_list())
+        choices <- features_named_list() %>% 
+            names() %>% 
+            sort() %>% 
             c("All classes", .)
         selectInput(
             ns("class_choice"),
             label = "Select Class",
-            choices = choices)
+            choices = choices
+        )
     })
     
-    
+    filtered_feature_con <- reactive({
+        req(features_con(), input$class_choice)
+        if(input$class_choice != "All classes"){
+            return(dplyr::filter(features_con(), class == input$class_choice))
+        } else {
+            return(features_con())
+        }
+    })
     
     output$feature_table <- DT::renderDT({
-        df <- panimmune_data$feature_df %>% 
+        req(filtered_feature_con())
+        
+        tbl <- filtered_feature_con() %>%
             dplyr::select(
-                `Feature Name` = FriendlyLabel, 
-                `Variable Class`, 
-                Unit, 
-                VariableType
-            ) 
-        if(input$class_choice != "All classes"){
-            df <- dplyr::filter(df, `Variable Class` == input$class_choice)
-        }
+                `Feature Name` = display,
+                `Variable Class` = class,
+                Unit = unit
+            ) %>% 
+            dplyr::as_tibble()
+
         DT::datatable(
-            df, 
-            selection = list(
-                mode = 'single'
-            ),
-            options = list(
-                scrollX = TRUE,
-                autoWidth = F
-            ),
+            tbl, 
+            selection = list(mode = 'single'),
+            options = list(scrollX = TRUE, autoWidth = F ),
             rownames = FALSE
         )
-    }, server = FALSE
-    )
+    }, server = FALSE)
     
-    feature_class_df <- reactive({
-        feature_row <- input$feature_table_rows_selected
-        selected_class <- panimmune_data$feature_df[[feature_row, "Variable Class"]]
-        panimmune_data$feature_df %>% 
-            dplyr::filter(`Variable Class` == selected_class) %>% 
-            dplyr::select(
-                `Variable Class Order`,
-                `Feature Name` = FriendlyLabel, 
-                Unit, 
-                VariableType,
-                Origin
-            ) %>% 
-            dplyr::left_join(
-                panimmune_data$feature_method_df %>% 
-                    dplyr::select(`Feature Origin`, `Methods Tag`), 
-                by = c("Origin" = "Feature Origin")
-            ) %>% 
-            dplyr::select(-Origin) %>% 
-            dplyr::arrange(`Variable Class Order`, `Feature Name`)
+    feature_class_tbl <- reactive({
+        req(input$feature_table_rows_selected, filtered_feature_con())
+        
+        clicked_row_num <- input$feature_table_rows_selected
+        print(clicked_row_num)
+        
+        selected_class <- filtered_feature_con() %>% 
+            dplyr::pull(class) %>% 
+            .[[clicked_row_num]]
+        
+        filtered_feature_con() %>% 
+            dplyr::filter(class == selected_class) %>% 
+            dplyr::arrange(order, display) %>% 
+            dplyr::as_tibble()
     })
     
     output$variable_class_table <- renderTable({
-        feature_class_df()
+        req(feature_class_tbl())
+        feature_class_tbl()
     })
     
     output$method_buttons <- renderUI({
-        tag_list <- feature_class_df() %>% 
-            dplyr::filter(!is.na(`Methods Tag`)) %>% 
-            dplyr::distinct(`Methods Tag`) %>% 
-            purrr::pluck("Methods Tag") %>% 
-            purrr::map(function(tag) {
-                fluidRow(
-                    actionButton(ns(paste0("show_", tag)), tag)
-                )
-            }) %>% 
+        req(feature_class_tbl())
+        feature_class_tbl() %>% 
+            dplyr::filter(!is.na(methods_tag)) %>% 
+            dplyr::distinct(methods_tag) %>% 
+            dplyr::pull(methods_tag) %>% 
+            purrr::map(~fluidRow(actionButton(ns(paste0("show_", .x)), .x))) %>%
             tagList()
-        tag_list
     })
     
     observeEvent(input$feature_table_rows_selected, {
-        feature_class_df() %>% 
-            dplyr::filter(!is.na(`Methods Tag`)) %>% 
-            dplyr::distinct(`Methods Tag`) %>% 
-            purrr::pluck("Methods Tag") %>% 
+        feature_class_tbl() %>% 
+            dplyr::filter(!is.na(methods_tag)) %>% 
+            dplyr::distinct(methods_tag) %>% 
+            dplyr::pull(methods_tag) %>% 
             purrr::map(function(tag) {
                 observeEvent(input[[paste0("show_", tag)]], {
                     showModal(modalDialog(

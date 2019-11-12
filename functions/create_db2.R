@@ -13,9 +13,9 @@ create_db2 <- function(){
     groups <- feather::read_feather("data2/groups.feather")
     dplyr::copy_to(con, groups, "groups", temporary = FALSE)
     
-    til_image_links <- feather::read_feather("data2/til_image_links.feather")
-    dplyr::copy_to(con, til_image_links, "til_image_links", temporary = FALSE)
-    
+    # til_image_links <- feather::read_feather("data2/til_image_links.feather")
+    # dplyr::copy_to(con, til_image_links, "til_image_links", temporary = FALSE)
+    # 
     # immunomodulator_expr <- feather::read_feather("data2/immunomodulator_expr.feather")
     # dplyr::copy_to(con, immunomodulator_expr, "immunomodulator_expr", temporary = FALSE)
     # 

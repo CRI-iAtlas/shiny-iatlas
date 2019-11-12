@@ -70,12 +70,7 @@ survival_UI <- function(id) {
                         ),
                         selected = "PFI"
                     ),
-                    selectInput(
-                        ns("survival_class"),
-                        "Select Variables Class (rows)",
-                        choices = get_numeric_classes_from_feature_df(),
-                        selected = "T Helper Cell Score"
-                    )
+                    uiOutput(ns("survival_class_opts"))
                 ),
                 plotBox(
                     width = 8,
@@ -202,6 +197,16 @@ survival <- function(
             group_colors = unname(group_colors))
     })
     
+    output$survival_class_opts <- renderUI({
+        req(features_named_list())
+        
+        selectInput(
+            ns("survival_class"),
+            "Select Variables Class (rows)",
+            choices = names(features_named_list()),
+            selected = "T Helper Cell Score"
+        )
+    })
     
     output$heatmapplot <- renderPlotly({
         
@@ -220,9 +225,6 @@ survival <- function(
             time_feature <- "PFI_time_1"
             status_feature <- "PFI_1"
         }
-        
-        print(input$survival_class)
-        print(features_con())
         
         features <- features_con() %>% 
             dplyr::filter(class == local(input$survival_class)) %>% 

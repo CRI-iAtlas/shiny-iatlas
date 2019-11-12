@@ -56,17 +56,7 @@ shinyServer(function(input, output, session) {
         plot_colors
     )
     
-    # # Immunomodulators
-    # callModule(
-    #     immunomodulator,
-    #     "module5",
-    #     group_display_choice,
-    #     subset_groups_con,
-    #     subset_immunomodulator_expr_con,
-    #     immunomodulators_con,
-    #     plot_colors
-    # )
-    
+
     # Immune features
     callModule(
         immunefeatures,
@@ -78,25 +68,26 @@ shinyServer(function(input, output, session) {
         plot_colors
     )
     
-    # TILmap features
-    callModule(
-        tilmap,
-        "module7",
-        group_display_choice,
-        subset_groups_con,
-        til_image_links_con,
-        subset_feature_values_long_con,
-        features_con,
-        plot_colors
-    )
-    
+    # # TILmap features
+    # callModule(
+    #     tilmap,
+    #     "module7",
+    #     group_display_choice,
+    #     subset_groups_con,
+    #     til_image_links_con,
+    #     subset_feature_values_long_con,
+    #     features_con,
+    #     plot_colors
+    # )
+    # 
     # # Driver associations
     # callModule(
     #     drivers,
     #     "module8",
     #     subset_driver_results_con,
     #     subset_driver_mutations_con,
-    #     subset_feature_values_long_con
+    #     subset_feature_values_long_con,
+    #     features_named_list
     # )
     # 
     # # IO Target
@@ -109,6 +100,17 @@ shinyServer(function(input, output, session) {
     #     io_targets_con,
     #     plot_colors
     # )
+    # 
+    # # Immunomodulators
+    # callModule(
+    #     immunomodulator,
+    #     "module5",
+    #     group_display_choice,
+    #     subset_groups_con,
+    #     subset_immunomodulator_expr_con,
+    #     immunomodulators_con,
+    #     plot_colors
+    # )
     
     # subtype predictor
     callModule(
@@ -118,7 +120,10 @@ shinyServer(function(input, output, session) {
     # Data info
     callModule(
         datainfo,
-        "moduleX")
+        "moduleX",
+        features_con,
+        features_named_list
+    )
     
     output$group_choice <- renderText({
         group_display_choice()

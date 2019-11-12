@@ -2,7 +2,7 @@ create_numerical_covariate_ui <- function(
     ui_number,
     remove_button_id,
     ns_func,
-    variable_choice_func = get_numeric_covariate_nested_list
+    variable_choice_func
 ){
     fluidRow(
         column(
