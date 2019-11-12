@@ -1,7 +1,0 @@
-B_cells
-T_cells_CD4
-T_cells_CD8
-Dendritic_cells
-Macrophage
-Mast_cells
-NK_cells

@@ -266,9 +266,9 @@ tabulate_pair <- function (df, byImmune = FALSE){
 ## uses pseudocount for denominator 
 getRatioScore <- function(Xtab,pseudocount=1){
   ratioScore <- (Xtab[3,3] + Xtab[1,1]) / (Xtab[3,1] + Xtab[1,3]+pseudocount)
-  if (ratioScore < 1) { 
-    ratioScore <- -(1/ratioScore)
-  }
+  # if (ratioScore < 1) { 
+  #   ratioScore <- -(1/ratioScore)
+  # }
   ratioScore
 }
 
@@ -302,15 +302,13 @@ filterRatioWithIncludes <- function (rscores,from_node,to_node,feature_include,c
 
 
 
-#-------computing scores
+#-------computing scores for custom groups
+
 get_participants <- function(group_df, 
                              group_col,
                              byImmune = FALSE){
   # The participant list is obtained from the data frame that has the groups
-  # if(byImmune == TRUE){
-  #   group_df <- group_df %>%
-  #     filter(!is.na(Subtype_Immune_Model_Based))
-  # }
+
   participants <- group_df$ParticipantBarcode
   groups <- group_df[[group_col]]
   group_of_participant <- groups ; names(group_of_participant) <- participants
@@ -408,7 +406,6 @@ compute_concordance <- function(scaffold, df_ternary_full_info, byImmune){
   ternary <- as.list(df_ternary_full_info$Bins) 
   
   names(ternary) <- df_ternary_full_info$Node ## contains all ternary bins
-  #feature_include <- as.list(df_ternary_full_info$IncludeFeature) ; names(feature_include) <- df_ternary_full_info$Node ## contains include/exclude flags
   
   ## Generate scaffold_edge_score_full_info
   ## Each row contains:
@@ -417,16 +414,14 @@ compute_concordance <- function(scaffold, df_ternary_full_info, byImmune){
   ## PairBin: tibble with one row per sample, and columns for Group, Bin.x, Bin.y, the bins of pair members
   ## PairTable: tibble with cross-tabulated bin pair frequency for each Group
   ## ratioScores:tibble with concorandance ratio, ratioScore, for each group
-  ## FilteredRatio: as ratioScores, but NA if inclusion criteria are not met
   ## uses the join_binned_pair, tabulate_pair, and getGroupRatioScores functions
   scaffold_edge_score_full_info <- scaffold %>%
     dplyr::mutate(PairBin=purrr::map2(.x = From, .y = To, ternary=ternary, byImmune = byImmune, .f=join_binned_pair)) %>% # add table of paired bins per sample
     dplyr::mutate(PairTable=purrr::map(PairBin,byImmune = byImmune,tabulate_pair)) %>% ## add table of paired bin frequencies
     dplyr::mutate(ratioScores=purrr::map(PairTable,byImmune = byImmune,getGroupRatioScores))# %>% ## add concordance ratio
-    #dplyr::mutate(FilteredRatio=purrr::pmap(.l=list(ratioScores,From,To), feature_include = feature_include, concordance_treshold = conc_threshold, .f=filterRatioWithIncludes)) ## flag ratios for removal with NA
-  
-  ## group-specfic edge scores, with NAs where not meeting criteria
-  scaffold_edge_score <- scaffold_edge_score_full_info %>% dplyr::select(From,To,ratioScores) %>% tidyr::unnest(cols=c(ratioScores)) #%>% rename(Score=RatioFiltered)
+    
+ 
+  scaffold_edge_score <- scaffold_edge_score_full_info %>% dplyr::select(From,To,ratioScores) %>% tidyr::unnest(cols=c(ratioScores))
   
   predicted_network <- scaffold_edge_score# %>% dplyr::filter(!is.na(ratioScores))
   #colnames(predicted_network) <- c("source", "target", "interaction", "score")
@@ -435,28 +430,4 @@ compute_concordance <- function(scaffold, df_ternary_full_info, byImmune){
   
 }
 
-
-
-
-#preparing data to compute the quantiles
-# group_participant <- get_participants(group_df, group_col)
-# 
-# dfclong.generic <- get_cell_long(dfc_in, group_participant, cells)
-# dfelong.generic <- get_gene_long(dfe_in, group_participant, genes)
-# 
-# dfn <- dplyr::bind_rows(dfelong.generic, dfclong.generic)
-# 
-# 
-# ternary_info <- eventReactive(input$calculate_button,{
-#   req(input$calculate_button > 0)
-#   input$calculate_button
-#   get_abundant_nodes(dfn, ab_threshold = input$abundance/100)
-# })
-# 
-# predicted_network <- eventReactive(input$calculate_button, {
-#   get_network(scaffold, ternary_info(), conc_threshold = input$concordance) %>% 
-#     as.data.frame()
-#   
-#   
-# })
 

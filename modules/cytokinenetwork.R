@@ -9,21 +9,17 @@ library(cyjShiny)
 
 ## Loading all data of nodes abundance and edges scores
 all_net_info <- list(
-  "immune"= list("upbin_ratio" = readr::read_csv("data/network/nodes_TCGAImmune_merged.csv"), edges_score = readr::read_csv("data/network/edges_TCGAImmune_merged.csv")),
-  #"immune"= list("upbin_ratio" = readr::read_csv("data/network/upbinratio.csv"), edges_score = readr::read_csv("data/network/edgesScore.csv")),
-  "subtype"= list("upbin_ratio" = readr::read_csv("data/network/nodes_TCGASubtype.csv"), edges_score = readr::read_csv("data/network/edges_TCGASubtype.csv")),
-  "study"= list("upbin_ratio" = readr::read_csv("data/network/nodes_TCGAStudy.csv"), edges_score = readr::read_csv("data/network/edges_TCGAStudy.csv")),
-  "studyImmune" = list("upbin_ratio" = readr::read_csv("data/network/nodes_TCGAStudy_Immune.csv"), edges_score = readr::read_csv("data/network/edges_TCGAStudy_Immune.csv"))
+  "immune"= list("upbin_ratio" = feather::read_feather("data/network/nodes_TCGAImmune.feather"), edges_score = feather::read_feather("data/network/edges_TCGAImmune.feather")),
+  "subtype"= list("upbin_ratio" = feather::read_feather("data/network/nodes_TCGASubtype.feather"), edges_score = feather::read_feather("data/network/edges_TCGASubtype.feather")),
+  "study"= list("upbin_ratio" = feather::read_feather("data/network/nodes_TCGAStudy.feather"), edges_score = feather::read_feather("data/network/edges_TCGAStudy.feather")),
+  "studyImmune" = list("upbin_ratio" = feather::read_feather("data/network/nodes_TCGAStudy_Immune_perGenedist.feather"), edges_score = feather::read_feather("data/network/edges_TCGAStudy_Immune_perGenedist.feather"))
 )
 
-dfe_in <- readr::read_csv("data/network/expr_data_merged.csv")
-#dfe_in <- readr::read_tsv("data/network/GenExp_All_CKine_genes.tsv")
+dfe_in <- feather::read_feather("data/network/expr_data_merged.feather")
 main_scaffold <- readr::read_tsv("data/network/try_3a.tsv")
 styles <- c("Edges by Immune Type" = 'data/network/stylesEdges.js',
             "Black Edges" = "data/network/styles.js")
 node_type <- readr::read_tsv("data/network/network_node_labels.tsv")
-node_type <- rbind(node_type, c("Ligand", "CD276"))
-
 
 
 cytokinenetwork_UI <- function(id) {
@@ -54,39 +50,8 @@ cytokinenetwork_UI <- function(id) {
         optionsBox(
           width=2,
             verticalLayout(
-               uiOutput(ns("select_ui")),
-              
-
-              # conditionalPanel(
-              #   condition = "input.ss_choice == 'TCGA Study'",
-              #   uiOutput(ns("showStudy")),
-              # 
-              #   checkboxInput(
-              #   ns("byImmune"),
-              #   "Stratify by Immune Subtype")
-              # ),
-              # conditionalPanel(
-              #   condition = "input.ss_choice == 'TCGA Subtype'",
-              #   uiOutput(ns("showSubtype"))
-              # ),
-              # conditionalPanel(
-              #   condition = "input.ss_choice != 'TCGA Subtype' & input.ss_choice != 'TCGA Study' & input.ss_choice != 'Immune Subtype'",
-              #   uiOutput(ns("showCustom")
-              # ),
-              #   checkboxInput(
-              #     ns("byImmune"),
-              #     "Stratify by Immune Subtype")
-              # ),
-              # conditionalPanel(
-              #   condition = paste("input.ss_choice == 'Immune Subtype' || (input.ss_choice != 'TCGA Subtype' &" , paste0("input['", ns("byImmune"), "'] == true)")),
-              #   selectizeInput(
-              #     ns("showGroup"),
-              #     "Select Immune Subtype",
-              #     choices=c("C1", "C2", "C3", "C4", "C5", "C6"),
-              #     selected = c("C1", "C2"),
-              #     multiple = TRUE)
-              # ),
-              
+              uiOutput(ns("select_ui")),
+               
               numericInput(ns("abundance"), "Set Abundance Threshold (%)", value = 66, min = 0, max = 100),
               numericInput(ns("concordance"), "Set Concordance Threshold", value = 2.94, step = 0.01),
               
@@ -114,10 +79,10 @@ cytokinenetwork_UI <- function(id) {
                               "dagre",
                               "cose-bilkent"),
                     selected = "cose"),
-                  # selectInput(
-                  #   ns("loadStyleFile"), 
-                  #   "Select Style", 
-                  #   choices = styles),
+                    selectInput(
+                      ns("loadStyleFile"),
+                      "Select Style",
+                      choices = styles),
                   
                     uiOutput(ns("selectNode")),
                     actionButton(ns("fitSelected"), "Fit Selected", width = "100%", style = 'white-space: pre-line'),
@@ -211,9 +176,10 @@ cytokinenetwork <- function(
           dplyr::filter(., `TCGA Studies`== study_subset_choice()),
           .
         ) %>%
-        #dplyr::filter(!(FeatureValue %in% c("LAML", "THYM", "DLBC"))) %>%
-        dplyr::pull(FeatureValue) #%>%
-        #dplyr::arrange(FeatureValue)
+        dplyr::filter(!(FeatureValue %in% c("LAML", "THYM", "DLBC"))) %>%
+        dplyr::arrange(FeatureValue) %>% 
+        dplyr::pull(FeatureValue)
+      
 
     }else{
       sample_group_vector <- subset_df() %>%
@@ -227,7 +193,7 @@ cytokinenetwork <- function(
       selectizeInput(
         ns("showGroup"),
         "Select Immune Subtype",
-        choices= c("C1", "C2", "C3", "C4", "C5", "C6"),
+        choices = sample_group_vector,
         selected = c("C1", "C2"),
         multiple = TRUE)
       
@@ -264,77 +230,6 @@ cytokinenetwork <- function(
       )
     }
   })
-
-# output$showStudy <- renderUI({
-#   req(
-#     panimmune_data$sample_group_df,
-#     group_internal_choice()
-#   )
-# 
-#   choices <- panimmune_data$sample_group_df %>%
-#     dplyr::filter(sample_group == "Study"& !(FeatureValue %in% c("LAML", "THYM", "DLBC"))) %>%
-#     dplyr::select("FeatureValue") %>%
-#     dplyr::distinct() %>%
-#     dplyr::arrange(FeatureValue)
-# 
-# 
-# #  tagList(
-#     selectInput(ns("group_selected"),
-#                 "Choose tumor type:",
-#                 choices = choices,
-#                 selected = choices[1])
-
-      # checkboxInput(
-      #   ns("byImmune"),
-      #   "Stratify by Immune Subtype")#,
-#
-#       conditionalPanel(
-#         condition = paste("" , paste0("input['", ns("byImmune"), "'] == true")),
-#         selectizeInput(
-#           ns("showGroup"),
-#           "Select Immune Subtype",
-#           choices=c("C1", "C2", "C3", "C4", "C5", "C6"),
-#           selected = c("C1", "C2"),
-#           multiple = TRUE)
-
-#    )
-  # })
-  # 
-  # output$showSubtype <- renderUI({
-  # 
-  #   req(
-  #     panimmune_data$sample_group_df,
-  #     group_internal_choice(),
-  #     study_subset_choice()
-  #   )
-  # 
-  #     choices <- panimmune_data$sample_group_df %>%
-  #       dplyr::filter(sample_group == "Subtype_Curated_Malta_Noushmehr_et_al" & `TCGA Studies` == study_subset_choice()) %>%
-  #       dplyr::select("FeatureValue") %>%
-  #       dplyr::distinct()
-  # 
-  #       selectInput(ns("group_selected"),
-  #                   "Choose subtype subset:",
-  #                   choices = choices,
-  #                   selected = choices[1])
-  # })
-  # 
-  # output$showCustom <- renderUI({
-  #   req(subset_df())
-  # 
-  #   sample_group_vector <- subset_df() %>%
-  #     dplyr::select_(group_internal_choice()) %>%
-  #     unique()
-  # 
-  #           selectInput(ns("group_selected"),
-  #                 "Choose subset:",
-  #                 choices = sample_group_vector,
-  #                 selected = sample_group_vector[1])
-  # 
-  # })
-  # 
-  
-
   
   output$selectCell <- renderUI({
     selectizeInput(ns("cellInterest"), "Select cells of interest (optional)", choices = (node_type %>% dplyr::filter(Type == "Cell") %>% select("Obj")), 
@@ -447,7 +342,7 @@ cytokinenetwork <- function(
   })
     
   upbin_ratio <- reactive({
-    print(stratify$byImmune)
+    
     if(group_internal_choice() %in% default_groups){
       
       subset_data()$upbin_ratio %>%
