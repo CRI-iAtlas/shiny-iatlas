@@ -530,6 +530,33 @@ build_mutation_df <- function(df, response_var, group_column, group_options){
 }
 
 
+build_cnvs_df <- function(df, response_var, group_column, group_options){
+  
+  print('IN build_cnvs_df')
+  
+  print('panimmune data names')  
+  print(names(panimmune_data))
+  
+  # for test
+  panimmune_data$cnvs_df$Direction <- sample(x=c('Amp','Del'), size=nrow(panimmune_data$cnvs_df), replace=T) 
+  
+  panimmune_data$cnvs_df$Mean_Diff <- panimmune_data$cnvs_df$Mean_Norm - panimmune_data$cnvs_df$Mean_CNV
+  
+  panimmune_data$cnvs_df$group <- ifelse(panimmune_data$cnvs_df$group %in% c('C1','C2','C3','C4','C5','C6'), 
+                                         yes="Subtype_Immune_Model_Based",
+                                         no="Study")
+  
+  print('cnvs_df')
+  print(head(panimmune_data$cnvs_df))
+  
+  if(nrow(panimmune_data$cnvs_df) == 0){
+    cnvs_df <- NULL
+  } 
+  
+  return(panimmune_data$cnvs_df)
+}
+
+
 #
 # join driver data frame and fmx (feature matrix) data frame 
 #
