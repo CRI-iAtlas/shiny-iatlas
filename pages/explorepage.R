@@ -57,6 +57,14 @@ explorepage <- dashboardPage(
                  icon = icon("cog")
                )
       ),
+      menuItem("Molecular Response to ICI",
+                 icon = icon("bar-chart"), startExpanded = TRUE,
+                 menuSubItem(
+                   "IO Clinical Outcomes",
+                   tabName = "io_response",
+                   icon = icon("cog")
+                 )
+      ),
       menuItem("Data Description",
                icon = icon("th-list"),
                tabName = "datainfo"
@@ -247,6 +255,10 @@ explorepage <- dashboardPage(
       tabItem(
         tabName = "iotargets",
         iotarget_UI("module9")
+      ),
+      tabItem(
+        tabName = "io_response",
+        ioresponse_UI("io_response1")
       ),
       tabItem(
         tabName = "datainfo",

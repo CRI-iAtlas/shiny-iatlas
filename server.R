@@ -108,6 +108,17 @@ shinyServer(function(input, output, session) {
         reactive(subset_df()),
         reactive(plot_colors()))
     
+    #IO Molecular Response
+    callModule(
+      ioresponse,
+      "io_response1",
+      reactive(input$ss_choice),
+      reactive(group_internal_choice()),
+      reactive(input$study_subset_selection),
+      reactive(sample_group_df()),
+      reactive(subset_df()),
+      reactive(plot_colors()))
+    
     # subtype predictor
     callModule(
         subtypeclassifier, 
@@ -148,6 +159,9 @@ shinyServer(function(input, output, session) {
     })
     observeEvent(input$link_to_module9, {
       shinydashboard::updateTabItems(session, "explorertabs", "iotargets")
+    })
+    observeEvent(input$link_to_io_response1, {
+      shinydashboard::updateTabItems(session, "explorertabs", "io_response")
     })
     observeEvent(input$link_to_module_subtypeclassifier, {
         updateNavlistPanel(session, "toolstabs", "Immune Subtype Classifier")
