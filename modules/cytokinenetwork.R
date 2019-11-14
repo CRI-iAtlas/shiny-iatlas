@@ -123,7 +123,7 @@ cytokinenetwork_UI <- function(id) {
         
         messageBox(
           width = 24,
-          "Here it goes the tables with nodes and edges."),
+          "The tables describe the nodes and edges in the network displayed above. You can download the tables for further processing in network visualization softwares."),
       
         fluidRow(
             tableBox(
@@ -328,7 +328,8 @@ cytokinenetwork <- function(
         stratify$byImmune = FALSE
       }else{
         stratify$byImmune = TRUE
-      }
+      },
+      silent = TRUE
     )
   })
   
@@ -446,7 +447,7 @@ cytokinenetwork <- function(
   
   output$download_data_nodes <- downloadHandler(
     filename = function() stringr::str_c("nodes-", Sys.Date(), ".csv"),
-    content = function(con) readr::write_csv(merge(tbl_nodes(), abundant_nodes(), by.x = "name", by.y = "Node"), con)
+    content = function(con) readr::write_csv(get_ab_nodes(abundant_nodes(), tbl_edges(), stratify$byImmune), con)
   )
 
 #----- Network visualization-related  
