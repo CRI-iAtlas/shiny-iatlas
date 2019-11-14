@@ -101,7 +101,7 @@ load_cnvs <- function() {
   if (!USE_REMOTE_BQ) {
     list( cnvs_df =
       # cn_table
-      cnvs_df <- read.csv('data/cn_table.csv.gz')
+      cnvs_df <- read.csv('data/cn_table.csv.gz', stringsAsFactors = F)
     )
   } else {
     fetch_cnvs() %>% 

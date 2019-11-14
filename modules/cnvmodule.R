@@ -120,13 +120,16 @@ cnvs <- function(
         print('group')
         print(group_internal_choice())
         
+        print('group display choice')
+        print(group_display_choice())
+        
         #validate(need(
         #    !is.null(cnvs_df()),
         #    "No results to display, pick a different group."))
         res0 <- cnvs_df() %>%  # df_for_regression(),
             dplyr::filter(metric == input$response_variable) %>%
-            dplyr::filter(group == group_internal_choice()) %>%
-            dplyr::filter(pvalue < 0.05)
+            dplyr::filter(sample_group == group_internal_choice()) #%>%
+            #dplyr::filter(pvalue < 0.05)  # prefiltered at p-value > 0.1
         
         print('FINISHED FILTER')
         
@@ -144,16 +147,19 @@ cnvs <- function(
         #    #need(!is.null(scatter_plot_df()), "No testable cohort and driver combinations, see above for explanation"))
         #    need(!is.null(scatter_plot_df()), 'empty df'))
 
-        create_scatterplot(
+        create_scatterplot_cnv(
             scatter_plot_df(),
-            ylab = "-log10_pvalue",
-            xlab = "Mean_Diff",
+            ylab = "-log10 p-value",
+            xlab = "Difference in Means",
             x_col = 'Mean_Diff',
             y_col = 'neg_log10_pvalue',
-            title = "Immune Response Association With CNVs",
+            title = "",
             source = "scatterplot",
             key_col = "label",
+            color_col = 'direction',
             label_col = "label",
+            fill_color = 'direction', # 
+            fill_colors = c('#027AB0', '#AE3918'),
             horizontal_line = T,
             horizontal_line_y = (- log10(0.05))
         )
@@ -163,17 +169,25 @@ cnvs <- function(
 
         eventdata <- event_data("plotly_click", source = "scatterplot")
 
-        ## FILTER here
+        print('EVENTDATA')
+        print(eventdata)
         
-        vdf1 <- data.frame(y=scatter_plot_df()$Mean_Norm, x='Normal')
-        vdf2 <- data.frame(y=scatter_plot_df()$Mean_CNV, x='CNV')
+        if(is.null(eventdata)) {
+            eventdata <- list(key='all keys')
+            violin_df <- scatter_plot_df()
+        } else {
+            violin_df <- scatter_plot_df() %>% filter(label == eventdata$key)
+        }
+                
+        vdf1 <- data.frame(y=violin_df$Mean_Norm, x='Normal')
+        vdf2 <- data.frame(y=violin_df$Mean_CNV, x='CNV')
         vdf <- rbind(vdf1, vdf2)
         
         create_violinplot(
             vdf,
-            xlab = 'x',
-            ylab = 'y',
-            title = 'plot_title',
+            xlab = '',
+            ylab = 'Mean Value',
+            title = eventdata$key,
             fill_colors = c("blue"),
             showlegend = FALSE)
     })

@@ -538,13 +538,21 @@ build_cnvs_df <- function(df, response_var, group_column, group_options){
   print(names(panimmune_data))
   
   # for test
-  panimmune_data$cnvs_df$Direction <- sample(x=c('Amp','Del'), size=nrow(panimmune_data$cnvs_df), replace=T) 
-  
   panimmune_data$cnvs_df$Mean_Diff <- panimmune_data$cnvs_df$Mean_Norm - panimmune_data$cnvs_df$Mean_CNV
   
-  panimmune_data$cnvs_df$group <- ifelse(panimmune_data$cnvs_df$group %in% c('C1','C2','C3','C4','C5','C6'), 
-                                         yes="Subtype_Immune_Model_Based",
-                                         no="Study")
+
+  print('BEFORE JOIN')              
+  print('cnvs_df')
+  print(head(panimmune_data$cnvs_df))
+  
+  sample_group_dfx <- feather::read_feather('data/sample_group_df.feather')
+  sample_group_dfx <- sample_group_dfx %>% select(FeatureValue, sample_group)
+  colnames(sample_group_dfx)[1] <- 'group'
+
+  print(head(sample_group_dfx))
+  
+  panimmune_data$cnvs_df <- dplyr::inner_join(sample_group_dfx, panimmune_data$cnvs_df)
+  
   
   print('cnvs_df')
   print(head(panimmune_data$cnvs_df))
