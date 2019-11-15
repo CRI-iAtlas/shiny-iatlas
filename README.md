@@ -37,7 +37,7 @@ To run the app locally:
 1. At the prompt in the "console" tab, restore the dependecies by running:
 
    ```R
-   renv::restore()`
+   renv::restore()
    ```
 
    This may take some time to complete - get something nice to drink :)
