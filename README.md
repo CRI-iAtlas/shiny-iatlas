@@ -22,6 +22,8 @@ To run the app locally:
 
 1. Clone this repository
 
+1. Follow the instructions for spinning up the Postgres DB locally in [POSTGRESQL.md](./POSTGRESQL.md#PostgreSQL)
+
 1. Start Rstudio
 
 1. Create a "New Project..." from the "File" menu
