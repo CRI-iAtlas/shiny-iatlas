@@ -15,6 +15,7 @@ module_files:
   - "modules/distribution_plot_module.R"
 
 function_files:
+  - "functions/db_connect.R"
   - "functions/load_data.R"
   - "functions/transform.R"
   - "functions/drilldown.R"
@@ -43,7 +44,6 @@ page_files:
 libraries:
   - "shinydashboard"
   - "plotly"
-
 
 bq_remote: false # set data as remote (BigQuery) or local (on disk)
 gs_remote: false
@@ -94,5 +94,3 @@ correlation_methods:
   - "Spearman": "spearman"
   - "Pearson": "pearson"
   - "Kendall": "kendall"
-
-

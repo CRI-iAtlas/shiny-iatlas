@@ -180,6 +180,13 @@
       "Repository": "CRAN",
       "Hash": "da83dfabbb92098a20dada46869921a3"
     },
+    "RPostgres": {
+      "Package": "RPostgres",
+      "Version": "1.1.1",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "bea16c8c0eadd217a7c63560dde24d54"
+    },
     "RSQLite": {
       "Package": "RSQLite",
       "Version": "2.1.2",
@@ -216,19 +223,9 @@
     },
     "annotate": {
       "Package": "annotate",
-      "Version": "1.63.0",
+      "Version": "1.64.0",
       "Source": "Bioconductor",
-      "RemoteType": "github",
-      "RemoteRepo": "annotate",
-      "RemoteUsername": "Bioconductor",
-      "RemoteRef": "master",
-      "RemoteSha": "e10a18a8ad30c5ce955ba402f87d4861d13aa859",
-      "RemoteHost": "api.github.com",
-      "RemoteRepo.1": "annotate",
-      "RemoteUsername.1": "Bioconductor",
-      "RemoteRef.1": "master",
-      "RemoteSha.1": "e10a18a8ad30c5ce955ba402f87d4861d13aa859",
-      "Hash": "b2fc0c0b4f129e5f997bf1aadd25b82d"
+      "Hash": "6e777fdf42860fa36cc72c093f32c897"
     },
     "askpass": {
       "Package": "askpass",
