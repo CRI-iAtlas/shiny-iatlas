@@ -17,10 +17,12 @@ cellimage_UI <-function(id){
       ),
       fluidRow(
         
-        optionsBox(
-          width = 4,
-          uiOutput(ns("survplot_opts"))
-          ),
+        selectInput(
+          ns("subtype"),
+          "Subtype",
+          c("C1","C2","C3","C4","C5","C6"),
+          selected = "C5"
+        ),
         
         plotBox(
           width = 8,
@@ -37,7 +39,7 @@ cellimage <- function(
   input, 
   output, 
   session,
-  ss_choice,
+  ##ss_choice,
   group_display_choice, 
   group_internal_choice, 
   sample_group_df,
@@ -46,107 +48,23 @@ cellimage <- function(
 ){
   
   ns <- session$ns
-  
-  output$survplot_opts <- renderUI({
-    group_choice <- magrittr::set_names(list(group_internal_choice()), ss_choice())
-    var_choices <- c(
-      list("Current Sample Groups" = group_choice),
-      get_feature_df_nested_list())
-    selectInput(
-      ns("var1_surv"),
-      "Variable",
-      var_choices,
-      selected = group_internal_choice()
-    )
-  })
-  
-  
+
   output$cellPlot <- renderPlot({
   
-  # generate data frames
-  fmx_df <- panimmune_data$fmx_df %>% mutate(Tumor_Fraction=1-Stromal_Fraction)
-  sample_group_df <- panimmune_data$sample_group_df
-  im_expr_df <- panimmune_data$im_expr_df
-  group_col <- group_internal_choice()
-  group_df <- sample_group_df() %>% dplyr::mutate(Tumor_Fraction=1-Stromal_Fraction)
-  
-  cell_image_base <- panimmune_data$cell_image_base
-  unique_image_variable_ids <- cell_image_base$unique_image_variable_ids
-  variable_annotations <- cell_image_base$variable_annotations
-  image_object_labels <- cell_image_base$image_object_labels
-  
-  ##
-  ## The required cell data
-  ##
-  cois <- get.data.variables(unique_image_variable_ids,variable_annotations,'fmx_df')
-  dfc <- build_cellcontent_df(group_df,cois,group_col) 
-  dfc <- dfc %>% dplyr::rename(Group=GROUP,Variable=fraction_type,Value=fraction)
-  ## Note that ParticipantBarcode is gone.  Each Group,Variable combo simply has instances
-  
-  ##
-  ## The required gene expression data
-  ##
-  
-  ## input unique image variable IDs, get genes with IDs as in expression matrix
-  gois <- get.data.variables(unique_image_variable_ids,variable_annotations,'im_expr_df')
-  dfg <- build_multi_imageprotein_expression_df(group_df,gois,group_col)  ## dfg$FILTER is the Gene column 
-  dfg <- dfg %>% dplyr::select(Group=GROUP,Variable=FILTER,Value=LOG_COUNT)
-  ## Note that "ID" aka ParticipantBarcode is gone.  Each Group,Variable combo simply has instances
-  
-  ### Generate single data frame with all data values
-  dfv <- dplyr::bind_rows(dfc, dfg)
-  
-  #########################################################################
-  ##
-  ## Variables ranges and summary
-  ##
-  #########################################################################
-  
-  ## Mean Value per Group and Variable
-  meanz <- dfv %>% dplyr::group_by(Group,Variable) %>% dplyr::summarise(Mean=mean(Value)) 
-  ## Max Value for each Variable (includes avg over Group)
-  maxz <- dfv %>% dplyr::group_by(Variable) %>% dplyr::summarise(Max=max(Value))
-  ## Min Value for each Variable (includes avg over Group)
-  minz <- dfv %>% dplyr::group_by(Variable) %>% dplyr::summarise(Min=min(Value)) 
-  ## Vector versions
-  minvec <- minz %>% purrr:::pluck("Min")
-  names(minvec) <- minz %>% purrr::pluck("Variable")
-  maxvec <- maxz %>% purrr::pluck("Max")
-  names(maxvec) <- maxz %>% purrr::pluck("Variable")
-  
-  image_grob_start <- cell_image_base$image_grob 
-  pathlabels <- cell_image_base$pathlabels
-  gTree_name <- cell_image_base$gTree_name ## label of overall gTree object
-
-  fill.color.start <- character(length(pathlabels)) ; names(fill.color.start) <- pathlabels
-  for (s in pathlabels){
-    fill.color.start[s] <- image_grob_start$children[[gTree_name]]$children[[s]]$gp$fill 
-  }
-  image_grob <- image_grob_start
-  fill.color.new <- character(length(pathlabels)) ; names(fill.color.new) <- pathlabels ## this is for editing
-  
-  
-  #########################################################################
-  ##
-  ## Get New Colors
-  ##
-  #########################################################################
-  
-  sois <- unique(group_df[[group_col]])
-  soi <- sois[5]
-  
-  for (ind in seq(1,length(image_object_labels))){
-    ioa <- image_object_labels[ind]
-    datavar <- variable_annotations %>% dplyr::filter(ImageVariableID==ioa) %>% purrr::pluck("FeatureLabel")
-    colormap <-   variable_annotations %>% dplyr::filter(ImageVariableID==ioa) %>% purrr::pluck("ColorScale")
-    fill.color.new[ind] <- getVarColor(datavar,soi,colormap,minvec,maxvec,dfv)
-  }
-  for (s in pathlabels ){
-    image_grob$children[[gTree_name]]$children[[s]]$gp$fill <- fill.color.new[s]
-  }
-
-  grid::grid.draw(image_grob)
-  
+    ##fmx_df <- panimmune_data$fmx_df %>% mutate(Tumor_Fraction=1-Stromal_Fraction)
+    sample_group_df <- panimmune_data$sample_group_df
+    group_col <- group_internal_choice()
+    group_df <- sample_group_df() %>% dplyr::mutate(Tumor_Fraction=1-Stromal_Fraction)
+    
+    cell_image_base <- panimmune_data$cell_image_base
+    
+    ### Single data frame with all data values
+    dfv <- generate_value_df(group_df,group_col,cell_image_base)
+    
+    soi <- input$subtype ##sois <- unique(group_df[[group_col]])
+    image_grob <- get_colored_image(soi,cell_image_base,dfv)
+    grid::grid.draw(image_grob)
+    
   })
     
 }
