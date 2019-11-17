@@ -51,18 +51,18 @@ cellimage <- function(
 
   output$cellPlot <- renderPlot({
   
-    ##fmx_df <- panimmune_data$fmx_df %>% mutate(Tumor_Fraction=1-Stromal_Fraction)
-    sample_group_df <- panimmune_data$sample_group_df
     group_col <- group_internal_choice()
     group_df <- sample_group_df() %>% dplyr::mutate(Tumor_Fraction=1-Stromal_Fraction)
     
     cell_image_base <- panimmune_data$cell_image_base
     
     ### Single data frame with all data values
-    dfv <- generate_value_df(group_df,group_col,cell_image_base)
+    all_vals_df <- generate_value_df(group_df,group_col,cell_image_base)
+    
+    #save(all_vals_df,cell_image_base,file="look.RData")
     
     soi <- input$subtype ##sois <- unique(group_df[[group_col]])
-    image_grob <- get_colored_image(soi,cell_image_base,dfv)
+    image_grob <- get_colored_image(soi,cell_image_base,all_vals_df)
     grid::grid.draw(image_grob)
     
   })

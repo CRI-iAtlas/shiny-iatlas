@@ -125,12 +125,14 @@ generate_value_df <- function(
 
 }
 
+
+#########################################################################
+##
+## Variables ranges and summary
+##
+#########################################################################
+
 data_ranges <- function(inputdata){
-  #########################################################################
-  ##
-  ## Variables ranges and summary
-  ##
-  #########################################################################
   
   ## Mean Value per Group and Variable
   meanz <- inputdata %>% dplyr::group_by(Group,Variable) %>% dplyr::summarise(Mean=mean(Value)) 
@@ -144,22 +146,25 @@ data_ranges <- function(inputdata){
   maxvec <- maxz %>% purrr::pluck("Max")
   names(maxvec) <- maxz %>% purrr::pluck("Variable")
   
-  list(minvec=minvec,maxvec=maxvec)
+  list(minvec=minvec,maxvec=maxvec,meanz=meanz)
 }
 
 #--------- color functions -----------
 
 ## For the variable of interest, get min max possible values, color range and color value
-getVarColor <- function(voi,soi,colormap,minvec,maxvec,dfv){
+getVarColor <- function(voi,soi,colormap,minvec,maxvec,meanz){
+
+  ## the display value is the mean within the subtype
+  display.val <- meanz %>% dplyr::filter(Group==soi,Variable==voi) %>% purrr::pluck("Mean")
   vmin <- minvec[voi]
   vmax <- maxvec[voi]
   vnstep <- 51
   vstep <- (vmax-vmin)/(vnstep-1) ## size of step 
   breakList <- seq(vmin,vmax,vstep) 
-  allcolors <- colorRampPalette(rev(RColorBrewer::brewer.pal(n = 7,name=colormap)))(length(breakList))
-  display.val <- dfv %>% dplyr::filter(Group==soi,Variable==voi) %>% dplyr::select(-Group,-Variable) %>% purrr::pluck("Value") %>% mean()
-  b <- display.val
-  cind <- min(which(!(b-breakList)>0)) ## right turnover point
+  cind <- min(which(!(display.val-breakList)>0)) ## right turnover point
+  
+  allcolors <- grDevices::colorRampPalette(RColorBrewer::brewer.pal(n = 7,name=colormap))(length(breakList))
+    
   usecolor <- allcolors[cind]
   usecolor
 }
@@ -176,6 +181,7 @@ get_colored_image <- function(soi,cell_image_base,dfv){
   dfv_ranges <- data_ranges(dfv)
   minvec <- dfv_ranges$minvec
   maxvec <- dfv_ranges$maxvec
+  meanz <- dfv_ranges$meanz
   
   fill_color <- character(length(pathlabels)) ; names(fill_color) <- pathlabels ## this is for editing
   
@@ -183,7 +189,7 @@ get_colored_image <- function(soi,cell_image_base,dfv){
     ioa <- image_object_labels[ind]
     datavar <- variable_annotations %>% dplyr::filter(ImageVariableID==ioa) %>% purrr::pluck("FeatureLabel")
     colormap <-   variable_annotations %>% dplyr::filter(ImageVariableID==ioa) %>% purrr::pluck("ColorScale")
-    fill_color[ind] <- getVarColor(datavar,soi,colormap,minvec,maxvec,dfv)
+    fill_color[ind] <- getVarColor(datavar,soi,colormap,minvec,maxvec,meanz)
   }
   for (s in pathlabels ){
     image_grob$children[[gTree_name]]$children[[s]]$gp$fill <- fill_color[s]
