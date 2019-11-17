@@ -105,16 +105,36 @@ create_cell_fraction_options <- function() {
     }
 }
 
+#########################################################################
+##
+## Get cell image grid object and associated annotations
+##
+#########################################################################
+
 load_cellimage_base <- function(){
   pic <- grImport2::readPicture("data/tcell-svg-take3-cairo.svg")
-  w <- grImport2::pictureGrob(pic)
-  gTree.name <- grid::childNames(w) ## label of overall gTree object
-  pathlabels <- w$children[[gTree.name]]$childrenOrder ## labels and order of children 
-  cellimage_base <- list()
-  cellimage_base$w <- w
-  cellimage_base$pathlabels <- pathlabels
-  cellimage_base
-  list(cellimage_base)
+  image_grob <- grImport2::pictureGrob(pic)
+  gTree_name <- grid::childNames(image_grob) ## label of overall gTree object
+  pathlabels <- image_grob$children[[gTree_name]]$childrenOrder ## labels and order of children 
+
+  ## Variable annotations are ImageVariableID, FeatureLabel, Source, ColorScale
+  variable_annotations <- readr::read_tsv('data/cell_image_id_annotations.tsv') 
+  ## Image obects, in order, labeled in terms of ImageVariableID
+  image_object_labels <- read.table('data/cell_image_object_ids.txt',as.is=T)$V1
+  missing_annotations <- setdiff(image_object_labels,variable_annotations$ImageVariableID)
+  if (length(missing_annotations) > 0 ){
+    stop("Image objects ",paste(missing_annotations,collapse=" ")," do not have an annotation.")
+  }
+  unique_image_variable_ids <- unique(image_object_labels)
+  
+  cellimage_parts <- list()
+  cellimage_parts$image_grob <- image_grob
+  cellimage_parts$pathlabels <- pathlabels
+  cellimage_parts$gTree_name <- gTree_name
+  cellimage_parts$variable_annotations <- variable_annotations
+  cellimage_parts$image_object_labels <- image_object_labels
+  cellimage_parts$unique_image_variable_ids <- unique_image_variable_ids
+  list(cellimage_base=cellimage_parts)
 }
   
   

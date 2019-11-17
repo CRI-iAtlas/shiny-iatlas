@@ -99,7 +99,7 @@ getVarColor <- function(voi,soi,colormap,minvec,maxvec,dfv){
   vnstep <- 51
   vstep <- (vmax-vmin)/(vnstep-1) ## size of step 
   breakList <- seq(vmin,vmax,vstep) 
-  allcolors <- colorRampPalette(rev(brewer.pal(n = 7,name=colormap)))(length(breakList))
+  allcolors <- colorRampPalette(rev(RColorBrewer::brewer.pal(n = 7,name=colormap)))(length(breakList))
   display.val <- dfv %>% dplyr::filter(Group==soi,Variable==voi) %>% dplyr::select(-Group,-Variable) %>% purrr::pluck("Value") %>% mean()
   b <- display.val
   cind <- min(which(!(b-breakList)>0)) ## right turnover point

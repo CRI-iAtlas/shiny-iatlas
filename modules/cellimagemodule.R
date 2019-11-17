@@ -49,19 +49,14 @@ cellimage <- function(
   group_col <- group_internal_choice()
   group_df <- sample_group_df() %>% dplyr::mutate(Tumor_Fraction=1-Stromal_Fraction)
   
-  ## Read annotations of image objects
-  ## Variable annotations are ImageVariableID, FeatureLabel, Source, ColorScale
-  variable.annotations <- readr::read_tsv('data/cell_image_id_annotations.tsv') 
-  ## Image obects, in order, labeled in terms of ImageVariableID
-  image.object.labels <- read.table('data/cell_image_object_ids.txt',as.is=T)$V1
-  ## must be met 
-  ## image.object.labels %in% variable.annotations$ImageVariableID
-  unique.image.variable.ids <- unique(image.object.labels)
+  cell_image_base <- panimmune_data$cell_image_base
+  unique_image_variable_ids <- cell_image_base$unique_image_variable_ids
+  variable_annotations <- cell_image_base$variable_annotations
   
   ##
   ## The required cell data
   ##
-  cois <- get.data.variables(unique.image.variable.ids,variable.annotations,'fmx_df')
+  cois <- get.data.variables(unique.image.variable.ids,variable_annotations,'fmx_df')
   dfc <- build_cellcontent_df(group_df,cois,group_col) 
   dfc <- dfc %>% dplyr::rename(Group=GROUP,Variable=fraction_type,Value=fraction)
   ## Note that ParticipantBarcode is gone.  Each Group,Variable combo simply has instances
@@ -71,7 +66,7 @@ cellimage <- function(
   ##
   
   ## input unique image variable IDs, get genes with IDs as in expression matrix
-  gois <- get.data.variables(unique.image.variable.ids,variable.annotations,'im_expr_df')
+  gois <- get.data.variables(unique.image.variable.ids,variable_annotations,'im_expr_df')
   dfg <- build_multi_imageprotein_expression_df(group_df,gois,group_col)  ## dfg$FILTER is the Gene column 
   dfg <- dfg %>% dplyr::select(Group=GROUP,Variable=FILTER,Value=LOG_COUNT)
   ## Note that "ID" aka ParticipantBarcode is gone.  Each Group,Variable combo simply has instances
@@ -86,36 +81,26 @@ cellimage <- function(
   #########################################################################
   
   ## Mean Value per Group and Variable
-  meanz <- dfv %>% dplyr::group_by(Group,Variable) %>% summarize(Mean=mean(Value)) 
+  meanz <- dfv %>% dplyr::group_by(Group,Variable) %>% dplyr::summarise(Mean=mean(Value)) 
   ## Max Value for each Variable (includes avg over Group)
-  maxz <- dfv %>% dplyr::group_by(Variable) %>% summarize(Max=max(Value))
+  maxz <- dfv %>% dplyr::group_by(Variable) %>% dplyr::summarise(Max=max(Value))
   ## Min Value for each Variable (includes avg over Group)
-  minz <- dfv %>% dplyr::group_by(Variable) %>% summarize(Min=min(Value)) 
+  minz <- dfv %>% dplyr::group_by(Variable) %>% dplyr::summarise(Min=min(Value)) 
   ## Vector versions
   minvec <- minz %>% purrr:::pluck("Min")
   names(minvec) <- minz %>% purrr::pluck("Variable")
   maxvec <- maxz %>% purrr::pluck("Max")
   names(maxvec) <- maxz %>% purrr::pluck("Variable")
   
-  #########################################################################
-  ##
-  ## Get image and convert to grid object
-  ##
-  #########################################################################
-  
-  pic <- grImport2::readPicture("data/tcell-svg-take3-cairo.svg")
-  w <- grImport2::pictureGrob(pic)
-  gTree.name <- grid::childNames(w) ## label of overall gTree object
-  pathlabels <- w$children[[gTree.name]]$childrenOrder ## labels and order of children 
-  
-  #pathlabels <- panimmune_data$cell_image_base$pathlabels
-  #w <- panimmune_data$cell_image_base$w
-    
+  image_grob_start <- cell_image_base$image_grob 
+  pathlabels <- cell_image_base$pathlabels
+  gTree_name <- cell_image_base$gTree_name ## label of overall gTree object
+
   fill.color.start <- character(length(pathlabels)) ; names(fill.color.start) <- pathlabels
   for (s in pathlabels){
-    fill.color.start[s] <- w$children[[gTree.name]]$children[[s]]$gp$fill 
+    fill.color.start[s] <- image_grob_start$children[[gTree_name]]$children[[s]]$gp$fill 
   }
-  wnew <- w
+  image_grob <- image_grob_start
   fill.color.new <- character(length(pathlabels)) ; names(fill.color.new) <- pathlabels ## this is for editing
   
   
@@ -130,15 +115,15 @@ cellimage <- function(
   
   for (ind in seq(1,length(image.object.labels))){
     ioa <- image.object.labels[ind]
-    datavar <- variable.annotations %>% dplyr::filter(ImageVariableID==ioa) %>% purrr::pluck("FeatureLabel")
-    colormap <-   variable.annotations %>% dplyr::filter(ImageVariableID==ioa) %>% purrr::pluck("ColorScale")
+    datavar <- variable_annotations %>% dplyr::filter(ImageVariableID==ioa) %>% purrr::pluck("FeatureLabel")
+    colormap <-   variable_annotations %>% dplyr::filter(ImageVariableID==ioa) %>% purrr::pluck("ColorScale")
     fill.color.new[ind] <- getVarColor(datavar,soi,colormap,minvec,maxvec,dfv)
   }
   for (s in pathlabels ){
-    wnew$children[[gTree.name]]$children[[s]]$gp$fill <- fill.color.new[s]
+    image_grob$children[[gTree_name]]$children[[s]]$gp$fill <- fill.color.new[s]
   }
 
-  grid::grid.draw(wnew)
+  grid::grid.draw(image_grob)
   
   })
     
