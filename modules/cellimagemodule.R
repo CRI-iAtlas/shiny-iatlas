@@ -16,6 +16,12 @@ cellimage_UI <-function(id){
         p("Driving instructions")
       ),
       fluidRow(
+        
+        optionsBox(
+          width = 4,
+          uiOutput(ns("survplot_opts"))
+          ),
+        
         plotBox(
           width = 8,
           plotOutput(ns("cellPlot"), height = 600) %>%
@@ -31,6 +37,7 @@ cellimage <- function(
   input, 
   output, 
   session,
+  ss_choice,
   group_display_choice, 
   group_internal_choice, 
   sample_group_df,
@@ -39,6 +46,20 @@ cellimage <- function(
 ){
   
   ns <- session$ns
+  
+  output$survplot_opts <- renderUI({
+    group_choice <- magrittr::set_names(list(group_internal_choice()), ss_choice())
+    var_choices <- c(
+      list("Current Sample Groups" = group_choice),
+      get_feature_df_nested_list())
+    selectInput(
+      ns("var1_surv"),
+      "Variable",
+      var_choices,
+      selected = group_internal_choice()
+    )
+  })
+  
   
   output$cellPlot <- renderPlot({
   
@@ -52,11 +73,12 @@ cellimage <- function(
   cell_image_base <- panimmune_data$cell_image_base
   unique_image_variable_ids <- cell_image_base$unique_image_variable_ids
   variable_annotations <- cell_image_base$variable_annotations
+  image_object_labels <- cell_image_base$image_object_labels
   
   ##
   ## The required cell data
   ##
-  cois <- get.data.variables(unique.image.variable.ids,variable_annotations,'fmx_df')
+  cois <- get.data.variables(unique_image_variable_ids,variable_annotations,'fmx_df')
   dfc <- build_cellcontent_df(group_df,cois,group_col) 
   dfc <- dfc %>% dplyr::rename(Group=GROUP,Variable=fraction_type,Value=fraction)
   ## Note that ParticipantBarcode is gone.  Each Group,Variable combo simply has instances
@@ -66,7 +88,7 @@ cellimage <- function(
   ##
   
   ## input unique image variable IDs, get genes with IDs as in expression matrix
-  gois <- get.data.variables(unique.image.variable.ids,variable_annotations,'im_expr_df')
+  gois <- get.data.variables(unique_image_variable_ids,variable_annotations,'im_expr_df')
   dfg <- build_multi_imageprotein_expression_df(group_df,gois,group_col)  ## dfg$FILTER is the Gene column 
   dfg <- dfg %>% dplyr::select(Group=GROUP,Variable=FILTER,Value=LOG_COUNT)
   ## Note that "ID" aka ParticipantBarcode is gone.  Each Group,Variable combo simply has instances
@@ -113,8 +135,8 @@ cellimage <- function(
   sois <- unique(group_df[[group_col]])
   soi <- sois[5]
   
-  for (ind in seq(1,length(image.object.labels))){
-    ioa <- image.object.labels[ind]
+  for (ind in seq(1,length(image_object_labels))){
+    ioa <- image_object_labels[ind]
     datavar <- variable_annotations %>% dplyr::filter(ImageVariableID==ioa) %>% purrr::pluck("FeatureLabel")
     colormap <-   variable_annotations %>% dplyr::filter(ImageVariableID==ioa) %>% purrr::pluck("ColorScale")
     fill.color.new[ind] <- getVarColor(datavar,soi,colormap,minvec,maxvec,dfv)
