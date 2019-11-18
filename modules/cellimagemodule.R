@@ -16,13 +16,20 @@ cellimage_UI <-function(id){
         p("Driving instructions")
       ),
       fluidRow(
-        
-        selectInput(
-          ns("subtype"),
-          "Subtype",
-          c("C1","C2","C3","C4","C5","C6"),
-          selected = "C5"
+
+        optionsBox(
+          column(
+            width = 6,
+            uiOutput(ns("select_ui"))
+          )
         ),
+                
+#        selectInput(
+#          ns("subtype"),
+#          "Subtype",
+#          c("C1","C2","C3","C4","C5","C6"),
+#          selected = "C5"
+#        ),
         
         plotBox(
           width = 8,
@@ -39,15 +46,43 @@ cellimage <- function(
   input, 
   output, 
   session,
-  ##ss_choice,
   group_display_choice, 
-  group_internal_choice, 
+  group_internal_choice,
+  study_subset_choice,
   sample_group_df,
   subset_df, 
   plot_colors
 ){
   
   ns <- session$ns
+  
+  output$select_ui <- renderUI({
+    
+    req(
+      panimmune_data$sample_group_df,
+      group_internal_choice()
+    )
+    
+    if(group_internal_choice() == "Subtype_Curated_Malta_Noushmehr_et_al"){
+      req(study_subset_choice())
+    }
+    
+    sample_group_vector <-  panimmune_data$sample_group_df %>% 
+      dplyr::filter(sample_group ==  group_internal_choice()) %>% 
+      `if`(
+        group_internal_choice() == "Subtype_Curated_Malta_Noushmehr_et_al",
+        dplyr::filter(., `TCGA Studies`== study_subset_choice()),
+        .
+      ) %>%dplyr::pull(FeatureValue)
+    
+    selectInput(
+      ns("tbd_method"),
+      "Select Group",
+      choices = sample_group_vector
+    )
+    
+  
+  })
 
   output$cellPlot <- renderPlot({
   
