@@ -32,7 +32,7 @@ To run the app locally:
 
 1. Select the project folder.
 
-1. In the "console" tab in Rstudio, a new R session will start. This will execute `source("renv/activate.R")` from the `.Rprofile` file and `renv` will bootstrap itself in.
+1. In the "console" tab in Rstudio, a new R session will start. This will execute `source("renv/activate.R")` from the `.Rprofile.d/default.R` file and `renv` will bootstrap itself in.
 
 1. At the prompt in the "console" tab, restore the dependecies by running:
 
