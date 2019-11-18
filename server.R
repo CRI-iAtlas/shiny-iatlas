@@ -153,6 +153,9 @@ shinyServer(function(input, output, session) {
     observeEvent(input$link_to_module7, {
         shinydashboard::updateTabItems(session, "explorertabs", "tilmap_features")
     })
+    observeEvent(input$link_to_module9, {
+      shinydashboard::updateTabItems(session, "explorertabs", "iotargets")
+    })
     observeEvent(input$link_to_module_subtypeclassifier, {
         updateNavlistPanel(session, "toolstabs", "Immune Subtype Classifier")
     })

@@ -16,7 +16,7 @@ module_files:
   - "modules/model_selection_module.R"
   - "modules/insert_remove_element_module.R"
   - "modules/volcano_plot_module.R"
-  
+
 function_files:
   - "functions/create_db2.R"
   - "functions/transform.R"
@@ -46,6 +46,3 @@ page_files:
 libraries:
   - "shinydashboard"
   - "plotly"
-
-
-

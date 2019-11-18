@@ -69,7 +69,7 @@ subtypeclassifier_UI <- function(id) {
           column(
             width = 2,
             radioButtons(ns("sepa"), "File Separator",
-                         choices = c(Comma = ",", Tab = "\t"), selected = ",")
+                         choices = c(Tab = "\t", Comma = ","), selected = "\t")
           ),
 
           column(
