@@ -13,7 +13,7 @@ module_files:
   - "modules/subtypeclassifiermodule.R"
   - "modules/submodules.R"
   - "modules/distribution_plot_module.R"
-  
+
 function_files:
   - "functions/load_data.R"
   - "functions/transform.R"
@@ -47,7 +47,7 @@ libraries:
 
 bq_remote: false # set data as remote (BigQuery) or local (on disk)
 gs_remote: false
-  
+
 cell_content_local:
   - "Lymphocytes.Aggregate1"
   - "T.cells.CD8"
@@ -59,7 +59,7 @@ cell_content_bq:
   - "T_cells_CD8"
   - "T_cells_CD4_Aggregate2"
   - "Macrophage_Aggregate1"
- 
+
 diversity_metric_choices:
   - "Evenness"
   - "Shannon"
@@ -68,13 +68,13 @@ diversity_metric_choices:
 receptor_type_choices:
   - "TCR"
   - "BCR"
-  
+
 immunomodulator_groups:
   - "Gene_Family"
   - "Super_Category"
   - "Immune_Checkpoint"
   - "Function"
-  
+
 immunotarget_groups:
   - "Therapy Type"
   - "Pathway"
@@ -83,7 +83,7 @@ immune_groups:
   - "Subtype_Immune_Model_Based"
   - "Subtype_Curated_Malta_Noushmehr_et_al"
   - "Study"
-  
+
 cell_type_aggregates:
   - "Immune Cell Proportion - Original"
   - "Immune Cell Proportion - Multipotent Progenitor Cell Derivative Class"
@@ -91,7 +91,7 @@ cell_type_aggregates:
   - "Immune Cell Proportion - Differentiated Lymphoid and Myeloid Cell Derivative Class"
 
 correlation_methods:
-  - "Spearman": "spearman" 
+  - "Spearman": "spearman"
   - "Pearson": "pearson"
   - "Kendall": "kendall"
 

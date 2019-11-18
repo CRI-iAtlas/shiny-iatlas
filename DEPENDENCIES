@@ -1,8 +1,8 @@
 package	version	source
-annotate  1.61.1  github
+BiocManager - CRAN
+devtools - CRAN
 BH	1.65.0-1	CRAN
 DBI	0.7	CRAN
-DT	0.4.5	github
 KMsurv	0.1-5	CRAN
 MASS	7.3-47	CRAN
 Matrix	1.2-12	CRAN
@@ -17,13 +17,11 @@ bigrquery	0.4.1	CRAN
 bindr	0.1	CRAN
 bindrcpp	0.2	CRAN
 broom	0.4.3	CRAN
-callr	1.0.0.9000	github
 cellranger	1.1.0	CRAN
 cli	1.0.0	CRAN
 clipr	0.4.0	CRAN
 cmprsk	2.2-7	CRAN
 colorspace	1.3-2	CRAN
-concordanceIndex	0.1	github
 cowplot	0.9.1	CRAN
 crayon	1.3.4	CRAN
 crosstalk	1.0.0	CRAN
@@ -40,8 +38,6 @@ feather	0.3.1	CRAN
 forcats	0.2.0	CRAN
 foreign	0.8-69	CRAN
 fs	1.1.0	CRAN
-ggmosaic	0.1.2.9000	github
-ggplot2	2.2.1.9000	github
 ggpubr	0.1.6	CRAN
 ggrepel	0.7.0	CRAN
 ggsci	2.8	CRAN
@@ -80,7 +76,6 @@ pillar	1.2.1	CRAN
 parallel  3.4.1 CRAN
 pkgconfig	2.0.1	CRAN
 plogr	0.1-1	CRAN
-plotly	4.7.1.9000	github
 plyr	1.8.4	CRAN
 prettyunits	1.0.2	CRAN
 processx	2.0.0.1	CRAN
@@ -93,7 +88,6 @@ readxl	1.0.0	CRAN
 rematch	1.0.1	CRAN
 reprex	0.1.1	CRAN
 reshape2	1.4.3	CRAN
-rlang	0.2.0.9001	github
 R.methodsS3	1.7.1	CRAN
 R.oo	1.22.0	CRAN
 R.utils  2.7.0  CRAN
@@ -101,11 +95,8 @@ rmarkdown	1.8	CRAN
 rprojroot	1.2	CRAN
 rstudioapi	0.7	CRAN
 rvest	0.3.2	CRAN
-scales	0.5.0.9000	github
 selectr	0.3-1	CRAN
 shiny	1.0.5	CRAN
-shinycssloaders	0.2.0	github
-shinydashboard	0.6.1	CRAN
 sourcetools	0.1.6	CRAN
 stringi	1.1.6	CRAN
 stringr	1.3.0	CRAN
@@ -120,14 +111,28 @@ utf8	1.1.3	CRAN
 viridis	0.4.0	CRAN
 viridisLite	0.3.0	CRAN
 whisker	0.3-2	CRAN
-withr	2.1.2	github
 wrapr	1.3.0	CRAN
 xml2	1.1.1	CRAN
 xtable	1.8-2	CRAN
 yaml	2.1.18	CRAN
 zoo	1.8-1	CRAN
-sva 3.20.0  github
 clue  0.3-56  CRAN
 mclust  5.4.1 CRAN
 reshape2  1.4.3  CRAN
-ImmuneSubtypeClassifier 0.1.0 github
+shinycssloaders	0.2.0	CRAN
+shinydashboard	0.6.1	CRAN
+
+hadley/rlang	0.2.0.9001	github
+haleyjeppson/ggmosaic	0.1.2.9000	github
+duthedd/ggplot2	2.2.1.9000	github
+jimhester/withr	2.1.2	github
+MangoTheCat/callr	1.0.0.9000	github
+rstudio/DT	0.4.5	github
+hadley/scales	0.5.0.9000	github
+
+sva 3.20.0  bioc
+
+Bioconductor/annotate  1.61.1  github
+th86/concordanceIndex	0.1	github
+ropensci/plotly	4.7.1.9000	github
+Gibbsdavidl/ImmuneSubtypeClassifier 0.1.0 github
