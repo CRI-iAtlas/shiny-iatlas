@@ -1,5 +1,6 @@
 .Rhistory
 .RData
+.Rprofile.bak.*
 .Ruserdata
 *.Rproj
 .Rproj.user
