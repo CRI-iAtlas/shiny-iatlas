@@ -73,7 +73,7 @@ cellimage <- function(
         group_internal_choice() == "Subtype_Curated_Malta_Noushmehr_et_al",
         dplyr::filter(., `TCGA Studies`== study_subset_choice()),
         .
-      ) %>%dplyr::pull(FeatureValue)
+      ) %>% dplyr::pull(FeatureValue)
     
     
     selectInput(
@@ -90,8 +90,7 @@ cellimage <- function(
     cell_image_base <- panimmune_data$cell_image_base
     ### Single data frame with all data values
     all_vals_df <- generate_value_df(group_df,group_col,cell_image_base)
-    #save(all_vals_df,cell_image_base,file="look.RData")
-    soi <- input$subtype ##sois <- unique(group_df[[group_col]])
+    #save(group_df,all_vals_df,cell_image_base,file="look.RData")
     #cat("my choice ",input$groupselect_method,"\n")
     soi <- input$groupselect_method
     image_grob <- get_colored_image(soi,cell_image_base,all_vals_df)
