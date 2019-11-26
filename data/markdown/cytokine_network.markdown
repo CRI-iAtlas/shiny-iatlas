@@ -2,9 +2,10 @@ Select the subset of interest of analysis, depending on the Sample Group selecte
 
 - *Abundance threshold (%)*: Nodes in the network are selected if they meet the selected abundance threshold. The abundance threshold, in %, is the frequency of samples in the upper two tertiles of cell abundance or gene expression distributions. For example, for an abundance of 66%, a node (cell or gene) is entered into the subtype-network if at least 66% of samples within a subtype map to mid or high value bins in a tertile distribution.
 
-- *Concordance threshold*: Edges in the scaffold network between any two abundant nodes is evaluated for inclusion based on the selected concordance threshold. A concordance threshold of 2, for example, selects edges that have both nodes simultaneously highly or lowly expressed (concordant) at least twice as frequent than samples with one node highly expressed and the other lowly expressed (discordant). 
+- *Concordance threshold*: Edges in the scaffold network between any two abundant nodes is evaluated for inclusion based on the selected concordance threshold. The concordance threshold is computed based on the contingency table populated with the ternary values of the two nodes of an edge and in terms of the values of ((high,high)+ (low,low))/(1+(low,high)+(high,low)).
+  A concordance threshold of 2, for example, selects edges that have both nodes simultaneously highly or lowly expressed (concordant) at least twice as frequent than samples with one node highly expressed and the other lowly expressed (discordant). On the other hand, an edge with a concordance score of 0.5 is considered discordant, ie, samples with one node highly expressed and the other lowly expressed (discordant) are twice as frequent than samples with both nodes simultaneously highly or lowly expressed (concordant). 
 
-(For more information on the method to build the network, refer to the Data Description module). 
+For more information on the method to build the network, refer to the Data Description module.
 
 In addition, a user can also select a set of cells or genes of interest. This selection will limit the network to the edges in the scaffold with the selected cells and genes that meet the abundance and concordance thresholds. By default, a network will use all cells and immunomodulator genes (as described in the Immunomodulators module).
 

@@ -1,5 +1,5 @@
 if(!require(cyjShiny)){
-  githubinstall::githubinstall(packages = "cytoscape/cyjShiny", ask = F)
+  devtools::install_github("cytoscape/cyjShiny")
 }
 
 library(cyjShiny)
