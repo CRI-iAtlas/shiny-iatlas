@@ -3,6 +3,7 @@
 # env can be dev or test. If no argument is passed, it will default to dev.
 env=${1:-dev}
 
+# The path to the docker executable.
 docker_exec=`which docker`
 docker_image="pg-docker"
 
@@ -16,7 +17,11 @@ db_pw="docker"
 if [ ! -d "$db_data_dir" ]; then
     mkdir -p $db_data_dir
 fi
+
+# Ensure the docker image has been downloaded.
 $docker_exec pull postgres:11.5
+
+# Ensure the docker container isn't already in the docker processes.
 if [ ! "$($docker_exec ps -q -f name=$docker_image)" ]; then
     if [ "$($docker_exec ps -aq -f status=exited -f name=$docker_image)" ]; then
         # Cleanup
@@ -26,5 +31,15 @@ if [ ! "$($docker_exec ps -q -f name=$docker_image)" ]; then
     $docker_exec run --rm  --name $docker_image -e POSTGRES_PASSWORD=$db_pw -d -p $db_port:$db_port -v $db_data_dir:/var/lib/postgresql/data postgres:11.5
 fi
 
+>&2 echo "Postgres is starting - please be patient"
+until $docker_exec exec $docker_image psql -h "$host" -U "postgres" -c '\l'  2> /dev/null; do
+    sleep 1
+done
+
+>&2 echo "Postgres is up - building database and tables"
+
+# Copy the SQL file into the docker container.
 $docker_exec cp ./sql/$create_db_sql $docker_image:/$create_db_sql
+
+# Run the SQL script within the docker container using the docker container's psql.
 $docker_exec exec -u $db_user $docker_image psql -f /$create_db_sql

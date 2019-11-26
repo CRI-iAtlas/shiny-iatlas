@@ -24,15 +24,7 @@ To run the app locally:
 
 1. In the terminal, change directories to ensure you are in the root of the checked out project.
 
-1. Execute the script to spin up Postgres:
-
-```bash
-. ./scripts/spin_up_postgres.sh
-```
-
-1. It may take a short time for this to complete.
-
-1. Execute the script to build the database and tables.
+1. Execute the script to build the database and tables (This may take a little time. Please be patient.):
 
 ```bash
 . ./scripts/create_db.sh
