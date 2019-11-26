@@ -38,7 +38,7 @@ if [ ! "$($docker_exec ps -q -f name=$docker_image)" ]; then
 fi
 
 >&2 echo -e "${YELLOW}Postgres is starting - please be patient${NC}"
-until $docker_exec exec $docker_image psql -h "$host" -U "postgres"  2> /dev/null; do
+until $docker_exec exec $docker_image psql -U $db_user  2> /dev/null; do
     sleep 1
 done
 
