@@ -22,6 +22,22 @@ To run the app locally:
 
 1. Clone this repository
 
+1. In the terminal, change directories to ensure you are in the root of the checked out project.
+
+1. Execute the script to spin up Postgres:
+
+```bash
+. ./scripts/spin_up_postgres.sh
+```
+
+1. It may take a short time for this to complete.
+
+1. Execute the script to build the database and tables.
+
+```bash
+. ./scripts/create_db.sh
+```
+
 1. Start Rstudio
 
 1. Create a "New Project..." from the "File" menu
