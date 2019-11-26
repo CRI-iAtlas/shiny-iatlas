@@ -3,6 +3,11 @@
 # env can be dev or test. If no argument is passed, it will default to dev.
 env=${1:-dev}
 
+YELLOW="\033[1;33m"
+GREEN="\033[0;32m"
+# No Color
+NC='\033[0m'
+
 # The path to the docker executable.
 docker_exec=`which docker`
 docker_image="pg-docker"
@@ -15,6 +20,7 @@ db_pw="docker"
 
 # If $db_data_dir doesn't exist create it.
 if [ ! -d "$db_data_dir" ]; then
+    >&2 echo -e "${GREEN}Creating '$HOME/docker/volumes/postgres' for data.${NC}"
     mkdir -p $db_data_dir
 fi
 
@@ -31,12 +37,12 @@ if [ ! "$($docker_exec ps -q -f name=$docker_image)" ]; then
     $docker_exec run --rm  --name $docker_image -e POSTGRES_PASSWORD=$db_pw -d -p $db_port:$db_port -v $db_data_dir:/var/lib/postgresql/data postgres:11.5
 fi
 
->&2 echo "Postgres is starting - please be patient"
-until $docker_exec exec $docker_image psql -h "$host" -U "postgres" -c '\l'  2> /dev/null; do
+>&2 echo -e "${YELLOW}Postgres is starting - please be patient${NC}"
+until $docker_exec exec $docker_image psql -h "$host" -U "postgres"  2> /dev/null; do
     sleep 1
 done
 
->&2 echo "Postgres is up - building database and tables"
+>&2 echo -e "${GREEN}Postgres is up - building database and tables${NC}"
 
 # Copy the SQL file into the docker container.
 $docker_exec cp ./sql/$create_db_sql $docker_image:/$create_db_sql
