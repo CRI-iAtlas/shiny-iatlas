@@ -8,12 +8,16 @@ GREEN="\033[0;32m"
 # No Color
 NC='\033[0m'
 
+# The local project directory (assumes this file is stll in a child folder of the project).
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && cd ../ && pwd )"
+>&2 echo -e "${GREEN}Current dir - ${DIR}${NC}"
+
 # The path to the docker executable.
 docker_exec=`which docker`
 docker_image="pg-docker"
 
 create_db_sql="create_${env}_db.sql"
-db_data_dir="$HOME/docker/volumes/postgres"
+db_data_dir="$DIR/docker/volumes/postgres"
 db_port=5432
 db_user="postgres"
 db_pw="docker"
