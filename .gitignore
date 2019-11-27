@@ -9,3 +9,5 @@
 .DS_Store
 rsconnect
 data/io*
+data2/*.csv
+docker/volumes/**
