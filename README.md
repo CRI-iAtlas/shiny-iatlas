@@ -28,9 +28,15 @@ To run the app locally:
 
 1. Execute the script to build the database and tables (This may take a little time. Please be patient.):
 
-```bash
-. ./scripts/create_db.sh
-```
+   - NOTE: On Windows machines:
+     - there MUST be a bash shell available.
+       - Bash may be enabled in Windows (please see [https://stackoverflow.com/a/36465000](https://stackoverflow.com/a/36465000))
+       - Alternatively, Git Bash may be installed (please see [Git Bash Tutorial](https://www.atlassian.com/git/tutorials/git-bash))
+     - In Docker, the location when the project has been cloned, MUST be shared. (please see [Sharing Windows folders with containers](https://token2shell.com/howto/docker/sharing-windows-folders-with-containers/))
+
+   ```bash
+   . ./scripts/create_db.sh
+   ```
 
 1. Start Rstudio
 
@@ -46,17 +52,17 @@ To run the app locally:
 
    - At the prompt in the "console" tab, restore the dependecies by running:
 
-   ```R
-   renv::restore()
-   ```
+     ```R
+     renv::restore()
+     ```
 
    This may take some time to complete - get something nice to drink :)
 
    - Start the app by running:
 
-   ```R
-   shiny::runApp()
-   ```
+     ```R
+     shiny::runApp()
+     ```
 
 ## Development
 
