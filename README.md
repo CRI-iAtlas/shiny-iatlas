@@ -16,6 +16,8 @@ Install:
 
 - RStudio: [https://rstudio.com/products/rstudio/download/](https://rstudio.com/products/rstudio/download/)
 
+- Docker: [https://www.docker.com/products/docker-desktop](https://www.docker.com/products/docker-desktop)
+
 ## Local Shiny-iAtlas Session
 
 To run the app locally:
@@ -40,9 +42,9 @@ To run the app locally:
 
 1. Select the project folder.
 
-1. In the "console" tab in Rstudio, a new R session will start. This will execute `source("renv/activate.R")` from the `.Rprofile` file and `renv` will bootstrap itself in.
+   - NOTE: In the "console" tab in Rstudio, a new R session will start. This will execute `source("renv/activate.R")` from the `.Rprofile` file and `renv` will bootstrap itself in.
 
-1. At the prompt in the "console" tab, restore the dependecies by running:
+   - At the prompt in the "console" tab, restore the dependecies by running:
 
    ```R
    renv::restore()
@@ -50,7 +52,7 @@ To run the app locally:
 
    This may take some time to complete - get something nice to drink :)
 
-1. Start the app by running:
+   - Start the app by running:
 
    ```R
    shiny::runApp()
@@ -86,15 +88,26 @@ options(repos = BiocInstaller::biocinstallRepos())
 
 ## Data
 
-Input data for the Shiny-iAtlas portal were accessed from multiple remote sources, including **Synapse**, the **ISB Cancer Genomics Cloud**, and **Google Drive**. For convenience, we have created locally cached versions of dataframe objects as **`feather`** files:
+Input data for the Shiny-iAtlas portal were accessed from multiple remote sources, including **Synapse**, the **ISB Cancer Genomics Cloud**, and **Google Drive**. For convenience, we have created locally cached versions of dataframe objects as **`feather`** files in the `data2` folder:
 
-- `fmx_df.feather`
-- `feature_df.feather`
-- `feature_method_df.feather`
-- `im_direct_relationships.feather`
-- `im_potential_factors.feather`
-- `im_expr_df.feather`
-- `sample_group_df.feather`
+- `driver_mutations1.feather`
+- `driver_mutations2.feather`
+- `driver_mutations3.feather`
+- `driver_mutations4.feather`
+- `driver_mutations5.feather`
+- `driver_results1.feather`
+- `driver_results2.feather`
+- `feature_values_long.feather`
+- `features.feather`
+- `groups.feather`
+- `immunomodulator_expr.feather`
+- `immunomodulators.feather`
+- `io_target_expr1.feather`
+- `io_target_expr2.feather`
+- `io_target_expr3.feather`
+- `io_target_expr4.feather`
+- `io_targets.feather`
+- `til_image_links.feather`
 
 ## Methods
 
