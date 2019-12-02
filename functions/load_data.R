@@ -113,6 +113,7 @@ create_cell_fraction_options <- function() {
 
 load_cellimage_base <- function(){
   pic <- grImport2::readPicture("data/tcell-svg-take3-cairo.svg")
+  pic <- grImport2::readPicture("../CellImage_Work/tcell-svg-take4-cairo.svg")
   image_grob <- grImport2::pictureGrob(pic)
   gTree_name <- grid::childNames(image_grob) ## label of overall gTree object
   pathlabels <- image_grob$children[[gTree_name]]$childrenOrder ## labels and order of children 

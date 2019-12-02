@@ -195,7 +195,7 @@ get_colored_image <- function(soi,cell_image_base,dfv){
   
   dfv_ranges <- data_ranges(dfv)
 
-  fill_color <- character(length(pathlabels)) ; names(fill_color) <- pathlabels ## this is for editing
+  fill_color <- character(length(pathlabels[1:28])) ; names(fill_color) <- pathlabels[1:28] ## this is for editing
   
   for (ind in seq(1,length(image_object_labels))){
     ioa <- image_object_labels[ind]
@@ -203,7 +203,7 @@ get_colored_image <- function(soi,cell_image_base,dfv){
     colormap <-   variable_annotations %>% dplyr::filter(ImageVariableID==ioa) %>% purrr::pluck("ColorScale")
     fill_color[ind] <- getVarColor(datavar,soi,colormap,dfv_ranges)
   }
-  for (s in pathlabels ){
+  for (s in pathlabels[1:28] ){
     image_grob$children[[gTree_name]]$children[[s]]$gp$fill <- fill_color[s]
   }
   
