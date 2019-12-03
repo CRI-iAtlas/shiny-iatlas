@@ -1,5 +1,10 @@
 #!/bin/sh
 
+YELLOW="\033[1;33m"
+GREEN="\033[0;32m"
+# No Color
+NC='\033[0m'
+
 # env can be dev or test. If no env argument is passed as the first argument (not dev or test), it will default to dev.
 case $1 in
     dev | test)
@@ -18,7 +23,7 @@ case $1 in
     ;;
     
     *)
-        # If an env argument is passed as the first argument and the second argument is create or reset, the DB and tables will be build, wiping out any existing DB and tables.
+        # If an env argument is passed as the first argument and the second argument is create or reset, the DB and tables will be built, wiping out any existing DB and tables.
         case $2 in
             create | reset)
                 reset=true
@@ -30,11 +35,6 @@ case $1 in
         esac
     ;;
 esac
-
-YELLOW="\033[1;33m"
-GREEN="\033[0;32m"
-# No Color
-NC='\033[0m'
 
 >&2 echo -e "${GREEN}Env == ${env}${NC}"
 >&2 echo -e "${GREEN}Reset == ${reset}${NC}"
