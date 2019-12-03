@@ -84,7 +84,7 @@ CREATE TABLE features (
     "value" NUMERIC,
     PRIMARY KEY (id)
 );
-CREATE UNIQUE INDEX feature_name_index ON features ("name");
+CREATE INDEX feature_name_index ON features ("name");
 ALTER TABLE features ADD COLUMN class INTEGER REFERENCES classes;
 ALTER TABLE features ADD COLUMN method_tag_id INTEGER REFERENCES method_tags;
 
