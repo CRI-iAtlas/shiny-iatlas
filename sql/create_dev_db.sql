@@ -9,4 +9,5 @@ CREATE DATABASE iatlas_shiny_dev;
 -- Connect to the database.
 \connect iatlas_shiny_dev
 
+-- Include the common table building SQL.
 \i build_tables.sql
