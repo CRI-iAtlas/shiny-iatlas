@@ -1,10 +1,20 @@
+# Ensure magrittr is installed.
+if (!'magrittr' %in% installed.packages()) {
+  install.packages("magrittr")
+}
+
 # Ensure RPostgres is installed.
 if (!'RPostgres' %in% installed.packages()) {
   install.packages("RPostgres")
 }
 
+# Load magrittr so %>% is available
+library("magrittr")
+
 # Loading RPostgres loads DBI automatically
 library("RPostgres")
+
+# build_iatlas_db <- function(env = "dev", reset = "reset") {
 
 # Make the create_db function available.
 source("database/create_db.R")
@@ -25,6 +35,8 @@ source("database/build_features_tables.R")
 
 source("database/build_groups_tables.R")
 
+source("database/build_gene_tables.R")
+
 # Close the database connection.
 RPostgres::dbDisconnect(.GlobalEnv$con)
 
@@ -40,3 +52,4 @@ rm(rebuild_features)
 rm(rebuild_groups)
 rm(value_to_id)
 rm(write_table_ts)
+# }

@@ -22,8 +22,7 @@ parents <- groups %>%
 groups_db <- dplyr::bind_rows(groups, parents)
 groups_db <- groups_db %>%
   dplyr::arrange(name) %>%
-  tibble::add_column(id = 1:nrow(groups_db), .before = "name") %>%
-  as.data.frame
+  tibble::add_column(id = 1:nrow(groups_db), .before = "name")
 
 groups <- groups_db %>% .GlobalEnv$rebuild_groups(groups_db) %>%
   dplyr::select(-c("parent_group")) %>%

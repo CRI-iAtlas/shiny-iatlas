@@ -1,13 +1,5 @@
 # Database helper functions.
 value_to_id <- function(value, int_value, id_value, name_value) {
-  # cat("value_to_id:: value:", value, fill = TRUE, sep = " ")
-  # cat("value_to_id:: int_value:", int_value, fill = TRUE, sep = " ")
-  # cat("value_to_id:: id_value:", fill = TRUE)
-  # print(id_value)
-  # cat("\n", fill = TRUE)
-  # cat("value_to_id:: name_value:", fill = TRUE)
-  # print(name_value)
-  # cat("\n", fill = TRUE)
   if (identical(value, name_value)) {
     return(id_value)
   } else if (!is.na(int_value)) {
@@ -37,11 +29,9 @@ rebuild_features <- function(features, classes, method_tags) {
 }
 
 rebuild_groups <- function(groups, all_groups) {
+  # Ensure data.frames.
+  all_groups <- all_groups %>% as.data.frame
   for (row in 1:nrow(all_groups)) {
-    # cat("rebuild_groups:: row:", row, fill = TRUE, sep = " ")
-    # cat("rebuild_groups:: name:", fill = TRUE)
-    # print(all_groups[row, "name"])
-    # cat("\n", fill = TRUE)
     groups <- groups %>%
       dplyr::select(dplyr::everything()) %>%
       dplyr::rowwise() %>%
@@ -50,6 +40,21 @@ rebuild_groups <- function(groups, all_groups) {
   }
   return(groups)
 }
+
+# rebuild_samples <- function(samples, til_image_links) {
+#   for (row in 1:nrow(all_groups)) {
+#     # cat("rebuild_groups:: row:", row, fill = TRUE, sep = " ")
+#     # cat("rebuild_groups:: name:", fill = TRUE)
+#     # print(all_groups[row, "name"])
+#     # cat("\n", fill = TRUE)
+#     groups <- groups %>%
+#       dplyr::select(dplyr::everything()) %>%
+#       dplyr::rowwise() %>%
+#       dplyr::mutate(parent = value_to_id(parent_group, parent, all_groups[row, "id"], all_groups[row, "name"])) %>%
+#       dplyr::mutate(subgroup = value_to_id(subtype_group, subgroup, all_groups[row, "id"], all_groups[row, "name"]))
+#   }
+#   return(groups)
+# }
 
 delete_rows <- function(con, tn) {
   RPostgres::dbSendQuery(con, paste("DELETE FROM", tn, sep = " "))
@@ -92,9 +97,9 @@ write_table_ts <- function(con, tn, df) {
 #                     = "UserX", password = "PaswordX")
 #   # Construct the update query by looping over the data fields
 #   query <- paste0("INSERT INTO table_name.schema_name (message) VALUES ( $1 
-# )") 
+# )")
 #   # Submit the update query and disconnect
-#   dbSendQuery(pcon, query, params=data[["message"]]) 
+#   dbSendQuery(pcon, query, params=data[["message"]])
 #   dbDisconnect(pcon)
 # }
 
