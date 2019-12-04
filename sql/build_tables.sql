@@ -73,9 +73,9 @@ CREATE TABLE features (
     "value" NUMERIC,
     PRIMARY KEY (id)
 );
-CREATE UNIQUE INDEX feature_name_index ON features ("name");
 ALTER TABLE features ADD COLUMN class INTEGER REFERENCES classes;
 ALTER TABLE features ADD COLUMN method_tag_id INTEGER REFERENCES method_tags;
+CREATE UNIQUE INDEX feature_name_index ON features ("name");
 
 -- genes table
 CREATE TABLE genes (
@@ -92,6 +92,7 @@ ALTER TABLE genes ADD COLUMN immune_checkpoint_id INTEGER REFERENCES immune_chec
 ALTER TABLE genes ADD COLUMN function_id INTEGER REFERENCES gene_functions;
 ALTER TABLE genes ADD COLUMN pathway_id INTEGER REFERENCES pathways;
 ALTER TABLE genes ADD COLUMN therapy_type_id INTEGER REFERENCES therapy_types;
+CREATE UNIQUE INDEX gene_id_index ON genes ("gene_id");
 
 -- results table
 CREATE TABLE results (
