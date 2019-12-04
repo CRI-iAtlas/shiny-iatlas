@@ -12,11 +12,11 @@ all_net_info <- list(
   "immune"= list("upbin_ratio" = feather::read_feather("data/network/nodes_TCGAImmune.feather"), edges_score = feather::read_feather("data/network/edges_TCGAImmune.feather")),
   "subtype"= list("upbin_ratio" = feather::read_feather("data/network/nodes_TCGASubtype.feather"), edges_score = feather::read_feather("data/network/edges_TCGASubtype.feather")),
   "study"= list("upbin_ratio" = feather::read_feather("data/network/nodes_TCGAStudy.feather"), edges_score = feather::read_feather("data/network/edges_TCGAStudy.feather")),
-  "studyImmune" = list("upbin_ratio" = feather::read_feather("data/network/nodes_TCGAStudy_Immune_perGenedist.feather"), edges_score = feather::read_feather("data/network/edges_TCGAStudy_Immune_perGenedist.feather"))
+  "studyImmune" = list("upbin_ratio" = feather::read_feather("data/network/nodes_TCGAStudy_Immune.feather"), edges_score = feather::read_feather("data/network/edges_TCGAStudy_Immune.feather"))
 )
 
 dfe_in <- feather::read_feather("data/network/expr_data_merged.feather")
-main_scaffold <- readr::read_tsv("data/network/try_3a.tsv")
+main_scaffold <- readr::read_tsv("data/network/scaffold.tsv")
 styles <- c("Edges by Immune Type" = 'data/network/stylesEdges.js',
             "Black Edges" = "data/network/styles.js")
 node_type <- readr::read_tsv("data/network/network_node_labels.tsv")

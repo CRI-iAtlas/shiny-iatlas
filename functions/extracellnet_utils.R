@@ -193,15 +193,15 @@ getbin <- function(value,node_label, tertiles){
 ## df: data frame of ParticipantBarcode,Group,Value
 ## requires tertiles for getbin function
 multiBin <- function(s,df,tertiles, byImmune = FALSE){
-
+  
   vals <- df$Value
   beans <- getbin(vals,s, tertiles)
   
   if(byImmune == FALSE){
-    tibble(ParticipantBarcode=df$ParticipantBarcode,
+    dplyr::tibble(ParticipantBarcode=df$ParticipantBarcode,
            Group=df$Group,Bin=beans)
   }else{
-    tibble(ParticipantBarcode=df$ParticipantBarcode,
+    dplyr::tibble(ParticipantBarcode=df$ParticipantBarcode,
            Group=df$Group, Immune = df$Immune, Bin=beans)
   }
   
@@ -388,10 +388,9 @@ compute_abundance <- function(subset_df, subset_col, cell_data, expr_data, cois,
   dfclong.generic <- get_cell_long(cell_data, group_participant, cois, subset_df, byImmune)
   dfelong.generic <- get_gene_long(dfe_in, group_participant, gois, subset_df, byImmune)
   
-  dfn <- dplyr::bind_rows(dfelong.generic, dfclong.generic)
+  dfn <- dplyr::bind_rows(dfelong.generic, dfclong.generic) 
   
   tertiles <- getNodeTertiles(dfn)
-  
   
   df_ternary_full_info <- dfn %>% dplyr::group_by(Node) %>% tidyr::nest() %>% ## split by nodes
     dplyr::mutate(Bins=purrr::map2(.x = Node,.y = data, tertiles = tertiles, byImmune = byImmune, .f = multiBin)) %>% ## add Bins
