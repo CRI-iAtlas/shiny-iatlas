@@ -85,7 +85,10 @@ drivers <- function(
     driver_results_con,
     driver_mutations_con,
     feature_values_con,
-    features_named_list
+    feature_values_wide_con,
+    features_named_list,
+    categories_con,
+    category_values_wide_con
 ){
     ns <- session$ns
     
@@ -147,7 +150,16 @@ drivers <- function(
     
     ## multi-variable models ----
     
-    module_parameters <- callModule(model_selection_module, "module1")
+    categorical_features_named_list <- reactive({
+        create_named_list(categories_con(), "display", "category")
+    })
+    
+    module_parameters <- callModule(
+        model_selection_module, 
+        "module1", 
+        features_named_list,
+        categorical_features_named_list
+    )
     
     covariates <- reactive({
         c(
@@ -209,41 +221,47 @@ drivers <- function(
     })
 
     scatter_plot_df2 <- reactive({
-        req(
-            metric_df(),
-            module_parameters(),
-            group_internal_choice(),
-        )
+        print(categor)
+        print(category_values_wide_con())
+        print(feature_values_wide_con())
         
-        # no covariates not currently supported
-        validate(need(
-            !is.null(covariates()),
-            "Please select a covariate"
-        ))
-
-        mv_driver_df <- build_mv_driver_mutation_tbl(
-            metric_df(),
-            module_parameters()$response_variable,
-            covariates(),
-            module_parameters()$group_mode,
-            group_internal_choice(),
-            module_parameters()$min_wildtype,
-            module_parameters()$min_mutants,
-            module_parameters()$scale_response
-        )
         
-        # plot clicked on but event data stale due to parameter change
-        validate(need(
-            nrow(mv_driver_df) > 0,
-            "Response variable has no groups that meet current thresholding"
-        ))
-        
-
-        build_mv_driver_mutation_scatterplot_df(
-            mv_driver_df,
-            covariates(),
-            model_formula_string()
-        )
+        # 
+        # req(
+        #     metric_df(),
+        #     module_parameters(),
+        #     group_internal_choice(),
+        # )
+        # 
+        # # no covariates not currently supported
+        # validate(need(
+        #     !is.null(covariates()),
+        #     "Please select a covariate"
+        # ))
+        # 
+        # mv_driver_df <- build_mv_driver_mutation_tbl(
+        #     metric_df(),
+        #     module_parameters()$response_variable,
+        #     covariates(),
+        #     module_parameters()$group_mode,
+        #     group_internal_choice(),
+        #     module_parameters()$min_wildtype,
+        #     module_parameters()$min_mutants,
+        #     module_parameters()$scale_response
+        # )
+        # 
+        # # plot clicked on but event data stale due to parameter change
+        # validate(need(
+        #     nrow(mv_driver_df) > 0,
+        #     "Response variable has no groups that meet current thresholding"
+        # ))
+        # 
+        # 
+        # build_mv_driver_mutation_scatterplot_df(
+        #     mv_driver_df,
+        #     covariates(),
+        #     model_formula_string()
+        # )
 
     })
 

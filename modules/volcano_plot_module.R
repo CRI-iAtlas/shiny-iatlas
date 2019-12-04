@@ -18,6 +18,19 @@ volcano_plot_module_ui <- function(id){
     )
 }
 
+# volcano_con
+# reactive dbi_connection or tibble with the following columns:
+# label, feature, group, parent_group, n_wt, n_mut, pvalue, fold_change, 
+# log10_pvalue, log10_fold_change
+
+# violin_value_con
+# reactive dbi_connection or tibble with the following columns:
+# sample, value
+
+# violin_group_con
+# reactive dbi_connection or tibble with the following columns:
+# sample, label, status
+
 volcano_plot_module <- function(
     input, 
     output, 
@@ -73,7 +86,6 @@ volcano_plot_module <- function(
         ))
         
         label_value <- eventdata$key[[1]]
-        
         # plot clicked on but event data stale due to parameter change
         validate(need(
             label_value %in% dplyr::pull(violin_group_con(), label),
@@ -87,6 +99,7 @@ volcano_plot_module <- function(
             fold_change_dem
         )
         
+        print(violin_value_con())
         violin_plot_tbl <- violin_group_con() %>% 
             dplyr::filter(label == label_value) %>% 
             dplyr::inner_join(violin_value_con(), by = "sample") %>% 

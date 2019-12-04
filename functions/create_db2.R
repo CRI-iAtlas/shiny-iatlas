@@ -7,11 +7,26 @@ create_db2 <- function(){
     features <- feather::read_feather("data2/features.feather")
     dplyr::copy_to(con, features, "features", temporary = FALSE)
     
+    categories <- feather::read_feather("data2/categories.feather")
+    dplyr::copy_to(con, categories, "categories", temporary = FALSE)
+    
+    category_values_long <- feather::read_feather("data2/category_values_long.feather")
+    dplyr::copy_to(con, category_values_long, "category_values_long", temporary = FALSE)
+    
+    category_values_wide <- feather::read_feather("data2/category_values_wide.feather")
+    dplyr::copy_to(con, category_values_wide, "category_values_wide", temporary = FALSE)
+    
     feature_values_long <- feather::read_feather("data2/feature_values_long.feather")
     dplyr::copy_to(con, feature_values_long, "feature_values_long", temporary = FALSE)
     
+    feature_values_wide <- feather::read_feather("data2/feature_values_wide.feather")
+    dplyr::copy_to(con, feature_values_wide, "feature_values_wide", temporary = FALSE)
+    
     groups <- feather::read_feather("data2/groups.feather")
     dplyr::copy_to(con, groups, "groups", temporary = FALSE)
+    
+    groups2 <- feather::read_feather("data2/groups2.feather")
+    dplyr::copy_to(con, groups2, "groups2", temporary = FALSE)
     
     # til_image_links <- feather::read_feather("data2/til_image_links.feather")
     # dplyr::copy_to(con, til_image_links, "til_image_links", temporary = FALSE)

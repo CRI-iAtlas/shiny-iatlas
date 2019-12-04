@@ -25,7 +25,6 @@ insert_remove_element_module <- function(
         ui_id               <- ns(stringr::str_c("ui", ui_number))
         add_button_selector <- stringr::str_c("#", ns("add_button"))
         ui_selector         <- stringr::str_c("#", ui_id)
-        
         insertUI(
             selector = add_button_selector,
             where = "afterEnd",

@@ -33,6 +33,7 @@ shinyServer(function(input, output, session) {
         groupsoverview,
         "module3",
         groups_con,
+        groups2_con,
         subset_feature_values_long_con,
         groups_list,
         tcga_subtypes_list,
@@ -80,14 +81,17 @@ shinyServer(function(input, output, session) {
     #     plot_colors
     # )
     # 
-    # # Driver associations
+    # Driver associations
     # callModule(
     #     drivers,
     #     "module8",
     #     subset_driver_results_con,
     #     subset_driver_mutations_con,
     #     subset_feature_values_long_con,
-    #     features_named_list
+    #     subset_feature_values_wide_con,
+    #     features_named_list,
+    #     categories_con,
+    #     subset_category_values_wide_con
     # )
     # 
     # # IO Target
@@ -171,6 +175,10 @@ shinyServer(function(input, output, session) {
     })
     
     groups_con               <- reactive(con_function()("groups"))
+    groups2_con              <- reactive(con_function()("groups2"))
+    categories_con           <- reactive(con_function()("categories"))
+    category_values_long_con <- reactive(con_function()("category_values_long"))
+    category_values_wide_con <- reactive(con_function()("category_values_wide"))
     features_con             <- reactive(con_function()("features"))
     feature_values_long_con  <- reactive(con_function()("feature_values_long"))
     driver_mutations_con     <- reactive(con_function()("driver_mutations"))
@@ -255,6 +263,16 @@ shinyServer(function(input, output, session) {
     # connections subset by selected group ------------------------------------
     # This includes using the current user group, but is currently disabled
     
+    subset_category_values_long_con <- reactive({
+        req(category_values_long_con(), input$group_internal_choice, subtypes())
+        subset_long_con_with_group(
+            category_values_con(),
+            user_group_tbl(),
+            input$group_internal_choice, 
+            group_values = subtypes()
+        )
+    })
+    
     subset_feature_values_long_con <- reactive({
         req(feature_values_long_con(), input$group_internal_choice, subtypes())
         subset_long_con_with_group(
@@ -318,6 +336,44 @@ shinyServer(function(input, output, session) {
             req(subtypes())
             con <- dplyr::filter(con, group %in% local(subtypes()))
         } 
+        return(con)
+    })
+    
+    subset_feature_values_wide_con <- reactive({
+        req(
+            feature_values_wide_con(),
+            input$group_internal_choice,
+            subtypes(),
+            groups_list()
+        )
+        con <- feature_values_wide_con() %>% 
+            dplyr::rename(group = local(input$group_internal_choice)) %>% 
+            dplyr::select(-groups_list()) %>% 
+            dplyr::filter(!is.na(group))
+        print(con)
+        
+        if(group_values[[1]] != "none"){
+            con <- dplyr::filter(con, group %in% group_values)
+        }
+        return(con)
+    })
+    
+    subset_category_values_wide_con <- reactive({
+        req(
+            category_values_wide_con(),
+            input$group_internal_choice,
+            subtypes(),
+            groups_list()
+        )
+        con <- category_values_wide_con() %>% 
+            dplyr::rename(group = local(input$group_internal_choice)) %>% 
+            dplyr::select(-groups_list()) %>% 
+            dplyr::filter(!is.na(group))
+        print(con)
+        
+        if(group_values[[1]] != "none"){
+            con <- dplyr::filter(con, group %in% group_values)
+        }
         return(con)
     })
     

@@ -43,6 +43,131 @@ groupsoverview_UI <- function(id) {
         #         DT::dataTableOutput(ns("user_group_tbl"))
         #     )
         # ),
+        
+        # cohort selection ----------------------------------------------------
+        sectionBox(
+            title = "Cohort Selection",
+            messageBox(
+                width = 12,
+                p("Group Selection and filtering")
+            ),
+            optionsBox(
+                width = 12,
+                uiOutput(ns("select_group_UI"))
+                # uiOutput(ns("filter_group_UI"))
+            ),
+            optionsBox(
+                width = 12,
+                checkboxInput(
+                    ns("filter_by_dataset"),
+                    strong("Filter by Dataset?"),
+                    T
+                ),
+                conditionalPanel(
+                    condition = "input.filter_by_dataset",
+                    checkboxGroupInput(
+                        ns("dataset_choices"),
+                        "Select datasets to include:",
+                        c("TCGA", "PCAWG"),
+                        inline = T,
+                        selected = "TCGA"
+                    ),
+                    ns = ns
+                ),
+            ),
+            optionsBox(
+                width = 12,
+                checkboxInput(
+                    ns("filter_by_immune_subtype"),
+                    strong("Filter by Immune Subtype?"),
+                    F
+                ),
+                conditionalPanel(
+                    condition = "input.filter_by_immune_subtype",
+                    checkboxGroupInput(
+                        ns("immune_subtype_choices"),
+                        "Select subtypes to include:",
+                        c("C1", "C2", "C3", "C4", "C5", "C6"),
+                        inline = T
+                    ),
+                    ns = ns
+                ),
+            ),
+            optionsBox(
+                width = 12,
+                checkboxInput(
+                    ns("filter_by_tcga_study"),
+                    strong("Filter by TCGA Study?"),
+                    F
+                ),
+                conditionalPanel(
+                    condition = "input.filter_by_tcga_study",
+                    checkboxGroupInput(
+                        ns("tcga_study_choices"),
+                        "Select TCGA Studies to include:",
+                        c("BRCA", "LGG", "KIRC"),
+                        inline = T
+                    ),
+                    ns = ns
+                ),
+            ),
+            optionsBox(
+                width = 12,
+                checkboxInput(
+                    ns("filter_by_tcga_subtype"),
+                    strong("Filter by TCGA Subtype?"),
+                    F
+                ),
+                conditionalPanel(
+                    condition = "input.filter_by_tcga_subtype",
+                    checkboxGroupInput(
+                        ns("tcga_subtype_choices"),
+                        "Select TCGA Subtypes to include:",
+                        c("BRCA", "GBM/LGG"),
+                        inline = T
+                    ),
+                    ns = ns
+                ),
+                conditionalPanel(
+                    condition = "input.filter_by_tcga_subtype && input.tcga_subtype_choices.includes('BRCA')",
+                    checkboxGroupInput(
+                        ns("brca_subtype_choices"),
+                        "Select BRCA Subtypes to include:",
+                        c("BRCA.basal", "BRCA.her2"),
+                        inline = T
+                    ),
+                    ns = ns
+                ),
+                conditionalPanel(
+                    condition = "input.filter_by_tcga_subtype && input.tcga_subtype_choices.includes('GBM/LGG')",
+                    checkboxGroupInput(
+                        ns("gbmlgg_subtype_choices"),
+                        "Select GBM/LGG Subtypes to include:",
+                        c("GBM_LGG.", "GBM_LGG.Classic-like"),
+                        inline = T
+                    ),
+                    ns = ns
+                ),
+            ),
+            optionsBox(
+                width = 12,
+                checkboxInput(
+                    ns("filter_by_gender"),
+                    strong("Filter by Gender?"),
+                    F
+                ),
+                conditionalPanel(
+                    condition = "input.filter_by_gender",
+                    checkboxGroupInput(
+                        ns("gender_choices"),
+                        "Select Gender to include:",
+                        c("Female", "Male"),
+                        inline = T
+                    ),
+                    ns = ns
+                ),
+            )
+        ),
         # group key -----------------------------------------------------------
         data_table_module_UI(
             ns("sg_table"),
@@ -81,13 +206,12 @@ groupsoverview_UI <- function(id) {
     )
 }
 
-
-
 groupsoverview <- function(
     input, 
     output, 
     session, 
     groups_con,
+    groups2_con,
     feature_values_con,
     groups_list,
     tcga_subtypes_list,
@@ -129,6 +253,43 @@ groupsoverview <- function(
     # })
     
     user_group_tbl <- reactive("none")
+    
+    # cohort selection --------------------------------------------------------
+    
+    parent_groups <- reactive({
+        req(groups2_con())
+        groups2_con() %>% 
+            dplyr::filter(is.na(parent)) %>% 
+            dplyr::pull(display)
+    })
+    
+    output$select_group_UI <- renderUI({
+        req(parent_groups())
+
+        selectInput(
+            inputId = ns("group_choice"),
+            label = strong("Select Grouping Variable"),
+            choices = parent_groups(),
+            selected = "Immune Subtype"
+        )
+    })
+    
+    output$filter_group_UI <- renderUI({
+        req(groups2_con(), parent_groups())
+        
+        rep(
+            optionsBox(
+                width = 12,
+                checkboxInput(
+                    ns("filter_by_dataset"),
+                    strong("Filter by Dataset?"),
+                    T
+                )
+            ),
+            3
+        )
+        
+    })
     
     # group key ---------------------------------------------------------------
     
