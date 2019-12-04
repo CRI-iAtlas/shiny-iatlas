@@ -50,6 +50,22 @@ cytokinenetwork_UI <- function(id) {
         optionsBox(
           width=2,
             verticalLayout(
+              #this tags$head makes sure that the checkboxes are formatted right
+              tags$head(
+                tags$style(
+                  HTML(
+                          ".checkbox-inline { 
+                          margin-left: 0px;
+                          margin-right: 10px;
+                          }
+                         .checkbox-inline+.checkbox-inline {
+                                    margin-left: 0px;
+                                    margin-right: 10px;
+                          }
+                        "
+                  )
+                ) 
+              ),
               uiOutput(ns("select_ui")),
                
               numericInput(ns("abundance"), "Set Abundance Threshold (%)", value = 66, min = 0, max = 100),
@@ -190,12 +206,13 @@ cytokinenetwork <- function(
     #Generating UI depending on the sample group
     if(group_internal_choice() == "Subtype_Immune_Model_Based"){
       
-      selectizeInput(
+      checkboxGroupInput(
         ns("showGroup"),
         "Select Immune Subtype",
         choices = sample_group_vector,
         selected = c("C1", "C2"),
-        multiple = TRUE)
+        inline = TRUE)
+        #multiple = TRUE)
       
     }else if(group_internal_choice() == "Subtype_Curated_Malta_Noushmehr_et_al"){
       
@@ -220,24 +237,25 @@ cytokinenetwork <- function(
 
         conditionalPanel(
           condition = paste("" , paste0("input['", ns("byImmune"), "'] == true")),
-          selectizeInput(
+          checkboxGroupInput(
             ns("showGroup"),
             "Select Immune Subtype",
             choices=c("C1", "C2", "C3", "C4", "C5", "C6"),
             selected = c("C1", "C2"),
-            multiple = TRUE)
+            inline = TRUE)
+#            multiple = TRUE)
         )
       )
     }
   })
   
   output$selectCell <- renderUI({
-    selectizeInput(ns("cellInterest"), "Select cells of interest (optional)", choices = (node_type %>% dplyr::filter(Type == "Cell") %>% select("Obj")), 
+    selectizeInput(ns("cellInterest"), "Select cells of interest (optional)", choices = (node_type %>% dplyr::filter(Type == "Cell") %>% dplyr::select("Cells"="Obj")), 
                    multiple = TRUE, options = list(placeholder = "Default: all cells"))
   })
   
   output$selectGene <- renderUI({
-    selectizeInput(ns("geneInterest"), "Select genes of interest (optional)", choices = (union(main_scaffold$From, main_scaffold$To) %>% as.data.frame() %>% unique() %>% dplyr::arrange()), 
+    selectizeInput(ns("geneInterest"), "Select genes of interest (optional)", choices = (union(main_scaffold$From, main_scaffold$To) %>% as.data.frame() %>% unique() %>% dplyr::select("Genes" =".") %>% dplyr::arrange()), 
                    multiple = TRUE, options = list(placeholder = "Default: immunomodulator genes"))
   })
   
@@ -249,7 +267,6 @@ cytokinenetwork <- function(
  #---- organizing the desired scaffold based on the cells and genes of interest
   
   default_groups <- unique(panimmune_data$sample_group_df$sample_group)
-  #immunogenes <- panimmune_data$im_direct_relationships$`HGNC Symbol`
   
   ##Subsetting to cells and genes of interest
   
@@ -291,7 +308,7 @@ cytokinenetwork <- function(
   
 #------Computing scores for a custom grouping
 
-  ternary_info <- reactive({#eventReactive(input$calculate_button,{
+  ternary_info <- reactive({
     req(!group_internal_choice() %in% default_groups)
     print("calculando nodes scores")
     compute_abundance(subset_df(),
@@ -304,7 +321,7 @@ cytokinenetwork <- function(
             
 })
 
-  scaffold_scores <- reactive({#eventReactive(input$calculate_button, {
+  scaffold_scores <- reactive({
     req(!group_internal_choice() %in% default_groups, ternary_info())
     print("calculando edges scores")
     compute_concordance(scaffold(), 
@@ -460,7 +477,7 @@ cytokinenetwork <- function(
         msg <- sprintf("ERROR in stylesheet file '%s': %s", input$loadStyleFile, e$message)
         showNotification(msg, duration=NULL, type="error")
       })
-      later::later(function() {updateSelectInput(session, "loadStyleFile", selected=character(0))}, 0.5)
+      #later::later(function() {updateSelectInput(session, "loadStyleFile", selected=character(0))}, 0.5)
     }
   })
   
