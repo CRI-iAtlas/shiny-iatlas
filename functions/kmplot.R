@@ -9,6 +9,7 @@ create_kmplot <- function(fit, df, confint, risktable, title, group_colors) {
     survminer::ggsurvplot(
         fit,
         data = df,
+        pval=TRUE,
         conf.int = confint,
         risk.table = risktable,
         title = title,
