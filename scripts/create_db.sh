@@ -80,6 +80,8 @@ if [ $reset == true ]; then
     
     # Copy the database SQL file into the docker container.
     docker cp $DIR/sql/$create_db_sql $docker_image:/$create_db_sql
+    # Copy the build tables SQL file into the docker container.
+    docker cp $DIR/sql/build_tables.sql $docker_image:/build_tables.sql
     
     # Run the database SQL script within the docker container using the docker container's psql.
     docker exec -u $db_user $docker_image psql -f //$create_db_sql
