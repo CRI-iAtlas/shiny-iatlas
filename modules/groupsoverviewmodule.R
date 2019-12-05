@@ -49,124 +49,31 @@ groupsoverview_UI <- function(id) {
             title = "Cohort Selection",
             messageBox(
                 width = 12,
-                p("Group Selection and filtering")
+                p("Group Selection and filtering"),
             ),
             optionsBox(
-                width = 12,
-                uiOutput(ns("select_group_UI"))
-                # uiOutput(ns("filter_group_UI"))
-            ),
-            optionsBox(
-                width = 12,
+                width = 4,
                 checkboxInput(
-                    ns("filter_by_dataset"),
-                    strong("Filter by Dataset?"),
-                    T
+                    inputId = ns("select_by_module"),
+                    label = strong("Select By Module?"),
                 ),
                 conditionalPanel(
-                    condition = "input.filter_by_dataset",
-                    checkboxGroupInput(
-                        ns("dataset_choices"),
-                        "Select datasets to include:",
-                        c("TCGA", "PCAWG"),
-                        inline = T,
-                        selected = "TCGA"
-                    ),
+                    condition = "input.select_by_module",
+                    uiOutput(ns("module_selection_ui")),
                     ns = ns
                 ),
+                uiOutput(ns("dataset_selection_ui")),
+            ),
+            messageBox(
+                width = 12,
+                textOutput(ns("module_availibility_string"))
             ),
             optionsBox(
-                width = 12,
-                checkboxInput(
-                    ns("filter_by_immune_subtype"),
-                    strong("Filter by Immune Subtype?"),
-                    F
-                ),
-                conditionalPanel(
-                    condition = "input.filter_by_immune_subtype",
-                    checkboxGroupInput(
-                        ns("immune_subtype_choices"),
-                        "Select subtypes to include:",
-                        c("C1", "C2", "C3", "C4", "C5", "C6"),
-                        inline = T
-                    ),
-                    ns = ns
-                ),
+                width = 4,
+                uiOutput(ns("select_group_ui"))
             ),
-            optionsBox(
-                width = 12,
-                checkboxInput(
-                    ns("filter_by_tcga_study"),
-                    strong("Filter by TCGA Study?"),
-                    F
-                ),
-                conditionalPanel(
-                    condition = "input.filter_by_tcga_study",
-                    checkboxGroupInput(
-                        ns("tcga_study_choices"),
-                        "Select TCGA Studies to include:",
-                        c("BRCA", "LGG", "KIRC"),
-                        inline = T
-                    ),
-                    ns = ns
-                ),
-            ),
-            optionsBox(
-                width = 12,
-                checkboxInput(
-                    ns("filter_by_tcga_subtype"),
-                    strong("Filter by TCGA Subtype?"),
-                    F
-                ),
-                conditionalPanel(
-                    condition = "input.filter_by_tcga_subtype",
-                    checkboxGroupInput(
-                        ns("tcga_subtype_choices"),
-                        "Select TCGA Subtypes to include:",
-                        c("BRCA", "GBM/LGG"),
-                        inline = T
-                    ),
-                    ns = ns
-                ),
-                conditionalPanel(
-                    condition = "input.filter_by_tcga_subtype && input.tcga_subtype_choices.includes('BRCA')",
-                    checkboxGroupInput(
-                        ns("brca_subtype_choices"),
-                        "Select BRCA Subtypes to include:",
-                        c("BRCA.basal", "BRCA.her2"),
-                        inline = T
-                    ),
-                    ns = ns
-                ),
-                conditionalPanel(
-                    condition = "input.filter_by_tcga_subtype && input.tcga_subtype_choices.includes('GBM/LGG')",
-                    checkboxGroupInput(
-                        ns("gbmlgg_subtype_choices"),
-                        "Select GBM/LGG Subtypes to include:",
-                        c("GBM_LGG.", "GBM_LGG.Classic-like"),
-                        inline = T
-                    ),
-                    ns = ns
-                ),
-            ),
-            optionsBox(
-                width = 12,
-                checkboxInput(
-                    ns("filter_by_gender"),
-                    strong("Filter by Gender?"),
-                    F
-                ),
-                conditionalPanel(
-                    condition = "input.filter_by_gender",
-                    checkboxGroupInput(
-                        ns("gender_choices"),
-                        "Select Gender to include:",
-                        c("Female", "Male"),
-                        inline = T
-                    ),
-                    ns = ns
-                ),
-            )
+            uiOutput(ns("filter_group_ui"))
+    
         ),
         # group key -----------------------------------------------------------
         data_table_module_UI(
@@ -256,39 +163,185 @@ groupsoverview <- function(
     
     # cohort selection --------------------------------------------------------
     
-    parent_groups <- reactive({
-        req(groups2_con())
-        groups2_con() %>% 
-            dplyr::filter(is.na(parent)) %>% 
+    dataset_to_module_tbl <- reactive({
+        dplyr::tribble(
+            ~module,                  ~dataset,
+            "Sample Group Overview",  "TCGA",
+            "Tumor Microenvironment", "TCGA",
+            "Immune Feature Trends",  "TCGA",
+            "Clinical Outcomes",      "TCGA",
+            "IO Targets",             "TCGA",
+            "TIL Maps",               "TCGA",
+            "Driver Associations",    "TCGA",
+            "Sample Group Overview",  "PCAWG",
+            "Tumor Microenvironment", "PCAWG",
+            "Immune Feature Trends",  "PCAWG",
+            "IO Targets",             "PCAWG",
+            "Driver Associations",    "PCAWG"
+        )
+    })
+    
+    dataset_to_group_tbl <- reactive({
+        dplyr::tribble(
+            ~group,           ~dataset,
+            "Immune_Subtype", "TCGA",      
+            "TCGA_Subtype",   "TCGA",
+            "TCGA_Study",     "TCGA",
+            "Gender",         "TCGA",
+            "Race",           "TCGA",
+            "Ethnicity",      "TCGA",
+            "Immune_Subtype", "PCAWG",
+            "PCAWG_Study",    "PCAWG",     
+            "Gender",         "PCAWG",     
+            "Race",           "PCAWG"
+        ) %>% 
+            dplyr::mutate(display = stringr::str_replace_all(group, "_", " "))
+    })
+    
+    output$module_selection_ui <- renderUI({
+        choices <- dataset_to_module_tbl() %>% 
+            dplyr::pull(module) %>% 
+            unique()
+        checkboxGroupInput(
+            ns("module_choices"),
+            "Select modules:",
+            choices
+        )
+    })
+    
+    output$dataset_selection_ui <- renderUI({
+        if(input$select_by_module & !is.null(input$module_choices)){
+            choices <- dataset_to_module_tbl() %>% 
+                dplyr::filter(module %in% input$module_choices) %>% 
+                dplyr::group_by(dataset) %>% 
+                dplyr::summarise(count = dplyr::n()) %>% 
+                dplyr::filter(count == length(input$module_choices)) %>% 
+                dplyr::pull(dataset)
+        } else {
+            choices <- dataset_to_module_tbl() %>% 
+                dplyr::pull(dataset) %>% 
+                unique()
+        }
+        selectInput(
+            inputId = ns("dataset_choice"),
+            label = strong("Select Dataset"),
+            choices = choices,
+            selected = "TCGA"
+        )
+    })
+    
+    available_modules <- reactive({
+        req(input$dataset_choice)
+        dataset_to_module_tbl() %>% 
+            dplyr::filter(dataset == input$dataset_choice) %>% 
+            dplyr::pull(module)
+    })
+    
+    output$module_availibility_string <- renderText({
+        req(input$dataset_choice, available_modules())
+        available_modules() %>% 
+            stringr::str_c(collapse = ", ") %>% 
+            stringr::str_c(
+                "Modules available for dataset:", 
+                input$dataset_choice,
+                "are",
+                .,
+                sep = " "
+            )
+    })
+
+    available_groups <- reactive({
+        req(input$dataset_choice)
+        dataset_to_group_tbl() %>% 
+            dplyr::filter(dataset == input$dataset_choice) %>% 
+            dplyr::pull(group)
+    })
+    
+    available_groups_display <- reactive({
+        req(input$dataset_choice)
+        dataset_to_group_tbl() %>% 
+            dplyr::filter(dataset == input$dataset_choice) %>% 
             dplyr::pull(display)
     })
     
-    output$select_group_UI <- renderUI({
-        req(parent_groups())
+    output$select_group_ui <- renderUI({
+        req(available_groups())
 
         selectInput(
             inputId = ns("group_choice"),
             label = strong("Select Grouping Variable"),
-            choices = parent_groups(),
+            choices = available_groups(),
             selected = "Immune Subtype"
         )
     })
     
-    output$filter_group_UI <- renderUI({
-        req(groups2_con(), parent_groups())
+    group_filter_ids <- reactive({
+        req(available_groups())
+        stringr::str_c("filter_by_", available_groups())
+    })
+    
+    group_filter_labels <- reactive({
+        req(available_groups_display())
+        stringr::str_c("Filter By ", available_groups_display())
+    })
+    
+    group_filter_choice_ids <- reactive({
+        req(available_groups())
+        stringr::str_c(available_groups(), "_filter_choices")
+    })
+    
+    group_choice_options <- reactive({
+        req(available_groups(), groups2_con())
+        con1 <- groups2_con() %>% 
+            dplyr::filter(is.na(parent)) %>% 
+            dplyr::select(id, parent_name = name, parent_display = display)
         
-        rep(
-            optionsBox(
-                width = 12,
-                checkboxInput(
-                    ns("filter_by_dataset"),
-                    strong("Filter by Dataset?"),
-                    T
-                )
-            ),
-            3
+        tbl <- groups2_con() %>% 
+            dplyr::filter(!is.na(parent)) %>% 
+            dplyr::left_join(con1, by = c("parent" = "id")) %>% 
+            dplyr::filter(parent_display %in% local(available_groups_display())) %>% 
+            dplyr::as_tibble()
+        
+        choices <-  
+            purrr::map(available_groups_display(), ~dplyr::filter(tbl, parent_display == .x)) %>% 
+            purrr::map(dplyr::pull, name)
+    })
+    
+    output$filter_group_ui <- renderUI({
+
+        req(
+            group_filter_ids(), 
+            group_filter_labels(), 
+            group_filter_choice_ids(),
+            group_choice_options()
         )
         
+        purrr::pmap(
+            list(
+                group_filter_ids(), 
+                group_filter_labels(), 
+                group_filter_choice_ids(),
+                group_choice_options()
+            ),
+            ~ optionsBox(
+                width = 12,
+                checkboxInput(
+                    inputId = ns(..1),
+                    label   = strong(..2),
+                    value   = F
+                ),
+                conditionalPanel(
+                    condition = stringr::str_c("input.", ..1),
+                    checkboxGroupInput(
+                        inputId = ns(..3),
+                        label = "Select choices to include:",
+                        choices = ..4,
+                        inline = T
+                    ),
+                    ns = ns
+                )
+            )
+        )
     })
     
     # group key ---------------------------------------------------------------
