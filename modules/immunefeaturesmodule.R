@@ -2,7 +2,7 @@ immunefeatures_UI <- function(id) {
     ns <- NS(id)
     
     tagList(
-        titleBox("iAtlas Explorer — Immune Feature Trends"),
+        titleBox("iAtlas Explorer - Immune Feature Trends"),
         textBox(
             width = 12,
             p(stringr::str_c(
@@ -14,7 +14,7 @@ immunefeatures_UI <- function(id) {
             ns("dist"),
             message_html = includeMarkdown("data/markdown/immune_features_dist.markdown"),
         ),
-    
+        
         sectionBox(
             title = "Correlations",
             messageBox(
@@ -35,8 +35,8 @@ immunefeatures_UI <- function(id) {
                     sep = " "
                 )),
                 p(stringr::str_c(
-                    "Manuscript context:  Select “Leukocyte Fraction” as the",
-                    "response variable, “DNA Alteration” as the variable",
+                    "Manuscript context:  Select 'Leukocyte Fraction' as the",
+                    "response variable, 'DNA Alteration' as the variable",
                     "class, and Spearman correlation. This will correspond to",
                     "Figure 4A if you are looking at immune subtypes as your",
                     "sample grouping.",
@@ -136,7 +136,7 @@ immunefeatures <- function(
         group_display_choice,
         key_col = "label"
     )
-
+    
     hm_variables  <- reactive({
         get_factored_variables_from_feature_df(input$heatmap_y) %>% 
             as.character
@@ -158,7 +158,7 @@ immunefeatures <- function(
             group_options = sample_groups)
         
     })
-        
+    
     
     
     output$heatmap <- renderPlotly({
@@ -169,8 +169,8 @@ immunefeatures <- function(
         )
         
         immunefeatures_correlation_matrix <- build_immunefeatures_correlation_matrix(
-                immunefeatures_df(), 
-                input$correlation_method)
+            immunefeatures_df(), 
+            input$correlation_method)
         
         create_heatmap(immunefeatures_correlation_matrix, "heatplot", scale_colors = T)
     })
@@ -184,7 +184,7 @@ immunefeatures <- function(
             sample_group_df(),
             key_column = "x")
     })
-        
+    
     
     output$scatterPlot <- renderPlotly({
         
@@ -204,7 +204,7 @@ immunefeatures <- function(
         internal_variable_name <- eventdata$y[[1]] %>%
             get_variable_internal_names() %>%
             .[. %in% colnames(immunefeatures_df())]
-
+        
         scatterplot_df <- build_immunefeatures_scatter_plot_df(
             immunefeatures_df(),
             x_col = internal_variable_name,

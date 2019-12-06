@@ -272,6 +272,8 @@ get_feature_df_nested_list <- purrr::partial(
     filter_column = "VariableType"
 )
 
+
+
 # get_unique_column_values ----------------------------------------------------
 
 get_unique_column_values <- function(column, df){
@@ -302,6 +304,26 @@ get_numeric_classes_from_feature_df <- purrr::partial(
     type_column = "VariableType", 
     value = "Numeric"
 )
+
+get_cn_feature_df_nested_list <- function(x) {
+
+    print('IN get cn feature options')
+    print(x)
+
+    if (x == 'group') {
+        return(panimmune_data$cnvs_df %>%  # df_for_regress
+                   dplyr::select('group')) %>%
+                   unique()
+        
+    } else if (x == 'gene') {
+        return(panimmune_data$cnvs_df %>%  # df_for_regression(),
+                   dplyr::select('gene') %>%
+                   unique())   
+    } else {
+        return(NA)
+    }
+        
+}
 
 
 

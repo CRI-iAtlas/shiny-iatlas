@@ -101,13 +101,14 @@ load_cnvs <- function() {
   if (!USE_REMOTE_BQ) {
     list( cnvs_df =
       # cn_table
-      cnvs_df <- read.csv('data/cn_table.csv.gz', stringsAsFactors = F)
+      cnvs_df <- readr::read_csv('data/cn_table_v2.csv')
     )
   } else {
     fetch_cnvs() %>% 
       format_cnvs()
   }
 }
+
 
 ## selection choices for the cell fractions.  Lots of other choices possible.
 create_cell_fraction_options <- function() {
