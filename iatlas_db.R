@@ -8,11 +8,19 @@ if (!'RPostgres' %in% installed.packages()) {
   install.packages("RPostgres")
 }
 
-# Load magrittr so %>% is available
+# Ensure svMisc is installed.
+if (!'svMisc' %in% installed.packages()) {
+  install.packages("svMisc")
+}
+
+# Load magrittr so %>% is available.
 library("magrittr")
 
-# Loading RPostgres loads DBI automatically
+# Loading RPostgres loads DBI automatically.
 library("RPostgres")
+
+# Loading svMisc.
+library("svMisc")
 
 # build_iatlas_db <- function(env = "dev", reset = "reset") {
 
@@ -34,6 +42,8 @@ source("database/connect_to_db.R")
 # Create a global variable to hold the connection.
 con <- .GlobalEnv$connect_to_db()
 
+cat("Created DB cponnection.", fill = TRUE)
+
 source("database/build_features_tables.R")
 
 source("database/build_groups_tables.R")
@@ -44,6 +54,8 @@ source("database/build_gene_tables.R")
 
 # Close the database connection.
 RPostgres::dbDisconnect(.GlobalEnv$con)
+
+cat("Closed DB cponnection.", fill = TRUE)
 
 ### Clean up ###
 # Data
@@ -65,4 +77,7 @@ rm(rebuild_groups)
 rm(value_to_id)
 rm(write_table_ts)
 rm(is_df_empty)
+
+cat("Cleaned up.", fill = TRUE)
+gc(TRUE)
 # }
