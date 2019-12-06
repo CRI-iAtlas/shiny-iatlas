@@ -82,7 +82,7 @@ gene_types %>% .GlobalEnv$write_table_ts(.GlobalEnv$con, "gene_types", .)
 
 rm(gene_types)
 
-cat("Made gene_types", fill = TRUE)
+cat("Built gene_types table.", fill = TRUE)
 
 # Build super_categories data.
 # super_categories <- dplyr::tibble() %>%

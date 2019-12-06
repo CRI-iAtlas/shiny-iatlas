@@ -24,7 +24,9 @@ io_target_expr4 <-
 til_image_links <-
   feather::read_feather("data2/til_image_links.feather")
 
-# Compbine all the sample data.
+cat("Imported feather files for samples.", fill = TRUE)
+
+# Combine all the sample data.
 all_samples <-
   dplyr::bind_rows(
     driver_mutations1,
@@ -41,6 +43,8 @@ all_samples <-
   ) %>%
   dplyr::arrange(sample)
 
+cat("Combined all the sample data.", fill = TRUE)
+
 # Clean up.
 rm(driver_mutations1)
 rm(driver_mutations2)
@@ -53,6 +57,9 @@ rm(io_target_expr1)
 rm(io_target_expr2)
 rm(io_target_expr3)
 rm(io_target_expr4)
+
+cat("Cleaned up.", fill = TRUE)
+gc(TRUE)
 
 # Get only the sample names (no duplicates).
 samples <- all_samples %>% dplyr::distinct(sample)
@@ -68,6 +75,8 @@ samples <- samples %>%
   dplyr::mutate(tissue_id = stringi::stri_extract_first(tissue_id, regex = "[\\w]{4}-[\\w]{2}-[\\w]{4}-[\\w]{3}-[\\d]{2}-[\\w]{3}"))
 samples %>% .GlobalEnv$write_table_ts(.GlobalEnv$con, "samples", .)
 samples <- RPostgres::dbReadTable(.GlobalEnv$con, "samples")
+
+cat("Built the samples table.", fill = TRUE)
 
 # Remove the large til_image_links as we are done with it.
 rm(til_image_links)
@@ -85,7 +94,13 @@ sample_set_01 <- all_samples %>%
 # Remove the HUGE all_samples as we are done with it.
 rm(all_samples)
 
-for (row in 1:nrow(samples)) {
+cat("Removed the HUGE all_samples as we are done with it.", fill = TRUE)
+gc(TRUE)
+
+cat("Rebuilding samples_to_groups and features_to_samples.", fill = TRUE)
+
+for (row in 1:2) {
+# for (row in 1:nrow(samples)) {
   current_id = samples[row, "id"]
   current_sample_id = samples[row, "sample_id"]
   samples_to_groups <- samples_to_groups %>%
@@ -108,8 +123,13 @@ rm(row)
 rm(current_id)
 rm(current_sample_id)
 
+cat("Cleaned up.", fill = TRUE)
+gc(TRUE)
+
 
 samples_to_groups %>% .GlobalEnv$write_table_ts(.GlobalEnv$con, "samples_to_groups", .)
+
+cat("Built samples_to_groups table.", fill = TRUE)
 
 # Remove the data we are done with.
 rm(features_to_samples)
@@ -118,3 +138,6 @@ rm(groups)
 rm(samples)
 rm(sample_set_01)
 rm(samples_to_groups)
+
+cat("Cleaned up.", fill = TRUE)
+gc(TRUE)

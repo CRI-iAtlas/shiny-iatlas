@@ -1,5 +1,8 @@
 # Get data from feature feather file as a data.frame and convert to a tibble.
 groups <- feather::read_feather("data2/groups.feather")
+
+cat("Imported feather file for groups.", fill = TRUE)
+
 groups <- dplyr::as_tibble(groups) %>%
   dplyr::rename_at("group", ~("name")) %>%
   dplyr::rename_at("group_name", ~("display")) %>%
@@ -26,8 +29,13 @@ groups <- groups_db %>% .GlobalEnv$rebuild_groups(groups_db) %>%
   dplyr::select(-c("subtype_group_display"))
 groups %>% .GlobalEnv$write_table_ts(.GlobalEnv$con, "groups", .)
 
+cat("Built groups table.", fill = TRUE)
+
 ### Clean up ###
 # Data
 rm(groups)
 rm(groups_db)
 rm(parents)
+
+cat("Cleaned up.", fill = TRUE)
+gc(TRUE)
