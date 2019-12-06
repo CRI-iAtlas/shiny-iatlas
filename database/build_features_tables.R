@@ -27,10 +27,6 @@ classes <- RPostgres::dbReadTable(.GlobalEnv$con, "classes")
 method_tags %>% .GlobalEnv$write_table_ts(.GlobalEnv$con, "method_tags", .)
 method_tags <- RPostgres::dbReadTable(.GlobalEnv$con, "method_tags")
 
-# Get data from feature_values feather file as a data.frame and convert to a tibble.
-feature_values <- feather::read_feather("data2/feature_values_long.feather")
-feature_values <- dplyr::as_tibble(feature_values)
-
 features <- features %>%
   .GlobalEnv$rebuild_features(classes, method_tags) %>%
   dplyr::select(-c("class")) %>%
@@ -42,7 +38,6 @@ features %>% .GlobalEnv$write_table_ts(.GlobalEnv$con, "features", .)
 
 ### Clean up ###
 # Data
-# rm(classes)
-# rm(feature_values)
-# rm(features)
-# rm(method_tags)
+rm(classes)
+rm(features)
+rm(method_tags)
