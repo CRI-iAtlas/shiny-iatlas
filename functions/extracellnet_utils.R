@@ -130,7 +130,7 @@ get_ab_nodes <- function(ab_nodes, conc_edges, byImmune = FALSE){
   if(byImmune == FALSE){
     all_nodes <- merge(all_nodes, ab_nodes, by = c("Node", "Group")) 
   }else{
-    all_nodes <- merge(all_nodes, ab_nodes, by.x = c("Node", "Group"), by.y = c("Node","Immune")) %>% dplyr::select(Node, Group, UpBinRatio)
+    all_nodes <- merge(all_nodes, ab_nodes, by.x = c("Node", "Group"), by.y = c("Node","Immune")) #%>% dplyr::select(Node, Group, UpBinRatio)
   }
   
   all_nodes
@@ -139,7 +139,7 @@ get_ab_nodes <- function(ab_nodes, conc_edges, byImmune = FALSE){
 #---- update list of nodes annotation based on user selection (for nodes color)
 
 filterNodes <- function(list_edges, annot){
-  colnames(annot) <- c("Type", "name")
+  colnames(annot) <- c("Type", "name", "FriendlyName")
   annot[annot$name== "CD80"& annot$Type == "Ligand",] <- NA #hardcoded here the fact that CD80 is with two different annotations and this caused a problem in the JSON file
   nodes <- append(list_edges$source, list_edges$target) %>% unique() %>% as.data.frame()
   colnames(nodes) <- "name"

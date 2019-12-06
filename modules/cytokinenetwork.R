@@ -16,10 +16,9 @@ all_net_info <- list(
 )
 
 dfe_in <- feather::read_feather("data/network/expr_data_merged.feather")
-main_scaffold <- readr::read_tsv("data/network/scaffold.tsv")
-styles <- c("Edges by Immune Type" = 'data/network/stylesEdges.js',
-            "Black Edges" = "data/network/styles.js")
-node_type <- readr::read_tsv("data/network/network_node_labels.tsv")
+styles <- c("Edges by Immune Type" = 'data/javascript/extracellular_network_stylesEdges.js',
+            "Black Edges" = "data/javascript/extracellular_network_styles.js")
+node_type <- readr::read_tsv("data/network/network_node_label_friendly.tsv")
 
 
 cytokinenetwork_UI <- function(id) {
@@ -50,7 +49,7 @@ cytokinenetwork_UI <- function(id) {
         optionsBox(
           width=2,
             verticalLayout(
-              #this tags$head makes sure that the checkboxes are formatted right
+              #this tags$head makes sure that the checkboxes are formatted appropriately
               tags$head(
                 tags$style(
                   HTML(
@@ -154,7 +153,7 @@ cytokinenetwork_UI <- function(id) {
             )
         )
       )
-)#taglist
+  )#taglist
 }
 
 cytokinenetwork <- function(
@@ -212,7 +211,6 @@ cytokinenetwork <- function(
         choices = sample_group_vector,
         selected = c("C1", "C2"),
         inline = TRUE)
-        #multiple = TRUE)
       
     }else if(group_internal_choice() == "Subtype_Curated_Malta_Noushmehr_et_al"){
       
@@ -243,7 +241,6 @@ cytokinenetwork <- function(
             choices=c("C1", "C2", "C3", "C4", "C5", "C6"),
             selected = c("C1", "C2"),
             inline = TRUE)
-#            multiple = TRUE)
         )
       )
     }
@@ -255,29 +252,40 @@ cytokinenetwork <- function(
   })
   
   output$selectGene <- renderUI({
-    selectizeInput(ns("geneInterest"), "Select genes of interest (optional)", choices = (union(main_scaffold$From, main_scaffold$To) %>% as.data.frame() %>% unique() %>% dplyr::select("Genes" =".") %>% dplyr::arrange()), 
+    #getting all nodes in the main_scaffold, and displaying it as FriendlyName
+    scanodes <- (union(main_scaffold$From, main_scaffold$To) %>% as.data.frame() %>% 
+                   unique() %>% merge(node_type, by.x = ".", by.y = "Obj") %>% select(Genes = FriendlyName) %>% filter(!is.na(Genes)))
+    selectizeInput(ns("geneInterest"), "Select genes of interest (optional)", choices = scanodes,
                    multiple = TRUE, options = list(placeholder = "Default: immunomodulator genes"))
   })
   
   output$selectNode <- renderUI({
-    selectInput(ns("selectName"), "Select Node", choices = c("", tbl_nodes() %>% dplyr::select(name)))
+    selectInput(ns("selectName"), "Select Node", choices = c("", tbl_nodes() %>% dplyr::select(Node = FriendlyName) %>% 
+                                                               dplyr::filter(!is.na(Node))))
   })
   
   
  #---- organizing the desired scaffold based on the cells and genes of interest
+  
+  #this current solution to generate the scaffold might need to be adapted after change of database
+  main_scaffold <-  all_net_info$immune$edges_score %>% filter(Group == "C1") %>% select(From, To)
   
   default_groups <- unique(panimmune_data$sample_group_df$sample_group)
   
   ##Subsetting to cells and genes of interest
   
   gois <- reactive({
-    
+    #if no gene is selected, all immunomodulator genes are considered genes of interest
     if (is.null(input$geneInterest))  return(as.vector(panimmune_data$im_direct_relationships$`HGNC Symbol`))
     
-    as.vector(input$geneInterest)
+    #converting the FriendlyName to HGNC Symbol
+    gois <- data.frame(FriendlyName = input$geneInterest) %>% merge(node_type) %>% dplyr::select(Obj) 
+  
+    gois$Obj
   })
 
   cois <- reactive({
+    #if no cell is selected, all cells are considered cells of interest 
     if (is.null(input$cellInterest)) get_cells_scaffold(main_scaffold, node_type)
     
     as.vector(input$cellInterest)
@@ -285,6 +293,7 @@ cytokinenetwork <- function(
   
   ##Scaffold and genes based on list of cells and genes of interest 
   scaffold <- reactive({
+    
     sca <- get_scaffold(node_type, main_scaffold, dfe_in, cois(), gois())
     #in case user only selected a cell of interest, get rid of the edges that only have genes
     if (is.null(input$geneInterest) & !(is.null(input$cellInterest))) {
@@ -434,16 +443,15 @@ cytokinenetwork <- function(
   #Getting the nodes annotation to send to cyjShiny
   tbl_nodes <- reactive({
     req(tbl_edges())
-    nodes <- filterNodes(tbl_edges(), node_type)
+    filterNodes(tbl_edges(), node_type)
   })
-
   
   graph.json <- reactive({
     cyjShiny::dataFramesToJSON(tbl_edges(), tbl_nodes())
   })
   
   output$cyjShiny <- cyjShiny::renderCyjShiny({
-    cyjShiny::cyjShiny(graph.json(), layoutName = input$doLayout, style_file = "data/network/stylesEdges.js")
+    cyjShiny::cyjShiny(graph.json(), layoutName = input$doLayout, style_file = "data/javascript/extracellular_network_stylesEdges.js")
     })
     
   output$table <- DT::renderDataTable(
@@ -482,7 +490,8 @@ cytokinenetwork <- function(
   })
   
   observeEvent(input$selectName,  ignoreInit=TRUE,{
-    session$sendCustomMessage(type="selectNodes", message=list(input$selectName))
+    snode <- as.character(node_type[which(node_type$FriendlyName == input$selectName), "Obj"])
+    session$sendCustomMessage(type="selectNodes", message=list(snode))
   })
   
   observeEvent(input$sfn,  ignoreInit=TRUE,{
@@ -532,23 +541,19 @@ cytokinenetwork <- function(
 
   })
 
-  observeEvent(input$pngData, ignoreInit=TRUE, {
-    
-    R.utils::printf("received pngData")
-    png.parsed <- jsonlite::fromJSON(input$pngData)
-    substr(png.parsed, 1, 30) # [1] "data:image/png;base64,iVBORw0K"
-    nchar(png.parsed)  # [1] 768714
-    png.parsed.headless <- substr(png.parsed, 23, nchar(png.parsed))  # chop off the uri header
-    png.parsed.binary <- base64::base64decode(png.parsed.headless)
-    R.utils::printf("writing png to foo.png")
-    conn <- file("savedNetwork.png", "wb")
-    writeBin(png.parsed.binary, conn)
-    close(conn)
- })
+ #  observeEvent(input$pngData, ignoreInit=TRUE, {
+ #    
+ #    R.utils::printf("received pngData")
+ #    png.parsed <- jsonlite::fromJSON(input$pngData)
+ #    substr(png.parsed, 1, 30) # [1] "data:image/png;base64,iVBORw0K"
+ #    nchar(png.parsed)  # [1] 768714
+ #    png.parsed.headless <- substr(png.parsed, 23, nchar(png.parsed))  # chop off the uri header
+ #    png.parsed.binary <- base64::base64decode(png.parsed.headless)
+ #    R.utils::printf("writing png to foo.png")
+ #    conn <- file("savedNetwork.png", "wb")
+ #    writeBin(png.parsed.binary, conn)
+ #    close(conn)
+ # })
 
-  # input$savePNGbutton <- downloadHandler(
-  #   filename = function() stringr::str_c("network-", Sys.Date(), ".png"),
-  #   cyjShiny::savePNGtoFile(session, file.name)
-  # )
 
 }  
