@@ -13,7 +13,15 @@ EXCEPTION
 END $$;
 
 -- samples table
-CREATE TABLE samples (id SERIAL, sample_id VARCHAR NOT NULL, tissue_id VARCHAR, PRIMARY KEY (id));
+CREATE TABLE samples (
+    id SERIAL,
+    sample_id VARCHAR NOT NULL,
+    tissue_id VARCHAR,
+    gender VARCHAR,
+    race VARCHAR,
+    ethnicity VARCHAR,
+    PRIMARY KEY (id)
+);
 CREATE UNIQUE INDEX sample_id_index ON samples (sample_id);
 
 -- entrez table
