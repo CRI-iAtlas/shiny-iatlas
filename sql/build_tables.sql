@@ -58,8 +58,8 @@ CREATE TABLE method_tags (id SERIAL, "name" VARCHAR NOT NULL, PRIMARY KEY (id));
 CREATE TABLE result_labels (id SERIAL, "name" VARCHAR NOT NULL, PRIMARY KEY (id));
 CREATE UNIQUE INDEX name_index ON result_labels ("name");
 
--- groups table
-CREATE TABLE groups (
+-- tags table
+CREATE TABLE tags (
     id SERIAL,
     "name" VARCHAR NOT NULL,
     characteristics VARCHAR,
@@ -67,9 +67,9 @@ CREATE TABLE groups (
     color VARCHAR,
     PRIMARY KEY (id)
 );
-ALTER TABLE groups ADD COLUMN subgroup INTEGER REFERENCES groups;
-ALTER TABLE groups ADD COLUMN parent INTEGER REFERENCES groups;
-CREATE UNIQUE INDEX group_name_index ON groups ("name");
+ALTER TABLE tags ADD COLUMN subgroup INTEGER REFERENCES tags;
+ALTER TABLE tags ADD COLUMN parent INTEGER REFERENCES tags;
+CREATE UNIQUE INDEX tag_name_index ON tags ("name");
 
 -- features table
 CREATE TABLE features (
@@ -94,7 +94,7 @@ CREATE TABLE genes (
     PRIMARY KEY (id)
 );
 ALTER TABLE genes ADD COLUMN family_id INTEGER REFERENCES result_labels;
-ALTER TABLE genes ADD COLUMN super_cat_id INTEGER REFERENCES groups;
+ALTER TABLE genes ADD COLUMN super_cat_id INTEGER REFERENCES super_categories;
 ALTER TABLE genes ADD COLUMN entrez_id INTEGER REFERENCES entrez;
 ALTER TABLE genes ADD COLUMN immune_checkpoint_id INTEGER REFERENCES immune_checkpoints;
 ALTER TABLE genes ADD COLUMN function_id INTEGER REFERENCES gene_functions;
@@ -114,7 +114,7 @@ CREATE TABLE results (
     PRIMARY KEY (id)
 );
 ALTER TABLE results ADD COLUMN label_id INTEGER REFERENCES result_labels;
-ALTER TABLE results ADD COLUMN group_id INTEGER REFERENCES groups;
+ALTER TABLE results ADD COLUMN tag_id INTEGER REFERENCES tags;
 ALTER TABLE results ADD COLUMN gene_id INTEGER REFERENCES genes;
 
 -- genes_to_types table
@@ -128,8 +128,8 @@ CREATE TABLE genes_to_samples (
     "value" NUMERIC
 );
 
--- samples_to_groups table
-CREATE TABLE samples_to_groups (sample_id INTEGER REFERENCES samples, group_id INTEGER REFERENCES groups);
+-- samples_to_tags table
+CREATE TABLE samples_to_tags (sample_id INTEGER REFERENCES samples, tag_id INTEGER REFERENCES tags);
 
 -- features_to_samples table
 CREATE TABLE features_to_samples (feature_id INTEGER REFERENCES features, sample_id INTEGER REFERENCES samples);
