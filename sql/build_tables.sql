@@ -88,7 +88,7 @@ CREATE UNIQUE INDEX feature_name_index ON features ("name");
 -- genes table
 CREATE TABLE genes (
     id SERIAL,
-    gene_id VARCHAR NOT NULL,
+    hgnc VARCHAR NOT NULL,
     "description" VARCHAR,
     "references" TEXT[],
     PRIMARY KEY (id)
@@ -100,7 +100,7 @@ ALTER TABLE genes ADD COLUMN immune_checkpoint_id INTEGER REFERENCES immune_chec
 ALTER TABLE genes ADD COLUMN function_id INTEGER REFERENCES gene_functions;
 ALTER TABLE genes ADD COLUMN pathway_id INTEGER REFERENCES pathways;
 ALTER TABLE genes ADD COLUMN therapy_type_id INTEGER REFERENCES therapy_types;
-CREATE UNIQUE INDEX gene_id_index ON genes ("gene_id");
+CREATE UNIQUE INDEX hgnc_index ON genes ("hgnc");
 
 -- results table
 CREATE TABLE results (
