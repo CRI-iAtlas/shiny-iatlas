@@ -81,7 +81,7 @@ get_ids_from_heirarchy <- function(df, ids, current_id = NULL) {
     ids <- ids %>% dplyr::add_row(id = current_id)
     current_row <- df %>%
       dplyr::select(id:parent) %>%
-      filter(id == current_id)
+      dplyr::filter(id == current_id)
     if (!is_df_empty(current_row)) {
       ids <- df %>% 
         get_ids_from_heirarchy(ids, current_row$parent) %>% 
@@ -92,7 +92,7 @@ get_ids_from_heirarchy <- function(df, ids, current_id = NULL) {
 }
 
 build_group_id_data <- function(groups) {
-  group_ids <- tibble() %>% tibble::add_column(id = NA)
+  group_ids <- dplyr::tibble() %>% tibble::add_column(id = NA)
   for (row in 1:nrow(groups)) {
     group_ids <- groups %>% get_ids_from_heirarchy(group_ids, groups[row, "id"])
   }
@@ -103,7 +103,10 @@ update_samples_to_groups <- function(samples_to_groups, id, groups) {
   # Ensure data.frames.
   groups <- groups %>% as.data.frame
   if (!is_df_empty(groups)) {
-    group_ids <- groups %>% build_group_id_data %>% as.data.frame
+    group_ids <- groups %>% 
+      build_group_id_data %>% 
+      dplyr::distinct(id) %>%
+      as.data.frame
     for (row in 1:nrow(group_ids)) {
       samples_to_groups <- samples_to_groups %>%
         dplyr::select(dplyr::everything()) %>%
@@ -129,12 +132,13 @@ rebuild_samples_to_groups <- function(samples_to_groups, id, current_sample_id, 
       samples_to_groups <- samples_to_groups %>% update_samples_to_groups(id, current_groups)
     }
   }
+  samples_to_groups <- samples_to_groups %>% dplyr::distinct(sample_id, group_id)
   return(samples_to_groups)
 }
 
-rebuild_gene_relational_data <- function(all_genes, gene_row, field_name = "name", relational_data = tibble()) {
+rebuild_gene_relational_data <- function(all_genes, gene_row, field_name = "name", relational_data = dplyr::tibble()) {
   if (is_df_empty(relational_data)) {
-    relational_data <- tibble() %>%
+    relational_data <- dplyr::tibble() %>%
       tibble::add_column(!!field_name := NA)
   }
   relational_data <- relational_data %>%
