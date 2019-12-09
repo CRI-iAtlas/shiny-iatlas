@@ -240,14 +240,14 @@ cytokinenetwork <- function(
   })
   
   output$selectCell <- renderUI({
-    selectizeInput(ns("cellInterest"), "Search and select cells of interest (optional)", choices = (node_type %>% dplyr::filter(Type == "Cell") %>% dplyr::select("Cells"="Obj")), 
+    selectizeInput(ns("cellInterest"), "Search and select cells of interest (optional)", choices = (panimmune_data$ext_net_labels %>% dplyr::filter(Type == "Cell") %>% dplyr::select("Cells"="Obj")), 
                    multiple = TRUE, options = list(placeholder = "Default: all cells"))
   })
   
   output$selectGene <- renderUI({
     #getting all nodes in the main_scaffold, and displaying it as FriendlyName
     scanodes <- (union(main_scaffold$From, main_scaffold$To) %>% as.data.frame() %>% 
-                   unique() %>% merge(node_type, by.x = ".", by.y = "Obj") %>% select(Genes = FriendlyName) %>% filter(!is.na(Genes)))
+                   unique() %>% merge(panimmune_data$ext_net_labels, by.x = ".", by.y = "Obj") %>% select(Genes = FriendlyName) %>% filter(!is.na(Genes)))
     selectizeInput(ns("geneInterest"), "Search and select genes of interest (optional)", choices = scanodes,
                    multiple = TRUE, options = list(placeholder = "Default: immunomodulator genes"))
   })
@@ -272,14 +272,14 @@ cytokinenetwork <- function(
     if (is.null(input$geneInterest))  return(as.vector(panimmune_data$im_direct_relationships$`HGNC Symbol`))
     
     #converting the FriendlyName to HGNC Symbol
-    gois <- data.frame(FriendlyName = input$geneInterest) %>% merge(node_type) %>% dplyr::select(Obj) 
+    gois <- data.frame(FriendlyName = input$geneInterest) %>% merge(panimmune_data$ext_net_labels) %>% dplyr::select(Obj) 
   
     gois$Obj
   })
 
   cois <- reactive({
     #if no cell is selected, all cells are considered cells of interest 
-    if (is.null(input$cellInterest)) get_cells_scaffold(main_scaffold, node_type)
+    if (is.null(input$cellInterest)) get_cells_scaffold(main_scaffold, panimmune_data$ext_net_labels)
     
     as.vector(input$cellInterest)
   })
@@ -287,7 +287,7 @@ cytokinenetwork <- function(
   ##Scaffold and genes based on list of cells and genes of interest 
   scaffold <- reactive({
     
-    sca <- get_scaffold(node_type, main_scaffold, dfe_in, cois(), gois())
+    sca <- get_scaffold(panimmune_data$ext_net_labels, main_scaffold, panimmune_data$ext_net_expr, cois(), gois())
     #in case user only selected a cell of interest, get rid of the edges that only have genes
     if (is.null(input$geneInterest) & !(is.null(input$cellInterest))) {
       sca <- sca %>% 
@@ -299,7 +299,7 @@ cytokinenetwork <- function(
     
   ##Getting list of genes and cells that are present in the selected scaffold
   cells <- reactive({
-    as.vector(get_cells_scaffold(scaffold(), node_type))
+    as.vector(get_cells_scaffold(scaffold(), panimmune_data$ext_net_labels))
   })
     
   genes <- reactive({
