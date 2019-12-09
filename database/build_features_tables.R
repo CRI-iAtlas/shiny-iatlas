@@ -52,4 +52,5 @@ rm(features)
 rm(method_tags)
 
 cat("Cleaned up.", fill = TRUE)
-gc(TRUE)
+gc()
+gcinfo(TRUE)

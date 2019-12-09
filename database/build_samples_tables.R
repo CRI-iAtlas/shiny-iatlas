@@ -59,7 +59,8 @@ rm(io_target_expr3)
 rm(io_target_expr4)
 
 cat("Cleaned up.", fill = TRUE)
-gc(TRUE)
+gc()
+gcinfo(TRUE)
 
 # Get only the sample names (no duplicates).
 samples <- all_samples %>% dplyr::distinct(sample)
@@ -82,9 +83,9 @@ cat("Built the samples table.", fill = TRUE)
 rm(til_image_links)
 
 features <- RPostgres::dbReadTable(.GlobalEnv$con, "features")
-groups <- RPostgres::dbReadTable(.GlobalEnv$con, "groups")
+tags <- RPostgres::dbReadTable(.GlobalEnv$con, "tags")
 
-samples_to_groups <- dplyr::tibble() %>% tibble::add_column(sample_id = NA, group_id = NA)
+samples_to_tags <- dplyr::tibble() %>% tibble::add_column(sample_id = NA, tag_id = NA)
 features_to_samples <- dplyr::tibble() %>% tibble::add_column(feature_id = NA, sample_id = NA, value = NA)
 
 sample_set_01 <- all_samples %>%
@@ -95,20 +96,22 @@ sample_set_01 <- all_samples %>%
 rm(all_samples)
 
 cat("Removed the HUGE all_samples as we are done with it.", fill = TRUE)
-gc(TRUE)
+gc()
+gcinfo(TRUE)
 
-cat("Rebuilding samples_to_groups and features_to_samples.", fill = TRUE)
+cat("Rebuilding samples_to_tags and features_to_samples.", fill = TRUE)
 
 for (row in 1:2) {
 # for (row in 1:nrow(samples)) {
+  svMisc::progress(row, 9, progress.bar = TRUE)
   current_id = samples[row, "id"]
   current_sample_id = samples[row, "sample_id"]
-  samples_to_groups <- samples_to_groups %>%
-    .GlobalEnv$rebuild_samples_to_groups(
+  samples_to_tags <- samples_to_tags %>%
+    .GlobalEnv$rebuild_samples_to_tags(
       current_id,
       current_sample_id,
       sample_set_01,
-      groups
+      tags
     )
 
   features_to_samples <- features_to_samples %>%
@@ -118,26 +121,32 @@ for (row in 1:2) {
       sample_set_01,
       features
     )
+  # if (row == nrow(samples)) {
+  if (row == 10) {
+    cat("\nRebuilt samples_to_tags and features_to_samples.", fill = TRUE)
+  }
 }
 rm(row)
 rm(current_id)
 rm(current_sample_id)
 
 cat("Cleaned up.", fill = TRUE)
-gc(TRUE)
+gc()
+gcinfo(TRUE)
 
 
-samples_to_groups %>% .GlobalEnv$write_table_ts(.GlobalEnv$con, "samples_to_groups", .)
+samples_to_tags %>% .GlobalEnv$write_table_ts(.GlobalEnv$con, "samples_to_tags", .)
 
-cat("Built samples_to_groups table.", fill = TRUE)
+cat("Built samples_to_tags table.", fill = TRUE)
 
 # Remove the data we are done with.
 rm(features_to_samples)
 rm(features)
-rm(groups)
+rm(tags)
 rm(samples)
 rm(sample_set_01)
-rm(samples_to_groups)
+rm(samples_to_tags)
 
 cat("Cleaned up.", fill = TRUE)
-gc(TRUE)
+gc()
+gcinfo(TRUE)
