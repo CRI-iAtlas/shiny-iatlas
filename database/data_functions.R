@@ -2,11 +2,11 @@ is_df_empty <- function(df) {
   return(is.null(dim(df)) | dim(df)[1] == 0 | dim(df)[2] == 0)
 }
 
-value_to_id <- function(value, int_value, id_value, name_value) {
-  if (identical(value, name_value)) {
-    return(id_value)
-  } else if (!is.na(int_value)) {
-    return(int_value)
+value_to_id <- function(reference, current_value, value, reference_match) {
+  if (identical(reference, reference_match)) {
+    return(value)
+  } else if (!is.na(current_value)) {
+    return(current_value)
   } else {
     return(NA)
   }
@@ -142,7 +142,7 @@ rebuild_gene_relational_data <- function(all_genes, gene_row, field_name = "name
       tibble::add_column(!!field_name := NA)
   }
   relational_data <- relational_data %>%
-    dplyr::select(everything()) %>%
+    dplyr::select(dplyr::everything()) %>%
     dplyr::rowwise() %>%
     dplyr::add_row(!!field_name := all_genes[row, gene_row])
   return(relational_data)
