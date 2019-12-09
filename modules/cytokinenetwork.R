@@ -88,8 +88,6 @@ cytokinenetwork_UI <- function(id) {
                     actionButton(ns("clearSelection"), "Unselect Nodes", width = "100%", style = 'white-space: pre-line'),
                     actionButton(ns("hideSelection"), "Hide Selected Nodes", width = "100%", style = 'white-space: pre-line'),
                     actionButton(ns("showAll"), "Show All Nodes", width = "100%", style = 'white-space: pre-line'),
-                    #actionButton(ns("loopConditions"), "Loop Conditions"),
-                    #actionButton(ns("getSelectedNodes"), "Get Selected Nodes"),
                     #actionButton(ns("savePNGbutton"), "Save PNG"),
                     actionButton(ns("removeGraphButton"), "Remove Graph", width = "100%", style = 'white-space: pre-line') 
                 )
@@ -242,7 +240,7 @@ cytokinenetwork <- function(
   })
   
   output$selectCell <- renderUI({
-    selectizeInput(ns("cellInterest"), "Select cells of interest (optional)", choices = (node_type %>% dplyr::filter(Type == "Cell") %>% dplyr::select("Cells"="Obj")), 
+    selectizeInput(ns("cellInterest"), "Search and select cells of interest (optional)", choices = (node_type %>% dplyr::filter(Type == "Cell") %>% dplyr::select("Cells"="Obj")), 
                    multiple = TRUE, options = list(placeholder = "Default: all cells"))
   })
   
@@ -250,12 +248,12 @@ cytokinenetwork <- function(
     #getting all nodes in the main_scaffold, and displaying it as FriendlyName
     scanodes <- (union(main_scaffold$From, main_scaffold$To) %>% as.data.frame() %>% 
                    unique() %>% merge(node_type, by.x = ".", by.y = "Obj") %>% select(Genes = FriendlyName) %>% filter(!is.na(Genes)))
-    selectizeInput(ns("geneInterest"), "Select genes of interest (optional)", choices = scanodes,
+    selectizeInput(ns("geneInterest"), "Search and select genes of interest (optional)", choices = scanodes,
                    multiple = TRUE, options = list(placeholder = "Default: immunomodulator genes"))
   })
   
   output$selectNode <- renderUI({
-    selectInput(ns("selectName"), "Select Node", choices = c("", tbl_nodes() %>% dplyr::select(Node = FriendlyName) %>% 
+    selectInput(ns("selectName"), "Search and select Node", choices = c("", tbl_nodes() %>% dplyr::select(Node = FriendlyName) %>% 
                                                                dplyr::filter(!is.na(Node))))
   })
   
@@ -501,19 +499,19 @@ cytokinenetwork <- function(
     cyjShiny::fitSelected(session, 100)
   })
   
-  observeEvent(input$getSelectedNodes, ignoreInit=TRUE, {
-    output$selectedNodesDisplay <- renderText({" "})
-    cyjShiny::getSelectedNodes(session)
-    
-  })
+  # observeEvent(input$getSelectedNodes, ignoreInit=TRUE, {
+  #   output$selectedNodesDisplay <- renderText({" "})
+  #   cyjShiny::getSelectedNodes(session)
+  #   
+  # })
   
-  observeEvent(input$selectedNodes, {
-    newNodes <- input$selectedNodes;
-    output$selectedNodesDisplay <- renderText({
-      paste(newNodes)
-    })
-  })
-  
+  # observeEvent(input$selectedNodes, {
+  #   newNodes <- input$selectedNodes;
+  #   output$selectedNodesDisplay <- renderText({
+  #     paste(newNodes)
+  #   })
+  # })
+  # 
   observeEvent(input$hideSelection,  ignoreInit=TRUE, {
     session$sendCustomMessage(type="hideSelection", message=list())
   })
