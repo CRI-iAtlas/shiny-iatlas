@@ -24,7 +24,7 @@ To run the app locally:
 
 1. Clone this repository
 
-1. In the terminal, change directories to ensure you are in the root of the checked out project.
+<!-- 1. In the terminal, change directories to ensure you are in the root of the checked out project.
 
 1. Execute the script to build the database and tables (This may take a little time. Please be patient.):
 
@@ -36,7 +36,7 @@ To run the app locally:
 
    ```bash
    . ./scripts/create_db.sh
-   ```
+   ``` -->
 
 1. Start Rstudio
 
@@ -50,19 +50,25 @@ To run the app locally:
 
    - NOTE: In the "console" tab in Rstudio, a new R session will start. This will execute `source("renv/activate.R")` from the `.Rprofile` file and `renv` will bootstrap itself in.
 
-   - At the prompt in the "console" tab, restore the dependecies by running:
+1. At the prompt in the "console" tab, restore the dependecies by running:
 
-     ```R
-     renv::restore()
-     ```
+   ```R
+   renv::restore()
+   ```
 
    This may take some time to complete - get something nice to drink :)
 
-   - Start the app by running:
+1. Build the database by executing the following in the R console:
 
-     ```R
-     shiny::runApp()
-     ```
+   ```R
+   source("iatlas_db.R")
+   ```
+
+1. Start the app by running:
+
+   ```R
+   shiny::runApp()
+   ```
 
 ## Development
 
