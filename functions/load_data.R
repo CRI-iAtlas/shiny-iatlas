@@ -96,6 +96,25 @@ load_driver_mutation <- function() {
   }
 }
 
+load_extracellular_network <- function(){
+  if (!USE_REMOTE_BQ) {
+    list(
+      all_net_info = list(
+        "immune"= list("upbin_ratio" = feather::read_feather("data/network/nodes_TCGAImmune.feather"), "edges_score" = feather::read_feather("data/network/edges_TCGAImmune.feather")),
+        "subtype"= list("upbin_ratio" = feather::read_feather("data/network/nodes_TCGASubtype.feather"), "edges_score" = feather::read_feather("data/network/edges_TCGASubtype.feather")),
+        "study"= list("upbin_ratio" = feather::read_feather("data/network/nodes_TCGAStudy.feather"), "edges_score" = feather::read_feather("data/network/edges_TCGAStudy.feather")),
+        "studyImmune" = list("upbin_ratio" = feather::read_feather("data/network/nodes_TCGAStudy_Immune.feather"), "edges_score" = feather::read_feather("data/network/edges_TCGAStudy_Immune.feather"))
+      ),
+      dfe_in = feather::read_feather("data/network/expr_data_merged.feather"),
+      node_type = readr::read_tsv("data/network/network_node_label_friendly.tsv")
+    )
+  } #else {
+  #   fetch_driver_mutation() %>%
+  #     format_driver_mutation()
+  # }
+  
+}
+
 ## selection choices for the cell fractions.  Lots of other choices possible.
 create_cell_fraction_options <- function() {
     if (!USE_REMOTE_BQ) {
@@ -116,6 +135,7 @@ load_data <- function() {
     io_target_annotations_data <- load_io_target_annotations()
     io_target_expression_data <- load_io_target_expression()
     driver_mutation_data <- load_driver_mutation()
+    extracellular_network_data <- load_extracellular_network()
     list(
         feature_df = manifest_data$feature_df,
         feature_method_df = manifest_data$feature_method_df,
@@ -126,6 +146,9 @@ load_data <- function() {
         im_expr_df = im_expression_data$im_expr_df,
         io_target_annotations = io_target_annotations_data$io_target_annotations,
         io_target_expr_df = io_target_expression_data$io_target_expr_df,
-        driver_mutation_df = driver_mutation_data$driver_mutation_df
+        driver_mutation_df = driver_mutation_data$driver_mutation_df,
+        ext_net_df = extracellular_network_data$all_net_info,
+        ext_net_labels = extracellular_network_data$node_type,
+        ext_net_expr = extracellular_network_data$dfe_in
     )
 }

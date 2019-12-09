@@ -121,7 +121,7 @@ get_conc_edges <- function(edges_df, ab_nodes, concordance_thres, group_subset, 
   network
 }
 
-get_ab_nodes <- function(ab_nodes, conc_edges, byImmune = FALSE){
+get_ab_nodes <- function(ab_nodes, conc_edges, nodes_annot, byImmune = FALSE){
 
   all_nodes <- rbind(conc_edges %>% dplyr::select("Node" = "source" , "Group" = "interaction"), 
                      conc_edges %>% dplyr::select("Node" = "target", "Group" = "interaction")) %>% 
@@ -130,9 +130,12 @@ get_ab_nodes <- function(ab_nodes, conc_edges, byImmune = FALSE){
   if(byImmune == FALSE){
     all_nodes <- merge(all_nodes, ab_nodes, by = c("Node", "Group")) 
   }else{
-    all_nodes <- merge(all_nodes, ab_nodes, by.x = c("Node", "Group"), by.y = c("Node","Immune")) #%>% dplyr::select(Node, Group, UpBinRatio)
+    all_nodes <- merge(all_nodes, ab_nodes, by.x = c("Node", "Group"), by.y = c("Node","Immune")) 
   }
   
+  #including the annotation of Friendly Names and types
+  all_nodes <- merge(all_nodes, nodes_annot, by.x = "Node", by.y = "Obj") %>% 
+                  dplyr::select("Node (HGNC Symbol)" = "Node", "Gene" = "FriendlyName", Type, Group, "Abundance" = "UpBinRatio")
   all_nodes
 }
 
@@ -140,7 +143,6 @@ get_ab_nodes <- function(ab_nodes, conc_edges, byImmune = FALSE){
 
 filterNodes <- function(list_edges, annot){
   colnames(annot) <- c("Type", "name", "FriendlyName")
-  annot[annot$name== "CD80"& annot$Type == "Ligand",] <- NA #hardcoded here the fact that CD80 is with two different annotations and this caused a problem in the JSON file
   nodes <- append(list_edges$source, list_edges$target) %>% unique() %>% as.data.frame()
   colnames(nodes) <- "name"
   

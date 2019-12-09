@@ -3,22 +3,6 @@ if(!require(cyjShiny)){
 }
 
 library(cyjShiny)
-#-------------------------------------------------------------------
-#TEMPORARY - reading in files 
-#-------------------------------------------------------------------
-
-## Loading all data of nodes abundance and edges scores
-all_net_info <- list(
-  "immune"= list("upbin_ratio" = feather::read_feather("data/network/nodes_TCGAImmune.feather"), edges_score = feather::read_feather("data/network/edges_TCGAImmune.feather")),
-  "subtype"= list("upbin_ratio" = feather::read_feather("data/network/nodes_TCGASubtype.feather"), edges_score = feather::read_feather("data/network/edges_TCGASubtype.feather")),
-  "study"= list("upbin_ratio" = feather::read_feather("data/network/nodes_TCGAStudy.feather"), edges_score = feather::read_feather("data/network/edges_TCGAStudy.feather")),
-  "studyImmune" = list("upbin_ratio" = feather::read_feather("data/network/nodes_TCGAStudy_Immune.feather"), edges_score = feather::read_feather("data/network/edges_TCGAStudy_Immune.feather"))
-)
-
-dfe_in <- feather::read_feather("data/network/expr_data_merged.feather")
-styles <- c("Edges by Immune Type" = 'data/javascript/extracellular_network_stylesEdges.js',
-            "Black Edges" = "data/javascript/extracellular_network_styles.js")
-node_type <- readr::read_tsv("data/network/network_node_label_friendly.tsv")
 
 
 cytokinenetwork_UI <- function(id) {
@@ -94,10 +78,8 @@ cytokinenetwork_UI <- function(id) {
                               "dagre",
                               "cose-bilkent"),
                     selected = "cose"),
-                    selectInput(
-                      ns("loadStyleFile"),
-                      "Select Style",
-                      choices = styles),
+                    
+                    uiOutput(ns("selectStyle")),
                   
                     uiOutput(ns("selectNode")),
                     actionButton(ns("fitSelected"), "Fit Selected", width = "100%", style = 'white-space: pre-line'),
@@ -201,7 +183,8 @@ cytokinenetwork <- function(
         dplyr::select_(group_internal_choice()) %>%
         unique()
     }
-
+    
+    
     #Generating UI depending on the sample group
     if(group_internal_choice() == "Subtype_Immune_Model_Based"){
       
@@ -243,7 +226,19 @@ cytokinenetwork <- function(
             inline = TRUE)
         )
       )
+      
     }
+  })
+  
+  output$selectStyle <- renderUI({
+    
+    styles <- c("Edges by Immune Type" = 'data/javascript/extracellular_network_stylesEdges.js',
+                  "Black Edges" = "data/javascript/extracellular_network_styles.js")
+      
+    selectInput(
+      ns("loadStyleFile"),
+      "Select Style",
+      choices = styles)
   })
   
   output$selectCell <- renderUI({
@@ -268,7 +263,7 @@ cytokinenetwork <- function(
  #---- organizing the desired scaffold based on the cells and genes of interest
   
   #this current solution to generate the scaffold might need to be adapted after change of database
-  main_scaffold <-  all_net_info$immune$edges_score %>% filter(Group == "C1") %>% select(From, To)
+  main_scaffold <-  panimmune_data$ext_net_df$immune$edges_score %>% filter(Group == "C1") %>% select(From, To)
   
   default_groups <- unique(panimmune_data$sample_group_df$sample_group)
   
@@ -323,7 +318,7 @@ cytokinenetwork <- function(
     compute_abundance(subset_df(),
                        subset_col = group_internal_choice(),
                        panimmune_data$fmx_df,
-                       dfe_in,
+                       panimmune_data$ext_net_expr,
                        cells(),
                        genes(),
                        stratify$byImmune)
@@ -362,7 +357,7 @@ cytokinenetwork <- function(
   subset_data <- reactive({
     
     if(group_internal_choice() %in% default_groups){
-      get_netdata(group_internal_choice(), all_net_info, stratify$byImmune)
+      get_netdata(group_internal_choice(), panimmune_data$ext_net_df, stratify$byImmune)
     }else{
       return(NA)
     }
@@ -443,7 +438,7 @@ cytokinenetwork <- function(
   #Getting the nodes annotation to send to cyjShiny
   tbl_nodes <- reactive({
     req(tbl_edges())
-    filterNodes(tbl_edges(), node_type)
+    filterNodes(tbl_edges(), panimmune_data$ext_net_labels)
   })
   
   graph.json <- reactive({
@@ -461,8 +456,8 @@ cytokinenetwork <- function(
   
 
   output$tableNodes <- DT::renderDataTable(
-                            DT::datatable(get_ab_nodes(abundant_nodes(), tbl_edges(), stratify$byImmune) , caption = "Nodes Table",
-                                        colnames= c("Abundance" = "UpBinRatio"), width = "100%", rownames = FALSE)
+                            DT::datatable(get_ab_nodes(abundant_nodes(), tbl_edges(), panimmune_data$ext_net_labels, stratify$byImmune), 
+                                          caption = "Nodes Table",  width = "100%", rownames = FALSE)
                         )
   
   output$download_data <- downloadHandler(
@@ -475,7 +470,7 @@ cytokinenetwork <- function(
     content = function(con) readr::write_csv(get_ab_nodes(abundant_nodes(), tbl_edges(), stratify$byImmune), con)
   )
 
-#----- Network visualization-related  
+#----- Network visualization-related (from the cyjShiny examples)  
   
   observeEvent(input$loadStyleFile,  ignoreInit=TRUE, {
     if(input$loadStyleFile != ""){
@@ -490,7 +485,7 @@ cytokinenetwork <- function(
   })
   
   observeEvent(input$selectName,  ignoreInit=TRUE,{
-    snode <- as.character(node_type[which(node_type$FriendlyName == input$selectName), "Obj"])
+    snode <- as.character(panimmune_data$ext_net_labels[which(panimmune_data$ext_net_labels$FriendlyName == input$selectName), "Obj"])
     session$sendCustomMessage(type="selectNodes", message=list(snode))
   })
   
