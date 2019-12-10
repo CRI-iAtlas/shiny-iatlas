@@ -31,26 +31,18 @@ ioresponse_UI <- function(id){
             ),
             
             optionsBox(
-                width=12,
-                fluidRow(
-                    column(
-                        width = 2,
+                width=2,
+                verticalLayout(
+                   
                         checkboxGroupInput(ns("datasets"), "Select Datasets", choices = c("Gide 2019", "Hugo 2016", 
                                                                                           "IMVigor210", "Prins 2019", "Riaz 2017", "Van Allen 2015"),
-                                           selected = "Gide 2019") 
-                    ),
-                    
-                    
-                    column(
-                        width = 2,
+                                           selected = "Gide 2019"), 
                         uiOutput(ns("survplot_op")),
                         #checkboxGroupInput(ns("response"), "Select Response Categories", choices = c("OS_d")),
                         #c("OS_d", "OS_y", "OS_e", "PR", "CR", "SD")
                         checkboxInput(ns("confint"), "Confidence Intervals", value = F),
-                        checkboxInput(ns("risktable"), "Risk Table", value = T)
-                    ),
-                    column(
-                        width = 2,
+                        checkboxInput(ns("risktable"), "Risk Table", value = T),
+                   
                         selectInput(
                             ns("timevar"),
                             "Survival Endpoint",
@@ -68,17 +60,37 @@ ioresponse_UI <- function(id){
                         # checkboxGroupInput(ns("analyses"), "Select Analyses", choices = c("Groupwise Comparison", "CoxPH")),
                         # br(),
                         div(class = "form-group shiny-input-container", actionButton(ns("calculate_button"), tags$b("GO"), width = "100%"))
-                    )
+                    
                     
                 )
                 
             ),#optionsBox
-            plotBox(
-                width = 12,
-                uiOutput(ns("plots")) %>%
-                       shinycssloaders::withSpinner()
+            column(
+                width = 10,
+                plotBox(
+                    width = 12,
+                    uiOutput(ns("plots")) %>%
+                        shinycssloaders::withSpinner()
+                )
             )
-           
+        ), #sectionBox
+        sectionBox(
+            title = "Cox Proportional Hazard ratio",
+
+            messageBox(
+                width = 24,
+                p("Heatmap of Cox Proportional Hazard ratio associated with each immunogenomics feature in each dataset.")
+                
+            ),
+            
+            optionsBox(
+                width = 2, 
+                checkboxGroupInput(ns("datasets"), "Select Datasets", choices = c("Gide 2019", "Hugo 2016", 
+                                                                                  "IMVigor210", "Prins 2019", "Riaz 2017", "Van Allen 2015"),
+                                   selected = "Gide 2019"), 
+                uiOutput(ns("heatmap_op"))
+                
+            )            
         )
     )
 }
@@ -106,7 +118,17 @@ ioresponse <- function(input,
         )
     })
     
-    
+    output$heatmap_op <- renderUI({
+        #group_choice <- magrittr::set_names(list(group_internal_choice()), ss_choice())
+        var_choices <- colnames(immune_sigs[3:63])
+        selectizeInput(
+            ns("var2_cox"),
+            "Select features",
+            var_choices,
+            selected = "Palmer_BCell",
+            multiple = TRUE
+        )
+    })
     
     ##Insert the right number of plot output objects into the web page
     observe({
@@ -142,23 +164,22 @@ ioresponse <- function(input,
                     my_i <- i
                     plotname <- input$datasets[my_i]
                     my_var <- input$var1_surv
-                    print(my_var)
-                    #outcome <- reactive({
-                        req(!is.null(my_var))
-                        survival_data <- sample %>%
-                            filter(Dataset == input$datasets[my_i]) %>%
-                            select(Sample_ID, Dataset, Treatment, OS_d, OS_e) %>%
-                            dplyr::rename(OS = OS_e, OS_time = OS_d)
+                    
+                    req(!is.null(my_var))
+                    survival_data <- sample %>%
+                        filter(Dataset == input$datasets[my_i]) %>%
+                        select(Sample_ID, Dataset, Treatment, OS_d, OS_e) %>%
+                        dplyr::rename(OS = OS_e, OS_time = OS_d)
+                    
+                    #Var_data
+                    var_data <- immune_sigs %>%
+                        select(Sample_ID, my_var)
+                    
+                    outcome <- merge(survival_data, var_data, by = "Sample_ID")
                         
-                        #Var_data
-                        var_data <- immune_sigs %>%
-                            select(Sample_ID, my_var)
-                        
-                        outcome <- merge(survival_data, var_data, by = "Sample_ID")
-                        
-                        validate(
-                            need(!is.null(var_data), paste("No data available for this feature at the dataset:", input$datasets[my_i]))
-                        )
+                        # validate(
+                        #     need(!is.null(var_data), paste("No data available for this feature at the dataset:", input$datasets[my_i]))
+                        # )
                     
                     survival_df <- build_survival_df(
                         df = outcome,
@@ -192,79 +213,3 @@ ioresponse <- function(input,
          }) #observe
     }
    
-       
-    
-#     output$IOsurvPlot <- renderPlot({
-#         #req(!is.null(subset_df()), cancelOutput = T)
-#         # sample_groups <- get_unique_column_values(group_internal_choice(), subset_df())
-#         # n_groups <- dplyr::n_distinct(sample_groups)
-# 
-#         validate(
-#             need(input$var1_surv, "Waiting for input.")
-#             # need(dplyr::n_distinct(sample_groups) <= 10 | !input$var1_surv == group_internal_choice(),
-#             #      paste0("Too many sample groups (", n_groups, ") for KM plot; ",
-#             #             "choose a continuous variable or select different sample groups."))
-#         )
-# 
-#         outcome <- reactive({
-# 
-#             survival_data <- sample %>%
-#                 filter(Dataset %in% input$datasets) %>%
-#                 select(Sample_ID, Dataset, Treatment, OS_d, OS_e) %>%
-#                 dplyr::rename(OS = OS_e, OS_time = OS_d)
-# 
-#             #Var_data
-#             var_data <- immune_sigs %>%
-#                 select(Sample_ID, input$var1_surv)
-# 
-#             outcome <- merge(survival_data, var_data, by = "Sample_ID")
-# 
-#             outcome
-#         })
-# 
-# 
-#         survival_df <- build_survival_df(
-#                 df = outcome(),
-#                 group_column = input$var1_surv,
-#                 group_options = "Other",
-#                 time_column = "OS_time",
-#                 k = input$divk
-#             )
-# 
-#         survival_df %>%
-#             dplyr::group_by(variable) %>%
-#             dplyr::summarize(Num1 = sum(status == 1), Num0 = sum(status == 0))
-# 
-#         fit <- survival::survfit(survival::Surv(time, status) ~ variable, data = survival_df)
-# 
-#         title <- input$datasets #get_variable_display_name(input$var1_surv)
-#         # if (identical(title, character(0))){
-#         #     title <- input$var1_surv
-#         # }
-#         #
-#         # if (title %in% group_options()) {
-#         #     group_colors <- plot_colors()
-#         #
-#         #     if (title == "TCGA Subtype") {
-#         #         # ggsurvplot takes the subtype names and pastes the column name onto it 'variable='
-#         #         # and colors need to have this modified name.
-#         #         group_colors <- group_colors[names(group_colors) %in% survival_df$variable]
-#         #     }
-#         #
-#         #     names(group_colors) <- sapply(names(group_colors), function(a) paste('variable=',a,sep=''))
-#         #
-#         # } else {
-#             group_colors <- viridisLite::viridis(input$divk)
-#         #}
-# 
-#         create_kmplot(
-#             fit = fit,
-#             df = survival_df,
-#             confint = input$confint,
-#             risktable = input$risktable,
-#             title = title,
-#             group_colors = group_colors)
-#     })
-# 
-#     
-# }
