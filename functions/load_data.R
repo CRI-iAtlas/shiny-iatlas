@@ -106,7 +106,7 @@ load_extracellular_network <- function(){
         "studyImmune" = list("upbin_ratio" = feather::read_feather("data/network/nodes_TCGAStudy_Immune.feather"), "edges_score" = feather::read_feather("data/network/edges_TCGAStudy_Immune.feather"))
       ),
       dfe_in = feather::read_feather("data/network/expr_data_merged.feather"),
-      node_type = readr::read_tsv("data/network/network_node_label_friendly.tsv")
+      node_type = feather::read_feather("data/network/network_node_label_friendly.feather")
     )
   } #else {
   #   fetch_driver_mutation() %>%
