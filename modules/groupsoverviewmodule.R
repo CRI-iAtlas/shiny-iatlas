@@ -69,10 +69,34 @@ groupsoverview_UI <- function(id) {
                 textOutput(ns("module_availibility_string"))
             ),
             optionsBox(
-                width = 4,
-                uiOutput(ns("select_group_ui"))
+                width = 12,
+                uiOutput(ns("select_group_ui")),
+                conditionalPanel(
+                    condition = "output.display_custom_numeric",
+                    uiOutput(ns("select_custom_numeric_group_ui")),
+                    sliderInput(
+                        inputId = ns("custom_numeric_group_number_choice"),
+                        label = "Select number of divsions",
+                        min = 2,
+                        max = 10,
+                        value = 2,
+                        step = 1
+                    ),
+                    ns = ns
+                ),
+                conditionalPanel(
+                    condition = "output.display_custom_mutation",
+                    uiOutput(ns("select_custom_mutation_group_ui")),
+                    ns = ns
+                ),
             ),
-            uiOutput(ns("filter_group_ui")),
+            optionsBox(
+                width = 12,
+                insert_remove_element_module_ui(
+                    ns("group_filter"), 
+                    "Add group filter"
+                )
+            ),
             optionsBox(
                 width = 12,
                 insert_remove_element_module_ui(
@@ -191,17 +215,20 @@ groupsoverview <- function(
     
     dataset_to_group_tbl <- reactive({
         dplyr::tribble(
-            ~group,           ~dataset,
-            "Immune_Subtype", "TCGA",      
-            "TCGA_Subtype",   "TCGA",
-            "TCGA_Study",     "TCGA",
-            "Gender",         "TCGA",
-            "Race",           "TCGA",
-            "Ethnicity",      "TCGA",
-            "Immune_Subtype", "PCAWG",
-            "PCAWG_Study",    "PCAWG",     
-            "Gender",         "PCAWG",     
-            "Race",           "PCAWG"
+            ~group,            ~dataset,
+            "Immune_Subtype",  "TCGA",      
+            "TCGA_Subtype",    "TCGA",
+            "TCGA_Study",      "TCGA",
+            "Gender",          "TCGA",
+            "Race",            "TCGA",
+            "Ethnicity",       "TCGA",
+            "Custom Numeric",  "TCGA",
+            # "Custom Mutation", "TCGA",
+            "Immune_Subtype",  "PCAWG",
+            "PCAWG_Study",     "PCAWG",     
+            "Gender",          "PCAWG",     
+            "Race",            "PCAWG",
+            "Custom Numeric",  "PCAWG"
         ) %>% 
             dplyr::mutate(display = stringr::str_replace_all(group, "_", " "))
     })
@@ -278,81 +305,57 @@ groupsoverview <- function(
         selectInput(
             inputId = ns("group_choice"),
             label = strong("Select Grouping Variable"),
-            choices = available_groups(),
+            choices = c(available_groups()),
             selected = "Immune Subtype"
         )
     })
     
-    group_filter_ids <- reactive({
-        req(available_groups())
-        stringr::str_c("filter_by_", available_groups())
+    # This is so that the conditional panel can see the various reactives
+    output$display_custom_numeric <- reactive(input$group_choice == "Custom Numeric")
+    outputOptions(output, "display_custom_numeric", suspendWhenHidden = FALSE)
+    output$display_custom_mutation <- reactive(input$group_choice == "Custom Mutation")
+    outputOptions(output, "display_custom_mutation", suspendWhenHidden = FALSE)
+    
+    output$select_custom_numeric_group_ui <- renderUI({
+        req(features_named_list())
+        selectInput(
+            inputId = ns("custom_numeric_feature_choice"),
+            label = "Select feature:",
+            choices = features_named_list()
+        )
     })
     
-    group_filter_labels <- reactive({
-        req(available_groups_display())
-        stringr::str_c("Filter By ", available_groups_display())
+    output$select_custom_numeric_group_ui <- renderUI({
+        req(features_named_list())
+        selectInput(
+            inputId = ns("custom_numeric_feature_choice"),
+            label = "Select feature:",
+            choices = features_named_list()
+        )
     })
     
-    group_filter_choice_ids <- reactive({
-        req(available_groups())
-        stringr::str_c(available_groups(), "_filter_choices")
-    })
-    
-    group_choice_options <- reactive({
-        req(available_groups(), groups2_con())
-        con1 <- groups2_con() %>% 
-            dplyr::filter(is.na(parent)) %>% 
-            dplyr::select(id, parent_name = name, parent_display = display)
-        
-        tbl <- groups2_con() %>% 
-            dplyr::filter(!is.na(parent)) %>% 
-            dplyr::left_join(con1, by = c("parent" = "id")) %>% 
-            dplyr::filter(parent_display %in% local(available_groups_display())) %>% 
-            dplyr::as_tibble()
-        
-        choices <-  
-            purrr::map(available_groups_display(), ~dplyr::filter(tbl, parent_display == .x)) %>% 
-            purrr::map(dplyr::pull, name)
-    })
-    
-    output$filter_group_ui <- renderUI({
+    group_element_module <- reactive({
 
-        req(
-            group_filter_ids(), 
-            group_filter_labels(), 
-            group_filter_choice_ids(),
-            group_choice_options()
+        purrr::partial(
+            group_filter_element_module,
+            group_names_list = available_groups,
+            group_values_con = groups_con
         )
         
-        purrr::pmap(
-            list(
-                group_filter_ids(), 
-                group_filter_labels(), 
-                group_filter_choice_ids(),
-                group_choice_options()
-            ),
-            ~ optionsBox(
-                width = 12,
-                checkboxInput(
-                    inputId = ns(..1),
-                    label   = strong(..2),
-                    value   = F
-                ),
-                conditionalPanel(
-                    condition = stringr::str_c("input.", ..1),
-                    checkboxGroupInput(
-                        inputId = ns(..3),
-                        label = "Select choices to include:",
-                        choices = ..4,
-                        inline = T
-                    ),
-                    ns = ns
-                )
-            )
-        )
     })
     
-    element_module <- reactive({
+    group_element_module_ui <- reactive(group_filter_element_module_ui)
+    
+    group_filter_output <- callModule(
+        insert_remove_element_module2,
+        "group_filter",
+        element_module = group_element_module,
+        element_module_ui = group_element_module_ui,
+        remove_ui_event = reactive(input$dataset_choice)
+    )
+    
+    
+    numeric_element_module <- reactive({
         purrr::partial(
             numeric_filter_element_module,
             feature_names_list = features_named_list,
@@ -361,13 +364,14 @@ groupsoverview <- function(
         
     })
     
-    element_module_ui <- reactive(numeric_filter_element_module_ui)
+    numeric_element_module_ui <- reactive(numeric_filter_element_module_ui)
 
     numeric_filter_output <- callModule(
         insert_remove_element_module2,
         "numeric_filter",
-        element_module = element_module,
-        element_module_ui = element_module_ui
+        element_module = numeric_element_module,
+        element_module_ui = numeric_element_module_ui,
+        remove_ui_event = reactive(input$dataset_choice)
     )
 
 

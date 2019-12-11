@@ -60,8 +60,9 @@ insert_remove_element_module2 <- function(
         button_selectors <-
             stringr::str_c("ui", params$ui_numbers) %>%
             ns() %>%
-            stringr::str_c("#", .) %>%
-            purrr::walk(removeUI)
+            stringr::str_c("#", .)
+        purrr::walk(button_selectors, removeUI)
+        purrr::walk(button_selectors, removeUI)
         params$ui_numbers <- c()
         results <- reactiveValues()
     })
