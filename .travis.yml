@@ -2,7 +2,7 @@ language: r
 addons:
   apt:
     packages:
-      - libgfortran-8-dev
+      - lib64gfortran3
 install: -R -e "gcinfo(FALSE)"
 cache:
   directories:
