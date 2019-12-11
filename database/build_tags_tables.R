@@ -1,5 +1,5 @@
 # Get data from groups feather file as a data.frame and convert to a tibble.
-tags <- feather::read_feather("data2/groups.feather")
+tags <- feather::read_feather("../data2/groups.feather")
 
 cat("Imported feather file for tags.", fill = TRUE)
 
@@ -39,4 +39,3 @@ rm(parents)
 
 cat("Cleaned up.", fill = TRUE)
 gc()
-gcinfo(TRUE)

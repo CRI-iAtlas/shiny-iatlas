@@ -1,5 +1,5 @@
 # Get data from feature feather file as a data.frame and convert to a tibble.
-features <- feather::read_feather("data2/features.feather")
+features <- feather::read_feather("../data2/features.feather")
 
 cat("Imported feather file for features.", fill = TRUE)
 
@@ -53,4 +53,3 @@ rm(method_tags)
 
 cat("Cleaned up.", fill = TRUE)
 gc()
-gcinfo(TRUE)

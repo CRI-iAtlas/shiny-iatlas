@@ -1,28 +1,28 @@
 # Get data from feather files as data.frames and convert them to a tibbles.
 driver_mutations1 <-
-  feather::read_feather("data2/driver_mutations1.feather")
+  feather::read_feather("../data2/driver_mutations1.feather")
 driver_mutations2 <-
-  feather::read_feather("data2/driver_mutations2.feather")
+  feather::read_feather("../data2/driver_mutations2.feather")
 driver_mutations3 <-
-  feather::read_feather("data2/driver_mutations3.feather")
+  feather::read_feather("../data2/driver_mutations3.feather")
 driver_mutations4 <-
-  feather::read_feather("data2/driver_mutations4.feather")
+  feather::read_feather("../data2/driver_mutations4.feather")
 driver_mutations5 <-
-  feather::read_feather("data2/driver_mutations5.feather")
+  feather::read_feather("../data2/driver_mutations5.feather")
 feature_values_long <-
-  feather::read_feather("data2/feature_values_long.feather")
+  feather::read_feather("../data2/feature_values_long.feather")
 immunomodulator_expr <-
-  feather::read_feather("data2/immunomodulator_expr.feather")
+  feather::read_feather("../data2/immunomodulator_expr.feather")
 io_target_expr1 <-
-  feather::read_feather("data2/io_target_expr1.feather")
+  feather::read_feather("../data2/io_target_expr1.feather")
 io_target_expr2 <-
-  feather::read_feather("data2/io_target_expr2.feather")
+  feather::read_feather("../data2/io_target_expr2.feather")
 io_target_expr3 <-
-  feather::read_feather("data2/io_target_expr3.feather")
+  feather::read_feather("../data2/io_target_expr3.feather")
 io_target_expr4 <-
-  feather::read_feather("data2/io_target_expr4.feather")
+  feather::read_feather("../data2/io_target_expr4.feather")
 til_image_links <-
-  feather::read_feather("data2/til_image_links.feather")
+  feather::read_feather("../data2/til_image_links.feather")
 
 cat("Imported feather files for samples.", fill = TRUE)
 
@@ -60,7 +60,6 @@ rm(io_target_expr4)
 
 cat("Cleaned up.", fill = TRUE)
 gc()
-gcinfo(TRUE)
 
 # Get only the sample names (no duplicates).
 samples <- all_samples %>% dplyr::distinct(sample)
@@ -97,15 +96,14 @@ rm(all_samples)
 
 cat("Removed the HUGE all_samples as we are done with it.", fill = TRUE)
 gc()
-gcinfo(TRUE)
 
 cat("Rebuilding samples_to_tags and features_to_samples.", fill = TRUE)
 
-for (row in 1:2) {
-# for (row in 1:nrow(samples)) {
-  svMisc::progress(row, 9, progress.bar = TRUE)
+# for (row in 1:2) {
+for (row in 1:nrow(samples)) {
+  svMisc::progress(row, nrow(samples) - 1, progress.bar = TRUE)
   current_id = samples[row, "id"]
-  current_sample_id = samples[row, "sample_id"]
+  current_sample_id <- samples[row, "sample_id"]
   samples_to_tags <- samples_to_tags %>%
     .GlobalEnv$rebuild_samples_to_tags(
       current_id,
@@ -121,8 +119,8 @@ for (row in 1:2) {
       sample_set_01,
       features
     )
-  # if (row == nrow(samples)) {
-  if (row == 10) {
+  if (row == nrow(samples)) {
+  # if (row == 10) {
     cat("\nRebuilt samples_to_tags and features_to_samples.", fill = TRUE)
   }
 }
@@ -132,12 +130,14 @@ rm(current_sample_id)
 
 cat("Cleaned up.", fill = TRUE)
 gc()
-gcinfo(TRUE)
-
 
 samples_to_tags %>% .GlobalEnv$write_table_ts(.GlobalEnv$con, "samples_to_tags", .)
 
 cat("Built samples_to_tags table.", fill = TRUE)
+
+features_to_samples %>% .GlobalEnv$write_table_ts(.GlobalEnv$con, "features_to_samples", .)
+
+cat("Built features_to_samples table.", fill = TRUE)
 
 # Remove the data we are done with.
 rm(features_to_samples)
@@ -149,4 +149,3 @@ rm(samples_to_tags)
 
 cat("Cleaned up.", fill = TRUE)
 gc()
-gcinfo(TRUE)

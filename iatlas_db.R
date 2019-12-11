@@ -25,35 +25,35 @@ library("RPostgres")
 # build_iatlas_db <- function(env = "dev", reset = "reset") {
 
 # Make the create_db function available.
-source("database/create_db.R")
+source("database/create_db.R", chdir = TRUE)
 
 # Reset the database so new data is not corrupted by any old data.
 .GlobalEnv$create_db("dev", "reset")
 
 # Show garbage collection info
-gcinfo(TRUE)
+# gcinfo(TRUE)
 
 # Make the custom data functions available.
-source("database/data_functions.R")
+source("database/data_functions.R", chdir = TRUE)
 
 # Make the custom database functions available.
-source("database/database_functions.R")
+source("database/database_functions.R", chdir = TRUE)
 
 # The database connection.
-source("database/connect_to_db.R")
+source("database/connect_to_db.R", chdir = TRUE)
 
 # Create a global variable to hold the connection.
 con <- .GlobalEnv$connect_to_db()
 
 cat("Created DB cponnection.", fill = TRUE)
 
-source("database/build_features_tables.R")
+source("database/build_features_tables.R", chdir = TRUE)
 
-source("database/build_tags_tables.R")
+source("database/build_tags_tables.R", chdir = TRUE)
 
-source("database/build_samples_tables.R")
+source("database/build_samples_tables.R", chdir = TRUE)
 
-source("database/build_gene_tables.R")
+source("database/build_gene_tables.R", chdir = TRUE)
 
 # Close the database connection.
 RPostgres::dbDisconnect(.GlobalEnv$con)
@@ -85,5 +85,5 @@ cat("Cleaned up.", fill = TRUE)
 gc()
 
 # Don't show garbage collection details any longer.
-gcinfo(FALSE)
+# gcinfo(FALSE)
 # }
