@@ -1,0 +1,6 @@
+language: r
+install: -R -e "gcinfo(FALSE)"
+cache:
+  directories:
+    - $TRAVIS_BUILD_DIR/renv/library
+  packages: true
