@@ -1,4 +1,6 @@
 language: r
+apt_packages:
+  - libgfortran-8-dev
 install: -R -e "gcinfo(FALSE)"
 cache:
   directories:
