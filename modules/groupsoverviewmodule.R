@@ -72,44 +72,51 @@ groupsoverview_UI <- function(id) {
                 width = 4,
                 uiOutput(ns("select_group_ui"))
             ),
-            uiOutput(ns("filter_group_ui"))
-    
-        ),
-        # group key -----------------------------------------------------------
-        data_table_module_UI(
-            ns("sg_table"),
-            title = "Group Key",
-            message_html = p(stringr::str_c(
-                "This displays attributes and annotations of your choice of",
-                "groups.",
-                sep = " "
-            ))
-        ),
-        # group overlap -------------------------------------------------------
-        sectionBox(
-            title = "Group Overlap",
-            messageBox(
+            uiOutput(ns("filter_group_ui")),
+            optionsBox(
                 width = 12,
-                includeMarkdown("data/markdown/sample_groups_overlap.markdown")
-            ),
-            fluidRow(
-                optionsBox(
-                    width = 12,
-                    uiOutput(ns("mosaic_group_select")),
-                    uiOutput(ns("mosaic_subset_select"))
-                ),
-            ),
-            fluidRow(
-                plotBox(
-                    width = 12,
-                    column(
-                        width = 12,
-                        plotlyOutput(ns("mosaicPlot"), height = "600px") %>%
-                            shinycssloaders::withSpinner()
-                    )
+                insert_remove_element_module_ui(
+                    ns("numeric_filter"), 
+                    "Add numeric filter"
                 )
             )
-        )
+        ),
+        
+        # group key -----------------------------------------------------------
+        # data_table_module_UI(
+        #     ns("sg_table"),
+        #     title = "Group Key",
+        #     message_html = p(stringr::str_c(
+        #         "This displays attributes and annotations of your choice of",
+        #         "groups.",
+        #         sep = " "
+        #     ))
+        # ),
+        # group overlap -------------------------------------------------------
+        # sectionBox(
+        #     title = "Group Overlap",
+        #     messageBox(
+        #         width = 12,
+        #         includeMarkdown("data/markdown/sample_groups_overlap.markdown")
+        #     ),
+        #     fluidRow(
+        #         optionsBox(
+        #             width = 12,
+        #             uiOutput(ns("mosaic_group_select")),
+        #             uiOutput(ns("mosaic_subset_select"))
+        #         ),
+        #     ),
+        #     fluidRow(
+        #         plotBox(
+        #             width = 12,
+        #             column(
+        #                 width = 12,
+        #                 plotlyOutput(ns("mosaicPlot"), height = "600px") %>%
+        #                     shinycssloaders::withSpinner()
+        #             )
+        #         )
+        #     )
+        # )
     )
 }
 
@@ -120,6 +127,7 @@ groupsoverview <- function(
     groups_con,
     groups2_con,
     feature_values_con,
+    features_named_list,
     groups_list,
     tcga_subtypes_list,
     group_internal_choice,
@@ -344,6 +352,25 @@ groupsoverview <- function(
         )
     })
     
+    element_module <- reactive({
+        purrr::partial(
+            numeric_filter_element_module,
+            feature_names_list = features_named_list,
+            feature_values_con = feature_values_con
+        )
+        
+    })
+    
+    element_module_ui <- reactive(numeric_filter_element_module_ui)
+
+    numeric_filter_output <- callModule(
+        insert_remove_element_module2,
+        "numeric_filter",
+        element_module = element_module,
+        element_module_ui = element_module_ui
+    )
+
+
     # group key ---------------------------------------------------------------
     
     group_key_tbl <- reactive({

@@ -16,6 +16,7 @@ module_files:
   - "modules/model_selection_module.R"
   - "modules/insert_remove_element_module.R"
   - "modules/volcano_plot_module.R"
+  - "modules/element_modules.R"
   
 function_files:
   - "functions/misc_functions.R"
