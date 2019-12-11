@@ -24,9 +24,6 @@ CREATE TABLE samples (
 );
 CREATE UNIQUE INDEX sample_id_index ON samples (sample_id);
 
--- entrez table
-CREATE TABLE entrez (id SERIAL, "value" INTEGER NOT NULL, PRIMARY KEY (id));
-
 -- immune_checkpoints table
 CREATE TABLE immune_checkpoints (id SERIAL, "name" VARCHAR NOT NULL, PRIMARY KEY (id));
 
@@ -89,13 +86,14 @@ CREATE UNIQUE INDEX feature_name_index ON features ("name");
 CREATE TABLE genes (
     id SERIAL,
     hgnc VARCHAR NOT NULL,
+    entrez INTEGER,
+    "display" VARCHAR,
     "description" VARCHAR,
     "references" TEXT[],
     PRIMARY KEY (id)
 );
-ALTER TABLE genes ADD COLUMN family_id INTEGER REFERENCES result_labels;
+ALTER TABLE genes ADD COLUMN family_id INTEGER REFERENCES gene_families;
 ALTER TABLE genes ADD COLUMN super_cat_id INTEGER REFERENCES super_categories;
-ALTER TABLE genes ADD COLUMN entrez_id INTEGER REFERENCES entrez;
 ALTER TABLE genes ADD COLUMN immune_checkpoint_id INTEGER REFERENCES immune_checkpoints;
 ALTER TABLE genes ADD COLUMN function_id INTEGER REFERENCES gene_functions;
 ALTER TABLE genes ADD COLUMN pathway_id INTEGER REFERENCES pathways;
@@ -110,7 +108,7 @@ CREATE TABLE results (
     log10_p_value NUMERIC,
     log10_fold_change NUMERIC,
     correlation SMALLINT,
-    n integer,
+    n INTEGER,
     PRIMARY KEY (id)
 );
 ALTER TABLE results ADD COLUMN label_id INTEGER REFERENCES result_labels;

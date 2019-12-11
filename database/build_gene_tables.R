@@ -1,18 +1,19 @@
 # Get data from feather files as data.frames and convert them to a tibbles.
 driver_mutations1 <-
-  feather::read_feather("data2/driver_mutations1.feather")
+  feather::read_feather("../data2/driver_mutations1.feather")
 driver_mutations2 <-
-  feather::read_feather("data2/driver_mutations2.feather")
+  feather::read_feather("../data2/driver_mutations2.feather")
 driver_mutations3 <-
-  feather::read_feather("data2/driver_mutations3.feather")
+  feather::read_feather("../data2/driver_mutations3.feather")
 driver_mutations4 <-
-  feather::read_feather("data2/driver_mutations4.feather")
+  feather::read_feather("../data2/driver_mutations4.feather")
 driver_mutations5 <-
-  feather::read_feather("data2/driver_mutations5.feather")
+  feather::read_feather("../data2/driver_mutations5.feather")
 immunomodulator_expr <-
-  feather::read_feather("data2/immunomodulator_expr.feather")
+  feather::read_feather("../data2/immunomodulator_expr.feather")
 immunomodulators <-
-  feather::read_feather("data2/immunomodulators.feather") %>%
+  feather::read_feather("../data2/immunomodulators.feather") %>%
+  dplyr::filter(!is.na(gene)) %>%
   dplyr::mutate_at(dplyr::vars(entrez), as.numeric) %>%
   tibble::add_column(
     pathway = NA %>% as.character,
@@ -21,15 +22,17 @@ immunomodulators <-
     link = NA %>% as.character
   )
 io_target_expr1 <-
-  feather::read_feather("data2/io_target_expr1.feather")
+  feather::read_feather("../data2/io_target_expr1.feather")
 io_target_expr2 <-
-  feather::read_feather("data2/io_target_expr2.feather")
+  feather::read_feather("../data2/io_target_expr2.feather")
 io_target_expr3 <-
-  feather::read_feather("data2/io_target_expr3.feather")
+  feather::read_feather("../data2/io_target_expr3.feather")
 io_target_expr4 <-
-  feather::read_feather("data2/io_target_expr4.feather")
+  feather::read_feather("../data2/io_target_expr4.feather")
 io_targets <-
-  feather::read_feather("data2/io_targets.feather") %>%
+  feather::read_feather("../data2/io_targets.feather") %>%
+  dplyr::filter(!is.na(gene)) %>%
+  dplyr::distinct(gene, .keep_all = TRUE) %>%
   dplyr::mutate_at(dplyr::vars(entrez), as.numeric) %>%
   tibble::add_column(
     gene_family = NA %>% as.character,
@@ -55,7 +58,8 @@ all_genes_01 <-
     io_target_expr3,
     io_target_expr4
   ) %>%
-  dplyr::select(gene)
+  dplyr::select(gene) %>%
+  dplyr::distinct(gene, .keep_all = TRUE)
 
 cat("Bound all_genes_01", fill = TRUE)
 
@@ -74,84 +78,45 @@ rm(io_target_expr4)
 cat("Cleaned up.", fill = TRUE)
 gc()
 
-# fix_the_value <- function(reference, current_value, object) {
-#   if (reference %in% object) {
-#     currect_reference_row
-#   }
-# }
+io_targets <- io_targets %>%
+  dplyr::select(dplyr::everything()) %>%
+  dplyr::rowwise() %>%
+  dplyr::mutate(gene_family = .GlobalEnv$switch_value(.data, "gene", "gene_family", immunomodulators),
+    super_category = .GlobalEnv$switch_value(.data, "gene", "super_category", immunomodulators),
+    immune_checkpoint = .GlobalEnv$switch_value(.data, "gene", "immune_checkpoint", immunomodulators),
+    gene_function = .GlobalEnv$switch_value(.data, "gene", "gene_function", immunomodulators),
+    reference = .GlobalEnv$switch_value(.data, "gene", "reference", immunomodulators)
+  )
 
-immunomodulators <- immunomodulators %>% as.data.frame
-for (row in 1:nrow(immunomodulators)) {
-  # svMisc::progress(row, nrow(immunomodulators) - 1, progress.bar = TRUE)
-  
-  immunomodulator_gene <- immunomodulators[row, "gene"]
-  cat("immunomodulators gene:", immunomodulator_gene, fill = TRUE, sep = " ")
-  io_targets <- io_targets %>%
-    dplyr::select(dplyr::everything()) %>%
-    dplyr::rowwise() %>%
-    dplyr::mutate(
-      gene_family = .GlobalEnv$value_to_id(gene, gene_family, immunomodulators[row, "gene_family"], immunomodulator_gene),
-      super_category = .GlobalEnv$value_to_id(gene, super_category, immunomodulators[row, "super_category"], immunomodulator_gene),
-      immune_checkpoint = .GlobalEnv$value_to_id(gene, immune_checkpoint, immunomodulators[row, "immune_checkpoint"], immunomodulator_gene),
-      gene_function = .GlobalEnv$value_to_id(gene, gene_function, immunomodulators[row, "gene_function"], immunomodulator_gene),
-      reference = .GlobalEnv$value_to_id(gene, reference, immunomodulators[row, "reference"], immunomodulator_gene)
-    )
-  rm(immunomodulator_gene)
-  gc()
-  
-  # if (row == nrow(immunomodulators)) {
-  #   cat("Rebuilt io_targets", fill = TRUE)
-  # }
-}
-# for (row in 1:nrow(immunomodulators)) {
-#   immunomodulator_gene <- immunomodulators[row, "gene"]
-#   if (immunomodulator_gene %in% io_targets$gene) {
-#     immunomodulators <- immunomodulators %>% dplyr::filter(gene != immunomodulator_gene)
-#   }
-#   rm(immunomodulator_gene)
-#   gc()
-# }
-immunomodulators <- dplyr::as_tibble(immunomodulators) %>% dplyr::filter(!gene %in% io_targets$gene)
+immunomodulators <- immunomodulators %>% dplyr::anti_join(io_targets, by = "gene")
 
-io_targets <- io_targets %>% as.data.frame
-# for (row in 1:nrow(io_targets)) {
-#   # svMisc::progress(row, nrow(io_targets) - 1, progress.bar = TRUE)
-#   
-#   io_targets_gene <- io_targets[row, "gene"]
-#   cat("io_targets gene:", io_targets_gene, fill = TRUE, sep = " ")
-#   immunomodulators <- immunomodulators %>%
-#     dplyr::select(dplyr::everything()) %>%
-#     dplyr::rowwise() %>%
-#     dplyr::mutate(
-#       pathway = .GlobalEnv$value_to_id(gene, pathway, immunomodulators[row, "pathway"], io_targets_gene),
-#       therapy_type = .GlobalEnv$value_to_id(gene, therapy_type, immunomodulators[row, "therapy_type"], io_targets_gene),
-#       description = .GlobalEnv$value_to_id(gene, description, immunomodulators[row, "description"], io_targets_gene),
-#       link = .GlobalEnv$value_to_id(gene, link, immunomodulators[row, "link"], io_targets_gene)
-#     )
-#   rm(io_targets_gene)
-#   gc()
-#   
-#   # if (row == nrow(io_targets)) {
-#   #   cat("Rebuilt immunomodulators", fill = TRUE)
-#   # }
-# }
-io_targets <- dplyr::as_tibble(io_targets)
-
-all_genes_02 <- dplyr::bind_rows(immunomodulators, io_targets)
+all_genes_02 <- immunomodulators %>% dplyr::bind_rows(io_targets)
 
 cat("Bound all_genes_02", fill = TRUE)
 
-all_genes <- dplyr::bind_rows(all_genes_02, all_genes_01) %>%
-  dplyr::distinct(gene, .keep_all = TRUE) %>%
-  dplyr::arrange(gene)
+all_genes_01 <- all_genes_01 %>% dplyr::anti_join(all_genes_02, by = "gene")
+
+cat("Joind genes", fill = TRUE)
+
+all_genes <- all_genes_02 %>% 
+  dplyr::bind_rows(all_genes_01) %>%
+  dplyr::as_tibble() %>%
+  dplyr::rename_at("gene", ~("hgnc")) %>%
+  tibble::add_column(sc_int = NA, .after = "hgnc") %>%
+  tibble::add_column(gene_family_int = NA, .after = "hgnc") %>%
+  tibble::add_column(immune_checkpoint_int = NA, .after = "hgnc") %>%
+  tibble::add_column(gene_function_int = NA, .after = "hgnc") %>%
+  tibble::add_column(pathway_int = NA, .after = "hgnc") %>%
+  tibble::add_column(therapy_type_int = NA, .after = "hgnc") %>%
+  dplyr::arrange(hgnc)
 
 cat("Bound all_genes", fill = TRUE)
 
 # Clean up.
-# rm(immunomodulators)
-# rm(io_targets)
+rm(immunomodulators)
+rm(io_targets)
 rm(all_genes_01)
-# rm(all_genes_02)
+rm(all_genes_02)
 
 cat("Cleaned up.", fill = TRUE)
 gc()
@@ -163,96 +128,94 @@ gene_types <- dplyr::tibble(
 )
 gene_types %>% .GlobalEnv$write_table_ts(.GlobalEnv$con, "gene_types", .)
 
-rm(gene_types)
-
 cat("Built gene_types table.", fill = TRUE)
 
-# Build super_categories data.
-# super_categories <- dplyr::tibble() %>%
-#   tibble::add_column(name = NA)
-# 
-# # Build gene_families data.
-# gene_families <- dplyr::tibble() %>%
-#   tibble::add_column(name = NA)
-# 
-# # Build entrez data.
-# entrez <- dplyr::tibble() %>%
-#   tibble::add_column(name = NA)
-# 
-# # Build immune_checkpoints data.
-# immune_checkpoints <- dplyr::tibble() %>%
-#   tibble::add_column(name = NA)
-# 
-# # Build gene_functions data.
-# gene_functions <- dplyr::tibble() %>%
-#   tibble::add_column(name = NA)
-# 
-# # Build pathways data.
-# pathways <- dplyr::tibble() %>%
-#   tibble::add_column(name = NA)
-# 
-# # Build therapy_types data.
-# therapy_types <- dplyr::tibble() %>%
-#   tibble::add_column(name = NA)
+super_categories <- all_genes %>% .GlobalEnv$rebuild_gene_relational_data("super_category", "name")
+super_categories %>% .GlobalEnv$write_table_ts(.GlobalEnv$con, "super_categories", .)
+super_categories <- RPostgres::dbReadTable(.GlobalEnv$con, "super_categories")
 
-cat("Go for the loop -", nrow(all_genes), "rows", fill = TRUE, sep = " ")
+cat("Built super_categories table.", fill = TRUE)
 
-# for (row in 1:nrow(all_genes)) {
-#   svMisc::progress(row, nrow(all_genes) - 1, progress.bar = TRUE)
-#   
-#   super_categories <- all_genes %>% .GlobalEnv$rebuild_gene_relational_data("super_category")
+gene_families <- all_genes %>% .GlobalEnv$rebuild_gene_relational_data("gene_family", "name")
+gene_families %>% .GlobalEnv$write_table_ts(.GlobalEnv$con, "gene_families", .)
+gene_families <- RPostgres::dbReadTable(.GlobalEnv$con, "gene_families")
+
+cat("Built gene_families table.", fill = TRUE)
+
+immune_checkpoints <- all_genes %>% .GlobalEnv$rebuild_gene_relational_data("immune_checkpoint", "name")
+immune_checkpoints %>% .GlobalEnv$write_table_ts(.GlobalEnv$con, "immune_checkpoints", .)
+immune_checkpoints <- RPostgres::dbReadTable(.GlobalEnv$con, "immune_checkpoints")
+
+cat("Built immune_checkpoints table.", fill = TRUE)
+
+gene_functions <- all_genes %>% .GlobalEnv$rebuild_gene_relational_data("gene_function", "name")
+gene_functions %>% .GlobalEnv$write_table_ts(.GlobalEnv$con, "gene_functions", .)
+gene_functions <- RPostgres::dbReadTable(.GlobalEnv$con, "gene_functions")
+
+cat("Built gene_functions table.", fill = TRUE)
+
+pathways <- all_genes %>% .GlobalEnv$rebuild_gene_relational_data("pathway", "name")
+pathways %>% .GlobalEnv$write_table_ts(.GlobalEnv$con, "pathways", .)
+pathways <- RPostgres::dbReadTable(.GlobalEnv$con, "pathways")
+
+cat("Built pathways table.", fill = TRUE)
+
+therapy_types <- all_genes %>% .GlobalEnv$rebuild_gene_relational_data("therapy_type", "name")
+therapy_types %>% .GlobalEnv$write_table_ts(.GlobalEnv$con, "therapy_types", .)
+therapy_types <- RPostgres::dbReadTable(.GlobalEnv$con, "therapy_types")
+
+cat("Built therapy_types table.", fill = TRUE)
+
+genes <- all_genes %>%
+  .GlobalEnv$rebuild_genes(
+    super_categories,
+    gene_families,
+    immune_checkpoints,
+    gene_functions,
+    pathways,
+    therapy_types) %>%
+  dplyr::select(-c("display2")) %>%
+  dplyr::select(-c("link")) %>%
+  dplyr::select(-c("reference")) %>%
+  dplyr::select(-c("super_category")) %>%
+  dplyr::rename_at("sc_int", ~("super_cat_id")) %>%
+  dplyr::select(-c("gene_family")) %>%
+  dplyr::rename_at("gene_family_int", ~("family_id")) %>%
+  dplyr::select(-c("immune_checkpoint")) %>%
+  dplyr::rename_at("immune_checkpoint_int", ~("immune_checkpoint_id")) %>%
+  dplyr::select(-c("gene_function")) %>%
+  dplyr::rename_at("gene_function_int", ~("function_id")) %>%
+  dplyr::select(-c("pathway")) %>%
+  dplyr::rename_at("pathway_int", ~("pathway_id")) %>%
+  dplyr::select(-c("therapy_type")) %>%
+  dplyr::rename_at("therapy_type_int", ~("therapy_type_id"))
+genes %>% .GlobalEnv$write_table_ts(.GlobalEnv$con, "genes", .)
+# genes <- RPostgres::dbReadTable(.GlobalEnv$con, "genes")
 # 
-#   gene_families <- all_genes %>% .GlobalEnv$rebuild_gene_relational_data("gene_family")
+# cat("Built genes table.", fill = TRUE)
 # 
-#   entrez_data <- all_genes %>% .GlobalEnv$rebuild_gene_relational_data("entrez", "value")
-# 
-#   immune_checkpoints <- all_genes %>% .GlobalEnv$rebuild_gene_relational_data("immune_checkpoint")
-# 
-#   gene_functions <- all_genes %>% .GlobalEnv$rebuild_gene_relational_data("gene_function")
-# 
-#   pathways <- all_genes %>% .GlobalEnv$rebuild_gene_relational_data("pathway")
-# 
-#   therapy_types <- all_genes %>% .GlobalEnv$rebuild_gene_relational_data("therapy_type")
-#   
-#   if (row == nrow(all_genes)) {
-#     cat("Rebuilt super_categories,gene_families, entrez_data, immune_checkpoints, gene_functions, pathways, and therapy_types", fill = TRUE)
+# genes_to_types <- dplyr::tibble() %>% 
+#   tibble::add_column(gene_id = NA, type_id = NA) %>%
+#   as.data.frame
+# for (row in 1:nrow(gene_types)) {
+#   current_genes <- genes %>%
+#     dplyr::filter(hgnc == gene_types[row, "name"]) %>%
+#     as.data.frame
+#   for (gene_row in 1:nrow(current_genes)) {
+#     genes_to_types <- genes_to_types %>%
+#       dplyr::add_row(gene_id = current_genes[gene_row, "id"], type_id = gene_types[row, "id"])
 #   }
-# 
-#   # super_categories <- super_categories %>%
-#   #   dplyr::select(everything()) %>%
-#   #   dplyr::rowwise() %>%
-#   #   dplyr::add_row(name = all_genes[row, "super_category"])
-#   #
-#   # gene_families <- gene_families %>%
-#   #   dplyr::select(everything()) %>%
-#   #   dplyr::rowwise() %>%
-#   #   dplyr::add_row(name = all_genes[row, "gene_family"])
-#   #
-#   # entrez <- entrez %>%
-#   #   dplyr::select(everything()) %>%
-#   #   dplyr::rowwise() %>%
-#   #   dplyr::add_row(name = all_genes[row, "entrez"])
-#   #
-#   # immune_checkpoints <- immune_checkpoints %>%
-#   #   dplyr::select(everything()) %>%
-#   #   dplyr::rowwise() %>%
-#   #   dplyr::add_row(name = all_genes[row, "immune_checkpoint"])
-#   #
-#   # gene_functions <- gene_functions %>%
-#   #   dplyr::select(everything()) %>%
-#   #   dplyr::rowwise() %>%
-#   #   dplyr::add_row(name = all_genes[row, "gene_function"])
-#   #
-#   # pathways <- pathways %>%
-#   #   dplyr::select(everything()) %>%
-#   #   dplyr::rowwise() %>%
-#   #   dplyr::add_row(name = all_genes[row, "pathway"])
-#   #
-#   # therapy_types <- therapy_types %>%
-#   #   dplyr::select(everything()) %>%
-#   #   dplyr::rowwise() %>%
-#   #   dplyr::add_row(name = all_genes[row, "therapy_type"])
 # }
 
-gc()
+# Clean up.
+rm(super_categories)
+rm(gene_families)
+rm(immune_checkpoints)
+rm(gene_functions)
+rm(pathways)
+rm(therapy_types)
+# rm(genes_to_types)
+# rm(all_genes)
 
+cat("Cleaned up.", fill = TRUE)
+gc()
