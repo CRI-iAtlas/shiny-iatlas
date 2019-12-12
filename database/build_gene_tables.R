@@ -22,6 +22,8 @@ driver_mutations <- dplyr::bind_rows(
   driver_mutations5
 )
 
+cat("Imported driver mutation feather files for genes", fill = TRUE)
+
 # Clean up.
 rm(driver_mutations1)
 rm(driver_mutations2)
@@ -68,6 +70,8 @@ io_target_expr <- dplyr::bind_rows(
   io_target_expr4
 )
 
+cat("Imported immunomodulators and io_target feather files for genes", fill = TRUE)
+
 # Clean up.
 rm(io_target_expr1)
 rm(io_target_expr2)
@@ -93,7 +97,7 @@ io_targets <-
   ) %>%
   dplyr::rowwise() %>%
   dplyr::mutate(references = link_to_references(link))
-cat("Imported feather files for genes", fill = TRUE)
+
 
 # Compbine all the gene data.
 all_genes_01 <-
@@ -137,7 +141,6 @@ all_genes <- all_genes_02 %>%
   tibble::add_column(pathway_int = NA, .after = "hgnc") %>%
   tibble::add_column(therapy_type_int = NA, .after = "hgnc") %>%
   dplyr::arrange(hgnc)
-
 cat("Bound all_genes", fill = TRUE)
 
 # Clean up.
@@ -228,36 +231,39 @@ genes_to_types <- dplyr::tibble() %>%
   tibble::add_column(gene_id = NA %>% as.integer, type_id = NA %>% as.integer)
 
 driver_mutation_row <- gene_types %>% dplyr::filter(name == "driver_mutation")
-driver_mutation_id <- driver_mutation_row["id"]
+driver_mutation_id <- driver_mutation_row[["id"]]
 immunomodulator_row <- gene_types %>% dplyr::filter(name == "immunomodulator")
-immunomodulator_id <- immunomodulator_row["id"]
+immunomodulator_id <- immunomodulator_row[["id"]]
 io_target_row <- gene_types %>% dplyr::filter(name == "io_target")
-io_target_id <- io_target_row["id"]
+io_target_id <- io_target_row[["id"]]
 
-cat("Building genes_to_types.", fill = TRUE)
+cat("Building genes_to_types...", fill = TRUE)
 for (row in 1:nrow(genes)) {
   svMisc::progress(row, nrow(genes) - 1, progress.bar = TRUE)
   
-  gene_hgnc <- genes[row, "hgnc"]
-  if (gene_hgnc %in% driver_mutations$gene) {
+  current_gene_hgnc <- genes[row, "hgnc"]
+  current_gene_id <- genes[row, "id"]
+
+  if (current_gene_hgnc %in% driver_mutations$gene) {
     genes_to_types <- genes_to_types %>%
-      dplyr::add_row(gene_id = genes[row, "id"], type_id = driver_mutation_id)
+      dplyr::add_row(gene_id = current_gene_id, type_id = driver_mutation_id)
   }
-  if (gene_hgnc %in% immunomodulator_expr$gene) {
+  if (current_gene_hgnc %in% immunomodulator_expr$gene) {
     genes_to_types <- genes_to_types %>%
-      dplyr::add_row(gene_id = genes[row, "id"], type_id = immunomodulator_id)
+      dplyr::add_row(gene_id = current_gene_id, type_id = immunomodulator_id)
   }
-  if (gene_hgnc %in% io_target_expr$gene) {
+  if (current_gene_hgnc %in% io_target_expr$gene) {
     genes_to_types <- genes_to_types %>%
-      dplyr::add_row(gene_id = genes[row, "id"], type_id = io_target_id)
+      dplyr::add_row(gene_id = current_gene_id, type_id = io_target_id)
   }
   if (row == nrow(genes)) {
     cat("Rebuilt genes_to_types.", fill = TRUE)
   }
   rm(row)
-  rm(gene_hgnc)
+  rm(current_gene_hgnc)
+  rm(current_gene_id)
 }
-# genes_to_types %>% .GlobalEnv$write_table_ts(.GlobalEnv$con, "genes_to_types", .)
+genes_to_types %>% .GlobalEnv$write_table_ts(.GlobalEnv$con, "genes_to_types", .)
 
 # Clean up.
 rm(driver_mutations)
@@ -271,6 +277,6 @@ rm(io_target_row)
 rm(io_target_id)
 rm(genes)
 rm(gene_types)
-# rm(genes_to_types)
+rm(genes_to_types)
 cat("Cleaned up.", fill = TRUE)
 gc()
