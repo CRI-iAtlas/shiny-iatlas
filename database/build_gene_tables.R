@@ -1,19 +1,10 @@
 # Get data from feather files as data.frames and convert them to a tibbles.
-driver_mutations1 <-
-  feather::read_feather("../data2/driver_mutations1.feather") %>%
-  tibble::add_column(type = "driver_mutation" %>% as.character)
-driver_mutations2 <-
-  feather::read_feather("../data2/driver_mutations2.feather") %>%
-  tibble::add_column(type = "driver_mutation" %>% as.character)
-driver_mutations3 <-
-  feather::read_feather("../data2/driver_mutations3.feather") %>%
-  tibble::add_column(type = "driver_mutation" %>% as.character)
-driver_mutations4 <-
-  feather::read_feather("../data2/driver_mutations4.feather") %>%
-  tibble::add_column(type = "driver_mutation" %>% as.character)
-driver_mutations5 <-
-  feather::read_feather("../data2/driver_mutations5.feather") %>%
-  tibble::add_column(type = "driver_mutation" %>% as.character)
+# Add the type to each data frame - we know the type only from the file that it comes from.
+driver_mutations1 <- feather::read_feather("../data2/driver_mutations1.feather")
+driver_mutations2 <- feather::read_feather("../data2/driver_mutations2.feather")
+driver_mutations3 <- feather::read_feather("../data2/driver_mutations3.feather")
+driver_mutations4 <- feather::read_feather("../data2/driver_mutations4.feather")
+driver_mutations5 <- feather::read_feather("../data2/driver_mutations5.feather")
 driver_mutations <- dplyr::bind_rows(
   driver_mutations1,
   driver_mutations2,
@@ -33,9 +24,7 @@ rm(driver_mutations5)
 cat("Cleaned up.", fill = TRUE)
 gc()
 
-immunomodulator_expr <-
-  feather::read_feather("../data2/immunomodulator_expr.feather") %>%
-  tibble::add_column(type = "immunomodulator" %>% as.character)
+immunomodulator_expr <- feather::read_feather("../data2/immunomodulator_expr.feather")
 immunomodulators <-
   feather::read_feather("../data2/immunomodulators.feather") %>%
   dplyr::filter(!is.na(gene)) %>%
@@ -51,18 +40,10 @@ immunomodulators <-
   ) %>%
   dplyr::rowwise() %>%
   dplyr::mutate(references = paste("{", reference %>% base::strsplit("\\s\\|\\s") %>% stringi::stri_join_list(sep = ','), "}", sep = ""))
-io_target_expr1 <-
-  feather::read_feather("../data2/io_target_expr1.feather") %>%
-  tibble::add_column(type = "io_target" %>% as.character)
-io_target_expr2 <-
-  feather::read_feather("../data2/io_target_expr2.feather") %>%
-  tibble::add_column(type = "io_target" %>% as.character)
-io_target_expr3 <-
-  feather::read_feather("../data2/io_target_expr3.feather") %>%
-  tibble::add_column(type = "io_target" %>% as.character)
-io_target_expr4 <-
-  feather::read_feather("../data2/io_target_expr4.feather") %>%
-  tibble::add_column(type = "io_target" %>% as.character)
+io_target_expr1 <- feather::read_feather("../data2/io_target_expr1.feather")
+io_target_expr2 <- feather::read_feather("../data2/io_target_expr2.feather")
+io_target_expr3 <- feather::read_feather("../data2/io_target_expr3.feather")
+io_target_expr4 <- feather::read_feather("../data2/io_target_expr4.feather")
 io_target_expr <- dplyr::bind_rows(
   io_target_expr1,
   io_target_expr2,
@@ -96,7 +77,7 @@ io_targets <-
     type = "io_target" %>% as.character
   ) %>%
   dplyr::rowwise() %>%
-  dplyr::mutate(references = link_to_references(link))
+  dplyr::mutate(references = .GlobalEnv$link_to_references(link))
 
 
 # Compbine all the gene data.
@@ -237,32 +218,46 @@ immunomodulator_id <- immunomodulator_row[["id"]]
 io_target_row <- gene_types %>% dplyr::filter(name == "io_target")
 io_target_id <- io_target_row[["id"]]
 
-cat("Building genes_to_types...", fill = TRUE)
-for (row in 1:nrow(genes)) {
-  svMisc::progress(row, nrow(genes) - 1, progress.bar = TRUE)
-  
-  current_gene_hgnc <- genes[row, "hgnc"]
-  current_gene_id <- genes[row, "id"]
+# Make these data frames smaller so they're much faster.
+driver_mutations <- driver_mutations %>% dplyr::distinct(gene) %>% as.list
+immunomodulator_expr <- immunomodulator_expr %>% dplyr::distinct(gene) %>% as.list
+io_target_expr <- io_target_expr %>% dplyr::distinct(gene) %>% as.list
 
-  if (current_gene_hgnc %in% driver_mutations$gene) {
-    genes_to_types <- genes_to_types %>%
-      dplyr::add_row(gene_id = current_gene_id, type_id = driver_mutation_id)
-  }
-  if (current_gene_hgnc %in% immunomodulator_expr$gene) {
-    genes_to_types <- genes_to_types %>%
-      dplyr::add_row(gene_id = current_gene_id, type_id = immunomodulator_id)
-  }
-  if (current_gene_hgnc %in% io_target_expr$gene) {
-    genes_to_types <- genes_to_types %>%
-      dplyr::add_row(gene_id = current_gene_id, type_id = io_target_id)
-  }
-  if (row == nrow(genes)) {
-    cat("Rebuilt genes_to_types.", fill = TRUE)
-  }
-  rm(row)
-  rm(current_gene_hgnc)
-  rm(current_gene_id)
-}
+# Hash these data frames so they're much faster.
+driver_mutations <- driver_mutations$gene %>% hash::hash(TRUE)
+immunomodulator_expr <- immunomodulator_expr$gene %>% hash::hash(TRUE)
+io_target_expr <- io_target_expr$gene %>% hash::hash(TRUE)
+
+cat("Building genes_to_types...", fill = TRUE)
+genes_length <- length(genes$hgnc)
+genes %>% 
+  dplyr::select(id:hgnc) %>% 
+  dplyr::rowwise() %>% 
+  dplyr::do(as.data.frame({
+    current_hgnc <- .data$hgnc
+    current_id <- .data$id
+    row_number <- which(current_hgnc == genes$hgnc)
+    svMisc::progress(row_number, genes_length - 1, progress.bar = TRUE)
+    if (hash::has.key(c(current_hgnc), driver_mutations)) {
+      genes_to_types <<- genes_to_types %>%
+        dplyr::add_row(gene_id = current_id, type_id = driver_mutation_id)
+    }
+    if (hash::has.key(c(current_hgnc), immunomodulator_expr)) {
+      genes_to_types <<- genes_to_types %>%
+        dplyr::add_row(gene_id = current_id, type_id = immunomodulator_id)
+    }
+    if (hash::has.key(c(current_hgnc), io_target_expr)) {
+      genes_to_types <<- genes_to_types %>%
+        dplyr::add_row(gene_id = current_id, type_id = io_target_id)
+    }
+    if (row_number == genes_length) {
+      cat("Rebuilt genes_to_types.", fill = TRUE)
+    }
+    rm(current_hgnc)
+    rm(current_id)
+    rm(row_number)
+  }))
+
 genes_to_types %>% .GlobalEnv$write_table_ts(.GlobalEnv$con, "genes_to_types", .)
 
 # Clean up.
