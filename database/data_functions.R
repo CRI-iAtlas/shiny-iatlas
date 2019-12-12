@@ -16,6 +16,16 @@ switch_value <- function(current_row, reference_name, field_name, tibble_object 
   }
 }
 
+link_to_references <- function(current_link) {
+  if (!is.na(current_link)) {
+    url <- stringi::stri_extract_first(current_link, regex = "(?<=href=\").*?(?=\")")
+    if (!identical(url, "NA") & !is.na(url)) {
+      return(paste("{", url, "}", sep = ""))
+    }
+  }
+  return(NA)
+}
+
 value_to_id <- function(reference, current_value, value, reference_match) {
   if (identical(reference, reference_match)) {
     return(value)
