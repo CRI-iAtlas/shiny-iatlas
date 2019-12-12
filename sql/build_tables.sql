@@ -87,6 +87,7 @@ CREATE TABLE genes (
     id SERIAL,
     hgnc VARCHAR NOT NULL,
     entrez INTEGER,
+    "canonical" VARCHAR,
     "display" VARCHAR,
     "description" VARCHAR,
     "references" TEXT[],
