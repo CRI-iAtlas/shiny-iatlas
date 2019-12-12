@@ -1,0 +1,5 @@
+DB_NAME <- Sys.getenv("DB_NAME", unset = "")
+DB_HOST <- Sys.getenv("DB_HOST", unset = "")
+DB_PORT <- Sys.getenv("DB_PORT", unset = "")
+DB_USER <- Sys.getenv("DB_USER", unset = "")
+DB_PW <- Sys.getenv("DB_PW", unset = "")

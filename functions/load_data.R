@@ -8,7 +8,7 @@ load_manifest <- function() {
             sample_group_df = feather::read_feather("data/sample_group_df.feather")
         )
     } else {
-        fetch_manifest() %>% 
+        fetch_manifest() %>%
             format_manifest()
     }
 }
@@ -19,7 +19,7 @@ load_feature_matrix <- function() {
             fmx_df = feather::read_feather("data/fmx_df.feather")
         )
     } else {
-        fmx <- fetch_feature_matrix() %>% 
+        fmx <- fetch_feature_matrix() %>%
             format_feature_matrix()
     }
     return(fmx)
@@ -36,7 +36,7 @@ load_im_annotations <- function() {
             )
         )
     } else {
-        fetch_im_annotations() %>% 
+        fetch_im_annotations() %>%
             format_im_annotations()
     }
 }
@@ -68,7 +68,7 @@ load_im_expression <- function() {
                 tidyr::spread(key = Symbol, value = normalized_count)
         )
     } else {
-        fetch_im_expression() %>% 
+        fetch_im_expression() %>%
             format_im_expression()
     }
 }
@@ -76,11 +76,11 @@ load_im_expression <- function() {
 load_io_target_expression <- function() {
   if (!USE_REMOTE_BQ) {
     list(
-      io_target_expr_df = feather::read_feather("data/io_target_expr_df.feather") 
+      io_target_expr_df = feather::read_feather("data/io_target_expr_df.feather")
     )
   } else {
-    fetch_im_expression() %>% #### needs updating 
-      format_im_expression() #### needs updating 
+    fetch_im_expression() %>% #### needs updating
+      format_im_expression() #### needs updating
   }
 }
 
@@ -104,7 +104,7 @@ create_cell_fraction_options <- function() {
 # Load global data ----
 
 load_data <- function() {
-    
+
     manifest_data <- load_manifest()
     feature_matrix_data <- load_feature_matrix()
     im_annotations_data <- load_im_annotations()
