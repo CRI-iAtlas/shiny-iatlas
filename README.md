@@ -16,6 +16,10 @@ Install:
 
 - RStudio: [https://rstudio.com/products/rstudio/download/](https://rstudio.com/products/rstudio/download/)
 
+- lib cairo: https://www.cairographics.org/
+
+- postgresql: https://www.postgresql.org/download/
+
 - Docker: [https://www.docker.com/products/docker-desktop](https://www.docker.com/products/docker-desktop)
 
 ## Local Shiny-iAtlas Session
