@@ -147,17 +147,17 @@ groupsoverview_UI <- function(id) {
 groupsoverview <- function(
     input, 
     output, 
-    session, 
+    session,
     groups_con,
-    groups2_con,
-    feature_values_con,
-    features_named_list,
-    groups_list,
-    tcga_subtypes_list,
-    group_internal_choice,
-    group_values_con,
-    subtypes,
-    plot_colors
+    feature_values_con
+    # groups2_con,
+    # features_named_list,
+    # groups_list,
+    # tcga_subtypes_list,
+    # group_internal_choice,
+    # group_values_con,
+    # subtypes,
+    # plot_colors
 ){
     ns <- session$ns
     
@@ -233,6 +233,39 @@ groupsoverview <- function(
             dplyr::mutate(display = stringr::str_replace_all(group, "_", " "))
     })
     
+    features_list <- reactive({
+        req(PANIMMUNE_DB2)
+        features_list <- 
+            dplyr::full_join(
+                dplyr::tbl(PANIMMUNE_DB2, "features"),
+                dplyr::tbl(PANIMMUNE_DB2, "classes"), 
+                by = c("class" = "id")
+            ) %>% 
+            dplyr::select(class = name.y, name = display) %>% 
+            dplyr::as_tibble() %>% 
+            dplyr::group_by(class) %>%
+            dplyr::summarise(name = list(name)) %>% 
+            dplyr::ungroup() %>% 
+            dplyr::mutate(class = dplyr::if_else(is.na(class), "Other", class)) %>% 
+            tibble::deframe()
+    })
+    
+    feature_values_con <- reactive({
+        req(PANIMMUNE_DB)
+        feature_values_con <- 
+            dplyr::inner_join(
+                dplyr::tbl(PANIMMUNE_DB, "feature_values_long"), 
+                dplyr::tbl(PANIMMUNE_DB, "features")
+            ) %>% 
+            dplyr::select(feature = display, value) %>% 
+            dplyr::as_tibble()
+            
+    })
+    
+    gene_status_con <- reactive({
+        PANIMMUNE_DB2 %>% dplyr::tbl("samples")
+    })
+    
     output$module_selection_ui <- renderUI({
         choices <- dataset_to_module_tbl() %>% 
             dplyr::pull(module) %>% 
@@ -292,12 +325,6 @@ groupsoverview <- function(
             dplyr::pull(group)
     })
     
-    available_groups_display <- reactive({
-        req(input$dataset_choice)
-        dataset_to_group_tbl() %>% 
-            dplyr::filter(dataset == input$dataset_choice) %>% 
-            dplyr::pull(display)
-    })
     
     output$select_group_ui <- renderUI({
         req(available_groups())
@@ -316,36 +343,28 @@ groupsoverview <- function(
     output$display_custom_mutation <- reactive(input$group_choice == "Custom Mutation")
     outputOptions(output, "display_custom_mutation", suspendWhenHidden = FALSE)
     
-    output$select_custom_numeric_group_ui <- renderUI({
-        req(features_named_list())
-        selectInput(
-            inputId = ns("custom_numeric_feature_choice"),
-            label = "Select feature:",
-            choices = features_named_list()
-        )
-    })
+
     
     output$select_custom_numeric_group_ui <- renderUI({
-        req(features_named_list())
+        req(features_list())
         selectInput(
             inputId = ns("custom_numeric_feature_choice"),
             label = "Select feature:",
-            choices = features_named_list()
+            choices = features_list()
         )
     })
     
     group_element_module <- reactive({
+        req(available_groups, groups_con)
 
         purrr::partial(
             group_filter_element_module,
             group_names_list = available_groups,
             group_values_con = groups_con
         )
-        
     })
     
     group_element_module_ui <- reactive(group_filter_element_module_ui)
-    
     group_filter_output <- callModule(
         insert_remove_element_module2,
         "group_filter",
@@ -356,9 +375,11 @@ groupsoverview <- function(
     
     
     numeric_element_module <- reactive({
+        req(features_list, feature_values_con)
+        
         purrr::partial(
             numeric_filter_element_module,
-            feature_names_list = features_named_list,
+            feature_names_list = features_list,
             feature_values_con = feature_values_con
         )
         

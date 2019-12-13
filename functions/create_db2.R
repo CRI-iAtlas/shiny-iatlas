@@ -34,12 +34,12 @@ create_db2 <- function(){
     # immunomodulator_expr <- feather::read_feather("data2/immunomodulator_expr.feather")
     # dplyr::copy_to(con, immunomodulator_expr, "immunomodulator_expr", temporary = FALSE)
     # 
-    # immunomodulators <- feather::read_feather("data2/immunomodulators.feather")
-    # dplyr::copy_to(con, immunomodulators, "immunomodulators", temporary = FALSE)
+    immunomodulators <- feather::read_feather("data2/immunomodulators.feather")
+    dplyr::copy_to(con, immunomodulators, "immunomodulators", temporary = FALSE)
     # 
     # 
-    # io_targets <- feather::read_feather("data2/io_targets.feather")
-    # dplyr::copy_to(con, io_targets, "io_targets", temporary = FALSE)
+    io_targets <- feather::read_feather("data2/io_targets.feather")
+    dplyr::copy_to(con, io_targets, "io_targets", temporary = FALSE)
     # 
     # files %>%
     #     purrr::keep(stringr::str_detect(., "io_target_expr")) %>%

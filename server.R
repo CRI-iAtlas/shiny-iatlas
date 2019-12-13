@@ -33,15 +33,16 @@ shinyServer(function(input, output, session) {
         groupsoverview,
         "module3",
         groups_con,
-        groups2_con,
-        feature_values_long_con,
-        features_named_list,
-        groups_list,
-        tcga_subtypes_list,
-        reactive(input$group_internal_choice),
-        group_values_con,
-        subtypes,
-        plot_colors
+        feature_values_long_con
+        # groups2_con,
+        # 
+        # features_named_list,
+        # groups_list,
+        # tcga_subtypes_list,
+        # reactive(input$group_internal_choice),
+        # group_values_con,
+        # subtypes,
+        # plot_colors
     )
 
     # Survival curves
@@ -164,6 +165,8 @@ shinyServer(function(input, output, session) {
     observeEvent(input$link_to_module_subtypeclassifier, {
         updateNavlistPanel(session, "toolstabs", "Immune Subtype Classifier")
     })
+    
+    # postgress db connections ------------------------------------------------
     
     # create db connections ---------------------------------------------------
     
