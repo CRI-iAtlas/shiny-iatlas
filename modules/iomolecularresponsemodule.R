@@ -31,12 +31,22 @@ ioresponse_UI <- function(id){
             ),
             
             optionsBox(
-                width=2,
+                width=3,
                 verticalLayout(
-                   
-                        checkboxGroupInput(ns("datasets"), "Select Datasets", choices = c("Gide 2019", "Hugo 2016", 
-                                                                                          "IMVigor210", "Prins 2019", "Riaz 2017", "Van Allen 2015"),
-                                           selected = "Gide 2019"), 
+                        fluidRow(
+                            column(
+                                width = 5,
+                                checkboxGroupInput(ns("datasets"), "Select Datasets", choices = c("Gide 2019", "Hugo 2016", 
+                                                                                                  "IMVigor210", "Prins 2019", "Riaz 2017", "Van Allen 2015"),
+                                                   selected = "Gide 2019")
+                            ),
+                            column(
+                                width = 7,
+                                selectizeInput(ns("types"), "Select tumor(s) type(s)", choices = unique(sample$Tissue)),
+                                selectizeInput(ns("therapy"), "Select therapy(ies) type(s)", choices = unique(sample$Drug_Pathway)),
+                                selectizeInput(ns("drugs"), "Select drug(s) of treatment", choices = unique(sample$Drug))
+                            )
+                        ),    
                         uiOutput(ns("survplot_op")),
                         #checkboxGroupInput(ns("response"), "Select Response Categories", choices = c("OS_d")),
                         #c("OS_d", "OS_y", "OS_e", "PR", "CR", "SD")
@@ -66,7 +76,7 @@ ioresponse_UI <- function(id){
                 
             ),#optionsBox
             column(
-                width = 10,
+                width = 9,
                 plotBox(
                     width = 12,
                     uiOutput(ns("plots")) %>%
