@@ -3,6 +3,11 @@ if (!'svMisc' %in% installed.packages()) {
   install.packages("svMisc")
 }
 
+# Ensure hash is installed.
+if (!'hash' %in% installed.packages()) {
+  install.packages("hash")
+}
+
 # Ensure magrittr is installed.
 if (!'magrittr' %in% installed.packages()) {
   install.packages("magrittr")
@@ -15,6 +20,9 @@ if (!'RPostgres' %in% installed.packages()) {
 
 # Loading svMisc.
 require("svMisc")
+
+# Loading hash
+library("hash")
 
 # Load magrittr so %>% is available.
 library("magrittr")
@@ -73,7 +81,6 @@ rm(update_features_to_samples)
 rm(rebuild_features_to_samples)
 rm(get_ids_from_heirarchy)
 rm(build_tag_id_data)
-rm(update_samples_to_tags)
 rm(rebuild_samples_to_tags)
 rm(rebuild_gene_relational_data)
 rm(rebuild_genes)

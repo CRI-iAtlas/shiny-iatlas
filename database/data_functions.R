@@ -196,39 +196,35 @@ build_tag_id_data <- function(tags) {
   return(tag_ids)
 }
 
-update_samples_to_tags <- function(samples_to_tags, id, tags) {
-  # Ensure data.frames.
-  tags <- tags %>% as.data.frame
-  if (!is_df_empty(tags)) {
-    tag_ids <- tags %>%
-      build_tag_id_data %>%
-      dplyr::distinct(id) %>%
-      as.data.frame
-    for (row in 1:nrow(tag_ids)) {
-      samples_to_tags <- samples_to_tags %>%
-        dplyr::select(dplyr::everything()) %>%
-        dplyr::rowwise() %>%
-        dplyr::add_row(sample_id = id, tag_id = tag_ids[row, "id"])
-    }
+rebuild_samples_to_tags <- function(samples_to_tags, id, current_tag_name, sample_set, samples) {
+  found = FALSE
+  if (current_tag_name %in% sample_set$TCGA_Study) {
+    found = TRUE
+    current_sample_set <- sample_set %>%
+      dplyr::distinct(sample, TCGA_Study)
   }
-  return(samples_to_tags)
-}
-
-rebuild_samples_to_tags <- function(samples_to_tags, id, current_sample_id, all_samples, tags) {
-  current_sample_set <- all_samples %>%
-    dplyr::select(sample:Immune_Subtype) %>%
-    dplyr::filter(sample == current_sample_id) %>%
-    as.data.frame
-  if (!is_df_empty(current_sample_set)) {
-    for (row in 1:nrow(current_sample_set)) {
-      current_tags <- tags %>%
-        dplyr::select(id, name, parent) %>%
-        dplyr::filter(name == current_sample_set[row, "TCGA_Study"] |
-                        name == current_sample_set[row, "TCGA_Subtype"] |
-                        name == current_sample_set[row, "Immune_Subtype"])
-      samples_to_tags <- samples_to_tags %>% update_samples_to_tags(id, current_tags)
-    }
+  
+  if (current_tag_name %in% sample_set$TCGA_Subtype) {
+    found = TRUE
+    current_sample_set <- sample_set %>%
+      dplyr::distinct(sample, TCGA_Subtype)
   }
-  samples_to_tags <- samples_to_tags %>% dplyr::distinct(sample_id, tag_id)
+  
+  if (current_tag_name %in% sample_set$Immune_Subtype) {
+    found = TRUE
+    current_sample_set <- sample_set %>%
+      dplyr::distinct(sample, Immune_Subtype)
+  }
+  if (isTRUE(found)) {
+    purrr::pmap(current_sample_set, ~{
+      current_sample <- ..1
+      sample_row <- samples %>% dplyr::filter(sample_id == current_sample)
+      if (!is_df_empty(sample_row)) {
+        samples_to_tags <<- samples_to_tags %>%
+          dplyr::add_row(sample_id = sample_row[["id"]], tag_id = id)
+      }
+    })
+    samples_to_tags <- samples_to_tags %>% dplyr::distinct(sample_id, tag_id)
+  }
   return(samples_to_tags)
 }
