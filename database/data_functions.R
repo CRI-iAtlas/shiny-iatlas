@@ -196,18 +196,35 @@ build_tag_id_data <- function(tags) {
   return(tag_ids)
 }
 
-rebuild_samples_to_tags <- function(samples_to_tags, id, current_sample_id, sample_set, tags) {
-  purrr::pmap(sample_set, ~{
-    current_sample <- ..1
-    current_tcga_study <- ..2
-    current_tcga_subtype <- ..3
-    current_immune_subtype <- ..4
-    if (current_tcga_study %in% tags$name) {
-      tag_row <- tags %>% dplyr::filter(name == current_tcga_study)
-      samples_to_tags <<- samples_to_tags %>%
-        dplyr::add_row(sample_id = id, tag_id = tag_row[["id"]])
-    }
-  })
-  samples_to_tags <- samples_to_tags %>% dplyr::distinct(sample_id, tag_id)
+rebuild_samples_to_tags <- function(samples_to_tags, id, current_tag_name, sample_set, samples) {
+  found = FALSE
+  if (current_tag_name %in% sample_set$TCGA_Study) {
+    found = TRUE
+    current_sample_set <- sample_set %>%
+      dplyr::distinct(sample, TCGA_Study)
+  }
+  
+  if (current_tag_name %in% sample_set$TCGA_Subtype) {
+    found = TRUE
+    current_sample_set <- sample_set %>%
+      dplyr::distinct(sample, TCGA_Subtype)
+  }
+  
+  if (current_tag_name %in% sample_set$Immune_Subtype) {
+    found = TRUE
+    current_sample_set <- sample_set %>%
+      dplyr::distinct(sample, Immune_Subtype)
+  }
+  if (isTRUE(found)) {
+    purrr::pmap(current_sample_set, ~{
+      current_sample <- ..1
+      sample_row <- samples %>% dplyr::filter(sample_id == current_sample)
+      if (!is_df_empty(sample_row)) {
+        samples_to_tags <<- samples_to_tags %>%
+          dplyr::add_row(sample_id = sample_row[["id"]], tag_id = id)
+      }
+    })
+    samples_to_tags <- samples_to_tags %>% dplyr::distinct(sample_id, tag_id)
+  }
   return(samples_to_tags)
 }
