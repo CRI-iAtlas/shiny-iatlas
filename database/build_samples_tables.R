@@ -1,4 +1,5 @@
 # Get data from feather files as data.frames and convert them to a tibbles.
+cat("Importing feather files for samples.", fill = TRUE)
 driver_mutations1 <-
   feather::read_feather("../data2/driver_mutations1.feather")
 driver_mutations2 <-
@@ -23,7 +24,6 @@ io_target_expr4 <-
   feather::read_feather("../data2/io_target_expr4.feather")
 til_image_links <-
   feather::read_feather("../data2/til_image_links.feather")
-
 cat("Imported feather files for samples.", fill = TRUE)
 
 # Combine all the sample data.
@@ -42,7 +42,6 @@ all_samples <-
     io_target_expr4
   ) %>%
   dplyr::arrange(sample)
-
 cat("Combined all the sample data.", fill = TRUE)
 
 # Clean up.
@@ -57,7 +56,6 @@ rm(io_target_expr1)
 rm(io_target_expr2)
 rm(io_target_expr3)
 rm(io_target_expr4)
-
 cat("Cleaned up.", fill = TRUE)
 gc()
 
@@ -75,77 +73,69 @@ samples <- samples %>%
   dplyr::mutate(tissue_id = stringi::stri_extract_first(tissue_id, regex = "[\\w]{4}-[\\w]{2}-[\\w]{4}-[\\w]{3}-[\\d]{2}-[\\w]{3}"))
 samples %>% .GlobalEnv$write_table_ts(.GlobalEnv$con, "samples", .)
 samples <- RPostgres::dbReadTable(.GlobalEnv$con, "samples")
-
 cat("Built the samples table.", fill = TRUE)
 
 # Remove the large til_image_links as we are done with it.
 rm(til_image_links)
+cat("Cleaned up.", fill = TRUE)
+gc()
 
 features <- RPostgres::dbReadTable(.GlobalEnv$con, "features")
-tags <- RPostgres::dbReadTable(.GlobalEnv$con, "tags")
+tags <- RPostgres::dbReadTable(.GlobalEnv$con, "tags") %>%
+  dplyr::as_tibble() %>%
+  dplyr::select(id:name)
 
 samples_to_tags <- dplyr::tibble() %>% tibble::add_column(sample_id = NA, tag_id = NA)
 features_to_samples <- dplyr::tibble() %>% tibble::add_column(feature_id = NA, sample_id = NA, value = NA)
 
-sample_set_01 <- all_samples %>%
+# Reduce the HUGE all_samples set to columns needed so it is smaller.
+all_samples <- all_samples %>%
   dplyr::distinct(sample, TCGA_Study, TCGA_Subtype, Immune_Subtype, feature, value) %>%
   dplyr::arrange(sample)
 
-# Remove the HUGE all_samples as we are done with it.
-rm(all_samples)
+cat("Rebuilding samples_to_tags.", fill = TRUE)
+tags_length <- length(tags$name)
+tags <- tags %>% as.list
 
-cat("Removed the HUGE all_samples as we are done with it.", fill = TRUE)
-gc()
-
-cat("Rebuilding samples_to_tags and features_to_samples.", fill = TRUE)
-
-# for (row in 1:2) {
-for (row in 1:nrow(samples)) {
-  svMisc::progress(row, nrow(samples) - 1, progress.bar = TRUE)
-  current_id = samples[row, "id"]
-  current_sample_id <- samples[row, "sample_id"]
-  samples_to_tags <- samples_to_tags %>%
-    .GlobalEnv$rebuild_samples_to_tags(
-      current_id,
-      current_sample_id,
-      sample_set_01,
-      tags
-    )
-
-  features_to_samples <- features_to_samples %>%
-    .GlobalEnv$rebuild_features_to_samples(
-      current_id,
-      current_sample_id,
-      sample_set_01,
-      features
-    )
-  if (row == nrow(samples)) {
-  # if (row == 10) {
-    cat("\nRebuilt samples_to_tags and features_to_samples.", fill = TRUE)
+purrr::pmap(tags, ~{
+  current_id <- ..1
+  current_tag_name <- ..2
+  row_number <- which(current_tag_name == tags$name)
+  
+  svMisc::progress(row_number, tags_length - 1, progress.bar = TRUE)
+  
+  sample_set <- all_samples %>%
+    dplyr::distinct(sample, TCGA_Study, TCGA_Subtype, Immune_Subtype) %>% 
+    dplyr::filter(TCGA_Study == current_tag_name | TCGA_Subtype == current_tag_name | Immune_Subtype == current_tag_name)
+  
+  samples_to_tags <<- samples_to_tags %>%
+    .GlobalEnv$rebuild_samples_to_tags(current_id, current_tag_name, sample_set, samples)
+  
+  if (row_number == tags_length) {
+    cat("Rebuilt samples_to_tags.", fill = TRUE)
   }
-}
-rm(row)
-rm(current_id)
-rm(current_sample_id)
+  
+  rm(current_id)
+  rm(current_tag_name)
+  rm(row_number)
+  rm(sample_set)
+})
 
 cat("Cleaned up.", fill = TRUE)
 gc()
 
 samples_to_tags %>% .GlobalEnv$write_table_ts(.GlobalEnv$con, "samples_to_tags", .)
-
 cat("Built samples_to_tags table.", fill = TRUE)
 
-features_to_samples %>% .GlobalEnv$write_table_ts(.GlobalEnv$con, "features_to_samples", .)
-
+# features_to_samples %>% .GlobalEnv$write_table_ts(.GlobalEnv$con, "features_to_samples", .)
 cat("Built features_to_samples table.", fill = TRUE)
 
 # Remove the data we are done with.
 rm(features_to_samples)
 rm(features)
 rm(tags)
+rm(tags_length)
 rm(samples)
-rm(sample_set_01)
 rm(samples_to_tags)
-
 cat("Cleaned up.", fill = TRUE)
 gc()
