@@ -26,39 +26,18 @@ To run the app locally:
 
 1. Clone this repository
 
-<!-- 1. In the terminal, change directories to ensure you are in the root of the checked out project.
-
-1. Execute the script to build the database and tables (This may take a little time. Please be patient.):
-
-   - NOTE: On Windows machines:
-     - there MUST be a bash shell available.
-       - Bash may be enabled in Windows (please see [https://stackoverflow.com/a/36465000](https://stackoverflow.com/a/36465000))
-       - Alternatively, Git Bash may be installed (please see [Git Bash Tutorial](https://www.atlassian.com/git/tutorials/git-bash))
-     - In Docker, the location when the project has been cloned, MUST be shared. (please see [Sharing Windows folders with containers](https://token2shell.com/howto/docker/sharing-windows-folders-with-containers/))
-
-   ```bash
-   . ./scripts/create_db.sh
-   ``` -->
-
 1. Start Rstudio
 
 1. Create a "New Project..." from the "File" menu
 
-1. Create a project from an "Existing Directory"
+    1. Select "Existing Directory"
 
-1. Navigate to the cloned project folder.
+    1. Navigate to the cloned project folder.
 
-1. Select the project folder.
+    1. Select the project folder.
 
-   - NOTE: In the "console" tab in Rstudio, a new R session will start. This will execute `source("renv/activate.R")` from the `.Rprofile` file and `renv` will bootstrap itself in.
-
-1. At the prompt in the "console" tab, restore the dependecies by running:
-
-   ```R
-   renv::restore()
-   ```
-
-   This may take some time to complete - get something nice to drink :)
+    1. Select "create project"
+    > This will create the project and  automatically install your dependencies. If they were previously installed, it'll fast. If not, it may take some time to complete - get something nice to drink :)
 
 1. Build the database by executing the following in the R console:
 
