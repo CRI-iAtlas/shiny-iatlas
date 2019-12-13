@@ -237,22 +237,28 @@ genes %>%
     current_hgnc <- .data$hgnc
     current_id <- .data$id
     row_number <- which(current_hgnc == genes$hgnc)
+
     svMisc::progress(row_number, genes_length - 1, progress.bar = TRUE)
+
     if (hash::has.key(c(current_hgnc), driver_mutations)) {
       genes_to_types <<- genes_to_types %>%
         dplyr::add_row(gene_id = current_id, type_id = driver_mutation_id)
     }
+
     if (hash::has.key(c(current_hgnc), immunomodulator_expr)) {
       genes_to_types <<- genes_to_types %>%
         dplyr::add_row(gene_id = current_id, type_id = immunomodulator_id)
     }
+
     if (hash::has.key(c(current_hgnc), io_target_expr)) {
       genes_to_types <<- genes_to_types %>%
         dplyr::add_row(gene_id = current_id, type_id = io_target_id)
     }
+
     if (row_number == genes_length) {
       cat("Rebuilt genes_to_types.", fill = TRUE)
     }
+
     rm(current_hgnc)
     rm(current_id)
     rm(row_number)

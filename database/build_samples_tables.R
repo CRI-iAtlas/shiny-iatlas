@@ -82,51 +82,91 @@ cat("Built the samples table.", fill = TRUE)
 rm(til_image_links)
 
 features <- RPostgres::dbReadTable(.GlobalEnv$con, "features")
-tags <- RPostgres::dbReadTable(.GlobalEnv$con, "tags")
+tags <- RPostgres::dbReadTable(.GlobalEnv$con, "tags") %>%
+  dplyr::as_tibble() %>%
+  dplyr::select(id:name)
 
 samples_to_tags <- dplyr::tibble() %>% tibble::add_column(sample_id = NA, tag_id = NA)
 features_to_samples <- dplyr::tibble() %>% tibble::add_column(feature_id = NA, sample_id = NA, value = NA)
 
-sample_set_01 <- all_samples %>%
+# Reduce the HUGE all_samples set to columns needed so it is smaller.
+all_samples <- all_samples %>%
   dplyr::distinct(sample, TCGA_Study, TCGA_Subtype, Immune_Subtype, feature, value) %>%
   dplyr::arrange(sample)
 
-# Remove the HUGE all_samples as we are done with it.
-rm(all_samples)
-
-cat("Removed the HUGE all_samples as we are done with it.", fill = TRUE)
-gc()
-
 cat("Rebuilding samples_to_tags and features_to_samples.", fill = TRUE)
+samples_length <- length(samples$sample_id)
 
-# for (row in 1:2) {
-for (row in 1:nrow(samples)) {
-  svMisc::progress(row, nrow(samples) - 1, progress.bar = TRUE)
-  current_id = samples[row, "id"]
-  current_sample_id <- samples[row, "sample_id"]
-  samples_to_tags <- samples_to_tags %>%
+samples <- samples %>% dplyr::select(id:sample_id) %>% as.list
+
+purrr::pmap(samples, ~{
+  current_id <- ..1
+  current_sample_id <- ..2
+  row_number <- which(current_sample_id == samples$sample_id)
+
+  svMisc::progress(row_number, samples_length - 1, progress.bar = TRUE)
+
+  sample_set <- all_samples %>%
+    dplyr::filter(sample == current_sample_id)
+  
+  sample_set_tags <- sample_set %>%
+    dplyr::distinct(sample, TCGA_Study, TCGA_Subtype, Immune_Subtype)
+
+  samples_to_tags <<- samples_to_tags %>%
     .GlobalEnv$rebuild_samples_to_tags(
       current_id,
       current_sample_id,
-      sample_set_01,
+      sample_set_tags,
       tags
     )
+  
+  # sample_set_features <- sample_set %>%
+  #   dplyr::distinct(sample, feature, value)
+  # 
+  # features_to_samples <- features_to_samples %>%
+  #   .GlobalEnv$rebuild_features_to_samples(
+  #     current_id,
+  #     current_sample_id,
+  #     sample_set_features,
+  #     features
+  #   )
 
-  features_to_samples <- features_to_samples %>%
-    .GlobalEnv$rebuild_features_to_samples(
-      current_id,
-      current_sample_id,
-      sample_set_01,
-      features
-    )
-  if (row == nrow(samples)) {
-  # if (row == 10) {
-    cat("\nRebuilt samples_to_tags and features_to_samples.", fill = TRUE)
+  if (row_number == samples_length) {
+    cat("Rebuilt samples_to_tags and features_to_samples.", fill = TRUE)
   }
-}
-rm(row)
-rm(current_id)
-rm(current_sample_id)
+
+  rm(current_id)
+  rm(current_sample_id)
+  rm(row_number)
+  rm(sample_set)
+})
+
+# for (row in 1:nrow(samples)) {
+#   svMisc::progress(row, nrow(samples) - 1, progress.bar = TRUE)
+#   current_id = samples[row, "id"]
+#   current_sample_id <- samples[row, "sample_id"]
+#   # samples_to_tags <- samples_to_tags %>%
+#   #   .GlobalEnv$rebuild_samples_to_tags(
+#   #     current_id,
+#   #     current_sample_id,
+#   #     sample_set_01,
+#   #     tags
+#   #   )
+#   # 
+  # features_to_samples <- features_to_samples %>%
+  #   .GlobalEnv$rebuild_features_to_samples(
+  #     current_id,
+  #     current_sample_id,
+  #     sample_set_01,
+  #     features
+  #   )
+#   if (row == nrow(samples)) {
+#     cat("\nRebuilt samples_to_tags and features_to_samples.", fill = TRUE)
+#   }
+#   rm(row)
+#   rm(current_id)
+#   rm(current_sample_id)
+# }
 
 cat("Cleaned up.", fill = TRUE)
 gc()
@@ -135,7 +175,7 @@ samples_to_tags %>% .GlobalEnv$write_table_ts(.GlobalEnv$con, "samples_to_tags",
 
 cat("Built samples_to_tags table.", fill = TRUE)
 
-features_to_samples %>% .GlobalEnv$write_table_ts(.GlobalEnv$con, "features_to_samples", .)
+# features_to_samples %>% .GlobalEnv$write_table_ts(.GlobalEnv$con, "features_to_samples", .)
 
 cat("Built features_to_samples table.", fill = TRUE)
 
@@ -144,7 +184,6 @@ rm(features_to_samples)
 rm(features)
 rm(tags)
 rm(samples)
-rm(sample_set_01)
 rm(samples_to_tags)
 
 cat("Cleaned up.", fill = TRUE)
