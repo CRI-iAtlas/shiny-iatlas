@@ -135,7 +135,7 @@ get_ab_nodes <- function(ab_nodes, conc_edges, nodes_annot, byImmune = FALSE){
   
   #including the annotation of Friendly Names and types
   all_nodes <- merge(all_nodes, nodes_annot, by.x = "Node", by.y = "Obj") %>% 
-                  dplyr::select("Node (HGNC Symbol)" = "Node", "Gene" = "FriendlyName", Type, Group, "Abundance" = "UpBinRatio")
+                  dplyr::select("Node (HGNC Symbol)" = "Node", "Friendly Name" = "FriendlyName", Type, Group, "Abundance" = "UpBinRatio")
   all_nodes
 }
 
