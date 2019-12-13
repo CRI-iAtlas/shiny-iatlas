@@ -68,19 +68,15 @@ rm(til_image_links)
 cat("Cleaned up.", fill = TRUE)
 gc()
 
-features <- RPostgres::dbReadTable(.GlobalEnv$con, "features") %>%
-  dplyr::as_tibble() %>%
-  dplyr::select(id:name)
-tags <- RPostgres::dbReadTable(.GlobalEnv$con, "tags") %>%
-  dplyr::as_tibble() %>%
-  dplyr::select(id:name)
-
 # Reduce the HUGE all_samples set to columns needed so it is smaller.
 all_samples <- all_samples %>%
   dplyr::distinct(sample, TCGA_Study, TCGA_Subtype, Immune_Subtype, feature, value) %>%
   dplyr::arrange(sample)
 
 cat("Rebuilding samples_to_tags.", fill = TRUE)
+tags <- RPostgres::dbReadTable(.GlobalEnv$con, "tags") %>%
+  dplyr::as_tibble() %>%
+  dplyr::select(id:name)
 tags_length <- length(tags$name)
 tags <- tags %>% as.list
 samples_to_tags <- dplyr::tibble() %>% tibble::add_column(sample_id = NA %>% as.integer, tag_id = NA %>% as.integer)
@@ -116,6 +112,9 @@ samples_to_tags %>% .GlobalEnv$write_table_ts(.GlobalEnv$con, "samples_to_tags",
 cat("Built samples_to_tags table.", fill = TRUE)
 
 cat("Rebuilding samples_to_features.", fill = TRUE)
+features <- RPostgres::dbReadTable(.GlobalEnv$con, "features") %>%
+  dplyr::as_tibble() %>%
+  dplyr::select(id:name)
 features_length <- length(features$name)
 features <- features %>% as.list
 features_to_samples <- dplyr::tibble() %>%
