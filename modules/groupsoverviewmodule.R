@@ -223,7 +223,7 @@ groupsoverview <- function(
             "Race",            "TCGA",
             "Ethnicity",       "TCGA",
             "Custom Numeric",  "TCGA",
-            # "Custom Mutation", "TCGA",
+            "Custom Mutation", "TCGA",
             "Immune_Subtype",  "PCAWG",
             "PCAWG_Study",     "PCAWG",     
             "Gender",          "PCAWG",     
@@ -262,8 +262,15 @@ groupsoverview <- function(
             
     })
     
-    gene_status_con <- reactive({
-        PANIMMUNE_DB2 %>% dplyr::tbl("samples")
+    genes_list <- reactive({
+        req(PANIMMUNE_DB2)
+        # PANIMMUNE_DB2 %>% 
+        #     dplyr::tbl("genes_to_samples") %>% 
+        #     dplyr::filter(!is.na(status)) %>% 
+        #     dplyr::pull(gene_id)
+        PANIMMUNE_DB2 %>% 
+            dplyr::tbl("genes") %>% 
+            dplyr::pull(hgnc)
     })
     
     output$module_selection_ui <- renderUI({
@@ -337,6 +344,7 @@ groupsoverview <- function(
         )
     })
     
+    # custom groups ----
     # This is so that the conditional panel can see the various reactives
     output$display_custom_numeric <- reactive(input$group_choice == "Custom Numeric")
     outputOptions(output, "display_custom_numeric", suspendWhenHidden = FALSE)
@@ -344,7 +352,7 @@ groupsoverview <- function(
     outputOptions(output, "display_custom_mutation", suspendWhenHidden = FALSE)
     
 
-    
+  
     output$select_custom_numeric_group_ui <- renderUI({
         req(features_list())
         selectInput(
@@ -354,6 +362,16 @@ groupsoverview <- function(
         )
     })
     
+    output$select_custom_mutation_group_ui <- renderUI({
+        req(genes_list())
+        selectInput(
+            inputId = ns("custom_gene_mutaton_choice"),
+            label = "Select gene:",
+            choices = genes_list()
+        )
+    })
+    
+    # insert/remove filters ----
     group_element_module <- reactive({
         req(available_groups, groups_con)
 
@@ -365,6 +383,7 @@ groupsoverview <- function(
     })
     
     group_element_module_ui <- reactive(group_filter_element_module_ui)
+    
     group_filter_output <- callModule(
         insert_remove_element_module2,
         "group_filter",
