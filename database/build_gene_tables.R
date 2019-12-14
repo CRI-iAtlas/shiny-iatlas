@@ -1,5 +1,4 @@
 # Get data from feather files as data.frames and convert them to a tibbles.
-# Add the type to each data frame - we know the type only from the file that it comes from.
 driver_mutations1 <- feather::read_feather("../data2/driver_mutations1.feather")
 driver_mutations2 <- feather::read_feather("../data2/driver_mutations2.feather")
 driver_mutations3 <- feather::read_feather("../data2/driver_mutations3.feather")
@@ -78,7 +77,6 @@ io_targets <-
   ) %>%
   dplyr::rowwise() %>%
   dplyr::mutate(references = .GlobalEnv$link_to_references(link))
-
 
 # Compbine all the gene data.
 all_genes_01 <-
@@ -208,9 +206,6 @@ rm(therapy_types)
 cat("Cleaned up.", fill = TRUE)
 gc()
 
-genes_to_types <- dplyr::tibble() %>%
-  tibble::add_column(gene_id = NA %>% as.integer, type_id = NA %>% as.integer)
-
 driver_mutation_row <- gene_types %>% dplyr::filter(name == "driver_mutation")
 driver_mutation_id <- driver_mutation_row[["id"]]
 immunomodulator_row <- gene_types %>% dplyr::filter(name == "immunomodulator")
@@ -229,6 +224,8 @@ immunomodulator_expr <- immunomodulator_expr$gene %>% hash::hash(TRUE)
 io_target_expr <- io_target_expr$gene %>% hash::hash(TRUE)
 
 cat("Building genes_to_types...", fill = TRUE)
+genes_to_types <- dplyr::tibble() %>%
+  tibble::add_column(gene_id = NA %>% as.integer, type_id = NA %>% as.integer)
 genes_length <- length(genes$hgnc)
 genes %>%
   dplyr::select(id:hgnc) %>%

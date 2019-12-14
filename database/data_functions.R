@@ -36,25 +36,6 @@ value_to_id <- function(reference, current_value, value, reference_match) {
   }
 }
 
-rebuild_features <- function(features, classes, method_tags) {
-  # Ensure data.frames.
-  classes <- classes %>% as.data.frame
-  method_tags <- method_tags %>% as.data.frame
-  for (row in 1:nrow(classes)) {
-    features <- features %>%
-      dplyr::select(dplyr::everything()) %>%
-      dplyr::rowwise() %>%
-      dplyr::mutate(class_int = value_to_id(class, class_int, classes[row, "id"], classes[row, "name"]))
-  }
-  for (row in 1:nrow(method_tags)) {
-    features <- features %>%
-      dplyr::select(dplyr::everything()) %>%
-      dplyr::rowwise() %>%
-      dplyr::mutate(mt_int = value_to_id(methods_tag, mt_int, method_tags[row, "id"], method_tags[row, "name"]))
-  }
-  return(features)
-}
-
 rebuild_features_to_samples <- function(features_to_samples, id, sample_set, samples) {
   if (!is_df_empty(sample_set)) {
     in_joined <- dplyr::inner_join(samples, sample_set, by = c("sample_id" = "sample")) %>% 
@@ -126,6 +107,17 @@ rebuild_genes <- function(genes,
   }
   cat("Added therapy_type ids to genes.", fill = TRUE)
   return(genes)
+}
+
+rebuild_genes_to_samples <- function(genes_to_samples, id, sample_set, samples) {
+  if (!is_df_empty(sample_set)) {
+    in_joined <- dplyr::inner_join(samples, sample_set, by = c("sample_id" = "sample")) %>% 
+      dplyr::select(id, status, rna_seq_exp) %>%
+      dplyr::rename_at("id", ~("sample_id")) %>%
+      tibble::add_column(gene_id = id %>% as.integer, .before = "sample_id")
+    genes_to_samples <- dplyr::bind_rows(genes_to_samples, in_joined)
+  }
+  return(genes_to_samples)
 }
 
 rebuild_gene_relational_data <- function(all_genes, ref_name, field_name = "name", relational_data = dplyr::tibble()) {
