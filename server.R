@@ -32,8 +32,8 @@ shinyServer(function(input, output, session) {
     user_group_tbl <- callModule(
         groupsoverview,
         "module3",
-        groups_con,
-        feature_values_long_con
+        groups_con
+        # feature_values_long_con
         # groups2_con,
         # 
         # features_named_list,

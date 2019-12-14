@@ -156,8 +156,7 @@ groupsoverview <- function(
     input, 
     output, 
     session,
-    groups_con,
-    feature_values_con
+    groups_con
     # groups2_con,
     # features_named_list,
     # groups_list,
@@ -259,27 +258,19 @@ groupsoverview <- function(
     })
     
     feature_values_con <- reactive({
-        # req(PANIMMUNE_DB2)
-        # PANIMMUNE_DB2 %>%
-        #     dplyr::tbl("features_to_samples") %>%
-        #     dplyr::filter(!is.na(status)) %>%
-        #     dplyr::pull(gene_id)
-        req(PANIMMUNE_DB)
-        feature_values_con <- 
-            dplyr::inner_join(
-                dplyr::tbl(PANIMMUNE_DB, "feature_values_long"), 
-                dplyr::tbl(PANIMMUNE_DB, "features")
-            ) %>% 
-            dplyr::select(feature = display, value) %>% 
-            dplyr::as_tibble()
-            
+        req(PANIMMUNE_DB2)
+        PANIMMUNE_DB2 %>%
+            dplyr::tbl("features_to_samples") %>%
+            dplyr::select(feature_id, value) %>% 
+            dplyr::left_join(dplyr::tbl(PANIMMUNE_DB2, "features"), by = c("feature_id" = "id")) %>% 
+            dplyr::select(feature = display, value = value.x)
     })
     
     genes_list <- reactive({
         req(PANIMMUNE_DB2)
-        # PANIMMUNE_DB2 %>% 
-        #     dplyr::tbl("genes_to_samples") %>% 
-        #     dplyr::filter(!is.na(status)) %>% 
+        # PANIMMUNE_DB2 %>%
+        #     dplyr::tbl("genes_to_samples") %>%
+        #     dplyr::filter(!is.na(status)) %>%
         #     dplyr::pull(gene_id)
         PANIMMUNE_DB2 %>% 
             dplyr::tbl("genes") %>% 
