@@ -51,6 +51,7 @@ groupsoverview_UI <- function(id) {
                 width = 12,
                 p("Group Selection and filtering"),
             ),
+            # dataset selection ----
             optionsBox(
                 width = 4,
                 checkboxInput(
@@ -68,6 +69,27 @@ groupsoverview_UI <- function(id) {
                 width = 12,
                 textOutput(ns("module_availibility_string"))
             ),
+            # sample filtering ----
+            optionsBox(
+                width = 12,
+                insert_remove_element_module_ui(
+                    ns("group_filter"), 
+                    "Add group filter"
+                )
+            ),
+            optionsBox(
+                width = 12,
+                insert_remove_element_module_ui(
+                    ns("numeric_filter"), 
+                    "Add numeric filter"
+                )
+            ),
+            messageBox(
+                width = 12,
+                textOutput(ns("group_filter_text")),
+                textOutput(ns("numeric_filter_text"))
+            ),
+            # group selection ----
             optionsBox(
                 width = 12,
                 uiOutput(ns("select_group_ui")),
@@ -90,20 +112,6 @@ groupsoverview_UI <- function(id) {
                     ns = ns
                 ),
             ),
-            optionsBox(
-                width = 12,
-                insert_remove_element_module_ui(
-                    ns("group_filter"), 
-                    "Add group filter"
-                )
-            ),
-            optionsBox(
-                width = 12,
-                insert_remove_element_module_ui(
-                    ns("numeric_filter"), 
-                    "Add numeric filter"
-                )
-            )
         ),
         
         # group key -----------------------------------------------------------
@@ -251,6 +259,11 @@ groupsoverview <- function(
     })
     
     feature_values_con <- reactive({
+        # req(PANIMMUNE_DB2)
+        # PANIMMUNE_DB2 %>%
+        #     dplyr::tbl("features_to_samples") %>%
+        #     dplyr::filter(!is.na(status)) %>%
+        #     dplyr::pull(gene_id)
         req(PANIMMUNE_DB)
         feature_values_con <- 
             dplyr::inner_join(
@@ -272,6 +285,8 @@ groupsoverview <- function(
             dplyr::tbl("genes") %>% 
             dplyr::pull(hgnc)
     })
+    
+    # dataset selection ----
     
     output$module_selection_ui <- renderUI({
         choices <- dataset_to_module_tbl() %>% 
@@ -344,6 +359,59 @@ groupsoverview <- function(
         )
     })
     
+    # insert/remove filters ----
+    group_element_module <- reactive({
+        req(available_groups, groups_con)
+        
+        purrr::partial(
+            group_filter_element_module,
+            group_names_list = available_groups,
+            group_values_con = groups_con
+        )
+    })
+    
+    group_element_module_ui <- reactive(group_filter_element_module_ui)
+    
+    group_filter_output <- callModule(
+        insert_remove_element_module2,
+        "group_filter",
+        element_module = group_element_module,
+        element_module_ui = group_element_module_ui,
+        remove_ui_event = reactive(input$dataset_choice)
+    )
+    
+    output$group_filter_text <- renderText({
+        print(reactiveValuesToList(group_filter_output()))
+        unlist(reactiveValuesToList(group_filter_output()))
+    })
+    
+    
+    numeric_element_module <- reactive({
+        req(features_list, feature_values_con)
+        
+        purrr::partial(
+            numeric_filter_element_module,
+            feature_names_list = features_list,
+            feature_values_con = feature_values_con
+        )
+        
+    })
+    
+    numeric_element_module_ui <- reactive(numeric_filter_element_module_ui)
+    
+    numeric_filter_output <- callModule(
+        insert_remove_element_module2,
+        "numeric_filter",
+        element_module = numeric_element_module,
+        element_module_ui = numeric_element_module_ui,
+        remove_ui_event = reactive(input$dataset_choice)
+    )
+    
+    output$numeric_filter_text <- renderText({
+        print(reactiveValuesToList(numeric_filter_output()))
+        unlist(reactiveValuesToList(numeric_filter_output()))
+    })
+    
     # custom groups ----
     # This is so that the conditional panel can see the various reactives
     output$display_custom_numeric <- reactive(input$group_choice == "Custom Numeric")
@@ -371,48 +439,7 @@ groupsoverview <- function(
         )
     })
     
-    # insert/remove filters ----
-    group_element_module <- reactive({
-        req(available_groups, groups_con)
 
-        purrr::partial(
-            group_filter_element_module,
-            group_names_list = available_groups,
-            group_values_con = groups_con
-        )
-    })
-    
-    group_element_module_ui <- reactive(group_filter_element_module_ui)
-    
-    group_filter_output <- callModule(
-        insert_remove_element_module2,
-        "group_filter",
-        element_module = group_element_module,
-        element_module_ui = group_element_module_ui,
-        remove_ui_event = reactive(input$dataset_choice)
-    )
-    
-    
-    numeric_element_module <- reactive({
-        req(features_list, feature_values_con)
-        
-        purrr::partial(
-            numeric_filter_element_module,
-            feature_names_list = features_list,
-            feature_values_con = feature_values_con
-        )
-        
-    })
-    
-    numeric_element_module_ui <- reactive(numeric_filter_element_module_ui)
-
-    numeric_filter_output <- callModule(
-        insert_remove_element_module2,
-        "numeric_filter",
-        element_module = numeric_element_module,
-        element_module_ui = numeric_element_module_ui,
-        remove_ui_event = reactive(input$dataset_choice)
-    )
 
 
     # group key ---------------------------------------------------------------
