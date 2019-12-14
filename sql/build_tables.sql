@@ -75,18 +75,17 @@ CREATE TABLE features (
     display VARCHAR,
     "order" INTEGER,
     unit UNIT_ENUM,
-    "value" NUMERIC,
     PRIMARY KEY (id)
 );
-ALTER TABLE features ADD COLUMN class INTEGER REFERENCES classes;
+ALTER TABLE features ADD COLUMN class_id INTEGER REFERENCES classes;
 ALTER TABLE features ADD COLUMN method_tag_id INTEGER REFERENCES method_tags;
 CREATE UNIQUE INDEX feature_name_index ON features ("name");
 
 -- genes table
 CREATE TABLE genes (
     id SERIAL,
-    hgnc VARCHAR NOT NULL,
     entrez INTEGER,
+    hgnc VARCHAR NOT NULL,
     "canonical" VARCHAR,
     "display" VARCHAR,
     "description" VARCHAR,
