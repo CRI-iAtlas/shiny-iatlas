@@ -55,32 +55,16 @@ rebuild_features <- function(features, classes, method_tags) {
   return(features)
 }
 
-update_features_to_samples <- function(features_to_samples, id, feature_value, features) {
-  # Ensure data.frames.
-  features <- features %>% as.data.frame
-  if (!is_df_empty(features)) {
-    for (row in 1:nrow(features)) {
-      features_to_samples <- features_to_samples %>%
-        dplyr::select(dplyr::everything()) %>%
-        dplyr::rowwise() %>%
-        dplyr::add_row(sample_id = id, feature_id = features[row, "id"], value = feature_value)
-    }
-  }
-  return(features_to_samples)
-}
-
-rebuild_features_to_samples <- function(features_to_samples, id, current_sample_id, all_samples, features) {
-  current_sample_set <- all_samples %>%
-    dplyr::select(sample, feature, value) %>%
-    dplyr::filter(sample == current_sample_id) %>%
-    as.data.frame
-  if (!is_df_empty(current_sample_set)) {
-    for (row in 1:nrow(current_sample_set)) {
-      current_features <- features %>%
-        dplyr::select(id, name) %>%
-        dplyr::filter(name == current_sample_set[row, "feature"])
-      features_to_samples <- features_to_samples %>% update_features_to_samples(id, current_sample_set[row, "value"], current_features)
-    }
+rebuild_features_to_samples <- function(features_to_samples, id, sample_set, samples) {
+  if (!is_df_empty(sample_set)) {
+    in_joined <- dplyr::inner_join(samples, sample_set, by = c("sample_id" = "sample")) %>% 
+      dplyr::select(id, value) %>%
+      dplyr::rename_at("id", ~("sample_id")) %>%
+      tibble::add_column(feature_id = id %>% as.integer, .before = "sample_id") %>%
+      tibble::add_column(inf_value = NA %>% as.integer, .after = "value") %>%
+      dplyr::rowwise() %>%
+      dplyr::mutate(inf_value = ifelse(is.infinite(value), value, NA), value = ifelse(is.finite(value), value, NA))
+    features_to_samples <- dplyr::bind_rows(features_to_samples, in_joined)
   }
   return(features_to_samples)
 }

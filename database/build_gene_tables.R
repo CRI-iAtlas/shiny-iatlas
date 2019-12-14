@@ -111,7 +111,7 @@ cat("Bound all_genes_02", fill = TRUE)
 all_genes_01 <- all_genes_01 %>% dplyr::anti_join(all_genes_02, by = "gene")
 cat("Joind genes", fill = TRUE)
 
-all_genes <- all_genes_02 %>% 
+all_genes <- all_genes_02 %>%
   dplyr::bind_rows(all_genes_01) %>%
   dplyr::as_tibble() %>%
   dplyr::rename_at("gene", ~("hgnc")) %>%
@@ -230,9 +230,9 @@ io_target_expr <- io_target_expr$gene %>% hash::hash(TRUE)
 
 cat("Building genes_to_types...", fill = TRUE)
 genes_length <- length(genes$hgnc)
-genes %>% 
-  dplyr::select(id:hgnc) %>% 
-  dplyr::rowwise() %>% 
+genes %>%
+  dplyr::select(id:hgnc) %>%
+  dplyr::rowwise() %>%
   dplyr::do(as.data.frame({
     current_hgnc <- .data$hgnc
     current_id <- .data$id
@@ -241,18 +241,15 @@ genes %>%
     svMisc::progress(row_number, genes_length - 1, progress.bar = TRUE)
 
     if (hash::has.key(c(current_hgnc), driver_mutations)) {
-      genes_to_types <<- genes_to_types %>%
-        dplyr::add_row(gene_id = current_id, type_id = driver_mutation_id)
+      genes_to_types <<- genes_to_types %>% dplyr::add_row(gene_id = current_id, type_id = driver_mutation_id)
     }
 
     if (hash::has.key(c(current_hgnc), immunomodulator_expr)) {
-      genes_to_types <<- genes_to_types %>%
-        dplyr::add_row(gene_id = current_id, type_id = immunomodulator_id)
+      genes_to_types <<- genes_to_types %>% dplyr::add_row(gene_id = current_id, type_id = immunomodulator_id)
     }
 
     if (hash::has.key(c(current_hgnc), io_target_expr)) {
-      genes_to_types <<- genes_to_types %>%
-        dplyr::add_row(gene_id = current_id, type_id = io_target_id)
+      genes_to_types <<- genes_to_types %>% dplyr::add_row(gene_id = current_id, type_id = io_target_id)
     }
 
     if (row_number == genes_length) {
@@ -277,6 +274,7 @@ rm(io_target_expr)
 rm(io_target_row)
 rm(io_target_id)
 rm(genes)
+rm(genes_length)
 rm(gene_types)
 rm(genes_to_types)
 cat("Cleaned up.", fill = TRUE)

@@ -131,7 +131,12 @@ CREATE TABLE genes_to_samples (
 CREATE TABLE samples_to_tags (sample_id INTEGER REFERENCES samples, tag_id INTEGER REFERENCES tags);
 
 -- features_to_samples table
-CREATE TABLE features_to_samples (feature_id INTEGER REFERENCES features, sample_id INTEGER REFERENCES samples);
+CREATE TABLE features_to_samples (
+    feature_id INTEGER REFERENCES features,
+    sample_id INTEGER REFERENCES samples,
+    "value" NUMERIC,
+    "inf_value" REAL
+);
 
 -- features_to_results table
 CREATE TABLE features_to_results (feature_id INTEGER REFERENCES features, result_id INTEGER REFERENCES results);
