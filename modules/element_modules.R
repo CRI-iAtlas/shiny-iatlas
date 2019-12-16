@@ -29,7 +29,6 @@ numeric_filter_element_module <- function(
     
     output$slider_ui <- renderUI({
         req(feature_values_con(), input$feature_choice)
-        print(feature_values_con())
         tbl <- feature_values_con() %>% 
             dplyr::filter(feature == local(input$feature_choice)) %>% 
             dplyr::as_tibble() %>% 
