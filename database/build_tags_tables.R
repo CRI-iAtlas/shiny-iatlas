@@ -1,8 +1,8 @@
-# Get data from groups feather file as a data.frame and convert to a tibble.
+cat(crayon::magenta("Importing feather file for tags."), fill = TRUE)
 tags <- feather::read_feather("../data2/groups.feather")
+cat(crayon::blue("Imported feather file for tags."), fill = TRUE)
 
-cat("Imported feather file for tags.", fill = TRUE)
-
+cat(crayon::magenta("Building tags data"), fill = TRUE)
 tags <- dplyr::as_tibble(tags) %>%
   dplyr::rename_at("group", ~("name")) %>%
   dplyr::rename_at("group_name", ~("display")) %>%
@@ -27,15 +27,17 @@ tags <- tags_db %>% .GlobalEnv$rebuild_tags(tags_db) %>%
   dplyr::select(-c("parent_group_display")) %>%
   dplyr::select(-c("subtype_group")) %>%
   dplyr::select(-c("subtype_group_display"))
-tags %>% .GlobalEnv$write_table_ts(.GlobalEnv$con, "tags", .)
 
-cat("Built tags table.", fill = TRUE)
+cat(crayon::magenta("Building tags table."), fill = TRUE)
+table_written <- tags %>% .GlobalEnv$write_table_ts(.GlobalEnv$con, "tags", .)
+cat(crayon::blue("Built tags table."), fill = TRUE)
 
 ### Clean up ###
 # Data
 rm(tags)
 rm(tags_db)
 rm(parents)
+rm(table_written)
 
 cat("Cleaned up.", fill = TRUE)
 gc()

@@ -1,4 +1,4 @@
-# Get data from feather files as data.frames and convert them to a tibbles.
+cat(crayon::magenta("Importing driver mutation feather files for genes"), fill = TRUE)
 driver_mutations1 <- feather::read_feather("../data2/driver_mutations1.feather")
 driver_mutations2 <- feather::read_feather("../data2/driver_mutations2.feather")
 driver_mutations3 <- feather::read_feather("../data2/driver_mutations3.feather")
@@ -11,8 +11,7 @@ driver_mutations <- dplyr::bind_rows(
   driver_mutations4,
   driver_mutations5
 )
-
-cat("Imported driver mutation feather files for genes", fill = TRUE)
+cat(crayon::blue("Imported driver mutation feather files for genes"), fill = TRUE)
 
 # Clean up.
 rm(driver_mutations1)
@@ -23,6 +22,7 @@ rm(driver_mutations5)
 cat("Cleaned up.", fill = TRUE)
 gc()
 
+cat(crayon::magenta("Importing immunomodulators and io_target feather files for genes"), fill = TRUE)
 immunomodulator_expr <- feather::read_feather("../data2/immunomodulator_expr.feather")
 immunomodulators <-
   feather::read_feather("../data2/immunomodulators.feather") %>%
@@ -49,8 +49,7 @@ io_target_expr <- dplyr::bind_rows(
   io_target_expr3,
   io_target_expr4
 )
-
-cat("Imported immunomodulators and io_target feather files for genes", fill = TRUE)
+cat(crayon::blue("Imported immunomodulators and io_target feather files for genes"), fill = TRUE)
 
 # Clean up.
 rm(io_target_expr1)
@@ -87,7 +86,7 @@ all_genes_01 <-
   ) %>%
   dplyr::select(gene) %>%
   dplyr::distinct(gene, .keep_all = TRUE)
-cat("Bound all_genes_01", fill = TRUE)
+cat(crayon::blue("Bound all_genes_01"), fill = TRUE)
 
 io_targets <- io_targets %>%
   dplyr::select(dplyr::everything()) %>%
@@ -104,10 +103,10 @@ immunomodulators <- immunomodulators %>%
   dplyr::anti_join(io_targets, by = "gene")
 
 all_genes_02 <- immunomodulators %>% dplyr::bind_rows(io_targets)
-cat("Bound all_genes_02", fill = TRUE)
+cat(crayon::blue("Bound all_genes_02"), fill = TRUE)
 
 all_genes_01 <- all_genes_01 %>% dplyr::anti_join(all_genes_02, by = "gene")
-cat("Joind genes", fill = TRUE)
+cat(crayon::blue("Joind genes"), fill = TRUE)
 
 all_genes <- all_genes_02 %>%
   dplyr::bind_rows(all_genes_01) %>%
@@ -120,7 +119,7 @@ all_genes <- all_genes_02 %>%
   tibble::add_column(pathway_int = NA, .after = "hgnc") %>%
   tibble::add_column(therapy_type_int = NA, .after = "hgnc") %>%
   dplyr::arrange(hgnc)
-cat("Bound all_genes", fill = TRUE)
+cat(crayon::blue("Bound all_genes"), fill = TRUE)
 
 # Clean up.
 rm(immunomodulators)
@@ -130,45 +129,59 @@ rm(all_genes_02)
 cat("Cleaned up.", fill = TRUE)
 gc()
 
-# Build gene_types table.
+cat(crayon::magenta("Building gene_types data"), fill = TRUE)
 gene_types <- dplyr::tibble(
   name = c("immunomodulator", "io_target", "driver_mutation"),
   display = c("Immunomodulator", "IO Target", "Driver Mutation")
 )
-gene_types %>% .GlobalEnv$write_table_ts(.GlobalEnv$con, "gene_types", .)
+cat(crayon::magenta("Building gene_types table."), fill = TRUE)
+table_written <- gene_types %>% .GlobalEnv$write_table_ts(.GlobalEnv$con, "gene_types", .)
 gene_types <- RPostgres::dbReadTable(.GlobalEnv$con, "gene_types")
-cat("Built gene_types table.", fill = TRUE)
+cat(crayon::blue("Built gene_types table."), fill = TRUE)
 
+cat(crayon::magenta("Building gene_types data"), fill = TRUE)
 super_categories <- all_genes %>% .GlobalEnv$rebuild_gene_relational_data("super_category", "name")
+cat(crayon::magenta("Building gene_types table."), fill = TRUE)
 super_categories %>% .GlobalEnv$write_table_ts(.GlobalEnv$con, "super_categories", .)
 super_categories <- RPostgres::dbReadTable(.GlobalEnv$con, "super_categories")
-cat("Built super_categories table.", fill = TRUE)
+cat(crayon::blue("Built super_categories table."), fill = TRUE)
 
+cat(crayon::magenta("Building gene_families data"), fill = TRUE)
 gene_families <- all_genes %>% .GlobalEnv$rebuild_gene_relational_data("gene_family", "name")
+cat(crayon::magenta("Building gene_families table."), fill = TRUE)
 gene_families %>% .GlobalEnv$write_table_ts(.GlobalEnv$con, "gene_families", .)
 gene_families <- RPostgres::dbReadTable(.GlobalEnv$con, "gene_families")
-cat("Built gene_families table.", fill = TRUE)
+cat(crayon::blue("Built gene_families table."), fill = TRUE)
 
+cat(crayon::magenta("Building immune_checkpoints data"), fill = TRUE)
 immune_checkpoints <- all_genes %>% .GlobalEnv$rebuild_gene_relational_data("immune_checkpoint", "name")
+cat(crayon::magenta("Building immune_checkpoints table."), fill = TRUE)
 immune_checkpoints %>% .GlobalEnv$write_table_ts(.GlobalEnv$con, "immune_checkpoints", .)
 immune_checkpoints <- RPostgres::dbReadTable(.GlobalEnv$con, "immune_checkpoints")
-cat("Built immune_checkpoints table.", fill = TRUE)
+cat(crayon::blue("Built immune_checkpoints table."), fill = TRUE)
 
+cat(crayon::magenta("Building gene_functions data"), fill = TRUE)
 gene_functions <- all_genes %>% .GlobalEnv$rebuild_gene_relational_data("gene_function", "name")
+cat(crayon::magenta("Building gene_functions table."), fill = TRUE)
 gene_functions %>% .GlobalEnv$write_table_ts(.GlobalEnv$con, "gene_functions", .)
 gene_functions <- RPostgres::dbReadTable(.GlobalEnv$con, "gene_functions")
-cat("Built gene_functions table.", fill = TRUE)
+cat(crayon::blue("Built gene_functions table."), fill = TRUE)
 
+cat(crayon::magenta("Built pathways data"), fill = TRUE)
 pathways <- all_genes %>% .GlobalEnv$rebuild_gene_relational_data("pathway", "name")
+cat(crayon::magenta("Built pathways table."), fill = TRUE)
 pathways %>% .GlobalEnv$write_table_ts(.GlobalEnv$con, "pathways", .)
 pathways <- RPostgres::dbReadTable(.GlobalEnv$con, "pathways")
-cat("Built pathways table.", fill = TRUE)
+cat(crayon::blue("Built pathways table."), fill = TRUE)
 
+cat(crayon::magenta("Built therapy_types data"), fill = TRUE)
 therapy_types <- all_genes %>% .GlobalEnv$rebuild_gene_relational_data("therapy_type", "name")
+cat(crayon::magenta("Built therapy_types table."), fill = TRUE)
 therapy_types %>% .GlobalEnv$write_table_ts(.GlobalEnv$con, "therapy_types", .)
 therapy_types <- RPostgres::dbReadTable(.GlobalEnv$con, "therapy_types")
-cat("Built therapy_types table.", fill = TRUE)
+cat(crayon::blue("Built therapy_types table."), fill = TRUE)
 
+cat(crayon::magenta("Building genes data"), fill = TRUE)
 genes <- all_genes %>%
   .GlobalEnv$rebuild_genes(
     super_categories,
@@ -191,9 +204,10 @@ genes <- all_genes %>%
   dplyr::rename_at("pathway_int", ~("pathway_id")) %>%
   dplyr::select(-c("therapy_type")) %>%
   dplyr::rename_at("therapy_type_int", ~("therapy_type_id"))
+cat(crayon::magenta("Building genes table."), fill = TRUE)
 genes %>% .GlobalEnv$write_table_ts(.GlobalEnv$con, "genes", .)
 genes <- RPostgres::dbReadTable(.GlobalEnv$con, "genes")
-cat("Built genes table.", fill = TRUE)
+cat(crayon::blue("Built genes table."), fill = TRUE)
 
 # Clean up.
 rm(all_genes)
@@ -223,7 +237,7 @@ driver_mutations <- driver_mutations$gene %>% hash::hash(TRUE)
 immunomodulator_expr <- immunomodulator_expr$gene %>% hash::hash(TRUE)
 io_target_expr <- io_target_expr$gene %>% hash::hash(TRUE)
 
-cat("Building genes_to_types...", fill = TRUE)
+cat(crayon::magenta("Building genes_to_types."), fill = TRUE)
 genes_to_types <- dplyr::tibble() %>%
   tibble::add_column(gene_id = NA %>% as.integer, type_id = NA %>% as.integer)
 genes_length <- length(genes$hgnc)
@@ -250,7 +264,7 @@ genes %>%
     }
 
     if (row_number == genes_length) {
-      cat("Rebuilt genes_to_types.", fill = TRUE)
+      cat(crayon::blue("Build genes_to_types."), fill = TRUE)
     }
 
     rm(current_hgnc)

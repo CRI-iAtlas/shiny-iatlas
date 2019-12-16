@@ -1,7 +1,6 @@
-# Get data from feature feather file as a data.frame and convert to a tibble.
-cat("Importing feather file for features.", fill = TRUE)
+cat(crayon::magenta("Importing feather file for features."), fill = TRUE)
 features <- feather::read_feather("../data2/features.feather") %>% dplyr::rename_at("feature", ~("name"))
-cat("Imported feather file for features.", fill = TRUE)
+cat(crayon::blue("Imported feather file for features."), fill = TRUE)
 
 classes <- features %>%
   dplyr::filter(!is.na(class)) %>%
@@ -11,11 +10,12 @@ classes <- features %>%
   dplyr::transmute(name = class)
 
 # Create the classes table with data.
-classes %>% .GlobalEnv$write_table_ts(.GlobalEnv$con, "classes", .)
+cat(crayon::magenta("Building classes table."), fill = TRUE)
+table_written <- classes %>% .GlobalEnv$write_table_ts(.GlobalEnv$con, "classes", .)
 classes <- RPostgres::dbReadTable(.GlobalEnv$con, "classes") %>%
   dplyr::as_tibble() %>%
   dplyr::select(id:name)
-cat("Built classes table.", fill = TRUE)
+cat(crayon::blue("Built classes table."), fill = TRUE)
 
 method_tags <- features %>%
   dplyr::filter(!is.na(methods_tag)) %>%
@@ -25,11 +25,12 @@ method_tags <- features %>%
   dplyr::transmute(name = methods_tag)
 
 # Create the method_tags table with data.
-method_tags %>% .GlobalEnv$write_table_ts(.GlobalEnv$con, "method_tags", .)
+cat(crayon::magenta("Building method_tags table."), fill = TRUE)
+table_written <- method_tags %>% .GlobalEnv$write_table_ts(.GlobalEnv$con, "method_tags", .)
 method_tags <- RPostgres::dbReadTable(.GlobalEnv$con, "method_tags") %>%
   dplyr::as_tibble() %>%
   dplyr::select(id:name)
-cat("Built method_tags table.", fill = TRUE)
+cat(crayon::blue("Built method_tags table."), fill = TRUE)
 
 features <- features %>%
   dplyr::left_join(classes, by = c("class" = "name")) %>%
@@ -39,14 +40,16 @@ features <- features %>%
   dplyr::select(name, display, order, unit, class_id, method_tag_id) %>%
   dplyr::arrange(name)
 
-features %>% .GlobalEnv$write_table_ts(.GlobalEnv$con, "features", .)
-cat("Built features table.", fill = TRUE)
+cat(crayon::magenta("Built features table."), fill = TRUE)
+table_written <- features %>% .GlobalEnv$write_table_ts(.GlobalEnv$con, "features", .)
+cat(crayon::blue("Built features table."), fill = TRUE)
 
 ### Clean up ###
 # Data
 rm(classes)
 rm(features)
 rm(method_tags)
+rm(table_written)
 
 cat("Cleaned up.", fill = TRUE)
 gc()

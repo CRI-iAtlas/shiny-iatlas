@@ -1,3 +1,8 @@
+# Ensure crayon is installed.
+if (!'crayon' %in% installed.packages()) {
+  install.packages("crayon")
+}
+
 # Ensure svMisc is installed.
 if (!'svMisc' %in% installed.packages()) {
   install.packages("svMisc")
@@ -17,6 +22,9 @@ if (!'magrittr' %in% installed.packages()) {
 if (!'RPostgres' %in% installed.packages()) {
   install.packages("RPostgres")
 }
+
+# Loading crayon
+library(crayon)
 
 # Loading svMisc.
 require("svMisc")
@@ -53,20 +61,20 @@ source("database/connect_to_db.R", chdir = TRUE)
 # Create a global variable to hold the connection.
 con <- .GlobalEnv$connect_to_db()
 
-cat("Created DB cponnection.", fill = TRUE)
+cat(crayon::green("Created DB cponnection."), fill = TRUE)
 
 source("database/build_features_tables.R", chdir = TRUE)
 
 source("database/build_tags_tables.R", chdir = TRUE)
 
-source("database/build_samples_tables.R", chdir = TRUE)
-
 source("database/build_gene_tables.R", chdir = TRUE)
+
+source("database/build_samples_tables.R", chdir = TRUE)
 
 # Close the database connection.
 RPostgres::dbDisconnect(.GlobalEnv$con)
 
-cat("Closed DB cponnection.", fill = TRUE)
+cat(crayon::green("Closed DB cponnection."), fill = TRUE)
 
 ### Clean up ###
 # Data
@@ -76,14 +84,13 @@ rm(con)
 rm(connect_to_db)
 rm(create_db)
 rm(delete_rows)
-rm(rebuild_features)
-rm(update_features_to_samples)
 rm(rebuild_features_to_samples)
 rm(get_ids_from_heirarchy)
 rm(build_tag_id_data)
 rm(rebuild_samples_to_tags)
 rm(rebuild_gene_relational_data)
 rm(rebuild_genes)
+rm(rebuild_genes_to_samples)
 rm(rebuild_tags)
 rm(switch_value)
 rm(value_to_id)
