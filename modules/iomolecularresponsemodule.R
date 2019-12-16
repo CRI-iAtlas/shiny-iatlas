@@ -22,6 +22,21 @@ ioresponse_UI <- function(id){
         ),
         
         sectionBox(
+            title = "Dataset Information",
+            
+            messageBox(
+                width = 24,
+                p("Check the attributes about the available datasets.")
+            ),
+            plotBox(
+                width = 12,
+                DT::DTOutput(
+                    ns("io_datasets_df")
+                )
+                
+            )#plotBox
+        ),#sectionBox
+        sectionBox(
             title = "Clinical Outcomes",
             
             messageBox(
@@ -38,7 +53,8 @@ ioresponse_UI <- function(id){
                                 width = 5,
                                 checkboxGroupInput(ns("datasets"), "Select Datasets", choices = c("Gide 2019", "Hugo 2016", 
                                                                                                   "IMVigor210", "Prins 2019", "Riaz 2017", "Van Allen 2015"),
-                                                   selected = "Gide 2019")
+                                                   selected = c("Gide 2019", "Hugo 2016", 
+                                                                "IMVigor210", "Prins 2019", "Riaz 2017", "Van Allen 2015"))
                             ),
                             column(
                                 width = 7,
@@ -69,7 +85,7 @@ ioresponse_UI <- function(id){
                         ),
                         # checkboxGroupInput(ns("analyses"), "Select Analyses", choices = c("Groupwise Comparison", "CoxPH")),
                         # br(),
-                        div(class = "form-group shiny-input-container", actionButton(ns("calculate_button"), tags$b("GO"), width = "100%"))
+                        div(class = "form-group shiny-input-container", actionButton(ns("go_button"), tags$b("GO"), width = "100%"))
                     
                     
                 )
@@ -81,6 +97,11 @@ ioresponse_UI <- function(id){
                     width = 12,
                     uiOutput(ns("plots")) %>%
                         shinycssloaders::withSpinner()
+                ),
+                plotBox(
+                    width = 12,
+                    plotlyOutput(ns("forest")) %>% 
+                        shinycssloaders::withSpinner()
                 )
             )
         ), #sectionBox
@@ -90,7 +111,6 @@ ioresponse_UI <- function(id){
             messageBox(
                 width = 24,
                 p("Heatmap of Cox Proportional Hazard ratio associated with each immunogenomics feature in each dataset.")
-                
             ),
             
             optionsBox(
@@ -99,8 +119,11 @@ ioresponse_UI <- function(id){
                                                                                   "IMVigor210", "Prins 2019", "Riaz 2017", "Van Allen 2015"),
                                    selected = "Gide 2019"), 
                 uiOutput(ns("heatmap_op"))
-                
-            )            
+                ),
+            
+            plotBox(
+                plotOutput(ns("io_cox_heatmap"))
+            )
         )
     )
 }
@@ -139,6 +162,7 @@ ioresponse <- function(input,
             multiple = TRUE
         )
     })
+
     
     ##Insert the right number of plot output objects into the web page
     observe({
@@ -146,18 +170,9 @@ ioresponse <- function(input,
            
             plot_output_list <- 
                 lapply(1:length(input$datasets), function(i) {
-                     #if((i %% 2) != 0){
                          plotname <- input$datasets[i]
                          plotOutput(ns(plotname), height = 400, width = 750)
-                     #}  
-                    #if((i %% 2) == 0){
-                    #    hr()
-                    #}
-            
             })
-    
-            # Convert the list to a tagList - this is necessary for the list of items
-            # to display properly.
             do.call(tagList, plot_output_list)
         })
     })
@@ -166,9 +181,8 @@ ioresponse <- function(input,
     # are visible on the web page.
     observe({
         for (i in 1:length(input$datasets)) {
-                # Need local so that each item gets its own number. Without it, the value
-                # of i in the renderPlot() will be the same across all instances, because
-                # of when the expression is evaluated.
+                # Need local so that each item gets its own number. Without it, the value of i in the renderPlot() will be the same across all instances, 
+                # because of when the expression is evaluated.
                 local({
                     
                     my_i <- i
@@ -186,11 +200,7 @@ ioresponse <- function(input,
                         select(Sample_ID, my_var)
                     
                     outcome <- merge(survival_data, var_data, by = "Sample_ID")
-                        
-                        # validate(
-                        #     need(!is.null(var_data), paste("No data available for this feature at the dataset:", input$datasets[my_i]))
-                        # )
-                    
+                
                     survival_df <- build_survival_df(
                         df = outcome,
                         group_column = my_var,
@@ -221,5 +231,65 @@ ioresponse <- function(input,
                 })#local
             }#for
          }) #observe
-    }
+    
+    output$forest <- renderPlotly({
+        
+        survival_data <- sample %>%
+            filter(Dataset %in% input$datasets) %>%
+            select(Sample_ID, Dataset, Treatment, OS_d, OS_e) %>%
+            dplyr::rename(OS = OS_e, OS_time = OS_d)
+        
+        #Var_data
+        var_data <- immune_sigs %>%
+            select(Sample_ID, variable = input$var1_surv)
+        
+        outcome <- merge(survival_data, var_data, by = "Sample_ID")
+        
+        fit_cox <- function(dataset, data){
+            
+            data_cox <- data %>% 
+                filter(Dataset == dataset)
+            
+            survival::coxph(survival::Surv(OS_time, OS) ~ (variable), data_cox)
+            
+        }
+        
+        
+        all_hr <- purrr::map(.x = input$datasets, .f= fit_cox, data = outcome)
+        
+        names(all_hr) <- input$datasets
+        
+        meta_stats <- data.frame("Dataset" = names(all_hr), 
+                                 "coef"= sapply(all_hr, with, coefficients),
+                                 "exp.coef" = sapply(all_hr,  function(l) summary(l)$coef[2]), 
+                                 "SE"= sapply(all_hr,  function(l) summary(l)$coef[3]),
+                                 "upper" = sapply(all_hr,  function(l) summary(l)$conf.int[3]),
+                                 "lower" = sapply(all_hr,  function(l) summary(l)$conf.int[4]))
+        
+        log_meta_stats <- meta_stats %>% 
+            mutate(logHR = log10(exp.coef),
+                   logupper = log10(upper),
+                   loglower = log10(lower))
+        print(head(log_meta_stats))
+        
+        
+        p <- ggplot(log_meta_stats, aes(y=Dataset, x=logHR, xmin=loglower, xmax=logupper))+
+            geom_point(color = 'black')+
+            geom_errorbarh(height=.1)+
+            scale_x_continuous(name='Hazard Ratio (log10)')+
+            ylab('Reference')+
+            geom_vline(xintercept=0, color='black', linetype='dashed')+
+            theme_bw()
+        
+        plotly::ggplotly(p)
+    })
+    
+    
+    # adding table of info about the datasets is, for some unknown reason, influencing the other outputs
+    # output$io_datasets_df <- DT::renderDT({
+    #     sample %>%
+    #         group_by(Dataset, Tissue, Drug, CTLA4_Pretreatment) %>%
+    #         summarise(Size = n())
+    # })
+}
    
