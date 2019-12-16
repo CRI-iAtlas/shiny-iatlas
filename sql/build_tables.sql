@@ -108,12 +108,12 @@ CREATE TABLE results (
     log10_p_value NUMERIC,
     log10_fold_change NUMERIC,
     correlation SMALLINT,
-    n INTEGER,
+    n_wt INTEGER,
+    n_mut INTEGER,
     PRIMARY KEY (id)
 );
 ALTER TABLE results ADD COLUMN label_id INTEGER REFERENCES result_labels;
 ALTER TABLE results ADD COLUMN tag_id INTEGER REFERENCES tags;
-ALTER TABLE results ADD COLUMN gene_id INTEGER REFERENCES genes;
 
 -- genes_to_types table
 CREATE TABLE genes_to_types (gene_id INTEGER REFERENCES genes, "type_id" INTEGER REFERENCES gene_types);

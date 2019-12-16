@@ -194,20 +194,17 @@ rebuild_samples_to_tags <- function(samples_to_tags, id, current_tag_name, sampl
   found = FALSE
   if (current_tag_name %in% sample_set$TCGA_Study) {
     found = TRUE
-    current_sample_set <- sample_set %>%
-      dplyr::distinct(sample, TCGA_Study)
+    current_sample_set <- sample_set %>% dplyr::distinct(sample, TCGA_Study)
   }
   
   if (current_tag_name %in% sample_set$TCGA_Subtype) {
     found = TRUE
-    current_sample_set <- sample_set %>%
-      dplyr::distinct(sample, TCGA_Subtype)
+    current_sample_set <- sample_set %>% dplyr::distinct(sample, TCGA_Subtype)
   }
   
   if (current_tag_name %in% sample_set$Immune_Subtype) {
     found = TRUE
-    current_sample_set <- sample_set %>%
-      dplyr::distinct(sample, Immune_Subtype)
+    current_sample_set <- sample_set %>% dplyr::distinct(sample, Immune_Subtype)
   }
   if (isTRUE(found)) {
     purrr::pmap(current_sample_set, ~{

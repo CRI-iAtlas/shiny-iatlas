@@ -71,6 +71,8 @@ source("database/build_gene_tables.R", chdir = TRUE)
 
 source("database/build_samples_tables.R", chdir = TRUE)
 
+source("database/build_results_tables.R", chdir = TRUE)
+
 # Close the database connection.
 RPostgres::dbDisconnect(.GlobalEnv$con)
 
