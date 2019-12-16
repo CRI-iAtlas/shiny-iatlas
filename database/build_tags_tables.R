@@ -29,7 +29,7 @@ tags <- tags_db %>% .GlobalEnv$rebuild_tags(tags_db) %>%
   dplyr::select(-c("subtype_group_display"))
 
 cat(crayon::magenta("Building tags table."), fill = TRUE)
-table_written <- tags %>% .GlobalEnv$write_table_ts(.GlobalEnv$con, "tags", .)
+table_written <- tags %>% .GlobalEnv$write_table_ts("tags")
 cat(crayon::blue("Built tags table."), fill = TRUE)
 
 ### Clean up ###

@@ -63,8 +63,8 @@ samples <- all_samples %>%
   dplyr::mutate(tissue_id = stringi::stri_extract_first(tissue_id, regex = "[\\w]{4}-[\\w]{2}-[\\w]{4}-[\\w]{3}-[\\d]{2}-[\\w]{3}"))
 
 cat(crayon::magenta("Building the samples table."), fill = TRUE)
-table_written <- samples %>% .GlobalEnv$write_table_ts(.GlobalEnv$con, "samples", .)
-samples <- RPostgres::dbReadTable(.GlobalEnv$con, "samples") %>% dplyr::as_tibble()
+table_written <- samples %>% .GlobalEnv$write_table_ts("samples")
+samples <- .GlobalEnv$read_table("samples") %>% dplyr::as_tibble()
 cat(crayon::blue("Built the samples table."), fill = TRUE)
 
 # Remove the large til_image_links as we are done with it.
@@ -73,13 +73,13 @@ cat("Cleaned up.", fill = TRUE)
 gc()
 
 cat(crayon::magenta("Building samples_to_tags data."), fill = TRUE)
-tags <- RPostgres::dbReadTable(.GlobalEnv$con, "tags") %>%
+tags <- .GlobalEnv$read_table("tags") %>%
   dplyr::as_tibble() %>%
   dplyr::select(id:name)
 tags_length <- length(tags$name)
 tags <- tags %>% as.list
 samples_to_tags <- dplyr::tibble() %>% tibble::add_column(sample_id = NA %>% as.integer, tag_id = NA %>% as.integer)
-sample_set <- all_samples %>% dplyr::select(sample, TCGA_Study, TCGA_Subtype, Immune_Subtype)
+sample_set <- all_samples %>% dplyr::distinct(sample, TCGA_Study, TCGA_Subtype, Immune_Subtype)
 
 purrr::pmap(tags, ~{
   current_id <- ..1
@@ -89,8 +89,6 @@ purrr::pmap(tags, ~{
   svMisc::progress(row_number, tags_length - 1, progress.bar = TRUE)
 
   sample_set <- sample_set %>%
-    dplyr::select(sample, TCGA_Study, TCGA_Subtype, Immune_Subtype) %>%
-    dplyr::distinct(sample, TCGA_Study, TCGA_Subtype, Immune_Subtype) %>%
     dplyr::filter(TCGA_Study == current_tag_name | TCGA_Subtype == current_tag_name | Immune_Subtype == current_tag_name)
 
   samples_to_tags <<- samples_to_tags %>%
@@ -110,11 +108,11 @@ cat("Cleaned up.", fill = TRUE)
 gc()
 
 cat(crayon::magenta("Building samples_to_tags table."), fill = TRUE)
-table_written <- samples_to_tags %>% .GlobalEnv$write_table_ts(.GlobalEnv$con, "samples_to_tags", .)
+table_written <- samples_to_tags %>% .GlobalEnv$write_table_ts("samples_to_tags")
 cat(crayon::blue("Built samples_to_tags table."), fill = TRUE)
 
 cat(crayon::magenta("Building samples_to_features data."), fill = TRUE)
-features <- RPostgres::dbReadTable(.GlobalEnv$con, "features") %>%
+features <- .GlobalEnv$read_table("features") %>%
   dplyr::as_tibble() %>%
   dplyr::select(id:name)
 features_length <- length(features$name)
@@ -157,61 +155,61 @@ cat("Cleaned up.", fill = TRUE)
 gc()
 
 cat(crayon::magenta("Building features_to_samples table\n(Please be patient, this may take a little while as there are many rows to write.)"), fill = TRUE)
-table_written <- features_to_samples %>% .GlobalEnv$write_table_ts(.GlobalEnv$con, "features_to_samples", .)
+table_written <- features_to_samples %>% .GlobalEnv$write_table_ts("features_to_samples")
 cat(crayon::blue("Built features_to_samples table."), fill = TRUE)
 
-# cat(crayon::magenta("Building genes_to_samples."), fill = TRUE)
-# genes <- RPostgres::dbReadTable(.GlobalEnv$con, "genes") %>%
-#   dplyr::as_tibble() %>%
-#   dplyr::select(id:hgnc)
-# genes_length <- length(genes$hgnc)
-# genes <- genes %>% as.list
-# genes_to_samples <- dplyr::tibble() %>%
-#   tibble::add_column(
-#     gene_id = NA %>% as.integer,
-#     sample_id = NA %>% as.integer,
-#     status = NA %>% as.character,
-#     rna_seq_expr = NA %>% as.numeric
-#   )
-# sample_set <- all_samples %>% dplyr::select(sample, gene, status, rna_seq_expr)
-# 
-# purrr::pmap(genes, ~{
-#   current_id <- ..1
-#   current_hgnc <- ..2
-#   row_number <- which(current_id == genes$id)
-# 
-#   svMisc::progress(row_number, genes_length - 1, progress.bar = TRUE)
-# 
-#   sample_set <- sample_set %>%
-#     dplyr::filter(gene == current_hgnc) %>%
-#     dplyr::distinct(sample, status, rna_seq_expr)
-# 
-#   genes_to_samples <<- genes_to_samples %>% .GlobalEnv$rebuild_genes_to_samples(current_id, sample_set, genes)
-# 
-#   if (row_number == genes_length) {
-#     cat(crayon::blue("Built genes_to_samples."), fill = TRUE)
-#   }
-# 
-#   rm(current_id)
-#   rm(current_hgnc)
-#   rm(row_number)
-#   rm(sample_set)
-# })
-# 
-# cat("Cleaned up.", fill = TRUE)
-# gc()
-# 
-# cat(crayon::magenta("Building genes_to_samples table.\n(These are two large datasets, please be patient as they are rebuilt.)"), fill = TRUE)
-# table_written <- genes_to_samples %>% .GlobalEnv$write_table_ts(.GlobalEnv$con, "genes_to_samples", .)
-# cat(crayon::blue("Built genes_to_samples table."), fill = TRUE)
+cat(crayon::magenta("Building genes_to_samples."), fill = TRUE)
+genes <- .GlobalEnv$read_table("genes") %>%
+  dplyr::as_tibble() %>%
+  dplyr::select(id:hgnc)
+genes_length <- length(genes$hgnc)
+genes <- genes %>% as.list
+genes_to_samples <- dplyr::tibble() %>%
+  tibble::add_column(
+    gene_id = NA %>% as.integer,
+    sample_id = NA %>% as.integer,
+    status = NA %>% as.character,
+    rna_seq_expr = NA %>% as.numeric
+  )
+sample_set <- all_samples %>% dplyr::select(sample, gene, status, rna_seq_expr)
+
+purrr::pmap(genes, ~{
+  current_id <- ..1
+  current_hgnc <- ..2
+  row_number <- which(current_id == genes$id)
+
+  svMisc::progress(row_number, genes_length - 1, progress.bar = TRUE)
+
+  sample_set <- sample_set %>%
+    dplyr::filter(gene == current_hgnc) %>%
+    dplyr::distinct(sample, status, rna_seq_expr)
+
+  genes_to_samples <<- genes_to_samples %>% .GlobalEnv$rebuild_genes_to_samples(current_id, sample_set, genes)
+
+  if (row_number == genes_length) {
+    cat(crayon::blue("Built genes_to_samples."), fill = TRUE)
+  }
+
+  rm(current_id)
+  rm(current_hgnc)
+  rm(row_number)
+  rm(sample_set)
+})
+
+cat("Cleaned up.", fill = TRUE)
+gc()
+
+cat(crayon::magenta("Building genes_to_samples table.\n(These are two large datasets, please be patient as they are rebuilt.)"), fill = TRUE)
+table_written <- genes_to_samples %>% .GlobalEnv$write_table_ts("genes_to_samples")
+cat(crayon::blue("Built genes_to_samples table."), fill = TRUE)
 
 # Remove the data we are done with.
 rm(features_to_samples)
 rm(features)
 rm(features_length)
-# rm(genes)
-# rm(genes_length)
-# rm(genes_to_samples)
+rm(genes)
+rm(genes_length)
+rm(genes_to_samples)
 rm(tags)
 rm(tags_length)
 rm(table_written)

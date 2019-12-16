@@ -21,12 +21,12 @@ result_labels <- all_results %>%
 cat(crayon::blue("Built result_labels data."), fill = TRUE)
 
 cat(crayon::magenta("Building result_labels table."), fill = TRUE)
-table_written <- result_labels %>% .GlobalEnv$write_table_ts(.GlobalEnv$con, "result_labels", .)
-result_labels <- RPostgres::dbReadTable(.GlobalEnv$con, "result_labels") %>% dplyr::as_tibble()
+table_written <- result_labels %>% .GlobalEnv$write_table_ts("result_labels")
+result_labels <- .GlobalEnv$read_table("result_labels") %>% dplyr::as_tibble()
 cat(crayon::blue("Built result_labels table."), fill = TRUE)
 
 cat(crayon::magenta("Building results data."), fill = TRUE)
-tags <- RPostgres::dbReadTable(.GlobalEnv$con, "tags") %>%
+tags <- .GlobalEnv$read_table("tags") %>%
   dplyr::as_tibble() %>%
   dplyr::select(id, name)
 results <- all_results %>%
@@ -41,11 +41,11 @@ results <- all_results %>%
 cat(crayon::blue("Built results data."), fill = TRUE)
 
 cat(crayon::magenta("Building results table.\n(Please be patient, this may take a little while as there are many rows to write.)"), fill = TRUE)
-table_written <- results %>% dplyr::select(-c("feature")) %>% .GlobalEnv$write_table_ts(.GlobalEnv$con, "results", .)
+table_written <- results %>% dplyr::select(-c("feature")) %>% .GlobalEnv$write_table_ts("results")
 cat(crayon::blue("Built results table."), fill = TRUE)
 
 cat(crayon::magenta("Building features_to_results data."), fill = TRUE)
-features <- RPostgres::dbReadTable(.GlobalEnv$con, "features") %>%
+features <- .GlobalEnv$read_table("features") %>%
   dplyr::as_tibble() %>%
   dplyr::select(id, name) %>%
   dplyr::rename_at("id", ~("feature_id"))
@@ -56,8 +56,8 @@ features_to_results <- results %>%
   dplyr::distinct(feature_id, result_id)
 cat(crayon::blue("Built features_to_results data."), fill = TRUE)
 
-cat(crayon::magenta("Building features_to_results table.\n(Please be patient, this may take a little while as there are many rows to write.)"), fill = TRUE)
-table_written <- features_to_results %>% .GlobalEnv$write_table_ts(.GlobalEnv$con, "features_to_results", .)
+cat(crayon::magenta("Building features_to_results table.\n(Please be patient, this may take a little while as there are over a million rows to write.)"), fill = TRUE)
+table_written <- features_to_results %>% .GlobalEnv$write_table_ts("features_to_results")
 cat(crayon::blue("Built features_to_results table."), fill = TRUE)
 
 # Remove the data we are done with.

@@ -23,8 +23,18 @@ if (!'RPostgres' %in% installed.packages()) {
   install.packages("RPostgres")
 }
 
+# Ensure RPostgres is installed.
+if (!'RPostgres' %in% installed.packages()) {
+  install.packages("RPostgres")
+}
+
+# Ensure pool is installed.
+# if (!'pool' %in% installed.packages()) {
+#   install.packages("pool")
+# }
+
 # Loading crayon
-library(crayon)
+library("crayon")
 
 # Loading svMisc.
 require("svMisc")
@@ -37,6 +47,9 @@ library("magrittr")
 
 # Loading RPostgres loads DBI automatically.
 library("RPostgres")
+
+# Loading pool loads DBI automatically.
+# library("pool")
 
 # build_iatlas_db <- function(env = "dev", reset = "reset") {
 
@@ -58,8 +71,12 @@ source("database/database_functions.R", chdir = TRUE)
 # The database connection.
 source("database/connect_to_db.R", chdir = TRUE)
 
-# Create a global variable to hold the connection.
-con <- .GlobalEnv$connect_to_db()
+# Create a global variable to hold the pool DB connection.
+pool <- .GlobalEnv$connect_to_db()
+
+# onStop(function() {
+#   pool::poolClose(pool)
+# })
 
 cat(crayon::green("Created DB cponnection."), fill = TRUE)
 
@@ -74,13 +91,13 @@ source("database/build_samples_tables.R", chdir = TRUE)
 source("database/build_results_tables.R", chdir = TRUE)
 
 # Close the database connection.
-RPostgres::dbDisconnect(.GlobalEnv$con)
+RPostgres::dbDisconnect(pool)
 
 cat(crayon::green("Closed DB cponnection."), fill = TRUE)
 
 ### Clean up ###
 # Data
-rm(con)
+rm(pool)
 
 # Functions
 rm(connect_to_db)

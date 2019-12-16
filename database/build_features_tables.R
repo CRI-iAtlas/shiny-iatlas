@@ -11,8 +11,8 @@ classes <- features %>%
 
 # Create the classes table with data.
 cat(crayon::magenta("Building classes table."), fill = TRUE)
-table_written <- classes %>% .GlobalEnv$write_table_ts(.GlobalEnv$con, "classes", .)
-classes <- RPostgres::dbReadTable(.GlobalEnv$con, "classes") %>%
+table_written <- classes %>% .GlobalEnv$write_table_ts("classes")
+classes <- .GlobalEnv$read_table("classes") %>%
   dplyr::as_tibble() %>%
   dplyr::select(id:name)
 cat(crayon::blue("Built classes table."), fill = TRUE)
@@ -26,8 +26,8 @@ method_tags <- features %>%
 
 # Create the method_tags table with data.
 cat(crayon::magenta("Building method_tags table."), fill = TRUE)
-table_written <- method_tags %>% .GlobalEnv$write_table_ts(.GlobalEnv$con, "method_tags", .)
-method_tags <- RPostgres::dbReadTable(.GlobalEnv$con, "method_tags") %>%
+table_written <- method_tags %>% .GlobalEnv$write_table_ts("method_tags")
+method_tags <- .GlobalEnv$read_table("method_tags") %>%
   dplyr::as_tibble() %>%
   dplyr::select(id:name)
 cat(crayon::blue("Built method_tags table."), fill = TRUE)
@@ -41,7 +41,7 @@ features <- features %>%
   dplyr::arrange(name)
 
 cat(crayon::magenta("Built features table."), fill = TRUE)
-table_written <- features %>% .GlobalEnv$write_table_ts(.GlobalEnv$con, "features", .)
+table_written <- features %>% .GlobalEnv$write_table_ts("features")
 cat(crayon::blue("Built features table."), fill = TRUE)
 
 ### Clean up ###

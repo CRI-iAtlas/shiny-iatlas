@@ -1,22 +1,26 @@
 # Database helper functions.
-delete_rows <- function(con, tn) {
-  RPostgres::dbSendQuery(con, paste("DELETE FROM", tn, sep = " "))
+delete_rows <- function(table_name) {
+  RPostgres::dbSendQuery(.GlobalEnv$pool, paste("DELETE FROM", table_name, sep = " "))
 }
 
-write_table_ts <- function(con, tn, df) {
+read_table <- function(table_name) {
+  return(RPostgres::dbReadTable(.GlobalEnv$pool, table_name))
+}
+
+write_table_ts <- function(df, table_name) {
   rs <- FALSE
   # Begin transaction.
-  RPostgres::dbBegin(con)
+  RPostgres::dbBegin(.GlobalEnv$pool)
   tryCatch(
-    rs <- RPostgres::dbWriteTable(con, tn, df, append = TRUE, copy = TRUE),
+    rs <- RPostgres::dbWriteTable(.GlobalEnv$pool, table_name, df, append = TRUE, copy = TRUE),
     error = function(e) {
       warning(e)
       warning("Rolling back transaction")
-      RPostgres::dbRollback(con)
+      RPostgres::dbRollback(.GlobalEnv$pool)
     }
   )
   if (isTRUE(rs)) {
-    return(RPostgres::dbCommit(con))
+    return(RPostgres::dbCommit(.GlobalEnv$pool))
   }
   return(FALSE)
 }
