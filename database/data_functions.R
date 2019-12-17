@@ -64,7 +64,7 @@ rebuild_genes <- function(genes,
   gene_functions <- gene_functions %>% as.list
   pathways <- pathways %>% as.list
   therapy_types <- therapy_types %>% as.list
-  purrr::pmap(super_categories, ~{
+  super_categories %>% purrr::pmap(~{
     current_id <- ..1
     current_super_cat <- ..2
     genes <- genes %>%
@@ -73,8 +73,8 @@ rebuild_genes <- function(genes,
       dplyr::mutate(sc_int = value_to_id(super_category, sc_int, current_id, current_super_cat))
   })
   cat(crayon::cyan("Added super_category ids to genes."), fill = TRUE)
-  
-  purrr::pmap(gene_families, ~{
+
+  gene_families %>% purrr::pmap(~{
     current_id <- ..1
     current_gene_family <- ..2
     genes <- genes %>%
@@ -83,8 +83,8 @@ rebuild_genes <- function(genes,
       dplyr::mutate(gene_family_int = value_to_id(gene_family, gene_family_int, current_id, current_gene_family))
   })
   cat(crayon::cyan("Added gene_family ids to genes."), fill = TRUE)
-  
-  purrr::pmap(immune_checkpoints, ~{
+
+  immune_checkpoints %>% purrr::pmap(~{
     current_id <- ..1
     current_immune_checkpoint <- ..2
     genes <- genes %>%
@@ -93,8 +93,8 @@ rebuild_genes <- function(genes,
       dplyr::mutate(immune_checkpoint_int = value_to_id(immune_checkpoint, immune_checkpoint_int, current_id, current_immune_checkpoint))
   })
   cat(crayon::cyan("Added immune_checkpoint ids to genes."), fill = TRUE)
-  
-  purrr::pmap(gene_functions, ~{
+
+  gene_functions %>% purrr::pmap(~{
     current_id <- ..1
     current_gene_function <- ..2
     genes <- genes %>%
@@ -103,8 +103,8 @@ rebuild_genes <- function(genes,
       dplyr::mutate(gene_function_int = value_to_id(gene_function, gene_function_int, current_id, current_gene_function))
   })
   cat(crayon::cyan("Added gene_function ids to genes."), fill = TRUE)
-  
-  purrr::pmap(pathways, ~{
+
+  pathways %>% purrr::pmap(~{
     current_id <- ..1
     current_pathway <- ..2
     genes <- genes %>%
@@ -113,8 +113,8 @@ rebuild_genes <- function(genes,
       dplyr::mutate(pathway_int = value_to_id(pathway, pathway_int, current_id, current_pathway))
   })
   cat(crayon::cyan("Added pathway ids to genes."), fill = TRUE)
-  
-  purrr::pmap(therapy_types, ~{
+
+  therapy_types %>% purrr::pmap(~{
     current_id <- ..1
     current_therapy_type <- ..2
     genes <- genes %>%
@@ -129,11 +129,11 @@ rebuild_genes <- function(genes,
 rebuild_genes_to_samples <- function(genes_to_samples, id, sample_set, samples) {
   if (!is_df_empty(sample_set)) {
     in_joined <- samples %>%
-      dplyr::inner_join(sample_set, by = c("sample_id" = "sample")) %>% 
-      dplyr::select(id, status, rna_seq_exp) %>%
+      dplyr::inner_join(sample_set, by = c("sample_id" = "sample")) %>%
+      dplyr::select(id, status, rna_seq_expr) %>%
       dplyr::rename_at("id", ~("sample_id")) %>%
       tibble::add_column(gene_id = id %>% as.integer, .before = "sample_id")
-    genes_to_samples <- dplyr::bind_rows(genes_to_samples, in_joined)
+    return(dplyr::bind_rows(in_joined))
   }
   return(genes_to_samples)
 }
@@ -153,17 +153,19 @@ rebuild_gene_relational_data <- function(all_genes, ref_name, field_name = "name
 }
 
 rebuild_tags <- function(tags, all_tags) {
-  # Ensure data.frames.
-  all_tags <- all_tags %>%
-    dplyr::select(id:name) %>%
-    as.data.frame
-  for (row in 1:nrow(all_tags)) {
-    tags <- tags %>%
+  # Ensure list.
+  all_tags <- all_tags %>% dplyr::select(id, name) %>% as.list
+
+  all_tags %>% purrr::pmap(~{
+    current_id <- ..1
+    current_tag <- ..2
+
+    tags <<- tags %>%
       dplyr::select(dplyr::everything()) %>%
       dplyr::rowwise() %>%
-      dplyr::mutate(parent = value_to_id(parent_group, parent, all_tags[row, "id"], all_tags[row, "name"])) %>%
-      dplyr::mutate(subgroup = value_to_id(subtype_group, subgroup, all_tags[row, "id"], all_tags[row, "name"]))
-  }
+      dplyr::mutate(parent = value_to_id(parent_group, parent, current_id, current_tag)) %>%
+      dplyr::mutate(subgroup = value_to_id(subtype_group, subgroup, current_id, current_tag))
+  })
   return(tags)
 }
 
@@ -171,7 +173,7 @@ get_ids_from_heirarchy <- function(df, ids, current_id = NULL) {
   if (!missing(current_id) && !is.null(current_id)) {
     ids <- ids %>% dplyr::add_row(id = current_id)
     current_row <- df %>%
-      dplyr::select(id:parent) %>%
+      dplyr::select(id, parent) %>%
       dplyr::filter(id == current_id)
     if (!is_df_empty(current_row)) {
       ids <- df %>%
@@ -182,32 +184,24 @@ get_ids_from_heirarchy <- function(df, ids, current_id = NULL) {
   return(ids)
 }
 
-build_tag_id_data <- function(tags) {
-  tag_ids <- dplyr::tibble() %>% tibble::add_column(id = NA)
-  for (row in 1:nrow(tags)) {
-    tag_ids <- tags %>% get_ids_from_heirarchy(tag_ids, tags[row, "id"])
-  }
-  return(tag_ids)
-}
-
 rebuild_samples_to_tags <- function(samples_to_tags, id, current_tag_name, sample_set, samples) {
   found = FALSE
   if (current_tag_name %in% sample_set$TCGA_Study) {
     found = TRUE
     current_sample_set <- sample_set %>% dplyr::distinct(sample, TCGA_Study)
   }
-  
+
   if (current_tag_name %in% sample_set$TCGA_Subtype) {
     found = TRUE
     current_sample_set <- sample_set %>% dplyr::distinct(sample, TCGA_Subtype)
   }
-  
+
   if (current_tag_name %in% sample_set$Immune_Subtype) {
     found = TRUE
     current_sample_set <- sample_set %>% dplyr::distinct(sample, Immune_Subtype)
   }
   if (isTRUE(found)) {
-    purrr::pmap(current_sample_set, ~{
+    current_sample_set %>% purrr::pmap(~{
       current_sample <- ..1
       sample_row <- samples %>% dplyr::filter(sample_id == current_sample)
       if (!is_df_empty(sample_row)) {
