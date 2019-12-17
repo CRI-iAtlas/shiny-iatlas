@@ -114,15 +114,15 @@ groupsoverview_UI <- function(id) {
         ),
         
         # group key -----------------------------------------------------------
-        # data_table_module_UI(
-        #     ns("sg_table"),
-        #     title = "Group Key",
-        #     message_html = p(stringr::str_c(
-        #         "This displays attributes and annotations of your choice of",
-        #         "groups.",
-        #         sep = " "
-        #     ))
-        # ),
+        data_table_module_UI(
+            ns("sg_table"),
+            title = "Group Key",
+            message_html = p(stringr::str_c(
+                "This displays attributes and annotations of your choice of",
+                "groups.",
+                sep = " "
+            ))
+        ),
         # group overlap -------------------------------------------------------
         # sectionBox(
         #     title = "Group Overlap",
@@ -366,19 +366,6 @@ groupsoverview <- function(
     })
     
     
-    output$select_group_ui <- renderUI({
-        req(available_groups())
-
-        selectInput(
-            inputId = ns("group_choice"),
-            label = strong("Select Grouping Variable"),
-            choices = c(available_groups()),
-            selected = "Immune Subtype"
-        )
-    })
-    
-    
-    
     # insert/remove filters ----
     
     filter_groups <- reactive({
@@ -490,7 +477,18 @@ groupsoverview <- function(
         c("Number of current samples:", length(selected_samples()))
     })
     
-    # custom groups ----
+    # custom selection ---
+    output$select_group_ui <- renderUI({
+        req(available_groups())
+        
+        selectInput(
+            inputId = ns("group_choice"),
+            label = strong("Select Grouping Variable"),
+            choices = c(available_groups()),
+            selected = "Immune Subtype"
+        )
+    })
+
     # This is so that the conditional panel can see the various reactives
     output$display_custom_numeric <- reactive(input$group_choice == "Custom Numeric")
     outputOptions(output, "display_custom_numeric", suspendWhenHidden = FALSE)
@@ -517,22 +515,39 @@ groupsoverview <- function(
         )
     })
     
-
-
-
+    cohort_con <- reactive({
+        req(input$group_choice, selected_samples())
+        if(input$group_choice %in% c("Gender","Race", "Ethnicity")){
+        } else if (input$group_choice %in% c("Immune_Subtype", "TCGA_Subtype", "TCGA_Study")){
+            req(tags_con(), PANIMMUNE_DB2)
+            parent_id <-  PANIMMUNE_DB2 %>%
+                dplyr::tbl("tags") %>% 
+                dplyr::filter(name == local(input$group_choice)) %>%
+                dplyr::pull(id)
+            result_con <- tags_con() %>% 
+                dplyr::filter(
+                    parent == parent_id,
+                    sample_id %in% local(selected_samples())
+                ) %>% 
+                dplyr::select(sample_id, tag_id, group = name)
+        }
+        return(result_con)
+    })
+    
     # group key ---------------------------------------------------------------
     
     group_key_tbl <- reactive({
-        req(groups_con(), feature_values_con())
-        feature_values_con() %>% 
-            dplyr::select(sample, group) %>% 
-            dplyr::distinct() %>% 
-            dplyr::group_by(group) %>% 
+        req(cohort_con())
+        cohort_con() %>% 
+            dplyr::group_by(tag_id) %>% 
             dplyr::summarise(size = dplyr::n()) %>% 
-            dplyr::inner_join(groups_con()) %>% 
+            dplyr::inner_join(
+                dplyr::tbl(PANIMMUNE_DB2, "tags"), 
+                by = c("tag_id" = "id")
+            ) %>% 
             dplyr::select(
-                `Sample Group` = group, 
-                `Group Name` = group_name, 
+                `Sample Group` = name,
+                `Group Name` = display,
                 `Group Size` = size,
                 Characteristics = characteristics,
                 `Plot Color` = color
