@@ -48,93 +48,93 @@ rm(til_image_links)
 cat("Cleaned up.", fill = TRUE)
 gc()
 
-# cat(crayon::magenta("Building samples_to_tags data."), fill = TRUE)
-# samples_to_tags <- dplyr::tibble() %>% tibble::add_column(sample_id = NA %>% as.integer, tag_id = NA %>% as.integer)
-# tags <- .GlobalEnv$read_table("tags") %>%
-#   dplyr::as_tibble() %>%
-#   dplyr::select(id, name)
-# tags_length <- length(tags$name)
-# tags <- tags %>% as.list
-# samples_to_tags_sample_set <- all_samples %>% dplyr::distinct(sample, TCGA_Study, TCGA_Subtype, Immune_Subtype)
-# 
-# tags %>% purrr::pmap(~{
-#   current_id <- ..1
-#   current_tag_name <- ..2
-#   row_number <- which(current_tag_name == tags$name)
-# 
-#   svMisc::progress(row_number, tags_length - 1, progress.bar = TRUE)
-# 
-#   sample_set <- samples_to_tags_sample_set %>%
-#     dplyr::filter(TCGA_Study == current_tag_name | TCGA_Subtype == current_tag_name | Immune_Subtype == current_tag_name)
-# 
-#   samples_to_tags <<- samples_to_tags %>%
-#     .GlobalEnv$rebuild_samples_to_tags(current_id, current_tag_name, sample_set, samples)
-# 
-#   if (row_number == tags_length) {
-#     cat(crayon::blue("Built samples_to_tags data."), fill = TRUE)
-#   }
-# 
-#   rm(current_id)
-#   rm(current_tag_name)
-#   rm(row_number)
-#   rm(sample_set)
-# })
-# 
-# rm(samples_to_tags_sample_set)
-# cat("Cleaned up.", fill = TRUE)
-# gc()
-# 
-# cat(crayon::magenta("Building samples_to_tags table."), fill = TRUE)
-# table_written <- samples_to_tags %>% .GlobalEnv$write_table_ts("samples_to_tags")
-# cat(crayon::blue("Built samples_to_tags table."), fill = TRUE)
-# 
-# cat(crayon::magenta("Building samples_to_features data."), fill = TRUE)
-# features_to_samples <- dplyr::tibble() %>%
-#   tibble::add_column(
-#     feature_id = NA %>% as.integer,
-#     sample_id = NA %>% as.integer,
-#     value = NA %>% as.numeric,
-#     inf_value = NA %>% as.numeric
-#   )
-# features <- .GlobalEnv$read_table("features") %>%
-#   dplyr::as_tibble() %>%
-#   dplyr::select(id, name)
-# features_length <- length(features$name)
-# features <- features %>% as.list
-# features_to_samples_sample_set <- all_samples %>% dplyr::select(sample, feature, value)
-# 
-# features %>% purrr::pmap(~{
-#   current_id <- ..1
-#   current_feature_name <- ..2
-#   row_number <- which(current_feature_name == features$name)
-# 
-#   svMisc::progress(row_number, features_length - 1, progress.bar = TRUE)
-# 
-#   sample_set <- features_to_samples_sample_set %>%
-#     dplyr::select(sample, feature, value) %>%
-#     dplyr::filter(feature == current_feature_name) %>%
-#     dplyr::distinct(sample, feature, .keep_all = TRUE)
-# 
-#   features_to_samples <<- features_to_samples %>%
-#     .GlobalEnv$rebuild_features_to_samples(current_id, sample_set, samples)
-# 
-#   if (row_number == features_length) {
-#     cat(crayon::blue("Built samples_to_features data."), fill = TRUE)
-#   }
-# 
-#   rm(current_id)
-#   rm(current_feature_name)
-#   rm(row_number)
-#   rm(sample_set)
-# })
-# 
-# rm(features_to_samples_sample_set)
-# cat("Cleaned up.", fill = TRUE)
-# gc()
-# 
-# cat(crayon::magenta("Building features_to_samples table\n(Please be patient, this may take a little while as there are many rows to write.)"), fill = TRUE)
-# table_written <- features_to_samples %>% .GlobalEnv$write_table_ts("features_to_samples")
-# cat(crayon::blue("Built features_to_samples table."), fill = TRUE)
+cat(crayon::magenta("Building samples_to_tags data."), fill = TRUE)
+samples_to_tags <- dplyr::tibble() %>% tibble::add_column(sample_id = NA %>% as.integer, tag_id = NA %>% as.integer)
+tags <- .GlobalEnv$read_table("tags") %>%
+  dplyr::as_tibble() %>%
+  dplyr::select(id, name)
+tags_length <- length(tags$name)
+tags <- tags %>% as.list
+samples_to_tags_sample_set <- all_samples %>% dplyr::distinct(sample, TCGA_Study, TCGA_Subtype, Immune_Subtype)
+
+tags %>% purrr::pmap(~{
+  current_id <- ..1
+  current_tag_name <- ..2
+  row_number <- which(current_tag_name == tags$name)
+
+  svMisc::progress(row_number, tags_length - 1, progress.bar = TRUE)
+
+  sample_set <- samples_to_tags_sample_set %>%
+    dplyr::filter(TCGA_Study == current_tag_name | TCGA_Subtype == current_tag_name | Immune_Subtype == current_tag_name)
+
+  samples_to_tags <<- samples_to_tags %>%
+    .GlobalEnv$rebuild_samples_to_tags(current_id, current_tag_name, sample_set, samples)
+
+  if (row_number == tags_length) {
+    cat(crayon::blue("Built samples_to_tags data."), fill = TRUE)
+  }
+
+  rm(current_id)
+  rm(current_tag_name)
+  rm(row_number)
+  rm(sample_set)
+})
+
+rm(samples_to_tags_sample_set)
+cat("Cleaned up.", fill = TRUE)
+gc()
+
+cat(crayon::magenta("Building samples_to_tags table."), fill = TRUE)
+table_written <- samples_to_tags %>% .GlobalEnv$write_table_ts("samples_to_tags")
+cat(crayon::blue("Built samples_to_tags table."), fill = TRUE)
+
+cat(crayon::magenta("Building samples_to_features data."), fill = TRUE)
+features_to_samples <- dplyr::tibble() %>%
+  tibble::add_column(
+    feature_id = NA %>% as.integer,
+    sample_id = NA %>% as.integer,
+    value = NA %>% as.numeric,
+    inf_value = NA %>% as.numeric
+  )
+features <- .GlobalEnv$read_table("features") %>%
+  dplyr::as_tibble() %>%
+  dplyr::select(id, name)
+features_length <- length(features$name)
+features <- features %>% as.list
+features_to_samples_sample_set <- all_samples %>% dplyr::select(sample, feature, value)
+
+features %>% purrr::pmap(~{
+  current_id <- ..1
+  current_feature_name <- ..2
+  row_number <- which(current_feature_name == features$name)
+
+  svMisc::progress(row_number, features_length - 1, progress.bar = TRUE)
+
+  sample_set <- features_to_samples_sample_set %>%
+    dplyr::select(sample, feature, value) %>%
+    dplyr::filter(feature == current_feature_name) %>%
+    dplyr::distinct(sample, feature, .keep_all = TRUE)
+
+  features_to_samples <<- features_to_samples %>%
+    .GlobalEnv$rebuild_features_to_samples(current_id, sample_set, samples)
+
+  if (row_number == features_length) {
+    cat(crayon::blue("Built samples_to_features data."), fill = TRUE)
+  }
+
+  rm(current_id)
+  rm(current_feature_name)
+  rm(row_number)
+  rm(sample_set)
+})
+
+rm(features_to_samples_sample_set)
+cat("Cleaned up.", fill = TRUE)
+gc()
+
+cat(crayon::magenta("Building features_to_samples table\n(Please be patient, this may take a little while as there are many rows to write.)"), fill = TRUE)
+table_written <- features_to_samples %>% .GlobalEnv$write_table_ts("features_to_samples")
+cat(crayon::blue("Built features_to_samples table."), fill = TRUE)
 
 cat(crayon::magenta("Building genes_to_samples data.\n(These are two large datasets, please be patient as they are rebuilt.)"), fill = TRUE)
 genes_to_samples <- dplyr::tibble() %>%
@@ -174,7 +174,7 @@ genes %>% purrr::pmap(~{
   rm(sample_set)
 })
 
-# rm(genes_to_samples_sample_set)
+rm(genes_to_samples_sample_set)
 cat("Cleaned up.", fill = TRUE)
 gc()
 
@@ -183,18 +183,18 @@ table_written <- genes_to_samples %>% .GlobalEnv$write_table_ts("genes_to_sample
 cat(crayon::blue("Built genes_to_samples table."), fill = TRUE)
 
 # Remove the data we are done with.
-# rm(features_to_samples)
-# rm(features)
-# rm(features_length)
-# rm(genes)
+rm(features_to_samples)
+rm(features)
+rm(features_length)
+rm(genes)
 rm(genes_length)
-# rm(genes_to_samples)
-# rm(tags)
-# rm(tags_length)
-# rm(samples_to_tags)
+rm(genes_to_samples)
+rm(tags)
+rm(tags_length)
+rm(samples_to_tags)
 rm(table_written)
-# rm(all_samples)
-# rm(sample_set)
-# rm(samples)
+rm(all_samples)
+rm(sample_set)
+rm(samples)
 cat("Cleaned up.", fill = TRUE)
 gc()
