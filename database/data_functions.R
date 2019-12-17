@@ -133,7 +133,7 @@ rebuild_genes_to_samples <- function(genes_to_samples, id, sample_set, samples) 
       dplyr::select(id, status, rna_seq_expr) %>%
       dplyr::rename_at("id", ~("sample_id")) %>%
       tibble::add_column(gene_id = id %>% as.integer, .before = "sample_id")
-    return(dplyr::bind_rows(in_joined))
+    return(genes_to_samples %>% dplyr::bind_rows(in_joined))
   }
   return(genes_to_samples)
 }
