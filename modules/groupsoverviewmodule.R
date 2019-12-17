@@ -84,16 +84,9 @@ groupsoverview_UI <- function(id) {
                     "Add numeric filter"
                 )
             ),
-            messageBox(
-                width = 12,
-                textOutput(ns("group_filter_text")),
-                textOutput(ns("numeric_filter_text"))
-            ),
             tableBox(
                 width = 12,
-                div(style = "overflow-x: scroll",
-                    textOutput(ns("samples_text"))
-                )
+                textOutput(ns("samples_text"))
             ),
             # group selection ----
             optionsBox(
@@ -412,9 +405,6 @@ groupsoverview <- function(
         remove_ui_event = reactive(input$dataset_choice)
     )
     
-    output$group_filter_text <- renderText({
-        unlist(reactiveValuesToList(group_filter_output()))
-    })
     
     numeric_element_module <- reactive({
         req(features_list, feature_values_con)
@@ -437,25 +427,18 @@ groupsoverview <- function(
         remove_ui_event = reactive(input$dataset_choice)
     )
     
-    output$numeric_filter_text <- renderText({
-        unlist(reactiveValuesToList(numeric_filter_output()))
-    })
-    
     selected_samples <- reactive({
-        print("test")
         req(samples_con(), group_filter_output(), numeric_filter_output())
-        group_filters <- reactiveValuesToList(group_filter_output())
-        print(length(group_filters))
+        group_filters <- group_filter_output() %>% 
+            reactiveValuesToList() %>% 
+            purrr::discard(purrr::map_lgl(., is.null))
         numeric_filters <- numeric_filter_output() %>% 
             reactiveValuesToList() %>% 
-            purrr::keep(., purrr::map(., ~ !is.null(.x)))
-        print(length(numeric_filters))
-        
-        print(group_filters)
-        print(numeric_filters)
+            purrr::discard(purrr::map_lgl(., is.null))
         samples <- samples_con() %>% 
             dplyr::pull(sample_id)
         for(item in group_filters){
+            req(item$parent_group_choice, item$group_choices)
             if(item$parent_group_choice %in% c("Gender","Race", "Ethnicity")){
             } else if (item$parent_group_choice %in% c("Immune_Subtype", "TCGA_Subtype", "TCGA_Study")){
                 sample_ids <- PANIMMUNE_DB2 %>% 
@@ -478,6 +461,7 @@ groupsoverview <- function(
             }
         }
         for(item in numeric_filters){
+            req(item$feature_choice, item$feature_range)
             sample_ids <- PANIMMUNE_DB2 %>%
                 dplyr::tbl("features_to_samples") %>%
                 dplyr::select(sample_id, feature_id, value) %>% 
@@ -503,7 +487,7 @@ groupsoverview <- function(
     })
     
     output$samples_text <- renderText({
-        length(selected_samples())
+        c("Number of current samples:", length(selected_samples()))
     })
     
     # custom groups ----
