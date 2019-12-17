@@ -93,10 +93,10 @@ CREATE TABLE genes (
     "references" TEXT[],
     PRIMARY KEY (id)
 );
-ALTER TABLE genes ADD COLUMN family_id INTEGER REFERENCES gene_families;
+ALTER TABLE genes ADD COLUMN gene_family_id INTEGER REFERENCES gene_families;
 ALTER TABLE genes ADD COLUMN super_cat_id INTEGER REFERENCES super_categories;
 ALTER TABLE genes ADD COLUMN immune_checkpoint_id INTEGER REFERENCES immune_checkpoints;
-ALTER TABLE genes ADD COLUMN function_id INTEGER REFERENCES gene_functions;
+ALTER TABLE genes ADD COLUMN gene_function_id INTEGER REFERENCES gene_functions;
 ALTER TABLE genes ADD COLUMN pathway_id INTEGER REFERENCES pathways;
 ALTER TABLE genes ADD COLUMN therapy_type_id INTEGER REFERENCES therapy_types;
 CREATE UNIQUE INDEX hgnc_index ON genes ("hgnc");
