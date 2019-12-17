@@ -123,7 +123,7 @@ CREATE TABLE genes_to_samples (
     gene_id INTEGER REFERENCES genes NOT NULL,
     sample_id INTEGER REFERENCES samples NOT NULL,
     "status" STATUS_ENUM,
-    "value" NUMERIC
+    "rna_seq_expr" NUMERIC
 );
 
 -- samples_to_tags table
