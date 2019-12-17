@@ -92,8 +92,7 @@ groupsoverview_UI <- function(id) {
             tableBox(
                 width = 12,
                 div(style = "overflow-x: scroll",
-                    DT::dataTableOutput(ns("samples_dt")) %>%
-                        shinycssloaders::withSpinner()
+                    textOutput(ns("samples_text"))
                 )
             ),
             # group selection ----
@@ -251,32 +250,31 @@ groupsoverview <- function(
     samples_con <- reactive({
         req(PANIMMUNE_DB2)
         PANIMMUNE_DB2 %>%
-            dplyr::tbl("samples") %>% 
-            dplyr::rename(sample_id = 1, sample_barcode = sample_id)
+            dplyr::tbl("samples") %>%
+            dplyr::rename(sample_id = id, sample_barcode = sample_id)
     })
     
     tags_con <- reactive({
-        dplyr::tbl(PANIMMUNE_DB2, "tags") %>% 
-            dplyr::filter(id %in% parent) %>% 
-            dplyr::show_query()
-        # PANIMMUNE_DB2 %>%
-        #     dplyr::tbl("samples_to_tags") %>% 
-        #     dplyr::left_join(
-        #         dplyr::tbl(PANIMMUNE_DB2, "tags"), 
-        #         by = c("tag_id" = "id")
-        #     ) %>% 
-        #     # dplyr::as_tibble() %>% 
-        #     dplyr::filter(!tag_id %in% parent) %>% 
-        #     dplyr::show_query()
+        req(PANIMMUNE_DB2)
+        PANIMMUNE_DB2 %>%
+            dplyr::tbl("samples_to_tags") %>%
+            dplyr::left_join(
+                dplyr::tbl(PANIMMUNE_DB2, "tags"),
+                by = c("tag_id" = "id")
+            ) 
     })
     
     feature_values_con <- reactive({
         req(PANIMMUNE_DB2)
         PANIMMUNE_DB2 %>%
             dplyr::tbl("features_to_samples") %>%
-            dplyr::select(feature_id, value) %>% 
-            dplyr::left_join(dplyr::tbl(PANIMMUNE_DB2, "features"), by = c("feature_id" = "id")) %>% 
-            dplyr::select(feature = display, value = value.x)
+            dplyr::select(sample_id, feature_id, value) %>% 
+            dplyr::left_join(
+                dplyr::tbl(PANIMMUNE_DB2, "features"), 
+                by = c("feature_id" = "id")
+            ) %>% 
+            dplyr::select(- value.y) %>%  ### remove!!!
+            dplyr::rename(value = value.x)  ### remove!
     })
     
     
@@ -288,12 +286,15 @@ groupsoverview <- function(
                 dplyr::tbl(PANIMMUNE_DB2, "classes"), 
                 by = c("class" = "id")
             ) %>% 
-            dplyr::select(class = name.y, name = display) %>% 
+            dplyr::select(class = name.y, name = display, feature_id = id) %>% 
             dplyr::as_tibble() %>% 
             dplyr::group_by(class) %>%
-            dplyr::summarise(name = list(name)) %>% 
+            tidyr::nest() %>% 
             dplyr::ungroup() %>% 
-            dplyr::mutate(class = dplyr::if_else(is.na(class), "Other", class)) %>% 
+            dplyr::mutate(
+                class = dplyr::if_else(is.na(class), "Other", class),
+                data = purrr::map(data, tibble::deframe)
+            ) %>%
             tibble::deframe()
     })
     
@@ -383,12 +384,20 @@ groupsoverview <- function(
         )
     })
     
+    
+    
     # insert/remove filters ----
+    
+    filter_groups <- reactive({
+        req(available_groups())
+        setdiff(available_groups(), c("Custom Numeric", "Custom Mutation"))
+    })
+    
     group_element_module <- reactive({
-        req(available_groups, groups_con)
+        req(filter_groups, groups_con)
         purrr::partial(
             group_filter_element_module,
-            group_names_list = available_groups,
+            group_names_list = filter_groups,
             group_values_con = groups_con
         )
     })
@@ -429,51 +438,72 @@ groupsoverview <- function(
     )
     
     output$numeric_filter_text <- renderText({
-        # print(reactiveValuesToList(numeric_filter_output()))
         unlist(reactiveValuesToList(numeric_filter_output()))
     })
     
-    filtered_sample_con <- reactive({
-        #print(reactiveValuesToList(group_filter_output()))
-        req(samples_con(), group_filter_output())
+    selected_samples <- reactive({
+        print("test")
+        req(samples_con(), group_filter_output(), numeric_filter_output())
         group_filters <- reactiveValuesToList(group_filter_output())
+        print(length(group_filters))
+        numeric_filters <- numeric_filter_output() %>% 
+            reactiveValuesToList() %>% 
+            purrr::keep(., purrr::map(., ~ !is.null(.x)))
+        print(length(numeric_filters))
         
+        print(group_filters)
+        print(numeric_filters)
+        samples <- samples_con() %>% 
+            dplyr::pull(sample_id)
         for(item in group_filters){
-            print(item)
-            print(item$parent_group_choice)
             if(item$parent_group_choice %in% c("Gender","Race", "Ethnicity")){
-                print("samples_table")
-                samples_con = samples_con() %>% 
-                    dplyr::filter(local(item$parent_group_choice) %in% local(item$group_choices))
-                print(samples_con())
             } else if (item$parent_group_choice %in% c("Immune_Subtype", "TCGA_Subtype", "TCGA_Study")){
-                print("tags_table")
-                sample_group_tbl <- tags_con()%>% 
-                    dplyr::as_tibble() %>%
-                    dplyr::filter(!tag_id %in% .$parent)
-                samples_con = samples_con() %>% 
-                    dplyr::left_join(tags_con(), by = "sample_id")
-                    
-                    dplyr::filter(, local(item$parent_group_choice) %in% local(item$group_choices))
-            } else if (item$parent_group_choice == "Custom Numeric"){
-                print("Custom Numeric")
-            } else if (item$parent_group_choice == "Custom Mutation"){
-                print("Custom Mutation")
+                sample_ids <- PANIMMUNE_DB2 %>% 
+                    dplyr::tbl("tags") %>% 
+                    dplyr::filter(name ==  local(item$parent_group_choice)) %>% 
+                    dplyr::left_join(
+                        dplyr::tbl(PANIMMUNE_DB2, "tags"),
+                        by = c("id" = "parent")
+                    ) %>% 
+                    dplyr::filter(name.y %in% local(item$group_choices)) %>% 
+                    dplyr::select(tag_id = id.y) %>% 
+                    dplyr::left_join(
+                        dplyr::tbl(PANIMMUNE_DB2, "samples_to_tags")
+                    ) %>% 
+                    dplyr::pull(sample_id)
+
+                samples <- intersect(samples, sample_ids)
             } else {
                 stop("bad selection")
             }
-            
-            # print(item)
-            # print(item$parent_group_choice)
-            # print(item$group_choices)
         }
-        return(samples_con())
+        for(item in numeric_filters){
+            sample_ids <- PANIMMUNE_DB2 %>%
+                dplyr::tbl("features_to_samples") %>%
+                dplyr::select(sample_id, feature_id, value) %>% 
+                dplyr::left_join(
+                    dplyr::tbl(PANIMMUNE_DB2, "features"), 
+                    by = c("feature_id" = "id")
+                ) %>% 
+                dplyr::select(- value.y) %>%  ### remove!!!
+                dplyr::rename(value = value.x) %>%  ### remove!
+                dplyr::filter(
+                    feature_id == local(as.integer(item$feature_choice)),
+                    value <=  local(item$feature_range[[2]]),
+                    value >= local(item$feature_range[[1]])
+                ) %>% 
+                dplyr::pull(sample_id)
+               
+            
+            samples <- intersect(samples, sample_ids)
+        }
+        
+        
+        return(samples)
     })
     
-    output$samples_dt <- DT::renderDT({
-        filtered_sample_con() %>% 
-            dplyr::as_tibble() %>% 
-            DT::datatable()
+    output$samples_text <- renderText({
+        length(selected_samples())
     })
     
     # custom groups ----

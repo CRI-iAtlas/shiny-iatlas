@@ -30,7 +30,7 @@ numeric_filter_element_module <- function(
     output$slider_ui <- renderUI({
         req(feature_values_con(), input$feature_choice)
         tbl <- feature_values_con() %>% 
-            dplyr::filter(feature == local(input$feature_choice)) %>% 
+            dplyr::filter(feature_id == local(input$feature_choice)) %>% 
             dplyr::as_tibble() %>% 
             dplyr::filter(
                 !is.na(value),
@@ -50,11 +50,11 @@ numeric_filter_element_module <- function(
     })
     
     observeEvent(input$feature_choice, {
-        reactive_values[[module_id]]$variable <- input$feature_choice
+        reactive_values[[module_id]]$feature_choice <- input$feature_choice
     })
     
     observeEvent(input$range, {
-        reactive_values[[module_id]]$range <- input$range
+        reactive_values[[module_id]]$feature_range <- input$range
     })
     
     return(reactive_values)
