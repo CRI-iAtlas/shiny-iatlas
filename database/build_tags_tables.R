@@ -17,16 +17,14 @@ parents <- tags %>%
   tibble::add_column(characteristics = NA, parent = NA, subgroup = NA, color = NA, .after = "display") %>%
   dplyr::arrange(name)
 
-tags_db <- tags %>% dplyr::bind_rows(parents)
+tags_db <- tags %>% dplyr::bind_rows(parents) %>% dplyr::arrange(name)
 
-tags_db <- tags_db %>%
-  dplyr::arrange(name) %>%
-  tibble::add_column(id = 1:nrow(tags_db), .before = "name")
+tags_db <- tags_db %>% tibble::add_column(id = 1:nrow(tags_db), .before = "name")
 
 cat(crayon::magenta("Building tags table."), fill = TRUE)
 table_written <-  tags_db %>%
   .GlobalEnv$rebuild_tags(tags_db) %>%
-  dplyr::select(-c("parent_group", "parent_group_display", "subtype_group", "subtype_group_display")) %>% 
+  dplyr::select(-c("parent_group", "parent_group_display", "subtype_group", "subtype_group_display")) %>%
   .GlobalEnv$write_table_ts("tags")
 cat(crayon::blue("Built tags table."), fill = TRUE)
 
