@@ -75,18 +75,17 @@ CREATE TABLE features (
     display VARCHAR,
     "order" INTEGER,
     unit UNIT_ENUM,
-    "value" NUMERIC,
     PRIMARY KEY (id)
 );
-ALTER TABLE features ADD COLUMN class INTEGER REFERENCES classes;
+ALTER TABLE features ADD COLUMN class_id INTEGER REFERENCES classes;
 ALTER TABLE features ADD COLUMN method_tag_id INTEGER REFERENCES method_tags;
 CREATE UNIQUE INDEX feature_name_index ON features ("name");
 
 -- genes table
 CREATE TABLE genes (
     id SERIAL,
-    hgnc VARCHAR NOT NULL,
     entrez INTEGER,
+    hgnc VARCHAR NOT NULL,
     "canonical" VARCHAR,
     "display" VARCHAR,
     "description" VARCHAR,
@@ -109,12 +108,12 @@ CREATE TABLE results (
     log10_p_value NUMERIC,
     log10_fold_change NUMERIC,
     correlation SMALLINT,
-    n INTEGER,
+    n_wt INTEGER,
+    n_mut INTEGER,
     PRIMARY KEY (id)
 );
 ALTER TABLE results ADD COLUMN label_id INTEGER REFERENCES result_labels;
 ALTER TABLE results ADD COLUMN tag_id INTEGER REFERENCES tags;
-ALTER TABLE results ADD COLUMN gene_id INTEGER REFERENCES genes;
 
 -- genes_to_types table
 CREATE TABLE genes_to_types (gene_id INTEGER REFERENCES genes, "type_id" INTEGER REFERENCES gene_types);
@@ -124,7 +123,7 @@ CREATE TABLE genes_to_samples (
     gene_id INTEGER REFERENCES genes NOT NULL,
     sample_id INTEGER REFERENCES samples NOT NULL,
     "status" STATUS_ENUM,
-    "value" NUMERIC
+    "rna_seq_expr" NUMERIC
 );
 
 -- samples_to_tags table

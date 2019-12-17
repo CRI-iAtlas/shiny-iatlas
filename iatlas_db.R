@@ -1,3 +1,8 @@
+# Ensure crayon is installed.
+if (!'crayon' %in% installed.packages()) {
+  install.packages("crayon")
+}
+
 # Ensure svMisc is installed.
 if (!'svMisc' %in% installed.packages()) {
   install.packages("svMisc")
@@ -18,6 +23,19 @@ if (!'RPostgres' %in% installed.packages()) {
   install.packages("RPostgres")
 }
 
+# Ensure RPostgres is installed.
+if (!'RPostgres' %in% installed.packages()) {
+  install.packages("RPostgres")
+}
+
+# Ensure pool is installed.
+# if (!'pool' %in% installed.packages()) {
+#   install.packages("pool")
+# }
+
+# Loading crayon
+library("crayon")
+
 # Loading svMisc.
 require("svMisc")
 
@@ -29,6 +47,9 @@ library("magrittr")
 
 # Loading RPostgres loads DBI automatically.
 library("RPostgres")
+
+# Loading pool loads DBI automatically.
+# library("pool")
 
 # build_iatlas_db <- function(env = "dev", reset = "reset") {
 
@@ -50,43 +71,48 @@ source("database/database_functions.R", chdir = TRUE)
 # The database connection.
 source("database/connect_to_db.R", chdir = TRUE)
 
-# Create a global variable to hold the connection.
-con <- .GlobalEnv$connect_to_db()
+# Create a global variable to hold the pool DB connection.
+pool <- .GlobalEnv$connect_to_db()
 
-cat("Created DB cponnection.", fill = TRUE)
+# onStop(function() {
+#   pool::poolClose(pool)
+# })
+
+cat(crayon::green("Created DB cponnection."), fill = TRUE)
 
 source("database/build_features_tables.R", chdir = TRUE)
 
 source("database/build_tags_tables.R", chdir = TRUE)
 
-source("database/build_samples_tables.R", chdir = TRUE)
-
 source("database/build_gene_tables.R", chdir = TRUE)
 
-# Close the database connection.
-RPostgres::dbDisconnect(.GlobalEnv$con)
+source("database/build_samples_tables.R", chdir = TRUE)
 
-cat("Closed DB cponnection.", fill = TRUE)
+source("database/build_results_tables.R", chdir = TRUE)
+
+# Close the database connection.
+RPostgres::dbDisconnect(pool)
+
+cat(crayon::green("Closed DB cponnection."), fill = TRUE)
 
 ### Clean up ###
 # Data
-rm(con)
+rm(pool)
 
 # Functions
 rm(connect_to_db)
 rm(create_db)
 rm(delete_rows)
-rm(rebuild_features)
-rm(update_features_to_samples)
 rm(rebuild_features_to_samples)
 rm(get_ids_from_heirarchy)
-rm(build_tag_id_data)
 rm(rebuild_samples_to_tags)
 rm(rebuild_gene_relational_data)
 rm(rebuild_genes)
+rm(rebuild_genes_to_samples)
 rm(rebuild_tags)
 rm(switch_value)
 rm(value_to_id)
+rm(read_table)
 rm(write_table_ts)
 rm(is_df_empty)
 rm(link_to_references)
