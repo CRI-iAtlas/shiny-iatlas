@@ -64,9 +64,10 @@ CREATE TABLE tags (
     color VARCHAR,
     PRIMARY KEY (id)
 );
-ALTER TABLE tags ADD COLUMN subgroup INTEGER REFERENCES tags;
-ALTER TABLE tags ADD COLUMN parent INTEGER REFERENCES tags;
 CREATE UNIQUE INDEX tag_name_index ON tags ("name");
+
+-- tags_to_tags table
+CREATE TABLE tags_to_tags (tag_id INTEGER REFERENCES tags NOT NULL, related_tag_id INTEGER REFERENCES tags NOT NULL);
 
 -- features table
 CREATE TABLE features (
