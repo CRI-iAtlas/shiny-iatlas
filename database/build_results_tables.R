@@ -22,10 +22,10 @@ cat(crayon::blue("Built result_labels data."), fill = TRUE)
 
 cat(crayon::magenta("Building result_labels table."), fill = TRUE)
 table_written <- result_labels %>% .GlobalEnv$write_table_ts("result_labels")
-result_labels <- .GlobalEnv$read_table("result_labels") %>% dplyr::as_tibble()
 cat(crayon::blue("Built result_labels table."), fill = TRUE)
 
 cat(crayon::magenta("Building results data."), fill = TRUE)
+result_labels <- .GlobalEnv$read_table("result_labels") %>% dplyr::as_tibble()
 tags <- .GlobalEnv$read_table("tags") %>%
   dplyr::as_tibble() %>%
   dplyr::select(id, name)
