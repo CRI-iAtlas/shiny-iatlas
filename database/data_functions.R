@@ -26,16 +26,6 @@ link_to_references <- function(current_link) {
   return(NA)
 }
 
-value_to_id <- function(reference, current_value, value, reference_match) {
-  if (identical(reference, reference_match)) {
-    return(value)
-  } else if (!is.na(current_value)) {
-    return(current_value)
-  } else {
-    return(NA)
-  }
-}
-
 rebuild_features_to_samples <- function(features_to_samples, id, sample_set, samples) {
   if (!is_df_empty(sample_set)) {
     in_joined <- dplyr::inner_join(samples, sample_set, by = c("sample_id" = "sample")) %>% 
@@ -48,82 +38,6 @@ rebuild_features_to_samples <- function(features_to_samples, id, sample_set, sam
     features_to_samples <- dplyr::bind_rows(features_to_samples, in_joined)
   }
   return(features_to_samples)
-}
-
-rebuild_genes <- function(genes,
-                          super_categories,
-                          gene_families,
-                          immune_checkpoints,
-                          gene_functions,
-                          pathways,
-                          therapy_types) {
-  # Ensure data.frames.
-  super_categories <- super_categories %>% as.list
-  gene_families <- gene_families %>% as.list
-  immune_checkpoints <- immune_checkpoints %>% as.list
-  gene_functions <- gene_functions %>% as.list
-  pathways <- pathways %>% as.list
-  therapy_types <- therapy_types %>% as.list
-  super_categories %>% purrr::pmap(~{
-    current_id <- ..1
-    current_super_cat <- ..2
-    genes <- genes %>%
-      dplyr::select(dplyr::everything()) %>%
-      dplyr::rowwise() %>%
-      dplyr::mutate(sc_int = value_to_id(super_category, sc_int, current_id, current_super_cat))
-  })
-  cat(crayon::cyan("Added super_category ids to genes."), fill = TRUE)
-
-  gene_families %>% purrr::pmap(~{
-    current_id <- ..1
-    current_gene_family <- ..2
-    genes <- genes %>%
-      dplyr::select(dplyr::everything()) %>%
-      dplyr::rowwise() %>%
-      dplyr::mutate(gene_family_int = value_to_id(gene_family, gene_family_int, current_id, current_gene_family))
-  })
-  cat(crayon::cyan("Added gene_family ids to genes."), fill = TRUE)
-
-  immune_checkpoints %>% purrr::pmap(~{
-    current_id <- ..1
-    current_immune_checkpoint <- ..2
-    genes <- genes %>%
-      dplyr::select(dplyr::everything()) %>%
-      dplyr::rowwise() %>%
-      dplyr::mutate(immune_checkpoint_int = value_to_id(immune_checkpoint, immune_checkpoint_int, current_id, current_immune_checkpoint))
-  })
-  cat(crayon::cyan("Added immune_checkpoint ids to genes."), fill = TRUE)
-
-  gene_functions %>% purrr::pmap(~{
-    current_id <- ..1
-    current_gene_function <- ..2
-    genes <- genes %>%
-      dplyr::select(dplyr::everything()) %>%
-      dplyr::rowwise() %>%
-      dplyr::mutate(gene_function_int = value_to_id(gene_function, gene_function_int, current_id, current_gene_function))
-  })
-  cat(crayon::cyan("Added gene_function ids to genes."), fill = TRUE)
-
-  pathways %>% purrr::pmap(~{
-    current_id <- ..1
-    current_pathway <- ..2
-    genes <- genes %>%
-      dplyr::select(dplyr::everything()) %>%
-      dplyr::rowwise() %>%
-      dplyr::mutate(pathway_int = value_to_id(pathway, pathway_int, current_id, current_pathway))
-  })
-  cat(crayon::cyan("Added pathway ids to genes."), fill = TRUE)
-
-  therapy_types %>% purrr::pmap(~{
-    current_id <- ..1
-    current_therapy_type <- ..2
-    genes <- genes %>%
-      dplyr::select(dplyr::everything()) %>%
-      dplyr::rowwise() %>%
-      dplyr::mutate(therapy_type_int = value_to_id(therapy_type, therapy_type_int, current_id, current_therapy_type))
-  })
-  cat(crayon::cyan("Added therapy_type ids to genes."), fill = TRUE)
-  return(genes)
 }
 
 rebuild_genes_to_samples <- function(genes_to_samples, id, sample_set, samples) {
@@ -150,23 +64,6 @@ rebuild_gene_relational_data <- function(all_genes, ref_name, field_name = "name
     dplyr::rename_at(ref_name, ~(field_name)) %>%
     dplyr::arrange(!!rlang::sym(field_name))
   return(relational_data)
-}
-
-rebuild_tags <- function(tags, all_tags) {
-  # Ensure list.
-  all_tags <- all_tags %>% dplyr::select(id, name) %>% as.list
-
-  all_tags %>% purrr::pmap(~{
-    current_id <- ..1
-    current_tag <- ..2
-
-    tags <<- tags %>%
-      dplyr::select(dplyr::everything()) %>%
-      dplyr::rowwise() %>%
-      dplyr::mutate(parent = value_to_id(parent_group, parent, current_id, current_tag)) %>%
-      dplyr::mutate(subgroup = value_to_id(subtype_group, subgroup, current_id, current_tag))
-  })
-  return(tags)
 }
 
 get_ids_from_heirarchy <- function(df, ids, current_id = NULL) {
