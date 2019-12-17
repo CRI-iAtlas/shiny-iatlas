@@ -5,31 +5,25 @@ cat(crayon::blue("Imported feather file for features."), fill = TRUE)
 classes <- features %>%
   dplyr::filter(!is.na(class)) %>%
   dplyr::distinct(class) %>%
-  dplyr::arrange(class) %>%
-  dplyr::select(class) %>%
-  dplyr::transmute(name = class)
+  dplyr::rename_at("class", ~("name")) %>%
+  dplyr::arrange(name)
 
 # Create the classes table with data.
 cat(crayon::magenta("Building classes table."), fill = TRUE)
 table_written <- classes %>% .GlobalEnv$write_table_ts("classes")
-classes <- .GlobalEnv$read_table("classes") %>%
-  dplyr::as_tibble() %>%
-  dplyr::select(id:name)
+classes <- .GlobalEnv$read_table("classes") %>% dplyr::as_tibble()
 cat(crayon::blue("Built classes table."), fill = TRUE)
 
 method_tags <- features %>%
   dplyr::filter(!is.na(methods_tag)) %>%
   dplyr::distinct(methods_tag) %>%
-  dplyr::arrange(methods_tag) %>%
-  dplyr::select(methods_tag) %>%
-  dplyr::transmute(name = methods_tag)
+  dplyr::rename_at("methods_tag", ~("name")) %>%
+  dplyr::arrange(name)
 
 # Create the method_tags table with data.
 cat(crayon::magenta("Building method_tags table."), fill = TRUE)
 table_written <- method_tags %>% .GlobalEnv$write_table_ts("method_tags")
-method_tags <- .GlobalEnv$read_table("method_tags") %>%
-  dplyr::as_tibble() %>%
-  dplyr::select(id:name)
+method_tags <- .GlobalEnv$read_table("method_tags") %>% dplyr::as_tibble()
 cat(crayon::blue("Built method_tags table."), fill = TRUE)
 
 features <- features %>%
