@@ -30,20 +30,28 @@ To run the app locally:
 
 1. Create a "New Project..." from the "File" menu
 
-    1. Select "Existing Directory"
+   1. Select "Existing Directory"
 
-    1. Navigate to the cloned project folder.
+   1. Navigate to the cloned project folder.
 
-    1. Select the project folder.
+   1. Select the project folder.
 
-    1. Select "create project"
-    > This will create the project and  automatically install your dependencies. If they were previously installed, it'll fast. If not, it may take some time to complete - get something nice to drink :)
+   1. Select "create project"
+      > This will create the project and automatically install your dependencies. If they were previously installed, it'll be fast. If not, it may take some time to complete - get something nice to drink :)
 
-1. Build the database by executing the following in the R console:
+1. Build the database locally with the following:
 
-   ```R
-   source("iatlas_db.R")
-   ```
+   1. Make the database function available by executing the following in the R console:
+
+      ```R
+      source("iatlas_db.R")
+      ```
+
+   1. Build the database by executing the following in the R console:
+
+      ```R
+      build_iatlas_db(reset = "reset")
+      ```
 
 1. Start the app by running:
 
