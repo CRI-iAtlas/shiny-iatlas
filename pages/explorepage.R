@@ -59,11 +59,21 @@ explorepage <- dashboardPage(
       ),
       menuItem("Molecular Response to ICI",
                  icon = icon("bar-chart"), startExpanded = TRUE,
-                 menuSubItem(
+               menuSubItem(
+                 "IO Datasets Overview",
+                 tabName = "ioresponse_overview",
+                 icon = icon("cog")
+               ), 
+                menuSubItem(
                    "IO Clinical Outcomes",
                    tabName = "io_response",
                    icon = icon("cog")
-                 )
+                 ), 
+               menuSubItem(
+                 "IO Multivariate",
+                 tabName = "ioresponse_mult",
+                 icon = icon("cog")
+               )
       ),
       menuItem("Data Description",
                icon = icon("th-list"),
@@ -257,8 +267,16 @@ explorepage <- dashboardPage(
         iotarget_UI("module9")
       ),
       tabItem(
+        tabName = "ioresponse_overview",
+        ioresponseoverview_UI("io_response_overview")
+      ),
+      tabItem(
         tabName = "io_response",
         ioresponse_UI("io_response1")
+      ),
+      tabItem(
+        tabName = "ioresponse_mult",
+        ioresponsemultivariate_UI("io_response2")
       ),
       tabItem(
         tabName = "datainfo",

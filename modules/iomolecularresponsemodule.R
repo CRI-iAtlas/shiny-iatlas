@@ -22,21 +22,6 @@ ioresponse_UI <- function(id){
         ),
         
         sectionBox(
-            title = "Dataset Information",
-            
-            messageBox(
-                width = 24,
-                p("Check the attributes about the available datasets.")
-            ),
-            plotBox(
-                width = 12,
-                DT::DTOutput(
-                    ns("io_datasets_df")
-                )
-                
-            )#plotBox
-        ),#sectionBox
-        sectionBox(
             title = "Clinical Outcomes",
             
             messageBox(
@@ -104,27 +89,7 @@ ioresponse_UI <- function(id){
                         shinycssloaders::withSpinner()
                 )
             )
-        ), #sectionBox
-        sectionBox(
-            title = "Cox Proportional Hazard ratio",
-
-            messageBox(
-                width = 24,
-                p("Heatmap of Cox Proportional Hazard ratio associated with each immunogenomics feature in each dataset.")
-            ),
-            
-            optionsBox(
-                width = 2, 
-                checkboxGroupInput(ns("datasets"), "Select Datasets", choices = c("Gide 2019", "Hugo 2016", 
-                                                                                  "IMVigor210", "Prins 2019", "Riaz 2017", "Van Allen 2015"),
-                                   selected = "Gide 2019"), 
-                uiOutput(ns("heatmap_op"))
-                ),
-            
-            plotBox(
-                plotOutput(ns("io_cox_heatmap"))
-            )
-        )
+        ) #sectionBox
     )
 }
 
@@ -283,13 +248,6 @@ ioresponse <- function(input,
         
         plotly::ggplotly(p)
     })
-    
-    
-    # adding table of info about the datasets is, for some unknown reason, influencing the other outputs
-    # output$io_datasets_df <- DT::renderDT({
-    #     sample %>%
-    #         group_by(Dataset, Tissue, Drug, CTLA4_Pretreatment) %>%
-    #         summarise(Size = n())
-    # })
+ 
 }
    

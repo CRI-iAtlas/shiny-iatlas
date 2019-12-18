@@ -14,6 +14,8 @@ module_files:
   - "modules/submodules.R"
   - "modules/distribution_plot_module.R"
   - "modules/iomolecularresponsemodule.R"
+  - "modules/ioresponseoverviewmodule.R"
+  - "modules/ioresponsemultivariate.R"
   
 function_files:
   - "functions/load_data.R"
