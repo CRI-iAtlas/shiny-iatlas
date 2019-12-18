@@ -265,9 +265,7 @@ groupsoverview <- function(
             dplyr::left_join(
                 dplyr::tbl(PANIMMUNE_DB2, "features"), 
                 by = c("feature_id" = "id")
-            ) %>% 
-            dplyr::select(- value.y) %>%  ### remove!!!
-            dplyr::rename(value = value.x)  ### remove!
+            ) 
     })
     
     
@@ -277,7 +275,7 @@ groupsoverview <- function(
             dplyr::full_join(
                 dplyr::tbl(PANIMMUNE_DB2, "features"),
                 dplyr::tbl(PANIMMUNE_DB2, "classes"), 
-                by = c("class" = "id")
+                by = c("class_id" = "id")
             ) %>% 
             dplyr::select(class = name.y, name = display, feature_id = id) %>% 
             dplyr::as_tibble() %>% 
@@ -291,17 +289,36 @@ groupsoverview <- function(
             tibble::deframe()
     })
     
-
-    
-    genes_list <- reactive({
+    gene_mutation_list <- reactive({
         req(PANIMMUNE_DB2)
-        # PANIMMUNE_DB2 %>%
-        #     dplyr::tbl("genes_to_samples") %>%
-        #     dplyr::filter(!is.na(status)) %>%
-        #     dplyr::pull(gene_id)
-        PANIMMUNE_DB2 %>% 
-            dplyr::tbl("genes") %>% 
-            dplyr::pull(hgnc)
+        PANIMMUNE_DB2 %>%
+            dplyr::tbl("genes_to_samples") %>%
+            dplyr::filter(!is.na(status)) %>%
+            dplyr::select(gene_id) %>% 
+            dplyr::distinct() %>% 
+            dplyr::left_join(
+                dplyr::tbl(PANIMMUNE_DB2, "genes"), 
+                by = c("gene_id" = "id")
+            ) %>% 
+            dplyr::select(hgnc, gene_id) %>% 
+            dplyr::as_tibble() %>% 
+            tibble::deframe()
+    })
+    
+    gene_expression_list <- reactive({
+        req(PANIMMUNE_DB2)
+        PANIMMUNE_DB2 %>%
+            dplyr::tbl("genes_to_samples") %>%
+            dplyr::filter(!is.na(rna_seq_expr)) %>%
+            dplyr::select(gene_id) %>% 
+            dplyr::distinct() %>% 
+            dplyr::left_join(
+                dplyr::tbl(PANIMMUNE_DB2, "genes"), 
+                by = c("gene_id" = "id")
+            ) %>% 
+            dplyr::select(hgnc, gene_id) %>% 
+            dplyr::as_tibble() %>% 
+            tibble::deframe()
     })
     
     # dataset selection ----
@@ -456,8 +473,6 @@ groupsoverview <- function(
                     dplyr::tbl(PANIMMUNE_DB2, "features"), 
                     by = c("feature_id" = "id")
                 ) %>% 
-                dplyr::select(- value.y) %>%  ### remove!!!
-                dplyr::rename(value = value.x) %>%  ### remove!
                 dplyr::filter(
                     feature_id == local(as.integer(item$feature_choice)),
                     value <=  local(item$feature_range[[2]]),
@@ -507,52 +522,88 @@ groupsoverview <- function(
     })
     
     output$select_custom_mutation_group_ui <- renderUI({
-        req(genes_list())
+        req(gene_mutation_list())
         selectInput(
             inputId = ns("custom_gene_mutaton_choice"),
             label = "Select gene:",
-            choices = genes_list()
+            choices = gene_mutation_list()
         )
     })
     
-    cohort_con <- reactive({
+    cohort_cons <- reactive({
         req(input$group_choice, selected_samples())
         if(input$group_choice %in% c("Gender","Race", "Ethnicity")){
         } else if (input$group_choice %in% c("Immune_Subtype", "TCGA_Subtype", "TCGA_Study")){
-            req(tags_con(), PANIMMUNE_DB2)
+            req(PANIMMUNE_DB2)
             parent_id <-  PANIMMUNE_DB2 %>%
                 dplyr::tbl("tags") %>% 
                 dplyr::filter(name == local(input$group_choice)) %>%
                 dplyr::pull(id)
-            result_con <- tags_con() %>% 
+            result_con <- PANIMMUNE_DB2 %>%
+                dplyr::tbl("samples_to_tags") %>%
+                dplyr::left_join(
+                    dplyr::tbl(PANIMMUNE_DB2, "tags"),
+                    by = c("tag_id" = "id")
+                ) %>% 
                 dplyr::filter(
                     parent == parent_id,
                     sample_id %in% local(selected_samples())
                 ) %>% 
                 dplyr::select(sample_id, tag_id, group = name)
+            group_con <- result_con %>% 
+                dplyr::group_by(tag_id) %>% 
+                dplyr::summarise(size = dplyr::n()) %>% 
+                dplyr::inner_join(
+                    dplyr::tbl(PANIMMUNE_DB2, "tags"), 
+                    by = c("tag_id" = "id")
+                ) %>% 
+                dplyr::select(group = name, name = display, size, characteristics, color)
+            result_con <- dplyr::select(result_con, -tag_id)
+        } else if (input$group_choice == "Custom Mutation"){
+            req(input$custom_gene_mutaton_choice)
+            result_con <- PANIMMUNE_DB2 %>%
+                dplyr::tbl("genes_to_samples") %>%
+                dplyr::filter(
+                    gene_id == as.integer(local(input$custom_gene_mutaton_choice)),
+                    !is.na(status),
+                    sample_id %in% local(selected_samples())
+                ) %>% 
+                dplyr::select(sample_id, group = status)
+            group_con <- result_con %>% 
+                dplyr::group_by(group) %>% 
+                dplyr::summarise(size = dplyr::n()) %>% 
+                dplyr::ungroup() %>% 
+                dplyr::mutate(
+                    group = as.character(group),
+                    name = "",
+                    characteristics = "",
+                    color = NA
+                )
+                
+
+        } else {
+            stop("bad selection")
         }
-        return(result_con)
+        return(list("result_con" = result_con, "group_con" = group_con))
     })
     
     # group key ---------------------------------------------------------------
     
     group_key_tbl <- reactive({
-        req(cohort_con())
-        cohort_con() %>% 
-            dplyr::group_by(tag_id) %>% 
-            dplyr::summarise(size = dplyr::n()) %>% 
-            dplyr::inner_join(
-                dplyr::tbl(PANIMMUNE_DB2, "tags"), 
-                by = c("tag_id" = "id")
-            ) %>% 
+        req(cohort_cons())
+        tbl <- cohort_cons()$group_con %>% 
             dplyr::select(
-                `Sample Group` = name,
-                `Group Name` = display,
+                `Sample Group` = group,
+                `Group Name` = name,
                 `Group Size` = size,
                 Characteristics = characteristics,
                 `Plot Color` = color
             ) %>% 
             dplyr::as_tibble()
+        if(any(is.na(tbl$`Plot Color`))){
+            tbl <- dplyr::mutate(tbl, `Plot Color` = viridisLite::viridis(dplyr::n()))
+        }
+        return(tbl)
     })
     
     callModule(
