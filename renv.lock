@@ -1,7 +1,27 @@
 {
   "R": {
-    "Version": "3.6.1",
+    "Version": "3.6.2",
     "Repositories": [
+      {
+        "Name": "CRAN",
+        "URL": "https://cran.rstudio.com"
+      },
+      {
+        "Name": "BioCsoft",
+        "URL": "https://bioconductor.org/packages/3.10/bioc"
+      },
+      {
+        "Name": "BioCann",
+        "URL": "https://bioconductor.org/packages/3.10/data/annotation"
+      },
+      {
+        "Name": "BioCexp",
+        "URL": "https://bioconductor.org/packages/3.10/data/experiment"
+      },
+      {
+        "Name": "BioCworkflows",
+        "URL": "https://bioconductor.org/packages/3.10/workflows"
+      },
       {
         "Name": "CRAN",
         "URL": "https://cran.rstudio.com"
@@ -203,9 +223,9 @@
     },
     "S4Vectors": {
       "Package": "S4Vectors",
-      "Version": "0.24.0",
+      "Version": "0.24.1",
       "Source": "Bioconductor",
-      "Hash": "bdba5c7ebbb68a5739821d8ffbf1da81"
+      "Hash": "000a0c02bffcc361f0805917ee9660cb"
     },
     "XML": {
       "Package": "XML",
@@ -732,6 +752,13 @@
       "Repository": "CRAN",
       "Hash": "6a58b2980a57345822ec5f9c7d2d1751"
     },
+    "hash": {
+      "Package": "hash",
+      "Version": "2.2.6.1",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "9face8606a403e7c076e60ed9c03afad"
+    },
     "haven": {
       "Package": "haven",
       "Version": "2.1.1",
@@ -1242,6 +1269,18 @@
       "Repository": "CRAN",
       "Hash": "5382761b8b318da6dd3fb0f6dae3c43a"
     },
+    "rsconnect": {
+      "Package": "rsconnect",
+      "Version": "0.8.15-9000",
+      "Source": "GitHub",
+      "RemoteType": "github",
+      "RemoteHost": "api.github.com",
+      "RemoteUsername": "rstudio",
+      "RemoteRepo": "rsconnect",
+      "RemoteRef": "master",
+      "RemoteSha": "7dd2453d1b73b30b06e88f7ebc286c6bb39f2645",
+      "Hash": "1b4b87739cff4904103ddf1dd6bab2b7"
+    },
     "rstudioapi": {
       "Package": "rstudioapi",
       "Version": "0.10",
@@ -1367,6 +1406,13 @@
       "Source": "Repository",
       "Repository": "CRAN",
       "Hash": "8b1e5a0955dfe90790d6dc7b6f49fae3"
+    },
+    "svMisc": {
+      "Package": "svMisc",
+      "Version": "1.1.0",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "8d1d88d82e9c8f28a9af43d8a48e875c"
     },
     "sva": {
       "Package": "sva",
