@@ -28,8 +28,8 @@ gc()
 
 # Build the samples table.
 # Get only the sample names (no duplicates).
-cat(crayon::magenta("Preparing samples data."), fill = TRUE)
-samples <- all_samples %>% 
+cat(crayon::magenta("Building samples data."), fill = TRUE)
+samples <- all_samples %>%
   dplyr::distinct(sample) %>%
   dplyr::rename_at("sample", ~("sample_id")) %>%
   merge(til_image_links, by.x = "sample_id", by.y = "sample", all = TRUE) %>%
@@ -37,6 +37,7 @@ samples <- all_samples %>%
   dplyr::rename_at("link", ~("tissue_id")) %>%
   dplyr::rowwise() %>%
   dplyr::mutate(tissue_id = stringi::stri_extract_first(tissue_id, regex = "[\\w]{4}-[\\w]{2}-[\\w]{4}-[\\w]{3}-[\\d]{2}-[\\w]{3}"))
+cat(crayon::blue("Built samples data."), fill = TRUE)
 
 cat(crayon::magenta("Building the samples table."), fill = TRUE)
 table_written <- samples %>% .GlobalEnv$write_table_ts("samples")
