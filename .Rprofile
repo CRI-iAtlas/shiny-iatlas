@@ -1,14 +1,13 @@
-# Initialize renv (this will bootstrap itself).
-source("renv/activate.R")
+inRStudio <- Sys.getenv("RSTUDIO") == "1"
+if (inRStudio) {
+  tryCatch(source("renv/activate.R"), error = function(e) {print(e)})
+  tryCatch(install.packages("startup"), error = function(e) {print(e)})
+}
 
-tryCatch(
-  startup::startup(),
-  error = function(e) {
-    if (!'startup' %in% installed.packages()) {
-      install.packages("startup")
-    }
-    try(startup::startup())
-  }
-)
+# Attempt to run startup; log errors
+tryCatch(startup::startup(), error = function(e) {print(e)})
 
-try(renv::restore(confirm = FALSE))
+# Attempt init renv if inRStudio, log errors
+if (inRStudio) {
+  cat("NOTE: install dependencies with renv::restore()\n")
+}
