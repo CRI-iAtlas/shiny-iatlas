@@ -40,7 +40,12 @@ ioresponsemultivariate_UI <- function(id){
             
             plotBox(
                 width = 10,
-                plotlyOutput(ns("mult_forest"), width = "100%", height = "500px")%>%
+                plotlyOutput(ns("mult_forest"), width = "100%", height = "600px")%>%
+                    shinycssloaders::withSpinner()
+            ),
+            plotBox(
+                width = 12,
+                plotlyOutput(ns("mult_heatmap"), width = "100%", height = "500px")%>%
                     shinycssloaders::withSpinner()
             )
         )
@@ -71,54 +76,60 @@ ioresponsemultivariate <- function(input,
         )
     })
 
+    #create dataframe with cox proportional hazard ratio for the selected datasets
+    
+    mult_ph_df <- reactive({
+        req(input$datasets_mult, input$var2_cox)
+        survival_data <- sample %>%
+            dplyr::filter(Dataset %in% input$datasets_mult) %>%
+            dplyr::select(Sample_ID, Dataset, Treatment, OS_d, OS_e) %>%
+            dplyr::rename(OS = OS_e, OS_time = OS_d)
+        
+        #Var_data
+        var_data <- immune_sigs %>%
+            dplyr::select(Sample_ID, dplyr::one_of(input$var2_cox))
+        
+        outcome <- merge(survival_data, var_data, by = "Sample_ID")
+        
+        cox_features <- as.formula(paste(
+            "survival::Surv(OS_time, OS) ~", 
+            paste0(input$var2_cox, collapse = " + ")
+        ))
+        
+        fit_cox <- function(dataset, data){
+            
+            data_cox <- data %>% 
+                filter(Dataset == dataset)
+            
+            ph <- survival::coxph(cox_features, data_cox)
+            #p <- survminer::ggforest(ph, data = data_cox , main = dataset, cpositions = c(0.02, 0.82, 1))
+            ph
+        }
+        
+        all_hr <- purrr::map(.x = input$datasets_mult, .f= fit_cox, data = outcome)
+        names(all_hr) <- input$datasets_mult
+        
+        create_ph_df <- function(coxphList){
+            
+            coef_stats <- as.data.frame(summary(coxphList)$conf.int)
+            coef_stats$feature <- row.names(coef_stats)
+            coef_stats
+        }
+        
+        cox_coef <- purrr::map(all_hr, create_ph_df)
+        cox_df <- data.table::rbindlist(cox_coef, idcol = TRUE)
+        
+        cox_df <- cox_df %>% 
+            mutate(logHR = log10(`exp(coef)`),
+                   logupper = log10(`upper .95`),
+                   loglower = log10(`lower .95`))
+        
+        cox_df
+    })
     
     output$mult_forest <- renderPlotly({
-        req(input$datasets_mult, input$var2_cox)
-            survival_data <- sample %>%
-                dplyr::filter(Dataset %in% input$datasets_mult) %>%
-                dplyr::select(Sample_ID, Dataset, Treatment, OS_d, OS_e) %>%
-                dplyr::rename(OS = OS_e, OS_time = OS_d)
             
-            #Var_data
-            var_data <- immune_sigs %>%
-                dplyr::select(Sample_ID, dplyr::one_of(input$var2_cox))
-            
-            outcome <- merge(survival_data, var_data, by = "Sample_ID")
-           
-            cox_features <- as.formula(paste(
-                "survival::Surv(OS_time, OS) ~", 
-                paste0(input$var2_cox, collapse = " + ")
-            ))
-            
-            fit_cox <- function(dataset, data){
-                
-                data_cox <- data %>% 
-                    filter(Dataset == dataset)
-                
-                ph <- survival::coxph(cox_features, data_cox)
-                #p <- survminer::ggforest(ph, data = data_cox , main = dataset, cpositions = c(0.02, 0.82, 1))
-               ph
-            }
-            
-            all_hr <- purrr::map(.x = input$datasets_mult, .f= fit_cox, data = outcome)
-            names(all_hr) <- input$datasets_mult
-            
-            create_ph_df <- function(coxphList){
-                
-                coef_stats <- as.data.frame(summary(coxphList)$conf.int)
-                coef_stats$feature <- row.names(coef_stats)
-                coef_stats
-            }
-            
-            cox_coef <- purrr::map(all_hr, create_ph_df)
-            cox_df <- data.table::rbindlist(cox_coef, idcol = TRUE)
-            
-            cox_df <- cox_df %>% 
-                mutate(logHR = log10(`exp(coef)`),
-                       logupper = log10(`upper .95`),
-                       loglower = log10(`lower .95`))
-            
-            p <- ggplot(cox_df, aes(y=feature, x=logHR, xmin=logupper, xmax=loglower))+
+            p <- ggplot(mult_ph_df(), aes(y=feature, x=logHR, xmin=logupper, xmax=loglower))+
                 geom_point(color = 'black')+
                 geom_errorbarh(height=.1)+
                 geom_vline(xintercept=0, color='black', linetype='dashed')+
@@ -129,6 +140,22 @@ ioresponsemultivariate <- function(input,
             gp <- plotly::ggplotly(p)
             #Sending a faceted ggplot to plotly makes the x axis name be plotted over the labels. Adjusting it:
             gp[['x']][['layout']][['annotations']][[1]][['y']] <- -0.1
-            gp #%>% layout(margin = list(b = 75))
+            gp %>% layout(margin = list(b = 75))
+    })
+    
+    output$mult_heatmap <- renderPlotly({
+        print(head(mult_ph_df()))
+
+        heatmap_df <- mult_ph_df() %>%
+            dplyr::select(.id, feature, logHR) %>%
+            tidyr::spread(key = feature, value = logHR)
+
+        row.names(heatmap_df) <- heatmap_df$.id
+        heatmap_df$.id <- NULL
+
+        print(head(heatmap_df))
+
+        create_heatmap(as.matrix(heatmap_df), "heatmap", scale_colors = T)
+        #pheatmap::pheatmap(log10HR[2:5,],cluster_rows = FALSE, cluster_cols = FALSE)
     })
 }
