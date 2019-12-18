@@ -77,6 +77,7 @@ build_iatlas_db <- function(env = "dev", reset = NULL, show_gc_info = FALSE) {
 
   shiny::onStop(function() {
     pool::poolClose(.GlobalEnv$pool)
+    cat(crayon::green("Closed DB connection."), fill = TRUE)
   })
 
   source("database/build_features_tables.R", chdir = TRUE)
@@ -92,7 +93,7 @@ build_iatlas_db <- function(env = "dev", reset = NULL, show_gc_info = FALSE) {
   # Close the database connection.
   pool::poolClose(pool)
 
-  cat(crayon::green("Closed DB cponnection."), fill = TRUE)
+  cat(crayon::green("Closed DB connection."), fill = TRUE)
 
   ### Clean up ###
   # Data
