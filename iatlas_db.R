@@ -29,9 +29,9 @@ if (!'RPostgres' %in% installed.packages()) {
 }
 
 # Ensure pool is installed.
-# if (!'pool' %in% installed.packages()) {
-#   install.packages("pool")
-# }
+if (!'pool' %in% installed.packages()) {
+  install.packages("pool")
+}
 
 # Loading crayon
 library("crayon")
@@ -49,74 +49,73 @@ library("magrittr")
 library("RPostgres")
 
 # Loading pool loads DBI automatically.
-# library("pool")
+library("pool")
 
-# build_iatlas_db <- function(env = "dev", reset = "reset") {
+build_iatlas_db <- function(env = "dev", reset = FALSE, show_gc_info = FALSE) {
+  # Make the create_db function available.
+  source("database/create_db.R", chdir = TRUE)
 
-# Make the create_db function available.
-source("database/create_db.R", chdir = TRUE)
+  # Reset the database so new data is not corrupted by any old data.
+  .GlobalEnv$create_db(env, reset)
 
-# Reset the database so new data is not corrupted by any old data.
-.GlobalEnv$create_db("dev", "reset")
+  # Make the custom data functions available.
+  source("database/data_functions.R", chdir = TRUE)
 
-# Show garbage collection info
-# gcinfo(TRUE)
+  # Make the custom database functions available.
+  source("database/database_functions.R", chdir = TRUE)
 
-# Make the custom data functions available.
-source("database/data_functions.R", chdir = TRUE)
+  # Show garbage collection info
+  gcinfo(show_gc_info)
 
-# Make the custom database functions available.
-source("database/database_functions.R", chdir = TRUE)
+  # The database connection.
+  source("database/connect_to_db.R", chdir = TRUE)
 
-# The database connection.
-source("database/connect_to_db.R", chdir = TRUE)
+  # Create a global variable to hold the pool DB connection.
+  .GlobalEnv$pool <- .GlobalEnv$connect_to_db()
 
-# Create a global variable to hold the pool DB connection.
-pool <- .GlobalEnv$connect_to_db()
+  cat(crayon::green("Created DB connection."), fill = TRUE)
 
-# onStop(function() {
-#   pool::poolClose(pool)
-# })
+  shiny::onStop(function() {
+    pool::poolClose(.GlobalEnv$pool)
+  })
 
-cat(crayon::green("Created DB cponnection."), fill = TRUE)
+  source("database/build_features_tables.R", chdir = TRUE)
 
-source("database/build_features_tables.R", chdir = TRUE)
+  source("database/build_tags_tables.R", chdir = TRUE)
 
-source("database/build_tags_tables.R", chdir = TRUE)
+  source("database/build_gene_tables.R", chdir = TRUE)
 
-source("database/build_gene_tables.R", chdir = TRUE)
+  source("database/build_samples_tables.R", chdir = TRUE)
 
-source("database/build_samples_tables.R", chdir = TRUE)
+  source("database/build_results_tables.R", chdir = TRUE)
 
-source("database/build_results_tables.R", chdir = TRUE)
+  # Close the database connection.
+  pool::poolClose(pool)
 
-# Close the database connection.
-RPostgres::dbDisconnect(pool)
+  cat(crayon::green("Closed DB cponnection."), fill = TRUE)
 
-cat(crayon::green("Closed DB cponnection."), fill = TRUE)
+  ### Clean up ###
+  # Data
+  rm(pool)
 
-### Clean up ###
-# Data
-rm(pool)
+  # Functions
+  rm(connect_to_db)
+  rm(create_db)
+  rm(delete_rows)
+  rm(get_ids_from_heirarchy)
+  rm(is_df_empty)
+  rm(link_to_references)
+  rm(read_table)
+  rm(rebuild_features_to_samples)
+  rm(rebuild_gene_relational_data)
+  rm(rebuild_genes_to_samples)
+  rm(rebuild_samples_to_tags)
+  rm(switch_value)
+  rm(write_table_ts)
 
-# Functions
-rm(connect_to_db)
-rm(create_db)
-rm(delete_rows)
-rm(get_ids_from_heirarchy)
-rm(is_df_empty)
-rm(link_to_references)
-rm(read_table)
-rm(rebuild_features_to_samples)
-rm(rebuild_gene_relational_data)
-rm(rebuild_genes_to_samples)
-rm(rebuild_samples_to_tags)
-rm(switch_value)
-rm(write_table_ts)
+  cat("Cleaned up.", fill = TRUE)
+  gc()
 
-cat("Cleaned up.", fill = TRUE)
-gc()
-
-# Don't show garbage collection details any longer.
-# gcinfo(FALSE)
-# }
+  # Don't show garbage collection details any longer.
+  gcinfo(FALSE)
+}
