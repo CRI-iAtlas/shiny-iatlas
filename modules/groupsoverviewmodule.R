@@ -222,23 +222,21 @@ groupsoverview <- function(
     dataset_to_group_tbl <- reactive({
         dplyr::tribble(
             ~group,            ~dataset,
-            "Immune_Subtype",  "TCGA",
-            "TCGA_Subtype",    "TCGA",
-            "TCGA_Study",      "TCGA",
+            "Immune Subtype",  "TCGA",
+            "TCGA Subtype",    "TCGA",
+            "TCGA Study",      "TCGA",
             "Gender",          "TCGA",
             "Race",            "TCGA",
             "Ethnicity",       "TCGA",
             "Custom Numeric",  "TCGA",
             "Custom Mutation", "TCGA",
-            "Immune_Subtype",  "PCAWG",
-            "PCAWG_Study",     "PCAWG",
+            "Immune Subtype",  "PCAWG",
+            "PCAWG Study",     "PCAWG",
             "Gender",          "PCAWG",
             "Race",            "PCAWG",
             "Custom Numeric",  "PCAWG"
-        ) %>%
-            dplyr::mutate(display = stringr::str_replace_all(group, "_", " ")) #fix!!!
+        ) 
     })
-    
     
     samples_con <- reactive({
         req(PANIMMUNE_DB2)
@@ -257,6 +255,22 @@ groupsoverview <- function(
             ) 
     })
     
+    group_members_con <- reactive({
+        req(PANIMMUNE_DB2)
+        con <- 
+            dplyr::inner_join(
+                PANIMMUNE_DB2 %>% 
+                    dplyr::tbl("tags") %>% 
+                    dplyr::select(id, name, parent),
+                PANIMMUNE_DB2 %>% 
+                    dplyr::tbl("tags") %>% 
+                    dplyr::select(id, display),
+                by = c("parent" = "id")
+            ) %>% 
+            dplyr::as_tibble() %>% 
+            dplyr::select(group = name, parent_group = display)
+    })
+    
     feature_values_con <- reactive({
         req(PANIMMUNE_DB2)
         PANIMMUNE_DB2 %>%
@@ -271,7 +285,7 @@ groupsoverview <- function(
     
     features_list <- reactive({
         req(PANIMMUNE_DB2)
-        features_list <- 
+        list <- 
             dplyr::full_join(
                 dplyr::tbl(PANIMMUNE_DB2, "features"),
                 dplyr::tbl(PANIMMUNE_DB2, "classes"), 
@@ -291,32 +305,36 @@ groupsoverview <- function(
     
     gene_mutation_list <- reactive({
         req(PANIMMUNE_DB2)
-        PANIMMUNE_DB2 %>%
-            dplyr::tbl("genes_to_samples") %>%
-            dplyr::filter(!is.na(status)) %>%
-            dplyr::select(gene_id) %>% 
-            dplyr::distinct() %>% 
-            dplyr::left_join(
-                dplyr::tbl(PANIMMUNE_DB2, "genes"), 
-                by = c("gene_id" = "id")
+        list <- 
+            dplyr::inner_join(
+                PANIMMUNE_DB2 %>% 
+                    dplyr::tbl("genes") %>% 
+                    dplyr::select(hgnc, id),
+                PANIMMUNE_DB2 %>%
+                    dplyr::tbl("genes_to_samples") %>%
+                    dplyr::filter(!is.na(status)) %>% 
+                    dplyr::select(gene_id) %>% 
+                    dplyr::distinct(),
+                by = c("id" = "gene_id")
             ) %>% 
-            dplyr::select(hgnc, gene_id) %>% 
             dplyr::as_tibble() %>% 
             tibble::deframe()
     })
     
     gene_expression_list <- reactive({
         req(PANIMMUNE_DB2)
-        PANIMMUNE_DB2 %>%
-            dplyr::tbl("genes_to_samples") %>%
-            dplyr::filter(!is.na(rna_seq_expr)) %>%
-            dplyr::select(gene_id) %>% 
-            dplyr::distinct() %>% 
-            dplyr::left_join(
-                dplyr::tbl(PANIMMUNE_DB2, "genes"), 
-                by = c("gene_id" = "id")
+        list <- 
+            dplyr::inner_join(
+                PANIMMUNE_DB2 %>% 
+                    dplyr::tbl("genes") %>% 
+                    dplyr::select(hgnc, id),
+                PANIMMUNE_DB2 %>%
+                    dplyr::tbl("genes_to_samples") %>%
+                    dplyr::filter(!is.na(rna_seq_expr)) %>% 
+                    dplyr::select(gene_id) %>% 
+                    dplyr::distinct(),
+                by = c("id" = "gene_id")
             ) %>% 
-            dplyr::select(hgnc, gene_id) %>% 
             dplyr::as_tibble() %>% 
             tibble::deframe()
     })
@@ -367,7 +385,7 @@ groupsoverview <- function(
         available_modules() %>% 
             stringr::str_c(collapse = ", ") %>% 
             stringr::str_c(
-                "Modules available for dataset:", 
+                "Modules available for dataset :", 
                 input$dataset_choice,
                 "are",
                 .,
@@ -391,11 +409,11 @@ groupsoverview <- function(
     })
     
     group_element_module <- reactive({
-        req(filter_groups, groups_con)
+        req(filter_groups, group_members_con)
         purrr::partial(
             group_filter_element_module,
             group_names_list = filter_groups,
-            group_values_con = groups_con
+            group_values_con = group_members_con
         )
     })
     
@@ -444,21 +462,22 @@ groupsoverview <- function(
         for(item in group_filters){
             req(item$parent_group_choice, item$group_choices)
             if(item$parent_group_choice %in% c("Gender","Race", "Ethnicity")){
-            } else if (item$parent_group_choice %in% c("Immune_Subtype", "TCGA_Subtype", "TCGA_Study")){
-                sample_ids <- PANIMMUNE_DB2 %>% 
-                    dplyr::tbl("tags") %>% 
-                    dplyr::filter(name ==  local(item$parent_group_choice)) %>% 
+            } else if (item$parent_group_choice %in% c("Immune Subtype", "TCGA Subtype", "TCGA Study")){
+                sample_ids <- PANIMMUNE_DB2 %>%
+                    dplyr::tbl("tags") %>%
+                    # dplyr::filter(display == "Immune Subtype") %>%
+                    dplyr::filter(display ==  local(item$parent_group_choice)) %>%
                     dplyr::left_join(
                         dplyr::tbl(PANIMMUNE_DB2, "tags"),
                         by = c("id" = "parent")
-                    ) %>% 
-                    dplyr::filter(name.y %in% local(item$group_choices)) %>% 
-                    dplyr::select(tag_id = id.y) %>% 
+                    ) %>%
+                    dplyr::filter(name.y %in% local(item$group_choices)) %>%
+                    # dplyr::filter(name.y %in% c("C1", "C2")) %>%
+                    dplyr::select(tag_id = id.y) %>%
                     dplyr::left_join(
                         dplyr::tbl(PANIMMUNE_DB2, "samples_to_tags")
-                    ) %>% 
+                    ) %>%
                     dplyr::pull(sample_id)
-
                 samples <- intersect(samples, sample_ids)
             } else {
                 stop("bad selection")
@@ -513,7 +532,7 @@ groupsoverview <- function(
 
   
     output$select_custom_numeric_group_ui <- renderUI({
-        req(features_list())
+        req(req(input$group_choice == "Custom Numeric"))
         selectInput(
             inputId = ns("custom_numeric_feature_choice"),
             label = "Select feature:",
@@ -522,7 +541,7 @@ groupsoverview <- function(
     })
     
     output$select_custom_mutation_group_ui <- renderUI({
-        req(gene_mutation_list())
+        req(req(input$group_choice == "Custom Mutation"))
         selectInput(
             inputId = ns("custom_gene_mutaton_choice"),
             label = "Select gene:",
@@ -533,11 +552,11 @@ groupsoverview <- function(
     cohort_cons <- reactive({
         req(input$group_choice, selected_samples())
         if(input$group_choice %in% c("Gender","Race", "Ethnicity")){
-        } else if (input$group_choice %in% c("Immune_Subtype", "TCGA_Subtype", "TCGA_Study")){
+        } else if (input$group_choice %in% c("Immune Subtype", "TCGA Subtype", "TCGA Study")){
             req(PANIMMUNE_DB2)
             parent_id <-  PANIMMUNE_DB2 %>%
                 dplyr::tbl("tags") %>% 
-                dplyr::filter(name == local(input$group_choice)) %>%
+                dplyr::filter(display == local(input$group_choice)) %>%
                 dplyr::pull(id)
             result_con <- PANIMMUNE_DB2 %>%
                 dplyr::tbl("samples_to_tags") %>%
