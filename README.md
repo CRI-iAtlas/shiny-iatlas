@@ -61,10 +61,10 @@ To run the app locally:
 
 ## Development
 
-When adding any new dependencies to the application, they may be added using:
+When adding any new dependencies to the application, they may be added using (where "useful_package" is the name of the package to add):
 
 ```R
-renv::install()
+renv::install("useful_package")
 ```
 
 see [https://rstudio.github.io/renv/reference/install.html](https://rstudio.github.io/renv/reference/install.html) for more details.
@@ -76,6 +76,12 @@ renv::snapshot()
 ```
 
 This will ensure the new package is added to the renv.lock file.
+
+To remove an installed package, run (where "useful_package" is the name of the package to remove):
+
+```R
+renve::remove("useful_package")
+```
 
 For more on package management with renv, please see [https://rstudio.github.io/renv/articles/renv.html](https://rstudio.github.io/renv/articles/renv.html)
 
