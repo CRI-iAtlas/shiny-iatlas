@@ -96,22 +96,22 @@ build_iatlas_db <- function(env = "dev", reset = NULL, show_gc_info = FALSE) {
 
   ### Clean up ###
   # Data
-  rm(pool)
+  rm(pool, pos = ".GlobalEnv")
 
   # Functions
-  rm(connect_to_db)
-  rm(create_db)
-  rm(delete_rows)
-  rm(get_ids_from_heirarchy)
-  rm(is_df_empty)
-  rm(link_to_references)
-  rm(read_table)
-  rm(rebuild_features_to_samples)
-  rm(rebuild_gene_relational_data)
-  rm(rebuild_genes_to_samples)
-  rm(rebuild_samples_to_tags)
-  rm(switch_value)
-  rm(write_table_ts)
+  rm(connect_to_db, pos = ".GlobalEnv")
+  rm(create_db, pos = ".GlobalEnv")
+  rm(delete_rows, pos = ".GlobalEnv")
+  rm(get_ids_from_heirarchy, pos = ".GlobalEnv")
+  rm(is_df_empty, pos = ".GlobalEnv")
+  rm(link_to_references, pos = ".GlobalEnv")
+  rm(read_table, pos = ".GlobalEnv")
+  rm(rebuild_features_to_samples, pos = ".GlobalEnv")
+  rm(rebuild_gene_relational_data, pos = ".GlobalEnv")
+  rm(rebuild_genes_to_samples, pos = ".GlobalEnv")
+  rm(rebuild_samples_to_tags, pos = ".GlobalEnv")
+  rm(switch_value, pos = ".GlobalEnv")
+  rm(write_table_ts, pos = ".GlobalEnv")
 
   cat("Cleaned up.", fill = TRUE)
   gc()
