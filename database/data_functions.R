@@ -5,7 +5,7 @@ is_df_empty <- function(df) {
 switch_value <- function(current_row, reference_name, field_name, tibble_object = dplyr::tibble()) {
   reference_value <- current_row[[reference_name]]
   current_value <- current_row[[field_name]]
-  currect_reference_row <- tibble_object %>% 
+  currect_reference_row <- tibble_object %>%
     dplyr::filter(!!rlang::sym(reference_name) == reference_value)
   if (!.GlobalEnv$is_df_empty(currect_reference_row)) {
     return(currect_reference_row[[field_name]])
@@ -16,197 +16,40 @@ switch_value <- function(current_row, reference_name, field_name, tibble_object 
   }
 }
 
-value_to_id <- function(reference, current_value, value, reference_match) {
-  if (identical(reference, reference_match)) {
-    return(value)
-  } else if (!is.na(current_value)) {
-    return(current_value)
-  } else {
-    return(NA)
-  }
-}
-
-rebuild_features <- function(features, classes, method_tags) {
-  # Ensure data.frames.
-  classes <- classes %>% as.data.frame
-  method_tags <- method_tags %>% as.data.frame
-  for (row in 1:nrow(classes)) {
-    features <- features %>%
-      dplyr::select(dplyr::everything()) %>%
-      dplyr::rowwise() %>%
-      dplyr::mutate(class_int = value_to_id(class, class_int, classes[row, "id"], classes[row, "name"]))
-  }
-  for (row in 1:nrow(method_tags)) {
-    features <- features %>%
-      dplyr::select(dplyr::everything()) %>%
-      dplyr::rowwise() %>%
-      dplyr::mutate(mt_int = value_to_id(methods_tag, mt_int, method_tags[row, "id"], method_tags[row, "name"]))
-  }
-  return(features)
-}
-
-update_features_to_samples <- function(features_to_samples, id, feature_value, features) {
-  # Ensure data.frames.
-  features <- features %>% as.data.frame
-  if (!is_df_empty(features)) {
-    for (row in 1:nrow(features)) {
-      features_to_samples <- features_to_samples %>%
-        dplyr::select(dplyr::everything()) %>%
-        dplyr::rowwise() %>%
-        dplyr::add_row(sample_id = id, feature_id = features[row, "id"], value = feature_value)
+link_to_references <- function(current_link) {
+  if (!is.na(current_link)) {
+    url <- stringi::stri_extract_first(current_link, regex = "(?<=href=\").*?(?=\")")
+    if (!identical(url, "NA") & !is.na(url)) {
+      return(paste("{", url, "}", sep = ""))
     }
+  }
+  return(NA)
+}
+
+rebuild_features_to_samples <- function(features_to_samples, id, sample_set, samples) {
+  if (!is_df_empty(sample_set)) {
+    in_joined <- dplyr::inner_join(samples, sample_set, by = c("sample_id" = "sample")) %>% 
+      dplyr::select(id, value) %>%
+      dplyr::rename_at("id", ~("sample_id")) %>%
+      tibble::add_column(feature_id = id %>% as.integer, .before = "sample_id") %>%
+      tibble::add_column(inf_value = NA %>% as.integer, .after = "value") %>%
+      dplyr::rowwise() %>%
+      dplyr::mutate(inf_value = ifelse(is.infinite(value), value, NA), value = ifelse(is.finite(value), value, NA))
+    features_to_samples <- dplyr::bind_rows(features_to_samples, in_joined)
   }
   return(features_to_samples)
 }
 
-rebuild_features_to_samples <- function(features_to_samples, id, current_sample_id, all_samples, features) {
-  current_sample_set <- all_samples %>%
-    dplyr::select(sample, feature, value) %>%
-    dplyr::filter(sample == current_sample_id) %>% 
-    as.data.frame
-  if (!is_df_empty(current_sample_set)) {
-    for (row in 1:nrow(current_sample_set)) {
-      current_features <- features %>% 
-        dplyr::select(id, name) %>% 
-        dplyr::filter(name == current_sample_set[row, "feature"])
-      features_to_samples <- features_to_samples %>% update_features_to_samples(id, current_sample_set[row, "value"], current_features)
-    }
+rebuild_genes_to_samples <- function(genes_to_samples, id, sample_set, samples) {
+  if (!is_df_empty(sample_set)) {
+    in_joined <- samples %>%
+      dplyr::inner_join(sample_set, by = c("sample_id" = "sample")) %>%
+      dplyr::select(id, status, rna_seq_expr) %>%
+      dplyr::rename_at("id", ~("sample_id")) %>%
+      tibble::add_column(gene_id = id %>% as.integer, .before = "sample_id")
+    return(genes_to_samples %>% dplyr::bind_rows(in_joined))
   }
-  return(features_to_samples)
-}
-
-rebuild_genes <- function(genes,
-                          super_categories, 
-                          gene_families,
-                          immune_checkpoints,
-                          gene_functions,
-                          pathways,
-                          therapy_types) {
-  # Ensure data.frames.
-  super_categories <- super_categories %>% as.data.frame
-  gene_families <- gene_families %>% as.data.frame
-  immune_checkpoints <- immune_checkpoints %>% as.data.frame
-  gene_functions <- gene_functions %>% as.data.frame
-  pathways <- pathways %>% as.data.frame
-  therapy_types <- therapy_types %>% as.data.frame
-  for (row in 1:nrow(super_categories)) {
-    genes <- genes %>%
-      dplyr::select(dplyr::everything()) %>%
-      dplyr::rowwise() %>%
-      dplyr::mutate(sc_int = value_to_id(super_category, sc_int, super_categories[row, "id"], super_categories[row, "name"]))
-  }
-  cat("Added super_category ids to genes.", fill = TRUE)
-  for (row in 1:nrow(gene_families)) {
-    genes <- genes %>%
-      dplyr::select(dplyr::everything()) %>%
-      dplyr::rowwise() %>%
-      dplyr::mutate(gene_family_int = value_to_id(gene_family, gene_family_int, gene_families[row, "id"], gene_families[row, "name"]))
-  }
-  cat("Added gene_family ids to genes.", fill = TRUE)
-  for (row in 1:nrow(immune_checkpoints)) {
-    genes <- genes %>%
-      dplyr::select(dplyr::everything()) %>%
-      dplyr::rowwise() %>%
-      dplyr::mutate(immune_checkpoint_int = value_to_id(immune_checkpoint, immune_checkpoint_int, immune_checkpoints[row, "id"], immune_checkpoints[row, "name"]))
-  }
-  cat("Added immune_checkpoint ids to genes.", fill = TRUE)
-  for (row in 1:nrow(gene_functions)) {
-    genes <- genes %>%
-      dplyr::select(dplyr::everything()) %>%
-      dplyr::rowwise() %>%
-      dplyr::mutate(gene_function_int = value_to_id(gene_function, gene_function_int, gene_functions[row, "id"], gene_functions[row, "name"]))
-  }
-  cat("Added gene_function ids to genes.", fill = TRUE)
-  for (row in 1:nrow(pathways)) {
-    genes <- genes %>%
-      dplyr::select(dplyr::everything()) %>%
-      dplyr::rowwise() %>%
-      dplyr::mutate(pathway_int = value_to_id(pathway, pathway_int, pathways[row, "id"], pathways[row, "name"]))
-  }
-  cat("Added pathway ids to genes.", fill = TRUE)
-  for (row in 1:nrow(therapy_types)) {
-    genes <- genes %>%
-      dplyr::select(dplyr::everything()) %>%
-      dplyr::rowwise() %>%
-      dplyr::mutate(therapy_type_int = value_to_id(therapy_type, therapy_type_int, therapy_types[row, "id"], therapy_types[row, "name"]))
-  }
-  cat("Added therapy_type ids to genes.", fill = TRUE)
-  return(genes)
-}
-
-rebuild_tags <- function(tags, all_tags) {
-  # Ensure data.frames.
-  all_tags <- all_tags %>%
-    dplyr::select(id:name) %>%
-    as.data.frame
-  for (row in 1:nrow(all_tags)) {
-    tags <- tags %>%
-      dplyr::select(dplyr::everything()) %>%
-      dplyr::rowwise() %>%
-      dplyr::mutate(parent = value_to_id(parent_group, parent, all_tags[row, "id"], all_tags[row, "name"])) %>%
-      dplyr::mutate(subgroup = value_to_id(subtype_group, subgroup, all_tags[row, "id"], all_tags[row, "name"]))
-  }
-  return(tags)
-}
-
-get_ids_from_heirarchy <- function(df, ids, current_id = NULL) {
-  if (!missing(current_id) && !is.null(current_id)) {
-    ids <- ids %>% dplyr::add_row(id = current_id)
-    current_row <- df %>%
-      dplyr::select(id:parent) %>%
-      dplyr::filter(id == current_id)
-    if (!is_df_empty(current_row)) {
-      ids <- df %>% 
-        get_ids_from_heirarchy(ids, current_row$parent) %>% 
-        dplyr::distinct(id)
-    }
-  }
-  return(ids)
-}
-
-build_tag_id_data <- function(tags) {
-  tag_ids <- dplyr::tibble() %>% tibble::add_column(id = NA)
-  for (row in 1:nrow(tags)) {
-    tag_ids <- tags %>% get_ids_from_heirarchy(tag_ids, tags[row, "id"])
-  }
-  return(tag_ids)
-}
-
-update_samples_to_tags <- function(samples_to_tags, id, tags) {
-  # Ensure data.frames.
-  tags <- tags %>% as.data.frame
-  if (!is_df_empty(tags)) {
-    tag_ids <- tags %>% 
-      build_tag_id_data %>% 
-      dplyr::distinct(id) %>%
-      as.data.frame
-    for (row in 1:nrow(tag_ids)) {
-      samples_to_tags <- samples_to_tags %>%
-        dplyr::select(dplyr::everything()) %>%
-        dplyr::rowwise() %>%
-        dplyr::add_row(sample_id = id, tag_id = tag_ids[row, "id"])
-    }
-  }
-  return(samples_to_tags)
-}
-
-rebuild_samples_to_tags <- function(samples_to_tags, id, current_sample_id, all_samples, tags) {
-  current_sample_set <- all_samples %>%
-    dplyr::select(sample:Immune_Subtype) %>%
-    dplyr::filter(sample == current_sample_id) %>% 
-    as.data.frame
-  if (!is_df_empty(current_sample_set)) {
-    for (row in 1:nrow(current_sample_set)) {
-      current_tags <- tags %>% 
-        dplyr::select(id, name, parent) %>% 
-        dplyr::filter(name == current_sample_set[row, "TCGA_Study"] |
-                        name == current_sample_set[row, "TCGA_Subtype"] |
-                        name == current_sample_set[row, "Immune_Subtype"])
-      samples_to_tags <- samples_to_tags %>% update_samples_to_tags(id, current_tags)
-    }
-  }
-  samples_to_tags <- samples_to_tags %>% dplyr::distinct(sample_id, tag_id)
-  return(samples_to_tags)
+  return(genes_to_samples)
 }
 
 rebuild_gene_relational_data <- function(all_genes, ref_name, field_name = "name", relational_data = dplyr::tibble()) {
@@ -221,4 +64,49 @@ rebuild_gene_relational_data <- function(all_genes, ref_name, field_name = "name
     dplyr::rename_at(ref_name, ~(field_name)) %>%
     dplyr::arrange(!!rlang::sym(field_name))
   return(relational_data)
+}
+
+get_ids_from_heirarchy <- function(df, ids, current_id = NULL) {
+  if (!missing(current_id) && !is.null(current_id)) {
+    ids <- ids %>% dplyr::add_row(id = current_id)
+    current_row <- df %>%
+      dplyr::select(id, parent) %>%
+      dplyr::filter(id == current_id)
+    if (!is_df_empty(current_row)) {
+      ids <- df %>%
+        get_ids_from_heirarchy(ids, current_row$parent) %>%
+        dplyr::distinct(id)
+    }
+  }
+  return(ids)
+}
+
+rebuild_samples_to_tags <- function(samples_to_tags, id, current_tag_name, sample_set, samples) {
+  found = FALSE
+  if (current_tag_name %in% sample_set$TCGA_Study) {
+    found = TRUE
+    current_sample_set <- sample_set %>% dplyr::distinct(sample, TCGA_Study)
+  }
+
+  if (current_tag_name %in% sample_set$TCGA_Subtype) {
+    found = TRUE
+    current_sample_set <- sample_set %>% dplyr::distinct(sample, TCGA_Subtype)
+  }
+
+  if (current_tag_name %in% sample_set$Immune_Subtype) {
+    found = TRUE
+    current_sample_set <- sample_set %>% dplyr::distinct(sample, Immune_Subtype)
+  }
+  if (isTRUE(found)) {
+    current_sample_set %>% purrr::pmap(~{
+      current_sample <- ..1
+      sample_row <- samples %>% dplyr::filter(sample_id == current_sample)
+      if (!is_df_empty(sample_row)) {
+        samples_to_tags <<- samples_to_tags %>%
+          dplyr::add_row(sample_id = sample_row[["id"]], tag_id = id)
+      }
+    })
+    samples_to_tags <- samples_to_tags %>% dplyr::distinct(sample_id, tag_id)
+  }
+  return(samples_to_tags)
 }

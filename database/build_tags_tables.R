@@ -1,41 +1,78 @@
-# Get data from groups feather file as a data.frame and convert to a tibble.
-tags <- feather::read_feather("../data2/groups.feather")
-
-cat("Imported feather file for tags.", fill = TRUE)
-
-tags <- dplyr::as_tibble(tags) %>%
+cat(crayon::magenta("Importing feather file for tags."), fill = TRUE)
+initial_tags <- feather::read_feather("../data2/groups.feather") %>%
+  dplyr::as_tibble() %>%
   dplyr::rename_at("group", ~("name")) %>%
-  dplyr::rename_at("group_name", ~("display")) %>%
-  tibble::add_column(parent = NA, subgroup = NA, .after = "color")
+  dplyr::rename_at("group_name", ~("display"))
+cat(crayon::blue("Imported feather file for tags."), fill = TRUE)
 
-parents <- tags %>%
+cat(crayon::magenta("Building tags data"), fill = TRUE)
+parents <- initial_tags %>%
   dplyr::filter(!is.na(parent_group)) %>%
   dplyr::distinct(parent_group, .keep_all = TRUE) %>%
-  dplyr::arrange(parent_group) %>%
-  dplyr::select(dplyr::starts_with("parent_group")) %>%
+  dplyr::select(parent_group, parent_group_display) %>%
   dplyr::rename_at("parent_group", ~("name")) %>%
   dplyr::rename_at("parent_group_display", ~("display")) %>%
-  tibble::add_column(characteristics = NA, parent = NA, subgroup = NA, color = NA, .after = "display")
-
-tags_db <- dplyr::bind_rows(tags, parents)
-tags_db <- tags_db %>%
+  tibble::add_column(characteristics = NA, color = NA, .after = "display") %>%
+  dplyr::arrange(name)
+subtype <- initial_tags %>%
+  dplyr::filter(!is.na(subtype_group)) %>%
+  dplyr::distinct(subtype_group, .keep_all = TRUE) %>%
+  dplyr::select(subtype_group, subtype_group_display) %>%
+  dplyr::rename_at("subtype_group", ~("name")) %>%
+  dplyr::rename_at("subtype_group_display", ~("display")) %>%
+  tibble::add_column(characteristics = NA, color = NA, .after = "display") %>%
+  dplyr::arrange(name)
+tags <- parents %>%
+  dplyr::bind_rows(initial_tags, subtype) %>%
   dplyr::arrange(name) %>%
-  tibble::add_column(id = 1:nrow(tags_db), .before = "name")
+  dplyr::distinct(name, .keep_all = TRUE)
+cat(crayon::blue("Built tags data"), fill = TRUE)
 
-tags <- tags_db %>% .GlobalEnv$rebuild_tags(tags_db) %>%
-  dplyr::select(-c("parent_group")) %>%
-  dplyr::select(-c("parent_group_display")) %>%
-  dplyr::select(-c("subtype_group")) %>%
-  dplyr::select(-c("subtype_group_display"))
-tags %>% .GlobalEnv$write_table_ts(.GlobalEnv$con, "tags", .)
+cat(crayon::magenta("Building tags table."), fill = TRUE)
+table_written <- tags %>%
+  dplyr::select(-c("parent_group", "parent_group_display", "subtype_group", "subtype_group_display")) %>%
+  .GlobalEnv$write_table_ts("tags")
+cat(crayon::blue("Built tags table."), fill = TRUE)
 
-cat("Built tags table.", fill = TRUE)
+cat(crayon::magenta("Building tags_to_tags data."), fill = TRUE)
+tags_db <- .GlobalEnv$read_table("tags") %>%
+  dplyr::as_tibble() %>%
+  dplyr::select(id, name)
+all_tags_with_tag_ids <- tags %>%
+  dplyr::inner_join(tags_db, by = "name") %>%
+  dplyr::select(id, parent_group, subtype_group) %>%
+  dplyr::rename_at("id", ~("tag_id"))
+related_parent_tags <- all_tags_with_tag_ids %>%
+  dplyr::rename_at("parent_group", ~("name")) %>%
+  dplyr::inner_join(tags_db, by = "name") %>%
+  dplyr::select(tag_id, id) %>%
+  dplyr::rename_at("id", ~("related_tag_id"))
+related_subtype_tags <- all_tags_with_tag_ids %>%
+  dplyr::rename_at("subtype_group", ~("name")) %>%
+  dplyr::inner_join(tags_db, by = "name") %>%
+  dplyr::select(tag_id, id) %>%
+  dplyr::rename_at("id", ~("related_tag_id"))
+tags_to_tags <- related_parent_tags %>%
+  dplyr::bind_rows(related_subtype_tags) %>%
+  dplyr::distinct(tag_id, related_tag_id)
+cat(crayon::magenta("Built tags_to_tags data."), fill = TRUE)
+
+cat(crayon::magenta("Building tags_to_tags table."), fill = TRUE)
+table_written <- tags_to_tags %>% .GlobalEnv$write_table_ts("tags_to_tags")
+cat(crayon::magenta("Built tags_to_tags table."), fill = TRUE)
 
 ### Clean up ###
 # Data
+rm(all_tags_with_tag_ids)
+rm(initial_tags)
+rm(parents)
+rm(related_parent_tags)
+rm(related_subtype_tags)
+rm(subtype)
 rm(tags)
 rm(tags_db)
-rm(parents)
+rm(tags_to_tags)
+rm(table_written)
 
 cat("Cleaned up.", fill = TRUE)
 gc()

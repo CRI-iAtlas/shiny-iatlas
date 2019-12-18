@@ -18,11 +18,9 @@ The portal is built entirely in **R** and **Shiny** using the **RStudio** develo
 
 - lib cairo: https://www.cairographics.org/
 
-- postgresql: https://www.postgresql.org/download/
-
 - Docker: [https://www.docker.com/products/docker-desktop](https://www.docker.com/products/docker-desktop)
 
-### Initialize R Packages and Database
+### Initialize R Packages, Database and run App
 
 To run the app locally:
 
@@ -38,11 +36,19 @@ To run the app locally:
 
    This may take some time to complete - get something nice to drink :)
 
-1. Build the database by executing the following in the R console:
+1. Build the database locally with the following:
 
-   ```R
-   source("iatlas_db.R")
-   ```
+   1. Make the database function available by executing the following in the R console:
+
+      ```R
+      source("iatlas_db.R")
+      ```
+
+   1. Build the database by executing the following in the R console:
+
+      ```R
+      build_iatlas_db(reset = "reset")
+      ```
 
 1. Start the app by running:
 
@@ -52,10 +58,10 @@ To run the app locally:
 
 ## Development
 
-When adding any new dependencies to the application, they may be added using:
+When adding any new dependencies to the application, they may be added using (where "useful_package" is the name of the package to add):
 
 ```R
-renv::install()
+renv::install("useful_package")
 ```
 
 see [https://rstudio.github.io/renv/reference/install.html](https://rstudio.github.io/renv/reference/install.html) for more details.
@@ -67,6 +73,12 @@ renv::snapshot()
 ```
 
 This will ensure the new package is added to the renv.lock file.
+
+To remove an installed package, run (where "useful_package" is the name of the package to remove):
+
+```R
+renve::remove("useful_package")
+```
 
 For more on package management with renv, please see [https://rstudio.github.io/renv/articles/renv.html](https://rstudio.github.io/renv/articles/renv.html)
 

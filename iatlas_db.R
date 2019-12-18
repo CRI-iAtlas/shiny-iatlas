@@ -1,6 +1,16 @@
+# Ensure crayon is installed.
+if (!'crayon' %in% installed.packages()) {
+  install.packages("crayon")
+}
+
 # Ensure svMisc is installed.
 if (!'svMisc' %in% installed.packages()) {
   install.packages("svMisc")
+}
+
+# Ensure hash is installed.
+if (!'hash' %in% installed.packages()) {
+  install.packages("hash")
 }
 
 # Ensure magrittr is installed.
@@ -13,8 +23,24 @@ if (!'RPostgres' %in% installed.packages()) {
   install.packages("RPostgres")
 }
 
+# Ensure RPostgres is installed.
+if (!'RPostgres' %in% installed.packages()) {
+  install.packages("RPostgres")
+}
+
+# Ensure pool is installed.
+if (!'pool' %in% installed.packages()) {
+  install.packages("pool")
+}
+
+# Loading crayon
+library("crayon")
+
 # Loading svMisc.
 require("svMisc")
+
+# Loading hash
+library("hash")
 
 # Load magrittr so %>% is available.
 library("magrittr")
@@ -22,69 +48,75 @@ library("magrittr")
 # Loading RPostgres loads DBI automatically.
 library("RPostgres")
 
-# build_iatlas_db <- function(env = "dev", reset = "reset") {
+# Loading pool loads DBI automatically.
+library("pool")
 
-# Make the create_db function available.
-source("database/create_db.R", chdir = TRUE)
+build_iatlas_db <- function(env = "dev", reset = NULL, show_gc_info = FALSE) {
+  # Make the create_db function available.
+  source("database/create_db.R", chdir = TRUE)
 
-# Reset the database so new data is not corrupted by any old data.
-.GlobalEnv$create_db("dev", "reset")
+  # Reset the database so new data is not corrupted by any old data.
+  .GlobalEnv$create_db(env, reset)
 
-# Show garbage collection info
-# gcinfo(TRUE)
+  # Make the custom data functions available.
+  source("database/data_functions.R", chdir = TRUE)
 
-# Make the custom data functions available.
-source("database/data_functions.R", chdir = TRUE)
+  # Make the custom database functions available.
+  source("database/database_functions.R", chdir = TRUE)
 
-# Make the custom database functions available.
-source("database/database_functions.R", chdir = TRUE)
+  # Show garbage collection info
+  gcinfo(show_gc_info)
 
-# The database connection.
-source("database/connect_to_db.R", chdir = TRUE)
+  # The database connection.
+  source("database/connect_to_db.R", chdir = TRUE)
 
-# Create a global variable to hold the connection.
-con <- .GlobalEnv$connect_to_db()
+  # Create a global variable to hold the pool DB connection.
+  .GlobalEnv$pool <- .GlobalEnv$connect_to_db()
 
-cat("Created DB cponnection.", fill = TRUE)
+  cat(crayon::green("Created DB connection."), fill = TRUE)
 
-source("database/build_features_tables.R", chdir = TRUE)
+  shiny::onStop(function() {
+    pool::poolClose(.GlobalEnv$pool)
+    cat(crayon::green("Closed DB connection."), fill = TRUE)
+  })
 
-source("database/build_tags_tables.R", chdir = TRUE)
+  source("database/build_features_tables.R", chdir = TRUE)
 
-source("database/build_samples_tables.R", chdir = TRUE)
+  source("database/build_tags_tables.R", chdir = TRUE)
 
-source("database/build_gene_tables.R", chdir = TRUE)
+  source("database/build_gene_tables.R", chdir = TRUE)
 
-# Close the database connection.
-RPostgres::dbDisconnect(.GlobalEnv$con)
+  source("database/build_samples_tables.R", chdir = TRUE)
 
-cat("Closed DB cponnection.", fill = TRUE)
+  source("database/build_results_tables.R", chdir = TRUE)
 
-### Clean up ###
-# Data
-rm(con)
+  # Close the database connection.
+  pool::poolClose(pool)
 
-# Functions
-rm(connect_to_db)
-rm(create_db)
-rm(delete_rows)
-rm(rebuild_features)
-rm(update_features_to_samples)
-rm(rebuild_features_to_samples)
-rm(get_ids_from_heirarchy)
-rm(build_tag_id_data)
-rm(update_samples_to_tags)
-rm(rebuild_samples_to_tags)
-rm(rebuild_gene_relational_data)
-rm(rebuild_tags)
-rm(switch_value)
-rm(value_to_id)
-rm(write_table_ts)
-rm(is_df_empty)
+  cat(crayon::green("Closed DB connection."), fill = TRUE)
 
-cat("Cleaned up.", fill = TRUE)
-gc()
+  ### Clean up ###
+  # Data
+  rm(pool, pos = ".GlobalEnv")
 
-# Don't show garbage collection details any longer.
-# gcinfo(FALSE)
-# }
+  # Functions
+  rm(connect_to_db, pos = ".GlobalEnv")
+  rm(create_db, pos = ".GlobalEnv")
+  rm(delete_rows, pos = ".GlobalEnv")
+  rm(get_ids_from_heirarchy, pos = ".GlobalEnv")
+  rm(is_df_empty, pos = ".GlobalEnv")
+  rm(link_to_references, pos = ".GlobalEnv")
+  rm(read_table, pos = ".GlobalEnv")
+  rm(rebuild_features_to_samples, pos = ".GlobalEnv")
+  rm(rebuild_gene_relational_data, pos = ".GlobalEnv")
+  rm(rebuild_genes_to_samples, pos = ".GlobalEnv")
+  rm(rebuild_samples_to_tags, pos = ".GlobalEnv")
+  rm(switch_value, pos = ".GlobalEnv")
+  rm(write_table_ts, pos = ".GlobalEnv")
+
+  cat("Cleaned up.", fill = TRUE)
+  gc()
+
+  # Don't show garbage collection details any longer.
+  gcinfo(FALSE)
+}

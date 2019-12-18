@@ -64,9 +64,10 @@ CREATE TABLE tags (
     color VARCHAR,
     PRIMARY KEY (id)
 );
-ALTER TABLE tags ADD COLUMN subgroup INTEGER REFERENCES tags;
-ALTER TABLE tags ADD COLUMN parent INTEGER REFERENCES tags;
 CREATE UNIQUE INDEX tag_name_index ON tags ("name");
+
+-- tags_to_tags table
+CREATE TABLE tags_to_tags (tag_id INTEGER REFERENCES tags NOT NULL, related_tag_id INTEGER REFERENCES tags NOT NULL);
 
 -- features table
 CREATE TABLE features (
@@ -75,27 +76,27 @@ CREATE TABLE features (
     display VARCHAR,
     "order" INTEGER,
     unit UNIT_ENUM,
-    "value" NUMERIC,
     PRIMARY KEY (id)
 );
-ALTER TABLE features ADD COLUMN class INTEGER REFERENCES classes;
+ALTER TABLE features ADD COLUMN class_id INTEGER REFERENCES classes;
 ALTER TABLE features ADD COLUMN method_tag_id INTEGER REFERENCES method_tags;
 CREATE UNIQUE INDEX feature_name_index ON features ("name");
 
 -- genes table
 CREATE TABLE genes (
     id SERIAL,
-    hgnc VARCHAR NOT NULL,
     entrez INTEGER,
+    hgnc VARCHAR NOT NULL,
+    "canonical" VARCHAR,
     "display" VARCHAR,
     "description" VARCHAR,
     "references" TEXT[],
     PRIMARY KEY (id)
 );
-ALTER TABLE genes ADD COLUMN family_id INTEGER REFERENCES gene_families;
+ALTER TABLE genes ADD COLUMN gene_family_id INTEGER REFERENCES gene_families;
 ALTER TABLE genes ADD COLUMN super_cat_id INTEGER REFERENCES super_categories;
 ALTER TABLE genes ADD COLUMN immune_checkpoint_id INTEGER REFERENCES immune_checkpoints;
-ALTER TABLE genes ADD COLUMN function_id INTEGER REFERENCES gene_functions;
+ALTER TABLE genes ADD COLUMN gene_function_id INTEGER REFERENCES gene_functions;
 ALTER TABLE genes ADD COLUMN pathway_id INTEGER REFERENCES pathways;
 ALTER TABLE genes ADD COLUMN therapy_type_id INTEGER REFERENCES therapy_types;
 CREATE UNIQUE INDEX hgnc_index ON genes ("hgnc");
@@ -108,12 +109,12 @@ CREATE TABLE results (
     log10_p_value NUMERIC,
     log10_fold_change NUMERIC,
     correlation SMALLINT,
-    n INTEGER,
+    n_wt INTEGER,
+    n_mut INTEGER,
     PRIMARY KEY (id)
 );
 ALTER TABLE results ADD COLUMN label_id INTEGER REFERENCES result_labels;
 ALTER TABLE results ADD COLUMN tag_id INTEGER REFERENCES tags;
-ALTER TABLE results ADD COLUMN gene_id INTEGER REFERENCES genes;
 
 -- genes_to_types table
 CREATE TABLE genes_to_types (gene_id INTEGER REFERENCES genes, "type_id" INTEGER REFERENCES gene_types);
@@ -123,14 +124,19 @@ CREATE TABLE genes_to_samples (
     gene_id INTEGER REFERENCES genes NOT NULL,
     sample_id INTEGER REFERENCES samples NOT NULL,
     "status" STATUS_ENUM,
-    "value" NUMERIC
+    "rna_seq_expr" NUMERIC
 );
 
 -- samples_to_tags table
 CREATE TABLE samples_to_tags (sample_id INTEGER REFERENCES samples, tag_id INTEGER REFERENCES tags);
 
 -- features_to_samples table
-CREATE TABLE features_to_samples (feature_id INTEGER REFERENCES features, sample_id INTEGER REFERENCES samples);
+CREATE TABLE features_to_samples (
+    feature_id INTEGER REFERENCES features,
+    sample_id INTEGER REFERENCES samples,
+    "value" NUMERIC,
+    "inf_value" REAL
+);
 
 -- features_to_results table
 CREATE TABLE features_to_results (feature_id INTEGER REFERENCES features, result_id INTEGER REFERENCES results);
