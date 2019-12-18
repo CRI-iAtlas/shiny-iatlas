@@ -8,9 +8,9 @@ The portal is built entirely in **R** and **Shiny** using the **RStudio** develo
 - [plotly](https://plot.ly/r/)
 - [crosstalk](https://rstudio.github.io/crosstalk/)
 
-## Requirements
+## Install
 
-Install:
+### Install Core Apps and System libraries:
 
 - R: [https://www.r-project.org/](https://www.r-project.org/)
 
@@ -22,39 +22,15 @@ Install:
 
 - Docker: [https://www.docker.com/products/docker-desktop](https://www.docker.com/products/docker-desktop)
 
-## Local Shiny-iAtlas Session
+### Initialize R Packages and Database
 
 To run the app locally:
 
 1. Clone this repository
 
-<!-- 1. In the terminal, change directories to ensure you are in the root of the checked out project.
+1. Open `shiny-iatlas.Rproj`
 
-1. Execute the script to build the database and tables (This may take a little time. Please be patient.):
-
-   - NOTE: On Windows machines:
-     - there MUST be a bash shell available.
-       - Bash may be enabled in Windows (please see [https://stackoverflow.com/a/36465000](https://stackoverflow.com/a/36465000))
-       - Alternatively, Git Bash may be installed (please see [Git Bash Tutorial](https://www.atlassian.com/git/tutorials/git-bash))
-     - In Docker, the location when the project has been cloned, MUST be shared. (please see [Sharing Windows folders with containers](https://token2shell.com/howto/docker/sharing-windows-folders-with-containers/))
-
-   ```bash
-   . ./scripts/create_db.sh
-   ``` -->
-
-1. Start Rstudio
-
-1. Create a "New Project..." from the "File" menu
-
-1. Create a project from an "Existing Directory"
-
-1. Navigate to the cloned project folder.
-
-1. Select the project folder.
-
-   - NOTE: In the "console" tab in Rstudio, a new R session will start. This will execute `source("renv/activate.R")` from the `.Rprofile` file and `renv` will bootstrap itself in.
-
-1. At the prompt in the "console" tab, restore the dependecies by running:
+1. Install packages. In the RStudio console, run:
 
    ```R
    renv::restore()
@@ -96,10 +72,39 @@ For more on package management with renv, please see [https://rstudio.github.io/
 
 ## Deployment
 
-To deploy, run this line:
+The first time you deploy, go through the Deployment-Setup instructions below. Afterwards, deploy with:
 
 ```R
-options(repos = BiocInstaller::biocinstallRepos())
+rsconnect::deployApp()
+```
+
+### Deployment Setup (First-Time-Only)
+
+The first time you deploy there are a few things to do. First, due to a presumed bug in renv, there is an extra, one-time step for configuring any packages loaded directly from github.
+
+* More information: https://docs.rstudio.com/shinyapps.io/getting-started.html (section: "2.4.0.1 Important note on GitHub packages")
+
+```R
+# configure github dependencies for deployment
+# NOTE: renv should take care of this
+#       Perhaps in future versions this will be unnecessary.
+devtools::install_github("th86/concordanceIndex", force=TRUE)
+devtools::install_github("Gibbsdavidl/ImmuneSubtypeClassifier", force=TRUE)
+```
+
+Second, you'll need to set up your credentials for shinyapps.io. You can get your codes from:
+
+* https://www.shinyapps.io/admin/#/tokens
+
+Paste and evaluate your tokens in the RStudio console. They look like this:
+
+```R
+# shinyapps.io example credentials
+rsconnect::setAccountInfo(
+  name='shiny-iatlas',
+  token='xxx',
+  secret='yyy'
+)
 ```
 
 ## Data
