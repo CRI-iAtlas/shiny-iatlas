@@ -40,10 +40,10 @@
     },
     "BH": {
       "Package": "BH",
-      "Version": "1.69.0-1",
+      "Version": "1.72.0-2",
       "Source": "Repository",
       "Repository": "CRAN",
-      "Hash": "f4605d46264b35f53072fc9ee7ace15f"
+      "Hash": "00d67366d2b1bbd0a4dd0279817a66d4"
     },
     "Biobase": {
       "Package": "Biobase",
@@ -106,25 +106,21 @@
     },
     "IRanges": {
       "Package": "IRanges",
-      "Version": "2.20.0",
+      "Version": "2.20.1",
       "Source": "Bioconductor",
-      "Hash": "c416c076aa2445ac6989a6e405af2e30"
+      "Hash": "a17a0b4e2169f7d449138a114376a81d"
     },
     "ImmuneSubtypeClassifier": {
       "Package": "ImmuneSubtypeClassifier",
       "Version": "0.1.0",
       "Source": "GitHub",
       "RemoteType": "github",
+      "RemoteHost": "api.github.com",
       "RemoteRepo": "ImmuneSubtypeClassifier",
       "RemoteUsername": "Gibbsdavidl",
       "RemoteRef": "master",
       "RemoteSha": "59e9aa1d377706819da69771dc0cb2cd13bb23d1",
-      "RemoteHost": "api.github.com",
-      "RemoteRepo.1": "ImmuneSubtypeClassifier",
-      "RemoteUsername.1": "Gibbsdavidl",
-      "RemoteRef.1": "master",
-      "RemoteSha.1": "59e9aa1d377706819da69771dc0cb2cd13bb23d1",
-      "Hash": "c332df62d5180ae2334e17848d4257b1"
+      "Hash": "20ea1024f5bffaaf0322ef07c5796b93"
     },
     "KMsurv": {
       "Package": "KMsurv",
@@ -184,10 +180,10 @@
     },
     "R6": {
       "Package": "R6",
-      "Version": "2.4.0",
+      "Version": "2.4.1",
       "Source": "Repository",
       "Repository": "CRAN",
-      "Hash": "d4618c4cb36bc46831551c5d85815818"
+      "Hash": "292b54f8f4b94669b08f94e5acce6be2"
     },
     "RColorBrewer": {
       "Package": "RColorBrewer",
@@ -219,10 +215,10 @@
     },
     "Rcpp": {
       "Package": "Rcpp",
-      "Version": "1.0.2",
+      "Version": "1.0.3",
       "Source": "Repository",
       "Repository": "CRAN",
-      "Hash": "a0356f14b4a68dd51a67c5d469d40c70"
+      "Hash": "f3ca785924863b0e4c8cb23b6a5c75a1"
     },
     "S4Vectors": {
       "Package": "S4Vectors",
@@ -371,10 +367,10 @@
     },
     "cli": {
       "Package": "cli",
-      "Version": "1.1.0",
+      "Version": "2.0.0",
       "Source": "Repository",
       "Repository": "CRAN",
-      "Hash": "44036d89d2bbffdbf1a9698cc86d0976"
+      "Hash": "f41a3aa27b911750a6526b450d0b8ea4"
     },
     "clipr": {
       "Package": "clipr",
@@ -437,16 +433,12 @@
       "Version": "0.1",
       "Source": "GitHub",
       "RemoteType": "github",
+      "RemoteHost": "api.github.com",
       "RemoteRepo": "concordanceIndex",
       "RemoteUsername": "th86",
       "RemoteRef": "master",
       "RemoteSha": "2e6f75f9c85c509e021e374a83ca58478e88e2dc",
-      "RemoteHost": "api.github.com",
-      "RemoteRepo.1": "concordanceIndex",
-      "RemoteUsername.1": "th86",
-      "RemoteRef.1": "master",
-      "RemoteSha.1": "2e6f75f9c85c509e021e374a83ca58478e88e2dc",
-      "Hash": "4b6334cdf0e710c1e28d2a7e75abefd8"
+      "Hash": "9e7ddcc3e0475e12c511d53ba431a37f"
     },
     "covr": {
       "Package": "covr",
@@ -485,10 +477,10 @@
     },
     "data.table": {
       "Package": "data.table",
-      "Version": "1.12.6",
+      "Version": "1.12.8",
       "Source": "Repository",
       "Repository": "CRAN",
-      "Hash": "0b9e358c2aec426ac00f3aee7db51858"
+      "Hash": "cd711af60c47207a776213a368626369"
     },
     "dbplyr": {
       "Package": "dbplyr",
@@ -527,10 +519,10 @@
     },
     "digest": {
       "Package": "digest",
-      "Version": "0.6.22",
+      "Version": "0.6.23",
       "Source": "Repository",
       "Repository": "CRAN",
-      "Hash": "9c7c703e3b37f52de4a21dd6b33e94dc"
+      "Hash": "931fd68809dab4609b4d4b5702206066"
     },
     "diptest": {
       "Package": "diptest",
@@ -573,6 +565,13 @@
       "Source": "Repository",
       "Repository": "CRAN",
       "Hash": "b31d9e5d051553d1177083aeba04b5b9"
+    },
+    "farver": {
+      "Package": "farver",
+      "Version": "2.0.1",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "e1e33215c942e78d2128221079b5dc35"
     },
     "fastmap": {
       "Package": "fastmap",
@@ -743,10 +742,10 @@
     },
     "gridSVG": {
       "Package": "gridSVG",
-      "Version": "1.7-0",
+      "Version": "1.7-1",
       "Source": "Repository",
       "Repository": "CRAN",
-      "Hash": "19db9b802789533f9e4b9379c7eb4003"
+      "Hash": "c262542c927c2e85d5825214b65836bb"
     },
     "gtable": {
       "Package": "gtable",
@@ -959,10 +958,10 @@
     },
     "mime": {
       "Package": "mime",
-      "Version": "0.7",
+      "Version": "0.8",
       "Source": "Repository",
       "Repository": "CRAN",
-      "Hash": "f085cb5d1548336cafa5ee7ec56d7e34"
+      "Hash": "3d8abfab430c94a15e20eb91f052293f"
     },
     "mnormt": {
       "Package": "mnormt",
@@ -1078,10 +1077,10 @@
     },
     "plyr": {
       "Package": "plyr",
-      "Version": "1.8.4",
+      "Version": "1.8.5",
       "Source": "Repository",
       "Repository": "CRAN",
-      "Hash": "23026346e3e0f023f326919320627a01"
+      "Hash": "3f1b0dbcc503320e6e7aae6c3ff87eaa"
     },
     "polynom": {
       "Package": "polynom",
@@ -1089,6 +1088,13 @@
       "Source": "Repository",
       "Repository": "CRAN",
       "Hash": "c396592ecfe9e75cee1013533efafe34"
+    },
+    "pool": {
+      "Package": "pool",
+      "Version": "0.1.4.3",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "f9c55743c1f7f677c018733459f31b21"
     },
     "prabclus": {
       "Package": "prabclus",
@@ -1232,10 +1238,10 @@
     },
     "rlang": {
       "Package": "rlang",
-      "Version": "0.4.1",
+      "Version": "0.4.2",
       "Source": "Repository",
       "Repository": "CRAN",
-      "Hash": "4c3f31bb1fed807e790c4a264ed2a436"
+      "Hash": "ff31d958a041593f58ba04fc637d90dd"
     },
     "rmarkdown": {
       "Package": "rmarkdown",
@@ -1307,10 +1313,10 @@
     },
     "scales": {
       "Package": "scales",
-      "Version": "1.0.0",
+      "Version": "1.1.0",
       "Source": "Repository",
       "Repository": "CRAN",
-      "Hash": "2e46c8ab2c109085d5b3a775ea2df19c"
+      "Hash": "a1c68369c629ea3188d0676e37069c65"
     },
     "selectr": {
       "Package": "selectr",
@@ -1495,10 +1501,10 @@
     },
     "vctrs": {
       "Package": "vctrs",
-      "Version": "0.2.0",
+      "Version": "0.2.1",
       "Source": "Repository",
       "Repository": "CRAN",
-      "Hash": "c40cfd786b30c20ea9f1247f06a7ee56"
+      "Hash": "5c2d0fe441406cba811b46708ea28e41"
     },
     "viridis": {
       "Package": "viridis",
