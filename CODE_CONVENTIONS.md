@@ -17,7 +17,7 @@ R file names should be meaningful and use the .R file extension. File names shou
 Good:
 
 ```R
-fetch_data.R
+my_fetch_data.R
 01_read_data.R
 02_validate_data.R
 03_mutate_data.R

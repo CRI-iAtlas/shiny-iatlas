@@ -23,11 +23,6 @@ if (!'RPostgres' %in% installed.packages()) {
   install.packages("RPostgres")
 }
 
-# Ensure RPostgres is installed.
-if (!'RPostgres' %in% installed.packages()) {
-  install.packages("RPostgres")
-}
-
 # Ensure pool is installed.
 if (!'pool' %in% installed.packages()) {
   install.packages("pool")

@@ -8,9 +8,9 @@ The portal is built entirely in **R** and **Shiny** using the **RStudio** develo
 - [plotly](https://plot.ly/r/)
 - [crosstalk](https://rstudio.github.io/crosstalk/)
 
-## Requirements
+## Install
 
-Install:
+### Install Core Apps and System libraries:
 
 - R: [https://www.r-project.org/](https://www.r-project.org/)
 
@@ -20,30 +20,35 @@ Install:
 
 - Docker: [https://www.docker.com/products/docker-desktop](https://www.docker.com/products/docker-desktop)
 
-## Local Shiny-iAtlas Session
+### Initialize R Packages, Database and run App
 
 To run the app locally:
 
 1. Clone this repository
 
-1. Start Rstudio
+1. Open `shiny-iatlas.Rproj`
 
-1. Create a "New Project..." from the "File" menu
-
-    1. Select "Existing Directory"
-
-    1. Navigate to the cloned project folder.
-
-    1. Select the project folder.
-
-    1. Select "create project"
-    > This will create the project and  automatically install your dependencies. If they were previously installed, it'll fast. If not, it may take some time to complete - get something nice to drink :)
-
-1. Build the database by executing the following in the R console:
+1. Install packages. In the RStudio console, run:
 
    ```R
-   source("iatlas_db.R")
+   renv::restore()
    ```
+
+   This may take some time to complete - get something nice to drink :)
+
+1. Build the database locally with the following:
+
+   1. Make the database function available by executing the following in the R console:
+
+      ```R
+      source("iatlas_db.R")
+      ```
+
+   1. Build the database by executing the following in the R console:
+
+      ```R
+      build_iatlas_db(reset = "reset")
+      ```
 
 1. Start the app by running:
 
@@ -53,10 +58,10 @@ To run the app locally:
 
 ## Development
 
-When adding any new dependencies to the application, they may be added using:
+When adding any new dependencies to the application, they may be added using (where "useful_package" is the name of the package to add):
 
 ```R
-renv::install()
+renv::install("useful_package")
 ```
 
 see [https://rstudio.github.io/renv/reference/install.html](https://rstudio.github.io/renv/reference/install.html) for more details.
@@ -69,14 +74,49 @@ renv::snapshot()
 
 This will ensure the new package is added to the renv.lock file.
 
+To remove an installed package, run (where "useful_package" is the name of the package to remove):
+
+```R
+renve::remove("useful_package")
+```
+
 For more on package management with renv, please see [https://rstudio.github.io/renv/articles/renv.html](https://rstudio.github.io/renv/articles/renv.html)
 
 ## Deployment
 
-To deploy, run this line:
+The first time you deploy, go through the Deployment-Setup instructions below. Afterwards, deploy with:
 
 ```R
-options(repos = BiocInstaller::biocinstallRepos())
+rsconnect::deployApp()
+```
+
+### Deployment Setup (First-Time-Only)
+
+The first time you deploy there are a few things to do. First, due to a presumed bug in renv, there is an extra, one-time step for configuring any packages loaded directly from github.
+
+* More information: https://docs.rstudio.com/shinyapps.io/getting-started.html (section: "2.4.0.1 Important note on GitHub packages")
+
+```R
+# configure github dependencies for deployment
+# NOTE: renv should take care of this
+#       Perhaps in future versions this will be unnecessary.
+devtools::install_github("th86/concordanceIndex", force=TRUE)
+devtools::install_github("Gibbsdavidl/ImmuneSubtypeClassifier", force=TRUE)
+```
+
+Second, you'll need to set up your credentials for shinyapps.io. You can get your codes from:
+
+* https://www.shinyapps.io/admin/#/tokens
+
+Paste and evaluate your tokens in the RStudio console. They look like this:
+
+```R
+# shinyapps.io example credentials
+rsconnect::setAccountInfo(
+  name='shiny-iatlas',
+  token='xxx',
+  secret='yyy'
+)
 ```
 
 ## Data

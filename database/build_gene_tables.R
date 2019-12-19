@@ -91,8 +91,8 @@ gc()
 
 cat(crayon::magenta("Building gene_types data."), fill = TRUE)
 gene_types <- dplyr::tibble(
-  name = c("immunomodulator", "io_target", "driver_mutation"),
-  display = c("Immunomodulator", "IO Target", "Driver Mutation")
+  name = c("immunomodulator", "io_target", "driver_mutation", "extra_cellular_network"),
+  display = c("Immunomodulator", "IO Target", "Driver Mutation", "Extra Cellular Network")
 )
 cat(crayon::blue("Built gene_types data."), fill = TRUE)
 

@@ -136,3 +136,5 @@ Bioconductor/annotate  1.61.1  github
 th86/concordanceIndex	0.1	github
 ropensci/plotly	4.7.1.9000	github
 Gibbsdavidl/ImmuneSubtypeClassifier 0.1.0 github
+
+startup 0.13.0 CRAN
