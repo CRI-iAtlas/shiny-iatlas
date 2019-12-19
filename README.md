@@ -161,3 +161,54 @@ concordanceIndex::concordanceIndex(predictions, observations)
 ```
 
 ... where `predictions` and `observations` are numerical vectors of the same length.
+
+
+## Troubleshooting Startup
+
+To check if 'startup::startup()' ran successfully, type in `DB_HOST` and see if it is set to a non-blank value. For example:
+
+```R
+> DB_HOST
+[1] "localhost"
+```
+
+> Note: You can also check your Global Environment under the "Environment" tab in the upper-right corner of the RStudio session.
+
+The following should all be set: `DB_HOST`, `DB_NAME`, `DB_PORT`, `DB_PW` and `DB_USER`. If none of them are set, startup probably didn't succeed. The first thing to check what `.REnviron.d` folder startup is finding. Run:
+
+```R
+startup::startup(debug=TRUE)
+```
+
+Skip the first half of the output until you see this line:
+
+* `x.xxxs: startup::startup()-specific processing...`
+
+Just below you should see it loading the `./.Renviron.d` and later `./.Rprofile.d`. If yours says anything different than dot-slash-dot-Renviron-dot-d, startup is loading the wrong files.
+
+* If you ran `startup::install` at some point, startup may have created these folders in your user directory. They are probably empty or simply the default values. If so, you can trash them. Then re-run startup with debug=TRUE and see if it works.
+
+* Otherwise, you may need to check your R startup path and see why startup is finding the wrong files. Read more about it here: https://cran.r-project.org/web/packages/startup/vignettes/startup-intro.html
+
+The tail end of your output should look like this:
+
+```
+0.005s: startup::startup()-specific processing ...
+0.006s: Found startup directory ‘./.Renviron.d’.
+0.010s: Processing 1 Renviron files ...
+0.012s:  - ‘./.Renviron.d/rstudio=TRUE/.Renviron’ (1 lines; 8 bytes) setting 1 environment variables (‘ENV’)
+0.013s: Processing 1 Renviron files ... done
+0.016s: Found startup directory ‘./.Rprofile.d’.
+0.019s: Processing 1 Rprofile files ...
+0.020s:  - ‘./.Rprofile.d/ENV=dev.R’ (5 code lines; 264 bytes)
+0.021s: Processing 1 Rprofile files ... done
+0.022s: - unloading the ‘startup’ package
+0.023s: - Search path: ‘.GlobalEnv’, ‘tools:rstudio’, ‘package:stats’, ‘package:graphics’, ‘package:grDevices’, ‘package:datasets’, ‘renv:shims’, ‘package:utils’, ‘package:methods’, ‘Autoloads’, ‘package:base’
+0.023s: - Loaded namespaces: ‘compiler’, ‘graphics’, ‘tools’, ‘utils’, ‘grDevices’, ‘stats’, ‘datasets’, ‘methods’, ‘renv’, ‘base’
+0.023s: startup::startup()-specific processing ... done
+0.023s: The following will be processed next by R:
+0.023s: - R_HISTFILE: ‘’
+0.024s: - ‘./.Rhistory’ (0 lines; 0 bytes)
+0.039s: - .First(): no such function on search()
+0.039s: - Remaining packages per R_DEFAULT_PACKAGES to be attached by base::.First.sys() (in order):
+```
