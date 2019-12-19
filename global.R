@@ -9,13 +9,6 @@ PANIMMUNE_DB   <- create_db2()
 source("database/connect_to_db.R")
 PANIMMUNE_DB2 <- connect_to_db()
 
-create_conection <- function(table_name) {
-    current_pool <- pool::poolCheckout(.GlobalEnv$PANIMMUNE_DB2)
-    result <- dplyr::tbl(current_pool, table_name)
-    pool::poolReturn(current_pool)
-    return(result)
-}
-
 purrr::walk(config_yaml$module_files, source)
 purrr::walk(config_yaml$page_files, source)
 

@@ -10,8 +10,8 @@ explorepage <- dashboardPage(
       menuItem("Analysis Modules",
                icon = icon("bar-chart"), startExpanded = TRUE,
                menuSubItem(
-                 "Sample Group Overview",
-                 tabName = "groups_overview",
+                 "Cohort Selection",
+                 tabName = "cohort_selection",
                  icon = icon("cog")
                ),
                menuSubItem(
@@ -122,10 +122,10 @@ explorepage <- dashboardPage(
           fluidRow(
             imgLinkBox(
               width = 6,
-              linkId = "link_to_module3",
-              title = "Sample Group Overview",
+              linkId = "link_to_cohort_selection_module",
+              title = "Cohort Selection",
               imgSrc = "images/groupsoverview.png",
-              boxText = "This module provides short summaries of your selected groups, and allows you to see how they overlap with other groups.",
+              boxText = "Use this module to create a cohort of interest.",
               linkText = "Open Module"
             ),
             imgLinkBox(
@@ -221,8 +221,8 @@ explorepage <- dashboardPage(
         immuneinterface_UI("module2")
       ),
       tabItem(
-        tabName = "groups_overview",
-        groupsoverview_UI("module3")
+        tabName = "cohort_selection",
+        cohort_selection_UI("cohort_selection")
       ),
       tabItem(
         tabName = "survival_curves",

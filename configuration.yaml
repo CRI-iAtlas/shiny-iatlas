@@ -2,7 +2,7 @@ module_files:
   - "modules/dashboardmodule.R"
   - "modules/cellcontentmodule.R"
   - "modules/immuneinterfacemodule.R"
-  - "modules/groupsoverviewmodule.R"
+  - "modules/cohort_selection.R"
   - "modules/survivalmodule.R"
   - "modules/immunomodulatormodule.R"
   - "modules/tilmodule.R"
@@ -37,6 +37,7 @@ function_files:
   - "functions/tablef_fun.R"
   - "functions/imageplot.R"
   - "functions/event_data_utils.R"
+  - "database/database_functions.R"
 
 page_files:
   - "pages/aboutpage.R"

@@ -30,8 +30,8 @@ shinyServer(function(input, output, session) {
     )
     
     user_group_tbl <- callModule(
-        groupsoverview,
-        "module3"
+        cohort_selection,
+        "cohort_selection"
     )
 
     # Survival curves
@@ -56,7 +56,7 @@ shinyServer(function(input, output, session) {
         group_display_choice,
         subset_groups_con,
         subset_feature_values_long_con,
-        features_con, 
+        features_con,
         plot_colors
     )
     
@@ -130,8 +130,8 @@ shinyServer(function(input, output, session) {
     observeEvent(input$link_to_module2, {
         shinydashboard::updateTabItems(session, "explorertabs", "clonal_diversity")
     })
-    observeEvent(input$link_to_module3, {
-        shinydashboard::updateTabItems(session, "explorertabs", "groups_overview")
+    observeEvent(input$link_to_cohort_selection_module, {
+        shinydashboard::updateTabItems(session, "explorertabs", "cohort_selection")
     })
     observeEvent(input$link_to_module4, {
         shinydashboard::updateTabItems(session, "explorertabs", "survival_curves")

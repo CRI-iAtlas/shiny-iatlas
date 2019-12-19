@@ -20,7 +20,12 @@ write_table_ts <- function(df, table_name) {
   }))
 }
 
-
+create_conection <- function(table_name) {
+    current_pool <- pool::poolCheckout(.GlobalEnv$PANIMMUNE_DB2)
+    result <- dplyr::tbl(current_pool, table_name)
+    pool::poolReturn(current_pool)
+    return(result)
+}
 
 
 # INSERT INTO features (person_id, group_id)
