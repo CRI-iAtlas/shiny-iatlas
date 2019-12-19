@@ -2,7 +2,7 @@
 
 The data used in the iAtlas application is tabular data currently stored in a PostgreSQL database. There are script within the project that can automate ghetting data into the database. For this script to work effectively, there are some data conventions that must be followed. This document will outline those conventions.
 
-Please see the diagram at the bottom of this document for a visualization. [Click here to go to the diagram](#Data%20Model%20Diagram)
+Please see the diagram at the bottom of this document for a visualization. [Click here to go to the diagram](#data-model-diagram)
 
 ## Enums
 
