@@ -154,16 +154,7 @@ groupsoverview_UI <- function(id) {
 groupsoverview <- function(
     input, 
     output, 
-    session,
-    groups_con
-    # groups2_con,
-    # features_named_list,
-    # groups_list,
-    # tcga_subtypes_list,
-    # group_internal_choice,
-    # group_values_con,
-    # subtypes,
-    # plot_colors
+    session
 ){
     ns <- session$ns
     
@@ -221,21 +212,31 @@ groupsoverview <- function(
     
     dataset_to_group_tbl <- reactive({
         dplyr::tribble(
-            ~group,            ~dataset,
-            "Immune Subtype",  "TCGA",
-            "TCGA Subtype",    "TCGA",
-            "TCGA Study",      "TCGA",
-            "Gender",          "TCGA",
-            "Race",            "TCGA",
-            "Ethnicity",       "TCGA",
-            "Custom Numeric",  "TCGA",
-            "Custom Mutation", "TCGA",
-            "Immune Subtype",  "PCAWG",
-            "PCAWG Study",     "PCAWG",
-            "Gender",          "PCAWG",
-            "Race",            "PCAWG",
-            "Custom Numeric",  "PCAWG"
+            ~group,            ~dataset, ~type,
+            "Immune Subtype",  "TCGA",   "tag",
+            "TCGA Subtype",    "TCGA",   "tag",
+            "TCGA Study",      "TCGA",   "tag",
+            "Gender",          "TCGA",   "sample",
+            "Race",            "TCGA",   "sample",
+            "Ethnicity",       "TCGA",   "sample",
+            "Custom Numeric",  "TCGA",   NA,
+            "Custom Mutation", "TCGA",   NA,
+            "Immune Subtype",  "PCAWG",  "tag",
+            "PCAWG Study",     "PCAWG",  "tag",
+            "Gender",          "PCAWG",  "sample",
+            "Race",            "PCAWG",  "sample",
+            "Custom Numeric",  "PCAWG",   NA
         ) 
+    })
+    
+    dataset_tags <- reactive({
+        req(dataset_to_group_tbl())
+        dataset_to_group_tbl() %>% 
+            dplyr::filter(
+                dataset == input$dataset_choice,
+                type == "tag"
+            ) %>% 
+            dplyr::pull(group)
     })
     
     samples_con <- reactive({
@@ -256,16 +257,22 @@ groupsoverview <- function(
     })
     
     group_members_con <- reactive({
-        req(PANIMMUNE_DB2)
+        req(PANIMMUNE_DB2, dataset_tags())
         con <- 
             dplyr::inner_join(
                 PANIMMUNE_DB2 %>% 
                     dplyr::tbl("tags") %>% 
-                    dplyr::select(id, name, parent),
+                    dplyr::select(tag_id = id, name),
+                PANIMMUNE_DB2 %>% 
+                    dplyr::tbl("tags_to_tags"),
+                by = c("tag_id")
+            ) %>% 
+            dplyr::inner_join(
                 PANIMMUNE_DB2 %>% 
                     dplyr::tbl("tags") %>% 
-                    dplyr::select(id, display),
-                by = c("parent" = "id")
+                    dplyr::filter(display %in% local(dataset_tags())) %>% 
+                    dplyr::select(related_tag_id = id, display),
+                by = c("related_tag_id")
             ) %>% 
             dplyr::as_tibble() %>% 
             dplyr::select(group = name, parent_group = display)
@@ -427,7 +434,6 @@ groupsoverview <- function(
         remove_ui_event = reactive(input$dataset_choice)
     )
     
-    
     numeric_element_module <- reactive({
         req(features_list, feature_values_con)
         
@@ -463,18 +469,25 @@ groupsoverview <- function(
             req(item$parent_group_choice, item$group_choices)
             if(item$parent_group_choice %in% c("Gender","Race", "Ethnicity")){
             } else if (item$parent_group_choice %in% c("Immune Subtype", "TCGA Subtype", "TCGA Study")){
-                sample_ids <- PANIMMUNE_DB2 %>%
-                    dplyr::tbl("tags") %>%
-                    # dplyr::filter(display == "Immune Subtype") %>%
-                    dplyr::filter(display ==  local(item$parent_group_choice)) %>%
-                    dplyr::left_join(
+                sample_ids <- 
+                    dplyr::inner_join(
+                        PANIMMUNE_DB2 %>% 
+                            dplyr::tbl("tags_to_tags"),
+                        PANIMMUNE_DB2 %>%
+                            dplyr::tbl("tags") %>%
+                            # dplyr::filter(display == "Immune Subtype"), 
+                            dplyr::filter(display ==  local(item$parent_group_choice)),
+                        by = c("related_tag_id" = "id")
+                    ) %>% 
+                    dplyr::select(tag_id) %>% 
+                    dplyr::inner_join(
                         dplyr::tbl(PANIMMUNE_DB2, "tags"),
-                        by = c("id" = "parent")
+                        by = c("tag_id" = "id")
                     ) %>%
-                    dplyr::filter(name.y %in% local(item$group_choices)) %>%
-                    # dplyr::filter(name.y %in% c("C1", "C2")) %>%
-                    dplyr::select(tag_id = id.y) %>%
-                    dplyr::left_join(
+                    dplyr::filter(name %in% local(item$group_choices)) %>%
+                    # dplyr::filter(name %in% c("C1", "C2")) %>%
+                    dplyr::select(tag_id) %>%
+                    dplyr::inner_join(
                         dplyr::tbl(PANIMMUNE_DB2, "samples_to_tags")
                     ) %>%
                     dplyr::pull(sample_id)
@@ -557,6 +570,7 @@ groupsoverview <- function(
             parent_id <-  PANIMMUNE_DB2 %>%
                 dplyr::tbl("tags") %>% 
                 dplyr::filter(display == local(input$group_choice)) %>%
+                # dplyr::filter(display == "Immune Subtype") %>%
                 dplyr::pull(id)
             result_con <- PANIMMUNE_DB2 %>%
                 dplyr::tbl("samples_to_tags") %>%
@@ -564,9 +578,14 @@ groupsoverview <- function(
                     dplyr::tbl(PANIMMUNE_DB2, "tags"),
                     by = c("tag_id" = "id")
                 ) %>% 
+                dplyr::inner_join(
+                     dplyr::tbl(PANIMMUNE_DB2, "tags_to_tags"),
+                     by = c("tag_id")
+                ) %>% 
                 dplyr::filter(
-                    parent == parent_id,
+                    related_tag_id == parent_id,
                     sample_id %in% local(selected_samples())
+                    # sample_id %in% c(9747, 9475)
                 ) %>% 
                 dplyr::select(sample_id, tag_id, group = name)
             group_con <- result_con %>% 
@@ -743,7 +762,7 @@ groupsoverview <- function(
         )
     })
     
-    return(user_group_tbl)
-    
+    # return ------------------------------------------------------------------
+    return(cohort_cons)
 }
 

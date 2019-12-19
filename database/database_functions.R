@@ -21,6 +21,8 @@ write_table_ts <- function(df, table_name) {
 }
 
 
+
+
 # INSERT INTO features (person_id, group_id)
 # SELECT p.person_id, g.group_id
 # FROM  (

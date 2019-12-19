@@ -31,18 +31,7 @@ shinyServer(function(input, output, session) {
     
     user_group_tbl <- callModule(
         groupsoverview,
-        "module3",
-        groups_con
-        # feature_values_long_con
-        # groups2_con,
-        # 
-        # features_named_list,
-        # groups_list,
-        # tcga_subtypes_list,
-        # reactive(input$group_internal_choice),
-        # group_values_con,
-        # subtypes,
-        # plot_colors
+        "module3"
     )
 
     # Survival curves
