@@ -46,7 +46,9 @@ The main tables are:
 
   Tags may be used to associate entities. For example, a number of individual samples may be associated with the "TCGA_Study" tag. Further, a number of tags may be with a tag like "TCGA_Study". this allows the entities associated with the initial tags to utlimately be associated with "TCGA_Study" through the initial tags. Instead of thinking of "groups", we can think of tags. This tagging allows us to create groups and hierarchies by association.
 
-- results - Each row describes an individual result.
+- ### results
+
+  Each row describes an individual result.
 
 ## Sub Tables
 
