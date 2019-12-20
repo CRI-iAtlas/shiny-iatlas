@@ -2,7 +2,7 @@ source("database/load_dependencies.R")
 
 .GlobalEnv$load_dependencies()
 
-rm(load_dependencies)
+rm(load_dependencies, pos = ".GlobalEnv")
 
 build_iatlas_db <- function(env = "dev", reset = NULL, show_gc_info = FALSE) {
   # Make the create_db function available.
@@ -54,10 +54,7 @@ build_iatlas_db <- function(env = "dev", reset = NULL, show_gc_info = FALSE) {
   rm(is_df_empty, pos = ".GlobalEnv")
   rm(link_to_references, pos = ".GlobalEnv")
   rm(read_table, pos = ".GlobalEnv")
-  rm(rebuild_features_to_samples, pos = ".GlobalEnv")
   rm(rebuild_gene_relational_data, pos = ".GlobalEnv")
-  rm(rebuild_genes_to_samples, pos = ".GlobalEnv")
-  rm(rebuild_samples_to_tags, pos = ".GlobalEnv")
   rm(switch_value, pos = ".GlobalEnv")
   rm(write_table_ts, pos = ".GlobalEnv")
 
