@@ -269,17 +269,20 @@ build_immune_feature_scatterplot_tbl <- function(con, clicked_feature){
 
 # distribution plot functions -------------------------------------------------
 
-build_distribution_plot_tbl <- function(
-    con, 
-    feature_name, 
-    scale_method = "None"
-){
-    con %>% 
-        dplyr::filter(feature == feature_name) %>% 
-        dplyr::select(x, y, label) %>% 
-        dplyr::filter_all(dplyr::all_vars(!is.na(.))) %>% 
-        scale_db_connection(scale_method)
-}
+# build_distribution_plot_tbl <- function(
+#     con, 
+#     id, 
+#     scale_method = "None"
+# ){
+#     x <- con %>% 
+#         dplyr::filter(feature_id == id) %>% 
+#         dplyr::select(x, y, label) %>% 
+#         dplyr::filter_all(dplyr::all_vars(!is.na(.))) %>% 
+#         scale_db_connection(scale_method)
+#     
+#     dplyr::show_query(x)
+#     return(x)
+# }
 
 # scale db connection functions -----------------------------------------------
 

@@ -14,7 +14,7 @@ immunefeatures_UI <- function(id) {
             ns("dist"),
             message_html = includeMarkdown("data/markdown/immune_features_dist.markdown"),
         ),
-        immunefeatures_correlations_ui(ns("immunefeatures_correlations"))
+        # immunefeatures_correlations_ui(ns("immunefeatures_correlations"))
     )
 }
 
@@ -22,38 +22,45 @@ immunefeatures_UI <- function(id) {
 immunefeatures <- function(
     input,
     output, 
-    session, 
-    group_display_choice, 
-    group_con,
-    feature_values_con,
-    features_con,
-    plot_colors
+    session,
+    cohort_sample_tbl,
+    cohort_group_con,
+    cohort_group_name,
+    cohort_colors
 ){
     
     distributions_feature_value_con <- reactive({
-        req(feature_values_con())
-        feature_values_con() %>% 
-            dplyr::select(label = sample, x = group, feature, y = value) 
+        con <- 
+            create_conection("features_to_samples") %>% 
+            # dplyr::filter(sample_id %in% 1:100)  %>% 
+            dplyr::filter(sample_id %in% local(cohort_sample_tbl()$sample_id)) %>%
+            dplyr::select(sample_id, feature_id, value)
     })
     
 
     distributions_feature_con <- reactive({
-        req(features_con())
-        features_con() %>% 
-            dplyr::select(DISPLAY = display, INTERNAL = feature, CLASS = class) %>% 
-            dplyr::filter_all(dplyr::all_vars(!is.na(.)))
+        con <- 
+            create_conection("features_to_samples") %>% 
+            dplyr::filter(sample_id %in% 1:100)  %>% 
+            # dplyr::filter(sample_id %in% cohort_sample_tbl$sample_id) %>% 
+            dplyr::select(id = feature_id) %>% 
+            dplyr::distinct() %>% 
+            dplyr::inner_join(create_conection("features"),  by = "id") %>% 
+            dplyr::inner_join(create_conection("classes"),  by = c("class_id" = "id")) %>% 
+            dplyr::select(DISPLAY = display, INTERNAL = id, CLASS = name.y)
     })
     
     callModule(
         distributions_plot_module,
         "dist",
-        "immunefeatures_dist_plot",
-        distributions_feature_value_con,
-        distributions_feature_con,
-        group_con,
-        group_display_choice,
-        plot_colors,
-        key_col = "label"
+        plot_source_name     = "immunefeatures_dist_plot",
+        feature_value_con    = distributions_feature_value_con,
+        feature_metadata_con = distributions_feature_con,
+        cohort_sample_tbl    = cohort_sample_tbl,
+        groups_con           = cohort_group_con,
+        group_display_choice = cohort_group_name,
+        plot_colors          = cohort_colors,
+        key_col              = "label"
     )
     
     ### immune features correlations

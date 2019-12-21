@@ -375,6 +375,7 @@ cohort_selection <- function(
     )
     
     selected_samples <- reactive({
+        print("selected_samples")
         req(samples_con(), group_filter_output(), numeric_filter_output())
         group_filters <- group_filter_output() %>% 
             reactiveValuesToList() %>% 
@@ -432,8 +433,7 @@ cohort_selection <- function(
             
             samples <- intersect(samples, sample_ids)
         }
-        
-        
+        print("selected_samples2")
         return(samples)
     })
     
@@ -479,13 +479,19 @@ cohort_selection <- function(
         )
     })
     
-    cohort_cons <- reactive({
-        req(input$group_choice, selected_samples())
-        if(input$group_choice %in% c("Gender","Race", "Ethnicity")){
+    cohort_obj <- reactive({
+        print("cohort_obj")
+        print(input$group_choice)
+        if(is.null(input$group_choice)) group_choice <- "Immune Subtype"
+        
+        req(selected_samples())
+        if(group_choice %in% c("Gender","Race", "Ethnicity")){
+            group_name <- group_choice
         } else if (input$group_choice %in% c("Immune Subtype", "TCGA Subtype", "TCGA Study")){
+            group_name <- group_choice
             parent_id <-  
                 create_conection("tags") %>% 
-                dplyr::filter(display == local(input$group_choice)) %>%
+                dplyr::filter(display == group_choice) %>%
                 # dplyr::filter(display == "Immune Subtype") %>%
                 dplyr::pull(id)
             sample_con <- 
@@ -513,8 +519,9 @@ cohort_selection <- function(
                 ) %>% 
                 dplyr::select(group = name, name = display, size, characteristics, color)
             sample_con <- dplyr::select(sample_con, -tag_id)
-        } else if (input$group_choice == "Custom Mutation"){
+        } else if (group_choice == "Custom Mutation"){
             req(input$custom_gene_mutaton_choice)
+            group_name <- input$custom_gene_mutaton_choice
             sample_con <- 
                 create_conection("genes_to_samples") %>%
                 dplyr::filter(
@@ -533,11 +540,12 @@ cohort_selection <- function(
                     characteristics = "",
                     color = NA
                 )
-        } else if (input$group_choice == "Custom Numeric"){
+        } else if (group_choice == "Custom Numeric"){
             req(
                 input$custom_numeric_feature_choice,
                 input$custom_numeric_group_number_choice
             )
+            group_name <- input$custom_numeric_feature_choice
             sample_con <-
                 create_conection("features_to_samples") %>%
                 dplyr::filter(
@@ -566,14 +574,27 @@ cohort_selection <- function(
         } else {
             stop("bad selection")
         }
-        return(list("sample_con" = sample_con, "group_con" = group_con))
+        color_tbl <- group_con %>% 
+            dplyr::select(group, color) %>% 
+            dplyr::as_tibble()
+        if(any(is.na(color_tbl$color))){
+            color_tbl <- dplyr::mutate(color_tbl, color = viridisLite::viridis(dplyr::n()))
+        }
+        plot_colors <- tibble::deframe(color_tbl)
+        print("cohort_obj2")
+        list(
+            "sample_con" = sample_con, 
+            "group_con" = group_con, 
+            "group_name" = group_name,
+            "plot_colors" = plot_colors
+        )
     })
     
     # group key ---------------------------------------------------------------
     
     group_key_tbl <- reactive({
-        req(cohort_cons())
-        tbl <- cohort_cons()$group_con %>% 
+        req(cohort_obj())
+        tbl <- cohort_obj()$group_con %>% 
             dplyr::select(
                 `Sample Group` = group,
                 `Group Name` = name,
@@ -707,6 +728,6 @@ cohort_selection <- function(
     })
     
     # return ------------------------------------------------------------------
-    return(cohort_cons)
+    return(cohort_obj)
 }
 

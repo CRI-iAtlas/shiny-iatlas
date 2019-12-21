@@ -87,13 +87,15 @@ distributions_plot_module_UI <- function(
         )
 }
 
-# data_df
+# feature_value_con
 # Each row respresents a sample
-# 1st col: "x", contains membership of current group selection, ie. "C1"
-# All other cols: numeric values 
-# metadata_df
+# label: displayed label for sample
+# x: group value
+# y: feature value
+# feature_id
+# feature_metadata_con
 # Each row represents a variable, and of the columns in data_df
-# 1st col: "INTERNAL", internal name for variable
+# 1st col: "ID", id for variable
 # 2nd col: "DISPLAY", variable name used in the ui
 # All other cols: each column is a grouping of variables, to organize selection
 
@@ -104,6 +106,7 @@ distributions_plot_module <- function(
     plot_source_name,
     feature_value_con,
     feature_metadata_con,
+    cohort_sample_tbl,
     groups_con,
     group_display_choice,
     plot_colors,
@@ -156,7 +159,7 @@ distributions_plot_module <- function(
     output$variable_choice_ui <- renderUI({
         req(variable_choice_class_column(), feature_metadata_con())
         selectInput(
-            ns("variable_choice"),
+            ns("variable_choice_id"),
             label = "Select Variable",
             selected = variable_selection_default,
             choices = create_nested_named_list(
@@ -168,17 +171,19 @@ distributions_plot_module <- function(
         )
     })
     
-    distribution_plot_con <- reactive({
-        req(feature_value_con, input$variable_choice, input$scale_method)
-        build_distribution_plot_tbl(
-            feature_value_con(), 
-            input$variable_choice, 
-            input$scale_method)
+    distribution_plot_tbl <- reactive({
+        feature_value_con() %>%  
+            dplyr::filter(feature_id == 1) %>% 
+            scale_db_connection(input$scale_method) %>% 
+            dplyr::as_tibble() %>% 
+            dplyr::inner_join(cohort_sample_tbl(), by = "sample_id") %>% 
+            dplyr::select(label = sample_id, x = group, y = value)
+ 
     })
     
     varible_display_name <- reactive({
         feature_metadata_con() %>% 
-            dplyr::filter(INTERNAL == local(input$variable_choice)) %>% 
+            dplyr::filter(INTERNAL == local(input$variable_choice_id)) %>% 
             dplyr::pull(DISPLAY)
     })
     
@@ -199,7 +204,7 @@ distributions_plot_module <- function(
     
     output$plot <- renderPlotly({
         plot_function()(
-            dplyr::as_tibble(distribution_plot_con()), 
+            distribution_plot_tbl(),
             xlab = group_display_choice(),
             ylab = varible_plot_label(),
             title = varible_display_name(),

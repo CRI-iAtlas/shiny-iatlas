@@ -19,6 +19,27 @@ shinyServer(function(input, output, session) {
     
     # analysis modules --------------------------------------------------------
     
+    cohort_cons <- callModule(
+        cohort_selection,
+        "cohort_selection"
+    )
+    
+    cohort_sample_con <- reactive(cohort_cons()$sample_con)
+    cohort_sample_tbl <- reactive(dplyr::as_tibble(cohort_sample_con()))
+    cohort_group_con  <- reactive(cohort_cons()$group_con)
+    cohort_group_name <- reactive(cohort_cons()$group_name)
+    cohort_colors     <- reactive(cohort_cons()$plot_colors)
+    
+    # Immune features
+    callModule(
+        immunefeatures,
+        "module6",
+        cohort_sample_tbl,
+        cohort_group_con,
+        cohort_group_name,
+        cohort_colors
+    )
+    
     # Cell content
     callModule(
         cellcontent,
@@ -29,10 +50,7 @@ shinyServer(function(input, output, session) {
         subset_groups_con
     )
     
-    user_group_tbl <- callModule(
-        cohort_selection,
-        "cohort_selection"
-    )
+
 
     # Survival curves
     callModule(
@@ -49,16 +67,7 @@ shinyServer(function(input, output, session) {
     )
     
 
-    # Immune features
-    callModule(
-        immunefeatures,
-        "module6",
-        group_display_choice,
-        subset_groups_con,
-        subset_feature_values_long_con,
-        features_con,
-        plot_colors
-    )
+
     
     # # TILmap features
     # callModule(
