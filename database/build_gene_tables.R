@@ -198,10 +198,7 @@ cat("Cleaned up.", fill = TRUE)
 gc()
 
 cat(crayon::magenta("Building genes_to_types data."), fill = TRUE)
-genes_to_types <- dplyr::tibble() %>% tibble::add_column(gene_id = NA %>% as.integer, type_id = NA %>% as.integer)
 genes <- .GlobalEnv$read_table("genes") %>% dplyr::select(id, hgnc)
-genes_length <- length(genes$hgnc)
-genes <- genes %>% as.list
 gene_types <- .GlobalEnv$read_table("gene_types")
 
 # Collect the ids of the 3 gene_types.
@@ -210,42 +207,21 @@ immunomodulator_id <- gene_types %>% dplyr::filter(name == "immunomodulator") %>
 io_target_id <- gene_types %>% dplyr::filter(name == "io_target") %>% .[["id"]]
 
 # Make these data frames smaller so they're much faster.
-driver_mutations <- driver_mutations %>% dplyr::distinct(gene) %>% as.list
-immunomodulator_expr <- immunomodulator_expr %>% dplyr::distinct(gene) %>% as.list
-io_target_expr <- io_target_expr %>% dplyr::distinct(gene) %>% as.list
-
-# Hash these data frames so they're much faster.
-driver_mutations <- driver_mutations$gene %>% hash::hash(TRUE)
-immunomodulator_expr <- immunomodulator_expr$gene %>% hash::hash(TRUE)
-io_target_expr <- io_target_expr$gene %>% hash::hash(TRUE)
-
-genes %>% purrr::pmap(~{
-  current_id <- ..1
-  current_hgnc <- ..2
-  row_number <- which(current_hgnc == genes$hgnc)
-
-  svMisc::progress(row_number, genes_length - 1, progress.bar = TRUE)
-
-  if (hash::has.key(c(current_hgnc), driver_mutations)) {
-    genes_to_types <<- genes_to_types %>% dplyr::add_row(gene_id = current_id, type_id = driver_mutation_id)
-  }
-
-  if (hash::has.key(c(current_hgnc), immunomodulator_expr)) {
-    genes_to_types <<- genes_to_types %>% dplyr::add_row(gene_id = current_id, type_id = immunomodulator_id)
-  }
-
-  if (hash::has.key(c(current_hgnc), io_target_expr)) {
-    genes_to_types <<- genes_to_types %>% dplyr::add_row(gene_id = current_id, type_id = io_target_id)
-  }
-
-  if (row_number == genes_length) {
-    cat(crayon::blue("Build genes_to_types data."), fill = TRUE)
-  }
-
-  rm(current_hgnc)
-  rm(current_id)
-  rm(row_number)
-})
+driver_mutations <- driver_mutations %>%
+  dplyr::distinct(gene) %>%
+  tibble::add_column(type_id = driver_mutation_id %>% as.integer)
+immunomodulator_expr <- immunomodulator_expr %>%
+  dplyr::distinct(gene) %>%
+  tibble::add_column(type_id = immunomodulator_id %>% as.integer)
+io_target_expr <- io_target_expr %>%
+  dplyr::distinct(gene) %>%
+  tibble::add_column(type_id = immunomodulator_id %>% as.integer)
+genes_to_types <- driver_mutations %>%
+  dplyr::bind_rows(immunomodulator_expr, io_target_expr) %>%
+  dplyr::inner_join(genes, by = c("gene" = "hgnc")) %>%
+  dplyr::distinct(id, type_id) %>%
+  dplyr::rename_at("id", ~("gene_id"))
+cat(crayon::blue("Build genes_to_types data."), fill = TRUE)
 
 cat(crayon::magenta("Building genes_to_types table."), fill = TRUE)
 table_written <- genes_to_types %>% .GlobalEnv$write_table_ts("genes_to_types")
@@ -259,7 +235,6 @@ rm(immunomodulator_id)
 rm(io_target_expr)
 rm(io_target_id)
 rm(genes)
-rm(genes_length)
 rm(gene_types)
 rm(genes_to_types)
 rm(table_written)

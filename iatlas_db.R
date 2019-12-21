@@ -1,50 +1,8 @@
-# Ensure crayon is installed.
-if (!'crayon' %in% installed.packages()) {
-  install.packages("crayon")
-}
+source("database/load_dependencies.R")
 
-# Ensure svMisc is installed.
-if (!'svMisc' %in% installed.packages()) {
-  install.packages("svMisc")
-}
+.GlobalEnv$load_dependencies()
 
-# Ensure hash is installed.
-if (!'hash' %in% installed.packages()) {
-  install.packages("hash")
-}
-
-# Ensure magrittr is installed.
-if (!'magrittr' %in% installed.packages()) {
-  install.packages("magrittr")
-}
-
-# Ensure RPostgres is installed.
-if (!'RPostgres' %in% installed.packages()) {
-  install.packages("RPostgres")
-}
-
-# Ensure pool is installed.
-if (!'pool' %in% installed.packages()) {
-  install.packages("pool")
-}
-
-# Loading crayon
-library("crayon")
-
-# Loading svMisc.
-require("svMisc")
-
-# Loading hash
-library("hash")
-
-# Load magrittr so %>% is available.
-library("magrittr")
-
-# Loading RPostgres loads DBI automatically.
-library("RPostgres")
-
-# Loading pool loads DBI automatically.
-library("pool")
+rm(load_dependencies, pos = ".GlobalEnv")
 
 build_iatlas_db <- function(env = "dev", reset = NULL, show_gc_info = FALSE) {
   # Make the create_db function available.
@@ -70,11 +28,6 @@ build_iatlas_db <- function(env = "dev", reset = NULL, show_gc_info = FALSE) {
 
   cat(crayon::green("Created DB connection."), fill = TRUE)
 
-  shiny::onStop(function() {
-    pool::poolClose(.GlobalEnv$pool)
-    cat(crayon::green("Closed DB connection."), fill = TRUE)
-  })
-
   source("database/build_features_tables.R", chdir = TRUE)
 
   source("database/build_tags_tables.R", chdir = TRUE)
@@ -86,7 +39,7 @@ build_iatlas_db <- function(env = "dev", reset = NULL, show_gc_info = FALSE) {
   source("database/build_results_tables.R", chdir = TRUE)
 
   # Close the database connection.
-  pool::poolClose(pool)
+  pool::poolClose(.GlobalEnv$pool)
 
   cat(crayon::green("Closed DB connection."), fill = TRUE)
 
@@ -98,14 +51,10 @@ build_iatlas_db <- function(env = "dev", reset = NULL, show_gc_info = FALSE) {
   rm(connect_to_db, pos = ".GlobalEnv")
   rm(create_db, pos = ".GlobalEnv")
   rm(delete_rows, pos = ".GlobalEnv")
-  rm(get_ids_from_heirarchy, pos = ".GlobalEnv")
   rm(is_df_empty, pos = ".GlobalEnv")
   rm(link_to_references, pos = ".GlobalEnv")
   rm(read_table, pos = ".GlobalEnv")
-  rm(rebuild_features_to_samples, pos = ".GlobalEnv")
   rm(rebuild_gene_relational_data, pos = ".GlobalEnv")
-  rm(rebuild_genes_to_samples, pos = ".GlobalEnv")
-  rm(rebuild_samples_to_tags, pos = ".GlobalEnv")
   rm(switch_value, pos = ".GlobalEnv")
   rm(write_table_ts, pos = ".GlobalEnv")
 
