@@ -4,16 +4,6 @@ load_dependencies <- function() {
     install.packages("crayon")
   }
 
-  # Ensure svMisc is installed. This is used for progress bars in the console.
-  if (!'svMisc' %in% installed.packages()) {
-    install.packages("svMisc")
-  }
-
-  # Ensure hash is installed. This is used to hash data to make a search faster.
-  if (!'hash' %in% installed.packages()) {
-    install.packages("hash")
-  }
-
   # Ensure stringi is installed. This is loaded to do some string manipulation with Regex.
   if (!'stringi' %in% installed.packages()) {
     install.packages("stringi")
@@ -41,12 +31,6 @@ load_dependencies <- function() {
 
   # Loading crayon
   library("crayon")
-
-  # Loading svMisc.
-  require("svMisc")
-
-  # Loading hash
-  library("hash")
 
   # Loading stringi
   library("stringi")
