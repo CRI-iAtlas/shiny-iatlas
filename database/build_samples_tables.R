@@ -116,17 +116,20 @@ cat(crayon::magenta("Building genes_to_samples data.\n(These are two large datas
 genes <- .GlobalEnv$read_table("genes") %>%
   dplyr::as_tibble() %>%
   dplyr::select(id, hgnc)
-sample_set_genes <- all_samples %>%
+genes_to_samples <- all_samples %>%
   dplyr::distinct(sample, gene, status, rna_seq_expr) %>%
   dplyr::inner_join(genes, by = c("gene" = "hgnc")) %>%
   dplyr::rename_at("id", ~("gene_id")) %>%
-  dplyr::distinct(sample, gene_id, status, rna_seq_expr)
-genes_to_samples <- sample_set_genes %>%
+  dplyr::distinct(sample, gene_id, status, rna_seq_expr) %>%
   dplyr::inner_join(samples, by = c("sample" = "sample_id")) %>%
   dplyr::distinct(id, gene_id, status, rna_seq_expr) %>%
-  dplyr::group_by(id, gene_id) %>%
-  dplyr::summarise_all(funs(unique(.[.!='']))) %>%
-  dplyr::rename_at("id", ~("sample_id"))
+  dplyr::rename_at("id", ~("sample_id")) %>%
+  dplyr::arrange(sample_id, gene_id, status, rna_seq_expr) %>%
+  dplyr::group_by(sample_id, gene_id) %>%
+  dplyr::summarise(
+    status = .GlobalEnv$filter_na(status),
+    rna_seq_expr = .GlobalEnv$filter_na(rna_seq_expr)
+  )
 cat(crayon::blue("Built genes_to_samples data."), fill = TRUE)
 
 cat(crayon::magenta("Building genes_to_samples table.\n(There are many rows to write, this may take a little while.)"), fill = TRUE)
