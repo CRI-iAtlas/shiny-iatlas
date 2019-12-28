@@ -28,8 +28,6 @@ link_to_references <- function(current_link) {
 }
 
 load_feather_data <- function(folder = "data/test") {
-  folder <- sprintf("%s/%s", getwd(), folder)
-
   # Identify all files with feather extension.
   files <- list.files(folder, pattern = "*.feather")
   files <- sprintf(paste0(folder, "/%s"), files)
