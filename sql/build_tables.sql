@@ -141,6 +141,23 @@ ALTER TABLE results ADD COLUMN tag_id INTEGER REFERENCES tags;
 CREATE INDEX result_label_id_index ON results (label_id);
 CREATE INDEX result_tag_id_id_index ON results (tag_id);
 
+-- node_names table
+CREATE TABLE node_names (
+    id SERIAL,
+    "name" VARCHAR,
+    PRIMARY KEY (id)
+);
+CREATE INDEX node_name_id_index ON node_names ("name");
+
+-- nodes table
+CREATE TABLE nodes (
+    id SERIAL,
+    ecn_value NUMERIC,
+    PRIMARY KEY (id)
+);
+ALTER TABLE nodes ADD COLUMN node_name_id INTEGER REFERENCES node_names;
+CREATE INDEX node_node_name_id_index ON nodes (node_name_id);
+
 -- genes_to_types table
 CREATE TABLE genes_to_types (
     gene_id INTEGER REFERENCES genes,
@@ -184,3 +201,11 @@ CREATE TABLE features_to_results (
     PRIMARY KEY (feature_id, result_id)
 );
 CREATE INDEX feature_to_result_result_id_index ON features_to_results (result_id);
+
+-- nodes_to_tags table
+CREATE TABLE nodes_to_tags (
+    node_id INTEGER REFERENCES nodes,
+    tag_id INTEGER REFERENCES tags,
+    PRIMARY KEY (node_id, tag_id)
+);
+CREATE INDEX nodes_to_tag_tag_id_index ON nodes_to_tags (tag_id);

@@ -38,6 +38,8 @@ build_iatlas_db <- function(env = "dev", reset = NULL, show_gc_info = FALSE) {
 
   source("database/build_results_tables.R", chdir = TRUE)
 
+  # source("database/build_nodes_tables.R", chdir = TRUE)
+
   # Close the database connection.
   pool::poolClose(.GlobalEnv$pool)
 
