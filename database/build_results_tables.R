@@ -40,7 +40,7 @@ results <- all_results %>%
   tibble::add_column(id = 1:nrow(all_results), .before = "n_wt")
 cat(crayon::blue("Built results data."), fill = TRUE)
 
-cat(crayon::magenta("Building results table.\n(Please be patient, this may take a little while as there are many rows to write.)"), fill = TRUE)
+cat(crayon::magenta("Building results table.\n(Please be patient, this may take a little while as there are", nrow(results), "rows to write.)"), fill = TRUE, spe = " ")
 table_written <- results %>% dplyr::select(-c("feature")) %>% .GlobalEnv$write_table_ts("results")
 cat(crayon::blue("Built results table."), fill = TRUE)
 
@@ -56,7 +56,7 @@ features_to_results <- results %>%
   dplyr::distinct(feature_id, result_id)
 cat(crayon::blue("Built features_to_results data."), fill = TRUE)
 
-cat(crayon::magenta("Building features_to_results table.\n(Please be patient, this may take a little while as there are over a million rows to write.)"), fill = TRUE)
+cat(crayon::magenta("Building features_to_results table.\n(Please be patient, this may take a little while as there are over a million (", nrow(results), ") rows to write.)"), fill = TRUE, sep = " ")
 table_written <- features_to_results %>% .GlobalEnv$write_table_ts("features_to_results")
 cat(crayon::blue("Built features_to_results table."), fill = TRUE)
 
