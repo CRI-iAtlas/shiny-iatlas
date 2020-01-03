@@ -202,63 +202,67 @@ subset_long_con_with_group <- function(
 # immunefeatures --------------------------------------------------------------
 
 
-build_immune_feature_heatmap_con <- function(
-    feature_value_con,
-    feature_con,
-    feature_choices,
-    response_feature
+build_immune_feature_heatmap_tbl <- function(
+    feature_ids,
+    response_feature_id,
+    sample_tbl
 ){
-    response_con <- build_immune_feature_heatmap_response_con(
-        feature_value_con,
-        response_feature
-    )
+    con1 <- 
+        create_conection("features_to_samples") %>% 
+        dplyr::filter(feature_id == response_feature_id) %>%
+        dplyr::select(feature_id, sample_id, value) %>%
+        dplyr::filter_all(dplyr::all_vars(!is.na(.))) %>% 
+        dplyr::inner_join(
+            create_conection("features"),
+            by = c("feature_id" = "id")
+        ) %>% 
+        dplyr::select(sample_id, value1 = value, feature1 = display)
+    
+    con2 <- 
+        create_conection("features_to_samples") %>% 
+        dplyr::filter(feature_id %in%  feature_ids) %>%
+        dplyr::select(feature_id, sample_id, value) %>%
+        dplyr::filter_all(dplyr::all_vars(!is.na(.))) %>% 
+        dplyr::inner_join(
+            create_conection("features"),
+            by = c("feature_id" = "id")
+        ) %>% 
+        dplyr::select(sample_id, value2 = value, feature2 = display, order)
 
-    feature_choices_con <- build_immune_feature_heatmap_choices_con(
-        feature_value_con,
-        feature_choices
-    )
-
-    heatmap_con <-
-        dplyr::inner_join(response_con, feature_choices_con, by = "sample") %>%
-        dplyr::inner_join(feature_con, by = c("feature")) %>%
-        dplyr::select(sample, group, feature = display, value1, value2)
+    heatmap_tbl <-
+        dplyr::inner_join(con1, con2, by = "sample_id") %>%
+        dplyr::arrange(order) %>% 
+        dplyr::select(sample_id, feature = feature2, value1, value2, order) %>% 
+        dplyr::as_tibble() %>% 
+        dplyr::inner_join(sample_tbl, by = "sample_id")
+       
 }
 
-build_immune_feature_heatmap_response_con <- function(con, response_feature){
-    con %>%
-        dplyr::filter(feature == response_feature) %>%
-        dplyr::select(sample, group, value1 = value) %>%
-        dplyr::filter_all(dplyr::all_vars(!is.na(.)))
-}
 
-build_immune_feature_heatmap_choices_con <- function(con, features){
-    con %>%
-        dplyr::select(sample, feature, value2 = value) %>%
-        dplyr::filter(feature %in% features) %>%
-        dplyr::filter_all(dplyr::all_vars(!is.na(.)))
-}
-
-build_immune_feature_heatmap_matrix <- function(con, method){
-    con %>%
-        dplyr::select(-sample) %>%
-        dplyr::as_tibble() %>%
-        dplyr::group_by(group, feature) %>%
+build_immune_feature_heatmap_matrix <- function(tbl, method){
+    tbl %>%
+        dplyr::group_by(group, feature, order) %>%
         dplyr::summarise(value = cor(
             value1,
             value2,
             method = method
         )) %>%
+        dplyr::arrange(dplyr::desc(order)) %>% 
+        dplyr::select(-order) %>% 
         tidyr::drop_na() %>%
         tidyr::pivot_wider(names_from = group, values_from = value) %>%
         tibble::column_to_rownames("feature") %>%
         as.matrix()
 }
 
-build_immune_feature_scatterplot_tbl <- function(con, clicked_feature){
-    con %>%
+build_immune_feature_scatterplot_tbl <- function(tbl, clicked_feature){
+    tbl %>%
         dplyr::filter(feature == clicked_feature) %>%
-        dplyr::select(sample, group, y = value1, x = value2) %>%
-        dplyr::as_tibble() %>%
+        dplyr::select(sample_id, group, y = value1, x = value2) %>%
+        dplyr::inner_join(
+            dplyr::as_tibble(create_conection("samples")), 
+            by = c("sample_id" = "id")) %>%
+        dplyr::select(sample = sample_id.y, group, x, y) %>% 
         create_plotly_label(
             name_column = "sample",
             group_column = "group",
@@ -286,7 +290,7 @@ build_immune_feature_scatterplot_tbl <- function(con, clicked_feature){
 
 # scale db connection functions -----------------------------------------------
 
-scale_db_connection <- function(con, scale_method = "none", col = "value"){
+scale_db_connection <- function(con, scale_method = "none"){
     if(scale_method %in% c("Log2", "Log2 + 1", "Log10 + 1", "Log10")){
         add_amt <- 0
         base    <- 10
@@ -296,9 +300,7 @@ scale_db_connection <- function(con, scale_method = "none", col = "value"){
         if(scale_method %in% c("Log10 + 1", "Log2 + 1")){
             add_amt <- 1
         }
-        con <- con %>% 
-            log_db_connection("y", base, add_amt) %>% 
-            dplyr::rename(y = value)
+        con <- log_db_connection(con, base, add_amt)
     } else if (scale_method == "None"){
         con <- con
     } else {
@@ -307,9 +309,8 @@ scale_db_connection <- function(con, scale_method = "none", col = "value"){
     return(con)
 }
 
-log_db_connection <- function(con, col = "value", base = 10, add_amt = 0){
+log_db_connection <- function(con, base = 10, add_amt = 0){
     con %>% 
-        dplyr::select(value = col, dplyr::everything()) %>%
         dplyr::mutate(value = value + add_amt) %>%
         dplyr::filter(value > 0) %>% 
         dplyr::mutate(value = log(value, base))

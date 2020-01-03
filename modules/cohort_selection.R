@@ -375,7 +375,6 @@ cohort_selection <- function(
     )
     
     selected_samples <- reactive({
-        print("selected_samples")
         req(samples_con(), group_filter_output(), numeric_filter_output())
         group_filters <- group_filter_output() %>% 
             reactiveValuesToList() %>% 
@@ -433,7 +432,6 @@ cohort_selection <- function(
             
             samples <- intersect(samples, sample_ids)
         }
-        print("selected_samples2")
         return(samples)
     })
     
@@ -480,14 +478,15 @@ cohort_selection <- function(
     })
     
     cohort_obj <- reactive({
-        print("cohort_obj")
-        print(input$group_choice)
-        if(is.null(input$group_choice)) group_choice <- "Immune Subtype"
-        
+        if(is.null(input$group_choice)){
+            group_choice <- "Immune Subtype"  
+        } else {
+            group_choice <- input$group_choice
+        }
         req(selected_samples())
         if(group_choice %in% c("Gender","Race", "Ethnicity")){
             group_name <- group_choice
-        } else if (input$group_choice %in% c("Immune Subtype", "TCGA Subtype", "TCGA Study")){
+        } else if (group_choice %in% c("Immune Subtype", "TCGA Subtype", "TCGA Study")){
             group_name <- group_choice
             parent_id <-  
                 create_conection("tags") %>% 
@@ -581,7 +580,6 @@ cohort_selection <- function(
             color_tbl <- dplyr::mutate(color_tbl, color = viridisLite::viridis(dplyr::n()))
         }
         plot_colors <- tibble::deframe(color_tbl)
-        print("cohort_obj2")
         list(
             "sample_con" = sample_con, 
             "group_con" = group_con, 

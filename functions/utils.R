@@ -56,21 +56,6 @@ add_transformation_string_to_feature <- function(transformation, feature){
 }
 
 
-# eventdata utils -------------------------------------------------------------
-
-create_immune_features_heatmap_text <- function(eventdata, con){
-    clicked_group <- eventdata %>% 
-        dplyr::pull("x") %>% 
-        unique
-    con %>% 
-        dplyr::filter(group == clicked_group) %>% 
-        dplyr::mutate(text = paste0(group_name, ": ", characteristics)) %>%
-        dplyr::pull(text)
-}
-
-
-
-
 # connection/tibble/dataframe checkers ----------------------------------------
 
 assert_df_has_columns <- function(df, columns){

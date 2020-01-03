@@ -172,8 +172,9 @@ distributions_plot_module <- function(
     })
     
     distribution_plot_tbl <- reactive({
+        req(feature_value_con(), input$variable_choice_id, input$scale_method)
         feature_value_con() %>%  
-            dplyr::filter(feature_id == 1) %>% 
+            dplyr::filter(feature_id == local(input$variable_choice_id)) %>% 
             scale_db_connection(input$scale_method) %>% 
             dplyr::as_tibble() %>% 
             dplyr::inner_join(cohort_sample_tbl(), by = "sample_id") %>% 
@@ -220,7 +221,7 @@ distributions_plot_module <- function(
         
         groups_con() %>% 
             dplyr::filter(group == local(unique(dplyr::pull(eventdata, "x")))) %>% 
-            dplyr::mutate(text = paste0(group_name, ": ", characteristics)) %>%
+            dplyr::mutate(text = paste0(name, ": ", characteristics)) %>%
             dplyr::pull(text)
 
     })
