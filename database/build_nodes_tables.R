@@ -53,7 +53,6 @@ cat(crayon::blue("Built the nodes_to_tags table."), fill = TRUE)
 
 # Clean up.
 rm(nodes)
-rm(nodes_db)
 rm(node_names)
 rm(tags)
 rm(node_set_group)
