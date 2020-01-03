@@ -17,8 +17,8 @@ nodes <- nodes %>%
   dplyr::rename_at("Node", ~("name")) %>%
   dplyr::inner_join(node_names, by = "name") %>%
   dplyr::rename_at("id", ~("node_name_id")) %>%
-  dplyr::rename_at("UpBinRatio", ~("ecn_value"))
-nodes$id <- seq.int(nrow(nodes))
+  dplyr::rename_at("UpBinRatio", ~("ecn_value")) %>%
+  tibble::add_column(id = 1:nrow(nodes), .before = "name")
 cat(crayon::blue("Built the nodes data"), fill = TRUE)
 
 cat(crayon::magenta("Building the nodes table."), fill = TRUE)
@@ -53,6 +53,7 @@ cat(crayon::blue("Built the nodes_to_tags table."), fill = TRUE)
 
 # Clean up.
 rm(nodes)
+rm(nodes_db)
 rm(node_names)
 rm(tags)
 rm(node_set_group)
