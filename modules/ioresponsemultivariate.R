@@ -139,8 +139,9 @@ ioresponsemultivariate <- function(input,
             
             gp <- plotly::ggplotly(p)
             #Sending a faceted ggplot to plotly makes the x axis name be plotted over the labels. Adjusting it:
-            gp[['x']][['layout']][['annotations']][[1]][['y']] <- -0.1
-            gp %>% layout(margin = list(b = 75))
+            gp[['x']][['layout']][['annotations']][[1]][['y']] <- -0.05
+            gp %>% layout(margin = list(b = 75)) %>% 
+                format_plotly()
     })
     
     output$mult_heatmap <- renderPlotly({

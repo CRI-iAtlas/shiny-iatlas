@@ -20,7 +20,8 @@ ioresponseoverview_UI <- function(id){
             
             messageBox(
                 width = 24,
-                p("Check the attributes about the available datasets.")
+                includeMarkdown("data/markdown/io_response_description.markdown")
+#                p("Check the attributes about the available datasets.")
             ),
             plotBox(
                 width = 12,
