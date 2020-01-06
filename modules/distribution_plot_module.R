@@ -87,17 +87,7 @@ distributions_plot_module_UI <- function(
         )
 }
 
-# feature_value_con
-# Each row respresents a sample
-# label: displayed label for sample
-# x: group value
-# y: feature value
-# feature_id
-# feature_metadata_con
-# Each row represents a variable, and of the columns in data_df
-# 1st col: "ID", id for variable
-# 2nd col: "DISPLAY", variable name used in the ui
-# All other cols: each column is a grouping of variables, to organize selection
+
 
 distributions_plot_module <- function(
     input, 

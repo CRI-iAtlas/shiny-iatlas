@@ -33,8 +33,7 @@ immunefeatures <- function(
     
     distributions_feature_tbl <- reactive({
         features_tbl() %>% 
-            dplyr::select(DISPLAY = feature_name, INTERNAL = feature_id, CLASS = class_name) %>% 
-            print()
+            dplyr::select(DISPLAY = feature_name, INTERNAL = feature_id, CLASS = class_name)
     })
     
     callModule(

@@ -38,62 +38,108 @@ immunomodulator <- function(
     input, 
     output, 
     session, 
-    group_display_choice, 
-    group_con,
-    immunomodulator_expr_con,
-    immunomodulators_con,
-    plot_colors
+    sample_tbl,
+    group_tbl,
+    group_name,
+    cohort_colors
 ){
     
-    expression_con <- reactive({
-        req(immunomodulator_expr_con())
-        immunomodulator_expr_con() %>% 
-            dplyr::select(
-                label = sample,
-                x = group,
-                y = value,
-                feature = gene
-            )
+    im_id_con <- reactive({
+        create_conection("gene_types") %>% 
+            dplyr::filter(name == "immunomodulator") %>% 
+            dplyr::select(id) %>% 
+            dplyr::inner_join(
+                create_conection("genes_to_types"), 
+                by = c("id" = "type_id")
+            ) %>% 
+            dplyr::select(gene_id)
     })
     
-    relationship_con <- reactive({
-        req(immunomodulators_con())
-        immunomodulators_con() %>% 
-            dplyr::select(
-                INTERNAL = gene,
-                DISPLAY = display,
-                gene_family, 
-                super_category, 
-                immune_checkpoint
-            )
+    expression_tbl <- reactive({
+        req(
+            im_id_con(),
+            sample_tbl()
+        )
+        
+        im_id_con() %>% 
+            dplyr::inner_join(
+                create_conection("genes_to_samples"), 
+                by = c("gene_id")
+            ) %>% 
+            dplyr::select(feature_id = gene_id, sample_id, value = rna_seq_expr) %>% 
+            dplyr::filter(sample_id %in% local(sample_tbl()$sample_id)) %>% 
+            dplyr::as_tibble() 
     })
     
     im_tbl <- reactive({
-        req(immunomodulators_con())
-        immunomodulators_con() %>% 
+        req(im_id_con())
+        
+        im_id_con() %>%
+            dplyr::inner_join(
+                create_conection("genes"), 
+                by = c("gene_id" = "id")
+            )  %>% 
+            dplyr::left_join(
+                create_conection("gene_families"), 
+                by = c("gene_family_id" = "id")
+            ) %>% 
+            dplyr::rename(gene_family = name) %>% 
+            dplyr::left_join(
+                create_conection("gene_functions"), 
+                by = c("gene_function_id" = "id")
+            ) %>% 
+            dplyr::rename(gene_function = name) %>% 
+            dplyr::left_join(
+                create_conection("immune_checkpoints"), 
+                by = c("immune_checkpoint_id" = "id")
+            ) %>% 
+            dplyr::rename(immune_checkpoint = name) %>% 
+            dplyr::left_join(
+                create_conection("super_categories"), 
+                by = c("super_cat_id" = "id")
+            ) %>% 
+            dplyr::rename(super_category = name) %>% 
+            dplyr::as_tibble() 
+    })
+    
+    relationship_tbl <- reactive({
+        req(im_tbl())
+        
+        im_tbl() %>% 
             dplyr::select(
-                Gene = display, 
-                `HGNC Symbol` = gene, 
-                `Friendly Name` = display2,
+                INTERNAL = gene_id,
+                DISPLAY = hgnc, 
+                `Gene Family` = gene_family,
+                `Super Category` = super_category,
+                `Immune Checkpoint` = immune_checkpoint,
+            )
+    })
+    
+    im_dt_tbl <- reactive({
+        req(im_tbl())
+        
+        im_tbl() %>%  
+            dplyr::select(
+                Hugo = hgnc, 
                 `Entrez ID` =  entrez,
                 `Gene Family` = gene_family,
                 `Super Category` = super_category,
                 `Immune Checkpoint` = immune_checkpoint,
                 Function = gene_function,
-                `Reference(s) [PMID]` = reference
-            ) %>% 
-            dplyr::as_tibble()
+                `Reference(s) [PMID]` = references
+            ) 
     })
     
     callModule(
         distributions_plot_module,
         "dist",
         "immunomodulators_dist_plot",
-        expression_con,
-        relationship_con,
-        group_con,
-        group_display_choice,
-        plot_colors,
+        expression_tbl,
+        relationship_tbl,
+        sample_tbl,
+        group_tbl,
+        group_name,
+        cohort_colors,
         key_col = "label",
         variable_group_names = c(
             "Gene Family", 
@@ -102,5 +148,5 @@ immunomodulator <- function(
         )
     )
     
-    callModule(data_table_module, "im_table", im_tbl)
+    callModule(data_table_module, "im_table", im_dt_tbl)
 }

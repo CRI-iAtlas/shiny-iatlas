@@ -64,6 +64,17 @@ shinyServer(function(input, output, session) {
         cohort_colors
     )
     
+    # Immunomodulators
+    callModule(
+        immunomodulator,
+        "module5",
+        cohort_sample_tbl,
+        cohort_group_tbl,
+        cohort_group_name,
+        cohort_colors
+    )
+    
+    
     # Cell content
     callModule(
         cellcontent,
@@ -129,16 +140,7 @@ shinyServer(function(input, output, session) {
     #     plot_colors
     # )
     # 
-    # # Immunomodulators
-    # callModule(
-    #     immunomodulator,
-    #     "module5",
-    #     group_display_choice,
-    #     subset_groups_con,
-    #     subset_immunomodulator_expr_con,
-    #     immunomodulators_con,
-    #     plot_colors
-    # )
+
     
     # subtype predictor
     callModule(
