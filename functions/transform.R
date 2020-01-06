@@ -201,41 +201,42 @@ subset_long_con_with_group <- function(
 
 # immunefeatures --------------------------------------------------------------
 
-
-build_immune_feature_heatmap_tbl <- function(
-    feature_ids,
-    response_feature_id,
-    sample_tbl
+build_immune_feature_heatmap_response_tbl <- function(
+    feature_values_tbl,
+    features_tbl,
+    response_feature_id
 ){
-    con1 <- 
-        create_conection("features_to_samples") %>% 
+    feature_values_tbl %>% 
         dplyr::filter(feature_id == response_feature_id) %>%
         dplyr::select(feature_id, sample_id, value) %>%
         dplyr::filter_all(dplyr::all_vars(!is.na(.))) %>% 
-        dplyr::inner_join(
-            create_conection("features"),
-            by = c("feature_id" = "id")
-        ) %>% 
-        dplyr::select(sample_id, value1 = value, feature1 = display)
-    
-    con2 <- 
-        create_conection("features_to_samples") %>% 
-        dplyr::filter(feature_id %in%  feature_ids) %>%
+        dplyr::inner_join(features_tbl, by = "feature_id") %>% 
+        dplyr::select(sample_id, value1 = value, feature1 = feature_name)
+}
+
+build_immune_feature_heatmap_feature_tbl <- function(
+    feature_values_tbl,
+    features_tbl,
+    feature_ids
+){
+    feature_values_tbl %>% 
+        dplyr::filter(feature_id %in% feature_ids) %>%
         dplyr::select(feature_id, sample_id, value) %>%
         dplyr::filter_all(dplyr::all_vars(!is.na(.))) %>% 
-        dplyr::inner_join(
-            create_conection("features"),
-            by = c("feature_id" = "id")
-        ) %>% 
-        dplyr::select(sample_id, value2 = value, feature2 = display, order)
+        dplyr::inner_join(features_tbl, by = "feature_id") %>% 
+        dplyr::select(sample_id, value2 = value, feature2 = feature_name, order)
+}
 
+build_immune_feature_heatmap_tbl <- function(
+    response_tbl,
+    feature_tbl,
+    sample_tbl
+){
     heatmap_tbl <-
-        dplyr::inner_join(con1, con2, by = "sample_id") %>%
+        dplyr::inner_join(response_tbl, feature_tbl, by = "sample_id") %>%
         dplyr::arrange(order) %>% 
         dplyr::select(sample_id, feature = feature2, value1, value2, order) %>% 
-        dplyr::as_tibble() %>% 
         dplyr::inner_join(sample_tbl, by = "sample_id")
-       
 }
 
 
@@ -255,16 +256,12 @@ build_immune_feature_heatmap_matrix <- function(tbl, method){
         as.matrix()
 }
 
-build_immune_feature_scatterplot_tbl <- function(tbl, clicked_feature){
+build_immune_feature_scatterplot_tbl <- function(tbl, clicked_feature, clicked_group){
     tbl %>%
-        dplyr::filter(feature == clicked_feature) %>%
-        dplyr::select(sample_id, group, y = value1, x = value2) %>%
-        dplyr::inner_join(
-            dplyr::as_tibble(create_conection("samples")), 
-            by = c("sample_id" = "id")) %>%
-        dplyr::select(sample = sample_id.y, group, x, y) %>% 
+        dplyr::filter(feature == clicked_feature, group == clicked_group) %>%
+        dplyr::select(sample =sample_id, group, y = value1, x = value2, name) %>%
         create_plotly_label(
-            name_column = "sample",
+            name_column = "name",
             group_column = "group",
             value_columns = c("x", "y")
         )

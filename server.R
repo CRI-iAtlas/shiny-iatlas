@@ -27,15 +27,39 @@ shinyServer(function(input, output, session) {
     cohort_sample_con <- reactive(cohort_cons()$sample_con)
     cohort_sample_tbl <- reactive(dplyr::as_tibble(cohort_sample_con()))
     cohort_group_con  <- reactive(cohort_cons()$group_con)
+    cohort_group_tbl  <- reactive(dplyr::as_tibble(cohort_group_con()))
     cohort_group_name <- reactive(cohort_cons()$group_name)
     cohort_colors     <- reactive(cohort_cons()$plot_colors)
+    
+    cohort_feature_values_tbl <- reactive({
+        req(cohort_sample_tbl())
+        tbl <- 
+            create_conection("features_to_samples") %>% 
+            dplyr::filter(sample_id %in% local(cohort_sample_tbl()$sample_id)) %>%
+            dplyr::select(sample_id, feature_id, value) %>% 
+            dplyr::as_tibble()
+    })
+    
+    cohort_features_tbl <- reactive({
+        tbl <- 
+            dplyr::inner_join(
+                create_conection("features"),
+                create_conection("classes"),
+                by = c("class_id" = "id")
+            ) %>% 
+            dplyr::arrange(name.y, order) %>% 
+            dplyr::select(class_name = name.y, class_id, feature_name = display, feature_id = id, order) %>% 
+            dplyr::as_tibble()
+    })
     
     # Immune features
     callModule(
         immunefeatures,
         "module6",
+        cohort_feature_values_tbl,
+        cohort_features_tbl,
         cohort_sample_tbl,
-        cohort_group_con,
+        cohort_group_tbl,
         cohort_group_name,
         cohort_colors
     )

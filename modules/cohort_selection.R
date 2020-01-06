@@ -508,7 +508,12 @@ cohort_selection <- function(
                     sample_id %in% local(selected_samples())
                     # sample_id %in% c(9747, 9475)
                 ) %>% 
-                dplyr::select(sample_id, tag_id, group = name)
+                dplyr::select(sample_id, tag_id, group = name) %>% 
+                dplyr::inner_join(
+                    create_conection("samples"),
+                    by = c("sample_id" = "id")
+                ) %>% 
+                dplyr::select(sample_id = sample_id.x, name = sample_id.y, tag_id, group)
             group_con <- sample_con %>% 
                 dplyr::group_by(tag_id) %>% 
                 dplyr::summarise(size = dplyr::n()) %>% 
