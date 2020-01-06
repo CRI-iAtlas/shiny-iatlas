@@ -13,6 +13,18 @@ EXCEPTION
 END $$;
 
 -- samples table
+CREATE TABLE patients (
+    id SERIAL,
+    gender VARCHAR,
+    race VARCHAR,
+    ethnicity VARCHAR,
+    PRIMARY KEY (id)
+);
+CREATE INDEX patient_gender_index ON patients (gender);
+CREATE INDEX patient_race_index ON patients (race);
+CREATE INDEX patient_ethnicity_index ON patients (ethnicity);
+
+-- samples table
 CREATE TABLE samples (
     id SERIAL,
     sample_id VARCHAR NOT NULL,
@@ -136,6 +148,7 @@ CREATE TABLE results (
     n_mut INTEGER,
     PRIMARY KEY (id)
 );
+ALTER TABLE results ADD COLUMN feature_id INTEGER REFERENCES features;
 ALTER TABLE results ADD COLUMN label_id INTEGER REFERENCES result_labels;
 ALTER TABLE results ADD COLUMN tag_id INTEGER REFERENCES tags;
 CREATE INDEX result_label_id_index ON results (label_id);
@@ -194,13 +207,13 @@ CREATE TABLE features_to_samples (
 );
 CREATE INDEX feature_to_sample_sample_id_index ON features_to_samples (sample_id);
 
--- features_to_results table
-CREATE TABLE features_to_results (
-    feature_id INTEGER REFERENCES features,
-    result_id INTEGER REFERENCES results,
-    PRIMARY KEY (feature_id, result_id)
+-- samples_to_patients table
+CREATE TABLE samples_to_patients (
+    sample_id INTEGER REFERENCES samples,
+    patient_id INTEGER REFERENCES patients,
+    PRIMARY KEY (sample_id, patient_id)
 );
-CREATE INDEX feature_to_result_result_id_index ON features_to_results (result_id);
+CREATE INDEX samples_to_patients_patient_id_index ON samples_to_patients (patient_id);
 
 -- nodes_to_tags table
 CREATE TABLE nodes_to_tags (

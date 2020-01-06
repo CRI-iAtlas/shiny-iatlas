@@ -108,7 +108,7 @@ rm(features)
 cat("Cleaned up.", fill = TRUE)
 gc()
 
-cat(crayon::magenta("Building features_to_samples table\n(Please be patient, this may take a little while as there are many rows to write.)"), fill = TRUE)
+cat(crayon::magenta("Building features_to_samples table\n(Please be patient, this may take a little while as there are", nrow(features_to_samples), "rows to write.)"), fill = TRUE, sep = " ")
 table_written <- features_to_samples %>% .GlobalEnv$write_table_ts("features_to_samples")
 cat(crayon::blue("Built features_to_samples table."), fill = TRUE)
 
@@ -132,7 +132,7 @@ genes_to_samples <- all_samples %>%
   )
 cat(crayon::blue("Built genes_to_samples data."), fill = TRUE)
 
-cat(crayon::magenta("Building genes_to_samples table.\n(There are many rows to write, this may take a little while.)"), fill = TRUE)
+cat(crayon::magenta("Building genes_to_samples table.\n(There are", nrow(genes_to_samples), "rows to write, this may take a little while.)"), fill = TRUE)
 table_written <- genes_to_samples %>% .GlobalEnv$write_table_ts("genes_to_samples")
 cat(crayon::blue("Built genes_to_samples table."), fill = TRUE)
 
@@ -140,7 +140,6 @@ cat(crayon::blue("Built genes_to_samples table."), fill = TRUE)
 rm(features_to_samples)
 rm(genes)
 rm(genes_to_samples)
-rm(sample_set_genes)
 rm(samples_to_tags)
 rm(table_written)
 rm(all_samples)

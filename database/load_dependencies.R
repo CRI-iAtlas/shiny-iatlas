@@ -29,21 +29,8 @@ load_dependencies <- function() {
     install.packages("pool")
   }
 
-  # Loading crayon
-  library("crayon")
-
-  # Loading stringi
-  library("stringi")
-
+  ### Only need to load packages that have functionality that is NOT called like pkg::function() ###
+  
   # Load magrittr so %>% is available.
   library("magrittr")
-
-  # Loading feather
-  library("feather")
-
-  # Loading RPostgres loads DBI automatically.
-  library("RPostgres")
-
-  # Loading pool loads DBI automatically.
-  library("pool")
 }

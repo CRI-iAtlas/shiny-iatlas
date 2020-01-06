@@ -14,6 +14,19 @@ read_table <- function(table_name) {
   return(result)
 }
 
+# update_table <- function(df, table_name) {
+#   return(pool::poolWithTransaction(.GlobalEnv$pool, function(conn) {
+#     pool::dbGetQuery(
+#       conn,
+#       paste0("INSERT INTO", table_name, "(id, column_1, column_2) 
+#       VALUES (1, 'A', 'X'), (2, 'B', 'Y'), (3, 'C', 'Z')
+#       ON CONFLICT (id) DO UPDATE
+#         SET column_1 = excluded.column_1,
+#           column_2 = excluded.column_2;")
+#     )
+#   }))
+# }
+
 write_table_ts <- function(df, table_name) {
   return(pool::poolWithTransaction(.GlobalEnv$pool, function(conn) {
     pool::dbWriteTable(conn, table_name, df, append = TRUE, copy = TRUE)

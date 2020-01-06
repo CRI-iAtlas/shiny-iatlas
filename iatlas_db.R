@@ -38,7 +38,7 @@ build_iatlas_db <- function(env = "dev", reset = NULL, show_gc_info = FALSE) {
 
   source("database/build_results_tables.R", chdir = TRUE)
 
-  # source("database/build_nodes_tables.R", chdir = TRUE)
+  source("database/build_nodes_tables.R", chdir = TRUE)
 
   # Close the database connection.
   pool::poolClose(.GlobalEnv$pool)
@@ -53,8 +53,10 @@ build_iatlas_db <- function(env = "dev", reset = NULL, show_gc_info = FALSE) {
   rm(connect_to_db, pos = ".GlobalEnv")
   rm(create_db, pos = ".GlobalEnv")
   rm(delete_rows, pos = ".GlobalEnv")
+  rm(filter_na, pos = ".GlobalEnv")
   rm(is_df_empty, pos = ".GlobalEnv")
   rm(link_to_references, pos = ".GlobalEnv")
+  rm(load_feather_data, pos = ".GlobalEnv")
   rm(read_table, pos = ".GlobalEnv")
   rm(rebuild_gene_relational_data, pos = ".GlobalEnv")
   rm(switch_value, pos = ".GlobalEnv")
