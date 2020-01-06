@@ -22,7 +22,7 @@ cat(crayon::blue("Built result_labels data."), fill = TRUE)
 
 cat(crayon::magenta("Building result_labels table."), fill = TRUE)
 table_written <- result_labels %>% .GlobalEnv$write_table_ts("result_labels")
-cat(crayon::blue("Built result_labels table. (", nrow(result_labels), "rows)"), fill = TRUE, sep = " ")
+cat(crayon::blue("Built result_labels table. (", nrow(result_labels), "rows )"), fill = TRUE, sep = " ")
 
 cat(crayon::magenta("Building results data."), fill = TRUE)
 result_labels <- .GlobalEnv$read_table("result_labels") %>% dplyr::as_tibble()
@@ -46,7 +46,7 @@ cat(crayon::blue("Built results data."), fill = TRUE)
 
 cat(crayon::magenta("Building results table.\n(Please be patient, this may take a little while as there are", nrow(results), "rows to write.)"), fill = TRUE, spe = " ")
 table_written <- results %>% .GlobalEnv$write_table_ts("results")
-cat(crayon::blue("Built results table. (", nrow(results), "rows)"), fill = TRUE, sep = " ")
+cat(crayon::blue("Built results table. (", nrow(results), "rows )"), fill = TRUE, sep = " ")
 
 # Remove the data we are done with.
 rm(all_results)

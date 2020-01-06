@@ -12,7 +12,7 @@ cat(crayon::blue("Built the node_names data"), fill = TRUE)
 
 cat(crayon::magenta("Building the node_names table."), fill = TRUE)
 table_written <- node_names %>% .GlobalEnv$write_table_ts("node_names")
-cat(crayon::blue("Built the node_names table. (", nrow(node_names), "rows)"), fill = TRUE, sep = " ")
+cat(crayon::blue("Built the node_names table. (", nrow(node_names), "rows )"), fill = TRUE, sep = " ")
 
 cat(crayon::magenta("Building the nodes data"), fill = TRUE)
 node_names <- .GlobalEnv$read_table("node_names") %>% dplyr::as_tibble()
@@ -29,7 +29,7 @@ cat(crayon::magenta("Building the nodes table."), fill = TRUE)
 table_written <- nodes %>%
   dplyr::select(id, ecn_value, node_name_id) %>%
   .GlobalEnv$write_table_ts("nodes")
-cat(crayon::blue("Built the nodes table. (", nrow(nodes), "rows)"), fill = TRUE, sep = " ")
+cat(crayon::blue("Built the nodes table. (", nrow(nodes), "rows )"), fill = TRUE, sep = " ")
 
 cat(crayon::magenta("Building the nodes_to_tags data"), fill = TRUE)
 tags <- .GlobalEnv$read_table("tags") %>% dplyr::as_tibble()
@@ -51,7 +51,7 @@ cat(crayon::blue("Built the nodes_to_tags data"), fill = TRUE)
 
 cat(crayon::magenta("Building the nodes_to_tags table.\n(There are", nrow(nodes_to_tags), "rows to write, this may take a little while.)"), fill = TRUE, sep = " ")
 table_written <- nodes_to_tags %>% .GlobalEnv$write_table_ts("nodes_to_tags")
-cat(crayon::blue("Built the nodes_to_tags table. (", nrow(nodes_to_tags), "rows)"), fill = TRUE, sep = " ")
+cat(crayon::blue("Built the nodes_to_tags table. (", nrow(nodes_to_tags), "rows )"), fill = TRUE, sep = " ")
 
 cat(crayon::magenta("Importing feather files for edges"), fill = TRUE)
 edges <- .GlobalEnv$load_feather_data("../data2/edges") %>%
@@ -72,7 +72,7 @@ cat(crayon::blue("Built the edges data"), fill = TRUE)
 
 cat(crayon::magenta("Building the edges table.\n(There are", nrow(edges), "rows to write, this may take a little while.)"), fill = TRUE, sep = " ")
 table_written <- edges %>% .GlobalEnv$write_table_ts("edges")
-cat(crayon::blue("Built the edges table. (", nrow(edges), "rows)"), fill = TRUE, sep = " ")
+cat(crayon::blue("Built the edges table. (", nrow(edges), "rows )"), fill = TRUE, sep = " ")
 
 # Clean up.
 rm(edges)
