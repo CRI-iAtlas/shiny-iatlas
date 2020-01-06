@@ -1,5 +1,5 @@
 cat(crayon::magenta("Importing feather files for nodes"), fill = TRUE)
-nodes <- .GlobalEnv$load_feather_data("../data3/nodes") %>%
+nodes <- .GlobalEnv$load_feather_data("../data2/nodes") %>%
   dplyr::distinct(Node, Group, Immune, UpBinRatio) %>%
   dplyr::arrange(Node)
 cat(crayon::blue("Imported feather files for nodes"), fill = TRUE)

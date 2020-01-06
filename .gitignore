@@ -8,6 +8,6 @@
 .DS_Store
 rsconnect/
 data/io*
-data2/*.csv
+data2/**/*.csv
 docker/volumes/**
 .mailmap
