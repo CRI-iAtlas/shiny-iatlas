@@ -171,6 +171,18 @@ CREATE TABLE nodes (
 ALTER TABLE nodes ADD COLUMN node_name_id INTEGER REFERENCES node_names;
 CREATE INDEX node_node_name_id_index ON nodes (node_name_id);
 
+-- edges table
+CREATE TABLE edges (
+    id SERIAL,
+    node_1_id  INTEGER REFERENCES nodes NOT NULL,
+    node_2_id  INTEGER REFERENCES nodes NOT NULL,
+    ratio_score NUMERIC,
+    PRIMARY KEY (id)
+);
+CREATE INDEX edge_node_1_id_index ON edges (node_1_id);
+CREATE INDEX edge_node_2_id_index ON edges (node_2_id);
+CREATE INDEX edge_nodes_id_index ON edges (node_1_id, node_2_id);
+
 -- genes_to_types table
 CREATE TABLE genes_to_types (
     gene_id INTEGER REFERENCES genes,

@@ -98,7 +98,7 @@ cat(crayon::blue("Built gene_types data."), fill = TRUE)
 
 cat(crayon::magenta("Building gene_types table."), fill = TRUE)
 table_written <- gene_types %>% .GlobalEnv$write_table_ts("gene_types")
-cat(crayon::blue("Built gene_types table."), fill = TRUE)
+cat(crayon::blue("Built gene_types table. (", nrow(gene_types), "rows )"), fill = TRUE, sep = " ")
 
 cat(crayon::magenta("Building immune_checkpoints data."), fill = TRUE)
 immune_checkpoints <- all_genes %>% .GlobalEnv$rebuild_gene_relational_data("immune_checkpoint", "name")
@@ -106,7 +106,7 @@ cat(crayon::blue("Built immune_checkpoints data."), fill = TRUE)
 
 cat(crayon::magenta("Building immune_checkpoints table."), fill = TRUE)
 table_written <- immune_checkpoints %>% .GlobalEnv$write_table_ts("immune_checkpoints")
-cat(crayon::blue("Built immune_checkpoints table."), fill = TRUE)
+cat(crayon::blue("Built immune_checkpoints table. (", nrow(immune_checkpoints), "rows )"), fill = TRUE, sep = " ")
 
 cat(crayon::magenta("Building gene_families data."), fill = TRUE)
 gene_families <- all_genes %>% .GlobalEnv$rebuild_gene_relational_data("gene_family", "name")
@@ -114,7 +114,7 @@ cat(crayon::blue("Built gene_families data."), fill = TRUE)
 
 cat(crayon::magenta("Building gene_families table."), fill = TRUE)
 table_written <- gene_families %>% .GlobalEnv$write_table_ts("gene_families")
-cat(crayon::blue("Built gene_families table."), fill = TRUE)
+cat(crayon::blue("Built gene_families table. (", nrow(gene_families), "rows )"), fill = TRUE, sep = " ")
 
 cat(crayon::magenta("Building gene_functions data."), fill = TRUE)
 gene_functions <- all_genes %>% .GlobalEnv$rebuild_gene_relational_data("gene_function", "name")
@@ -122,7 +122,7 @@ cat(crayon::blue("Built gene_functions data."), fill = TRUE)
 
 cat(crayon::magenta("Building gene_functions table."), fill = TRUE)
 table_written <- gene_functions %>% .GlobalEnv$write_table_ts("gene_functions")
-cat(crayon::blue("Built gene_functions table."), fill = TRUE)
+cat(crayon::blue("Built gene_functions table. (", nrow(gene_functions), "rows )"), fill = TRUE, sep = " ")
 
 cat(crayon::magenta("Built pathways data."), fill = TRUE)
 pathways <- all_genes %>% .GlobalEnv$rebuild_gene_relational_data("pathway", "name")
@@ -130,7 +130,7 @@ cat(crayon::blue("Built pathways data."), fill = TRUE)
 
 cat(crayon::magenta("Built pathways table."), fill = TRUE)
 table_written <- pathways %>% .GlobalEnv$write_table_ts("pathways")
-cat(crayon::blue("Built pathways table."), fill = TRUE)
+cat(crayon::blue("Built pathways table. (", nrow(pathways), "rows )"), fill = TRUE, sep = " ")
 
 cat(crayon::magenta("Building super_categories data."), fill = TRUE)
 super_categories <- all_genes %>% .GlobalEnv$rebuild_gene_relational_data("super_category", "name")
@@ -138,7 +138,7 @@ cat(crayon::blue("Built super_categories data."), fill = TRUE)
 
 cat(crayon::magenta("Building super_categories table."), fill = TRUE)
 table_written <- super_categories %>% .GlobalEnv$write_table_ts("super_categories")
-cat(crayon::blue("Built super_categories table."), fill = TRUE)
+cat(crayon::blue("Built super_categories table. (", nrow(super_categories), "rows )"), fill = TRUE, sep = " ")
 
 cat(crayon::magenta("Built therapy_types data."), fill = TRUE)
 therapy_types <- all_genes %>% .GlobalEnv$rebuild_gene_relational_data("therapy_type", "name")
@@ -146,7 +146,7 @@ cat(crayon::blue("Built therapy_types data."), fill = TRUE)
 
 cat(crayon::magenta("Built therapy_types table."), fill = TRUE)
 table_written <- therapy_types %>% .GlobalEnv$write_table_ts("therapy_types")
-cat(crayon::blue("Built therapy_types table."), fill = TRUE)
+cat(crayon::blue("Built therapy_types table. (", nrow(therapy_types), "rows )"), fill = TRUE, sep = " ")
 
 cat(crayon::magenta("Building genes data."), fill = TRUE)
 immune_checkpoints <- .GlobalEnv$read_table("immune_checkpoints")
@@ -184,7 +184,7 @@ cat(crayon::blue("Built genes data."), fill = TRUE)
 
 cat(crayon::magenta("Building genes table."), fill = TRUE)
 table_written <- genes %>% .GlobalEnv$write_table_ts("genes")
-cat(crayon::blue("Built genes table."), fill = TRUE)
+cat(crayon::blue("Built genes table. (", nrow(genes), "rows )"), fill = TRUE, sep = " ")
 
 # Clean up.
 rm(all_genes)
@@ -215,7 +215,7 @@ immunomodulator_expr <- immunomodulator_expr %>%
   tibble::add_column(type_id = immunomodulator_id %>% as.integer)
 io_target_expr <- io_target_expr %>%
   dplyr::distinct(gene) %>%
-  tibble::add_column(type_id = immunomodulator_id %>% as.integer)
+  tibble::add_column(type_id = io_target_id %>% as.integer)
 genes_to_types <- driver_mutations %>%
   dplyr::bind_rows(immunomodulator_expr, io_target_expr) %>%
   dplyr::inner_join(genes, by = c("gene" = "hgnc")) %>%
@@ -225,7 +225,7 @@ cat(crayon::blue("Build genes_to_types data."), fill = TRUE)
 
 cat(crayon::magenta("Building genes_to_types table."), fill = TRUE)
 table_written <- genes_to_types %>% .GlobalEnv$write_table_ts("genes_to_types")
-cat(crayon::blue("Built genes_to_types table."), fill = TRUE)
+cat(crayon::blue("Built genes_to_types table. (", nrow(genes_to_types), "rows )"), fill = TRUE, sep = " ")
 
 # Clean up.
 rm(driver_mutations)

@@ -42,7 +42,7 @@ cat(crayon::blue("Built samples data."), fill = TRUE)
 cat(crayon::magenta("Building the samples table."), fill = TRUE)
 table_written <- samples %>% .GlobalEnv$write_table_ts("samples")
 samples <- .GlobalEnv$read_table("samples") %>% dplyr::as_tibble()
-cat(crayon::blue("Built the samples table."), fill = TRUE)
+cat(crayon::blue("Built the samples table. (", nrow(samples), "rows )"), fill = TRUE, sep = " ")
 
 # Remove the large til_image_links as we are done with it.
 rm(til_image_links)
@@ -84,7 +84,7 @@ gc()
 
 cat(crayon::magenta("Building samples_to_tags table."), fill = TRUE)
 table_written <- samples_to_tags %>% .GlobalEnv$write_table_ts("samples_to_tags")
-cat(crayon::blue("Built samples_to_tags table."), fill = TRUE)
+cat(crayon::blue("Built samples_to_tags table. (", nrow(samples_to_tags), "rows )"), fill = TRUE, sep = " ")
 
 cat(crayon::magenta("Building samples_to_features data."), fill = TRUE)
 features <- .GlobalEnv$read_table("features") %>%
@@ -110,7 +110,7 @@ gc()
 
 cat(crayon::magenta("Building features_to_samples table\n(Please be patient, this may take a little while as there are", nrow(features_to_samples), "rows to write.)"), fill = TRUE, sep = " ")
 table_written <- features_to_samples %>% .GlobalEnv$write_table_ts("features_to_samples")
-cat(crayon::blue("Built features_to_samples table."), fill = TRUE)
+cat(crayon::blue("Built features_to_samples table. (", nrow(features_to_samples), "rows )"), fill = TRUE, sep = " ")
 
 cat(crayon::magenta("Building genes_to_samples data.\n(These are two large datasets, please be patient as they are rebuilt.)"), fill = TRUE)
 genes <- .GlobalEnv$read_table("genes") %>%
@@ -134,7 +134,7 @@ cat(crayon::blue("Built genes_to_samples data."), fill = TRUE)
 
 cat(crayon::magenta("Building genes_to_samples table.\n(There are", nrow(genes_to_samples), "rows to write, this may take a little while.)"), fill = TRUE)
 table_written <- genes_to_samples %>% .GlobalEnv$write_table_ts("genes_to_samples")
-cat(crayon::blue("Built genes_to_samples table."), fill = TRUE)
+cat(crayon::blue("Built genes_to_samples table. (", nrow(genes_to_samples), "rows )"), fill = TRUE, sep = " ")
 
 # Remove the data we are done with.
 rm(features_to_samples)

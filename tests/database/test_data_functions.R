@@ -20,6 +20,19 @@ library("testthat")
 # Make the custom data functions available.
 source("../../database/data_functions.R", chdir = TRUE)
 
+# filter_na
+testthat::test_that("filter_na returns the value when the passed value is NOT NA.", {
+  testthat::expect_that(filter_na(c(14)), is_identical_to(14))
+  testthat::expect_that(filter_na(14), is_identical_to(14))
+})
+testthat::test_that("filter_na returns the value when the passed value is combined with an NA.", {
+  testthat::expect_that(filter_na(c(14, NA)), is_identical_to(14))
+})
+# testthat::test_that("filter_na returns NA when there is no passed value or the passed value is NA.", {
+#   cat("value:", filter_na(NA), fill = TRUE, sep = " ")
+#   testthat::expect_that(filter_na(NA), is_identical_to(NA %>% as.character))
+# })
+
 # is_df_empty
 testthat::test_that("is_df_empty returns FALSE when a valid non-empty dataframe or tibble is passed.", {
   testthat::expect_that(is_df_empty(cars), is_identical_to(FALSE))

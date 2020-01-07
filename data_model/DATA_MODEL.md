@@ -397,7 +397,7 @@ The following are descriptions of each field in each table. This should be exhau
 
   - `node_2_id` - The database identifier of a specific node. Relates to the `id` field in a row in the [nodes](#nodes) main table. (an integer)
 
-  - `value` - The relationship value between the two nodes. (an integer)
+  - `ratio_score` - The relationship value between the two nodes. (an integer)
 
 ## Data Model Diagram
 
