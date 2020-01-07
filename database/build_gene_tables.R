@@ -215,7 +215,7 @@ immunomodulator_expr <- immunomodulator_expr %>%
   tibble::add_column(type_id = immunomodulator_id %>% as.integer)
 io_target_expr <- io_target_expr %>%
   dplyr::distinct(gene) %>%
-  tibble::add_column(type_id = immunomodulator_id %>% as.integer)
+  tibble::add_column(type_id = io_target_id %>% as.integer)
 genes_to_types <- driver_mutations %>%
   dplyr::bind_rows(immunomodulator_expr, io_target_expr) %>%
   dplyr::inner_join(genes, by = c("gene" = "hgnc")) %>%
