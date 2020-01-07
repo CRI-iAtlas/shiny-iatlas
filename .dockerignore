@@ -1,0 +1,9 @@
+.git/
+packrat/*/*
+Dockerfile*
+sql/
+scripts/
+data_model/
+renv/library/
+renv/staging/
+.Rhistory
