@@ -8,7 +8,7 @@ cellcontent_UI <- function(id) {
             width = 12,
             p("Explore the immune cell proportions in your sample groups.")  
         ),
-        overall_cell_proportions_module_UI(ns("ocp_module")),
+        # overall_cell_proportions_module_UI(ns("ocp_module")),
         cell_type_fractions_module_UI(ns("ctf_module"))
     )
 }
@@ -17,28 +17,31 @@ cellcontent <- function(
     input,
     output, 
     session, 
-    group_display_choice, 
-    feature_values_long_con,
-    feature_con,
-    groups_con
+    feature_values_tbl,
+    features_tbl,
+    sample_tbl,
+    group_tbl,
+    group_name
 ) {
     
     callModule(
         overall_cell_proportions_module, 
         "ocp_module",
-        group_display_choice, 
-        feature_values_long_con,
-        feature_con,
-        groups_con
+        feature_values_tbl,
+        features_tbl,
+        sample_tbl,
+        group_tbl,
+        group_name
     )
     
     callModule(
         cell_type_fractions_module, 
         "ctf_module",
-        group_display_choice, 
-        feature_values_long_con,
-        feature_con,
-        groups_con
+        feature_values_tbl,
+        features_tbl,
+        sample_tbl,
+        group_tbl,
+        group_name
     )
 }
 
@@ -87,27 +90,36 @@ overall_cell_proportions_module  <- function(
     input, 
     output, 
     session,
-    group_display_choice, 
-    feature_values_long_con,
-    feature_con,
-    groups_con
+    feature_values_tbl,
+    features_tbl,
+    sample_tbl,
+    group_tbl,
+    group_name
 ){
     
-    cp_feature_con <- reactive({
-        req(feature_con())
-        feature_con() %>%  
-            dplyr::filter(class == "Overall Proportion") %>% 
-            dplyr::filter(feature != "til_percentage")
+    cp_feature_tbl <- reactive({
+        req(features_tbl())
+        features_tbl() %>% 
+            dplyr::filter(
+                feature_name %in% c(
+                    "Leukocyte Fraction",
+                    "Stromal Fraction",
+                    "Tumor Fraction"
+                ) 
+            )
     })
     
-    cp_value_con <- reactive({
-        req(feature_values_long_con(), cp_feature_con())
-        build_cell_proportion_con(cp_feature_con(), feature_values_long_con())
+    cp_value_tbl <- reactive({
+        req(feature_values_tbl(), cp_feature_tbl())
+        feature_values_tbl() %>% 
+            dplyr::inner_join(cp_feature_tbl(), by = "feature_id") %>% 
+            dplyr::inner_join(sample_tbl(), by = "sample_id") %>% 
+            dplyr::select(value, class_name, feature_name, order, sample_name = name, group) 
     })
     
     barplot_tbl <- reactive({
-        req(cp_value_con())
-        build_cell_proportion_barplot_tbl(cp_value_con())
+        req(cp_value_tbl())
+        build_cell_proportion_barplot_tbl(cp_value_tbl())
     })
     
     output$barplot <- renderPlotly({
@@ -129,28 +141,29 @@ overall_cell_proportions_module  <- function(
     })
     
     output$barplot_text <- renderText({
-        req(groups_con())
+        req(group_tbl())
         eventdata <- event_data("plotly_click", source = "op_barplot")
         validate(need(eventdata, "Click above plot"))
         
-        groups_con() %>% 
-            dplyr::filter(group == local(unique(dplyr::pull(eventdata, "x")))) %>% 
-            dplyr::mutate(text = paste0(group_name, ": ", characteristics)) %>%
+        group_tbl() %>% 
+            dplyr::filter(group == unique(dplyr::pull(eventdata, "x"))) %>% 
+            dplyr::mutate(text = paste0(name, ": ", characteristics)) %>%
             dplyr::pull(text)
     })
     
     output$scatterplot <- renderPlotly({
-        req(cp_value_con())
+        req(cp_value_tbl())
         eventdata <- event_data( "plotly_click", source = "op_barplot")
         validate(need(eventdata, "Click above plot"))
         
         
         selected_group <- eventdata$x[[1]]
-        groups         <- dplyr::pull(cp_value_con(), group)
+        groups         <- dplyr::pull(cp_value_tbl(), group)
         validate(need(selected_group %in% groups, "Click above barchart"))
         
         scatterplot_tbl <-  build_cell_proportion_scatterplot_tbl(
-            cp_value_con()
+            cp_value_tbl(),
+            selected_group
         ) 
         
         create_scatterplot(
@@ -183,8 +196,13 @@ cell_type_fractions_module_UI <- function(id){
                 selectInput(
                     inputId = ns("fraction_group_choice"),
                     label = "Select Cell Fraction Type",
-                    choices = config_yaml$cell_type_aggregates,
-                    selected = config_yaml$cell_type_aggregates[[3]]
+                    choices = c(
+                        "Immune Cell Proportion - Common Lymphoid and Myeloid Cell Derivative Class",
+                        "Immune Cell Proportion - Differentiated Lymphoid and Myeloid Cell Derivative Class",
+                        "Immune Cell Proportion - Multipotent Progenitor Cell Derivative Class",
+                        "Immune Cell Proportion - Original"
+                    ),
+                    selected = "Immune Cell Proportion - Differentiated Lymphoid and Myeloid Cell Derivative Class"
                 )
             )
         ),
@@ -204,22 +222,25 @@ cell_type_fractions_module <- function(
     input, 
     output, 
     session,
-    group_display_choice, 
-    feature_values_long_con,
-    feature_con,
-    groups_con
+    feature_values_tbl,
+    features_tbl,
+    sample_tbl,
+    group_tbl,
+    group_name
 ){
     
-    cf_feature_con <- reactive({
-        req(feature_con(), input$fraction_group_choice)
-        feature_con() %>%  
-            dplyr::filter(class == local(input$fraction_group_choice))
-    })
-    
     cf_value_tbl <- reactive({
-        req(feature_values_long_con(), cf_feature_con())
+        req(
+            features_tbl(),
+            feature_values_tbl(),
+            sample_tbl(),
+            input$fraction_group_choice
+        )
         build_cell_fractions_barplot_tbl(
-            cf_feature_con(), feature_values_long_con()
+            features_tbl(), 
+            feature_values_tbl(),
+            sample_tbl(),
+            input$fraction_group_choice
         )
     })
     
@@ -245,13 +266,13 @@ cell_type_fractions_module <- function(
     })
     
     output$barplot_text <- renderText({
-        req(groups_con())
+        req(group_tbl())
         eventdata <- event_data("plotly_click", source = "cf_barplot")
         validate(need(eventdata, "Click above plot"))
         
-        groups_con() %>% 
-            dplyr::filter(group == local(unique(dplyr::pull(eventdata, "x")))) %>% 
-            dplyr::mutate(text = paste0(group_name, ": ", characteristics)) %>%
+        group_tbl() %>% 
+            dplyr::filter(group == unique(dplyr::pull(eventdata, "x"))) %>% 
+            dplyr::mutate(text = paste0(name, ": ", characteristics)) %>%
             dplyr::pull(text)
     })
     

@@ -74,64 +74,59 @@ build_ci_matrix <- function(
 
 # cell fractions module -------------------------------------------------------
 
-build_cell_fractions_barplot_tbl <- function(feature_con, value_con){
-    value_con %>% 
-        dplyr::inner_join(feature_con, by = "feature") %>% 
-        dplyr::group_by(display, group) %>% 
+build_cell_fractions_barplot_tbl <- function(feature_tbl, value_tbl, sample_tbl, class_value){
+    feature_tbl %>% 
+        dplyr::filter(class_name == class_value) %>% 
+        dplyr::inner_join(value_tbl, by = "feature_id") %>% 
+        dplyr::inner_join(sample_tbl, by = "sample_id") %>% 
+        dplyr::group_by(feature_name, group) %>% 
         dplyr::arrange(order) %>% 
         dplyr::summarise(mean = mean(value), count = dplyr::n()) %>%
         dplyr::ungroup() %>% 
         dplyr::mutate(se = mean / sqrt(count)) %>% 
         dplyr::as_tibble() %>% 
         create_plotly_label(
-            name_column = "display",
+            name_column = "feature_name",
             group_column = "group",
             value_columns = c("mean", "se")
         ) %>% 
-        dplyr::select(x = group, y = mean, color = display, label, error = se)
+        dplyr::select(x = group, y = mean, color = feature_name, label, error = se)
 }
 
  
 # overall cell proportions module ---------------------------------------------
 
-build_cell_proportion_con <- function(feature_con, value_con){
 
-    feature_con <- feature_con %>% 
-        dplyr::filter(class == "Overall Proportion") %>% 
-        dplyr::filter(feature != "til_percentage")
-    
-    value_con %>% 
-        dplyr::inner_join(feature_con) 
-        
-}
 
-build_cell_proportion_barplot_tbl <- function(con){
-    con %>%
-        dplyr::group_by(display, group) %>% 
+build_cell_proportion_barplot_tbl <- function(tbl){
+    tbl %>%
+        dplyr::group_by(feature_name, group) %>% 
         dplyr::summarise(mean = mean(value), count = dplyr::n()) %>%
         dplyr::mutate(se = mean / sqrt(count)) %>%
-        dplyr::as_tibble() %>%
         create_plotly_label(
             title = "Fraction",
-            name_column = "display",
+            name_column = "feature_name",
             group_column = "group",
             value_columns = c("mean", "se")
         ) %>%
-        dplyr::select(label, color = display, x = group, y = mean, error = se)
+        dplyr::select(label, color = feature_name, x = group, y = mean, error = se)
+        
 }
 
-build_cell_proportion_scatterplot_tbl <- function(con){
-    con %>% 
-        dplyr::select(sample, group, feature = display, value) %>% 
+build_cell_proportion_scatterplot_tbl <- function(tbl, group_value){
+    tbl %>% 
+        dplyr::select(sample_name, group, feature = feature_name, value) %>% 
+        print() %>% 
         dplyr::filter(
-            feature %in% c("Leukocyte Fraction", "Stromal Fraction")
+            feature %in% c("Leukocyte Fraction", "Stromal Fraction"),
+            group == group_value
         ) %>%
-        dplyr::as_tibble() %>% 
+        print() %>% 
         tidyr::pivot_wider(values_from = value, names_from = feature) %>% 
         tidyr::drop_na() %>% 
         dplyr::rename(x = `Stromal Fraction`, y = `Leukocyte Fraction`) %>% 
         create_plotly_label(
-            name_column = "sample",
+            name_column = "sample_name",
             group_column = "group",
             value_columns = c("x", "y")
         ) %>% 

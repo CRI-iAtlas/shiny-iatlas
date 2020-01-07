@@ -79,27 +79,28 @@ shinyServer(function(input, output, session) {
     callModule(
         cellcontent,
         "module1",
-        group_display_choice,
-        subset_feature_values_long_con,
-        features_con,
-        subset_groups_con
+        cohort_feature_values_tbl,
+        cohort_features_tbl,
+        cohort_sample_tbl,
+        cohort_group_tbl,
+        cohort_group_name
     )
     
 
 
     # Survival curves
-    callModule(
-        survival,
-        "module4",
-        features_named_list,
-        group_display_choice,
-        reactive(input$group_internal_choice),
-        subset_feature_values_long_con,
-        groups_list,
-        subset_groups_con,
-        features_con,
-        plot_colors
-    )
+    # callModule(
+    #     survival,
+    #     "module4",
+    #     features_named_list,
+    #     group_display_choice,
+    #     reactive(input$group_internal_choice),
+    #     subset_feature_values_long_con,
+    #     groups_list,
+    #     subset_groups_con,
+    #     features_con,
+    #     plot_colors
+    # )
     
 
 
