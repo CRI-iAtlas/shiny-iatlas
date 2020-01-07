@@ -35,6 +35,7 @@ function_files:
   - "functions/tablef_fun.R"
   - "functions/imageplot.R"
   - "functions/event_data_utils.R"
+  - "functions/forestplot.R"
 
 page_files:
   - "pages/aboutpage.R"

@@ -235,18 +235,16 @@ ioresponse <- function(input,
             mutate(logHR = log10(exp.coef),
                    logupper = log10(upper),
                    loglower = log10(lower))
-        print(head(log_meta_stats))
         
+        create_forestplot(log_meta_stats,
+                          x=log_meta_stats$logHR, 
+                          y=log_meta_stats$Dataset, 
+                          xmin=log_meta_stats$loglower, 
+                          xmax=log_meta_stats$logupper, 
+                          xintercept = 0, 
+                          xlab = 'Hazard Ratio (log10)', 
+                          ylab = "Reference")
         
-        p <- ggplot(log_meta_stats, aes(y=Dataset, x=logHR, xmin=loglower, xmax=logupper))+
-            geom_point(color = 'black')+
-            geom_errorbarh(height=.1)+
-            scale_x_continuous(name='Hazard Ratio (log10)')+
-            ylab('Reference')+
-            geom_vline(xintercept=0, color='black', linetype='dashed')+
-            theme_bw()
-        
-        plotly::ggplotly(p)
     })
  
 }

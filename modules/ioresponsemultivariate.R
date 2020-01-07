@@ -128,20 +128,31 @@ ioresponsemultivariate <- function(input,
     })
     
     output$mult_forest <- renderPlotly({
+            # 
+            # p <- ggplot(mult_ph_df(), aes(y=feature, x=logHR, xmin=logupper, xmax=loglower))+
+            #     geom_point(color = 'black')+
+            #     geom_errorbarh(height=.1)+
+            #     geom_vline(xintercept=0, color='black', linetype='dashed')+
+            #     theme_light()+
+            #     facet_wrap(vars(.id))+
+            #     scale_x_continuous(name='Hazard Ratio (log10)')
+            # 
+            # gp <- plotly::ggplotly(p)
+            # #Sending a faceted ggplot to plotly makes the x axis name be plotted over the labels. Adjusting it:
+            # gp[['x']][['layout']][['annotations']][[1]][['y']] <- -0.05
+            # gp %>% layout(margin = list(b = 75)) %>% 
+            #     format_plotly()
             
-            p <- ggplot(mult_ph_df(), aes(y=feature, x=logHR, xmin=logupper, xmax=loglower))+
-                geom_point(color = 'black')+
-                geom_errorbarh(height=.1)+
-                geom_vline(xintercept=0, color='black', linetype='dashed')+
-                theme_light()+
-                facet_wrap(vars(.id))+
-                scale_x_continuous(name='Hazard Ratio (log10)')
-            
-            gp <- plotly::ggplotly(p)
-            #Sending a faceted ggplot to plotly makes the x axis name be plotted over the labels. Adjusting it:
-            gp[['x']][['layout']][['annotations']][[1]][['y']] <- -0.05
-            gp %>% layout(margin = list(b = 75)) %>% 
-                format_plotly()
+            create_forestplot(mult_ph_df(),
+                              x=mult_ph_df()$logHR, 
+                              y=mult_ph_df()$feature, 
+                              xmin=mult_ph_df()$loglower, 
+                              xmax=mult_ph_df()$logupper, 
+                              xintercept = 0, 
+                              title = "",
+                              xlab = 'Hazard Ratio (log10)', 
+                              ylab = "Feature",
+                              facet = ".id")
     })
     
     output$mult_heatmap <- renderPlotly({
@@ -157,6 +168,5 @@ ioresponsemultivariate <- function(input,
         print(head(heatmap_df))
 
         create_heatmap(as.matrix(heatmap_df), "heatmap", scale_colors = T)
-        #pheatmap::pheatmap(log10HR[2:5,],cluster_rows = FALSE, cluster_cols = FALSE)
     })
 }
