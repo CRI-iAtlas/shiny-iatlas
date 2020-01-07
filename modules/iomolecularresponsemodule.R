@@ -26,7 +26,8 @@ ioresponse_UI <- function(id){
             
             messageBox(
                 width = 24,
-                p("This module generates different analysis of response of immune checkpoint inhibitors (ICI) treatment.")
+                p("This module generates different analysis of response of immune checkpoint inhibitors (ICI) treatment. You can select the datasets of interest and the immuno features for analysis.
+                  A Kaplan Meyer plot will be generated for each selected dataset. In addition, it will be generated a forest plot with the log10 of Cox Proportional Hazard ratio with 95% confidence interval for the selected feature for each dataset.")
                
             ),
             

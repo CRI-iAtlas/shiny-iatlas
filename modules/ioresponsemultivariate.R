@@ -34,7 +34,6 @@ ioresponsemultivariate_UI <- function(id){
                 checkboxGroupInput(ns("datasets_mult"), "Select Datasets", choices = c("Gide 2019", "Hugo 2016", 
                                                                                   "IMVigor210", "Prins 2019", "Riaz 2017", "Van Allen 2015"),
                                    selected =  "Gide 2019"), 
-                                                # #c("Gide 2019", "Hugo 2016", "IMVigor210", "Prins 2019", "Riaz 2017", "Van Allen 2015")), 
                 uiOutput(ns("heatmap_op"))
                 ),
             
@@ -128,20 +127,6 @@ ioresponsemultivariate <- function(input,
     })
     
     output$mult_forest <- renderPlotly({
-            # 
-            # p <- ggplot(mult_ph_df(), aes(y=feature, x=logHR, xmin=logupper, xmax=loglower))+
-            #     geom_point(color = 'black')+
-            #     geom_errorbarh(height=.1)+
-            #     geom_vline(xintercept=0, color='black', linetype='dashed')+
-            #     theme_light()+
-            #     facet_wrap(vars(.id))+
-            #     scale_x_continuous(name='Hazard Ratio (log10)')
-            # 
-            # gp <- plotly::ggplotly(p)
-            # #Sending a faceted ggplot to plotly makes the x axis name be plotted over the labels. Adjusting it:
-            # gp[['x']][['layout']][['annotations']][[1]][['y']] <- -0.05
-            # gp %>% layout(margin = list(b = 75)) %>% 
-            #     format_plotly()
             
             create_forestplot(mult_ph_df(),
                               x=mult_ph_df()$logHR, 
