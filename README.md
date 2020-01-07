@@ -84,27 +84,11 @@ For more on package management with renv, please see [https://rstudio.github.io/
 
 ## Deployment
 
-The first time you deploy, go through the Deployment-Setup instructions below. Afterwards, deploy with:
-
-```R
-rsconnect::deployApp()
-```
+The first time you deploy, go through the Deployment-Setup instructions. Afterwards, you can deploy with one line.
 
 ### Deployment Setup (First-Time-Only)
 
-The first time you deploy there are a few things to do. First, due to a presumed bug in renv, there is an extra, one-time step for configuring any packages loaded directly from github.
-
-- More information: https://docs.rstudio.com/shinyapps.io/getting-started.html (section: "2.4.0.1 Important note on GitHub packages")
-
-```R
-# configure github dependencies for deployment
-# NOTE: renv should take care of this
-#       Perhaps in future versions this will be unnecessary.
-devtools::install_github("th86/concordanceIndex", force=TRUE)
-devtools::install_github("Gibbsdavidl/ImmuneSubtypeClassifier", force=TRUE)
-```
-
-Second, you'll need to set up your credentials for shinyapps.io. You can get your codes from:
+You'll need to set up your credentials for shinyapps.io. You can get your codes from:
 
 - https://www.shinyapps.io/admin/#/tokens
 
@@ -118,6 +102,15 @@ rsconnect::setAccountInfo(
   secret='yyy'
 )
 ```
+
+### Deploy with RsConnect
+
+Once your account info is set up, you can deploy with:
+
+```R
+rsconnect::deployApp()
+```
+
 
 ## Data
 

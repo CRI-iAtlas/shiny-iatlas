@@ -30,7 +30,7 @@ load_dependencies <- function() {
   }
 
   ### Only need to load packages that have functionality that is NOT called like pkg::function() ###
-  
+
   # Load magrittr so %>% is available.
   library("magrittr")
 }
