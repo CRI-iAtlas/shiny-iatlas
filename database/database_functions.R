@@ -8,9 +8,11 @@ delete_rows <- function(table_name) {
 }
 
 read_table <- function(table_name) {
+  tictoc::tic(paste0("Time taken to read from the `", table_name, "`` table in the DB"))
   current_pool <- pool::poolCheckout(.GlobalEnv$pool)
   result <- pool::dbReadTable(current_pool, table_name)
   pool::poolReturn(current_pool)
+  tictoc::toc()
   return(result)
 }
 
@@ -28,9 +30,38 @@ read_table <- function(table_name) {
 # }
 
 write_table_ts <- function(df, table_name) {
-  return(pool::poolWithTransaction(.GlobalEnv$pool, function(conn) {
-    pool::dbWriteTable(conn, table_name, df, append = TRUE, copy = TRUE)
-  }))
+  tictoc::tic(paste0("Time taken to write to the `", table_name, "`` table in the DB"))
+  result <- pool::poolWithTransaction(.GlobalEnv$pool, function(conn) {
+    # Disable all table indexes.
+    conn %>% pool::dbGetQuery(paste0(
+      "UPDATE pg_index ",
+      "SET indisready=false ",
+      "WHERE indrelid = (",
+      "SELECT oid ",
+      "FROM pg_class ",
+      "WHERE relname='", table_name, "'",
+      ");"
+    ))
+
+    conn %>% pool::dbWriteTable(table_name, df, append = TRUE, copy = TRUE)
+
+    # Re-enable all table indexes.
+    conn %>% pool::dbGetQuery(paste0(
+      "UPDATE pg_index ",
+      "SET indisready=true ",
+      "WHERE indrelid = (",
+      "SELECT oid ",
+      "FROM pg_class ",
+      "WHERE relname='", table_name, "'",
+      ");"
+    ))
+
+    # Reindex the table
+    conn %>% pool::dbExecute(paste0("REINDEX TABLE ", table_name, ";"))
+  })
+  tictoc::toc()
+
+  return(result)
 }
 
 
