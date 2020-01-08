@@ -82,11 +82,17 @@ get_genes_by_type <- function(type) {
   return(genes)
 }
 
-driver_mutation_genes <- "driver_mutation" %>% get_genes_by_type
+"driver_mutation" %>%
+  get_genes_by_type %>%
+  feather::write_feather("data2/genes/driver_mutation_genes.feather")
 
-immunomodulator_genes <- "immunomodulator" %>% get_genes_by_type
+"immunomodulator" %>%
+  get_genes_by_type %>%
+  feather::write_feather("data2/genes/immunomodulator_genes.feather")
 
-io_target_genes <- "io_target" %>% get_genes_by_type
+"io_target" %>%
+  get_genes_by_type %>%
+  feather::write_feather("data2/genes/io_target_genes.feather")
 
 # Close the database connection.
 pool::poolClose(.GlobalEnv$pool)
