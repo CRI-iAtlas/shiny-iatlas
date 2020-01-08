@@ -38,8 +38,9 @@ immunomodulator <- function(
     input, 
     output, 
     session, 
-    sample_tbl,
-    group_tbl,
+    sample_con,
+    group_con,
+    genes_con,
     group_name,
     cohort_colors
 ){
@@ -52,13 +53,13 @@ immunomodulator <- function(
                 create_conection("genes_to_types"), 
                 by = c("id" = "type_id")
             ) %>% 
-            dplyr::select(gene_id)
+            dplyr::select(gene_id) %>% 
+            dplyr::compute()
     })
     
-    expression_tbl <- reactive({
+    expression_con <- reactive({
         req(
-            im_id_con(),
-            sample_tbl()
+            im_id_con()
         )
         
         im_id_con() %>% 
@@ -67,58 +68,35 @@ immunomodulator <- function(
                 by = c("gene_id")
             ) %>% 
             dplyr::select(feature_id = gene_id, sample_id, value = rna_seq_expr) %>% 
-            dplyr::filter(sample_id %in% local(sample_tbl()$sample_id)) %>% 
-            dplyr::as_tibble() 
+            dplyr::compute()
     })
     
-    im_tbl <- reactive({
-        req(im_id_con())
+    im_con <- reactive({
+        req(im_id_con(), genes_con())
         
-        im_id_con() %>%
-            dplyr::inner_join(
-                create_conection("genes"), 
-                by = c("gene_id" = "id")
-            )  %>% 
-            dplyr::left_join(
-                create_conection("gene_families"), 
-                by = c("gene_family_id" = "id")
-            ) %>% 
-            dplyr::rename(gene_family = name) %>% 
-            dplyr::left_join(
-                create_conection("gene_functions"), 
-                by = c("gene_function_id" = "id")
-            ) %>% 
-            dplyr::rename(gene_function = name) %>% 
-            dplyr::left_join(
-                create_conection("immune_checkpoints"), 
-                by = c("immune_checkpoint_id" = "id")
-            ) %>% 
-            dplyr::rename(immune_checkpoint = name) %>% 
-            dplyr::left_join(
-                create_conection("super_categories"), 
-                by = c("super_cat_id" = "id")
-            ) %>% 
-            dplyr::rename(super_category = name) %>% 
-            dplyr::as_tibble() 
+        genes_con() %>% 
+            dplyr::inner_join(im_id_con(), by = "gene_id") %>% 
+            dplyr::compute() 
     })
     
-    relationship_tbl <- reactive({
-        req(im_tbl())
+    relationship_con <- reactive({
+        req(im_con())
         
-        im_tbl() %>% 
+        im_con() %>% 
             dplyr::select(
                 INTERNAL = gene_id,
                 DISPLAY = hgnc, 
                 `Gene Family` = gene_family,
                 `Super Category` = super_category,
                 `Immune Checkpoint` = immune_checkpoint,
-            )
+            ) %>% 
+            dplyr::compute()
     })
     
     im_dt_tbl <- reactive({
-        req(im_tbl())
+        req(im_con())
         
-        im_tbl() %>%  
+        im_con() %>%  
             dplyr::select(
                 Hugo = hgnc, 
                 `Entrez ID` =  entrez,
@@ -127,17 +105,18 @@ immunomodulator <- function(
                 `Immune Checkpoint` = immune_checkpoint,
                 Function = gene_function,
                 `Reference(s) [PMID]` = references
-            ) 
+            ) %>% 
+            dplyr::collect()
     })
     
     callModule(
         distributions_plot_module,
         "dist",
         "immunomodulators_dist_plot",
-        expression_tbl,
-        relationship_tbl,
-        sample_tbl,
-        group_tbl,
+        expression_con,
+        relationship_con,
+        sample_con,
+        group_con,
         group_name,
         cohort_colors,
         key_col = "label",
@@ -148,5 +127,9 @@ immunomodulator <- function(
         )
     )
     
-    callModule(data_table_module, "im_table", im_dt_tbl)
+    callModule(
+        data_table_module, 
+        "im_table", 
+        im_dt_tbl
+    )
 }

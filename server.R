@@ -32,10 +32,57 @@ shinyServer(function(input, output, session) {
             dplyr::compute() 
     })
     
-    features_tbl <- reactive({
-        req(features_con2())
-        dplyr::collect(features_con())
+    genes_con <- reactive({
+        create_conection("genes") %>% 
+            dplyr::left_join(
+                create_conection("gene_families"), 
+                by = c("gene_family_id" = "id")
+            ) %>% 
+            dplyr::rename(gene_family = name) %>% 
+            dplyr::left_join(
+                create_conection("gene_functions"), 
+                by = c("gene_function_id" = "id")
+            ) %>% 
+            dplyr::rename(gene_function = name) %>% 
+            dplyr::left_join(
+                create_conection("immune_checkpoints"), 
+                by = c("immune_checkpoint_id" = "id")
+            ) %>% 
+            dplyr::rename(immune_checkpoint = name) %>%
+            dplyr::left_join(
+                create_conection("pathways"), 
+                by = c("pathway_id" = "id")
+            ) %>% 
+            dplyr::rename(pathway = name) %>% 
+            dplyr::left_join(
+                create_conection("super_categories"), 
+                by = c("super_cat_id" = "id")
+            ) %>% 
+            dplyr::rename(super_category = name) %>% 
+            dplyr::left_join(
+                create_conection("therapy_types"), 
+                by = c("therapy_type_id" = "id")
+            ) %>% 
+            dplyr::rename(therapy = name) %>% 
+            dplyr::select(
+                gene_id = id,
+                entrez,
+                hgnc,
+                canonical,
+                display,
+                description,
+                references,
+                gene_family,
+                gene_function,
+                immune_checkpoint,
+                pathway,
+                super_category,
+                therapy
+            ) %>% 
+            dplyr::compute()
     })
+    
+
     
     cohort_cons <- callModule(
         cohort_selection,
@@ -43,25 +90,20 @@ shinyServer(function(input, output, session) {
     )
     
     cohort_sample_con <- reactive(cohort_cons()$sample_con)
-    cohort_sample_tbl <- reactive(dplyr::collect(cohort_sample_con()))
     cohort_group_con  <- reactive(cohort_cons()$group_con)
-    cohort_group_tbl  <- reactive(dplyr::collect(cohort_group_con()))
     cohort_group_name <- reactive(cohort_cons()$group_name)
     cohort_colors     <- reactive(cohort_cons()$plot_colors)
     
     cohort_feature_values_con <- reactive({
-        req(cohort_sample_tbl())
+        req(cohort_sample_con())
         tbl <- 
             create_conection("features_to_samples") %>% 
-            dplyr::filter(sample_id %in% local(cohort_sample_tbl()$sample_id)) %>%
+            dplyr::filter(sample_id %in% local(cohort_sample_con()$sample_id)) %>%
             dplyr::select(sample_id, feature_id, value) %>% 
             dplyr::compute()
     })
     
-    cohort_feature_values_tbl <- reactive({
-        req(cohort_feature_values_con())
-        dplyr::collect(cohort_feature_values_con())
-    })
+
     
     # Cell content
     callModule(
@@ -89,8 +131,9 @@ shinyServer(function(input, output, session) {
     callModule(
         immunomodulator,
         "module5",
-        cohort_sample_tbl,
-        cohort_group_tbl,
+        cohort_sample_con,
+        cohort_group_con,
+        genes_con,
         cohort_group_name,
         cohort_colors
     )
