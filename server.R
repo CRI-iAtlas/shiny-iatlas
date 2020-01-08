@@ -19,6 +19,24 @@ shinyServer(function(input, output, session) {
     
     # analysis modules --------------------------------------------------------
     
+    
+    features_con <- reactive({
+        con <- 
+            dplyr::left_join(
+                create_conection("features"),
+                create_conection("classes"),
+                by = c("class_id" = "id")
+            ) %>% 
+            dplyr::arrange(name.y, order) %>% 
+            dplyr::select(class_name = name.y, class_id, feature_name = display, feature_id = id, order) %>% 
+            dplyr::compute() 
+    })
+    
+    features_tbl <- reactive({
+        req(features_con2())
+        dplyr::collect(features_con())
+    })
+    
     cohort_cons <- callModule(
         cohort_selection,
         "cohort_selection"
@@ -45,22 +63,16 @@ shinyServer(function(input, output, session) {
         dplyr::collect(cohort_feature_values_con())
     })
     
-    features_con <- reactive({
-        tbl <- 
-            dplyr::left_join(
-                create_conection("features"),
-                create_conection("classes"),
-                by = c("class_id" = "id")
-            ) %>% 
-            dplyr::arrange(name.y, order) %>% 
-            dplyr::select(class_name = name.y, class_id, feature_name = display, feature_id = id, order) %>% 
-            dplyr::compute() 
-    })
-    
-    features_tbl <- reactive({
-        req(features_con2())
-        dplyr::collect(features_con())
-    })
+    # Cell content
+    callModule(
+        cellcontent,
+        "module1",
+        cohort_feature_values_con,
+        features_con,
+        cohort_sample_con,
+        cohort_group_con
+    )
+
     
     
     
@@ -87,15 +99,7 @@ shinyServer(function(input, output, session) {
     )
     
     
-    # Cell content
-    callModule(
-        cellcontent,
-        "module1",
-        cohort_feature_values_tbl,
-        features_tbl,
-        cohort_sample_tbl,
-        cohort_group_tbl
-    )
+
     
 
     # Survival curves

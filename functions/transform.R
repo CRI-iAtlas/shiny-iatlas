@@ -63,13 +63,13 @@ build_cell_fractions_barplot_tbl <- function(feature_tbl, value_tbl, sample_tbl,
         dplyr::summarise(mean = mean(value), count = dplyr::n()) %>%
         dplyr::ungroup() %>% 
         dplyr::mutate(se = mean / sqrt(count)) %>% 
-        dplyr::as_tibble() %>% 
+        dplyr::collect() %>% 
         create_plotly_label(
             name_column = "feature_name",
             group_column = "group",
             value_columns = c("mean", "se")
         ) %>% 
-        dplyr::select(x = group, y = mean, color = feature_name, label, error = se)
+        dplyr::select(x = group, y = mean, color = feature_name, label, error = se) 
 }
 
  
@@ -77,11 +77,12 @@ build_cell_fractions_barplot_tbl <- function(feature_tbl, value_tbl, sample_tbl,
 
 
 
-build_cell_proportion_barplot_tbl <- function(tbl){
-    tbl %>%
+build_cell_proportion_barplot_tbl <- function(con){
+    con %>%
         dplyr::group_by(feature_name, group) %>% 
         dplyr::summarise(mean = mean(value), count = dplyr::n()) %>%
         dplyr::mutate(se = mean / sqrt(count)) %>%
+        dplyr::collect() %>% 
         create_plotly_label(
             title = "Fraction",
             name_column = "feature_name",
@@ -92,15 +93,14 @@ build_cell_proportion_barplot_tbl <- function(tbl){
         
 }
 
-build_cell_proportion_scatterplot_tbl <- function(tbl, group_value){
-    tbl %>% 
+build_cell_proportion_scatterplot_tbl <- function(con, group_value){
+    con %>% 
         dplyr::select(sample_name, group, feature = feature_name, value) %>% 
-        print() %>% 
         dplyr::filter(
             feature %in% c("Leukocyte Fraction", "Stromal Fraction"),
             group == group_value
         ) %>%
-        print() %>% 
+        dplyr::collect() %>% 
         tidyr::pivot_wider(values_from = value, names_from = feature) %>% 
         tidyr::drop_na() %>% 
         dplyr::rename(x = `Stromal Fraction`, y = `Leukocyte Fraction`) %>% 

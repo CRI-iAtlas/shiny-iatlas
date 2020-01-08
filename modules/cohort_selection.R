@@ -174,16 +174,18 @@ cohort_selection <- function(
     samples_con <- reactive({
         con <- 
             create_conection("samples") %>% 
-            dplyr::rename(sample_id = id, sample_barcode = sample_id)
+            dplyr::rename(sample_id = id, sample_barcode = sample_id) %>% 
+            dplyr::compute()
     })
     
     tags_con <- reactive({
         con <- 
             create_conection("samples_to_tags") %>% 
             dplyr::left_join(
-                dplyr::tbl(PANIMMUNE_DB2, "tags"),
+                create_conection("tags"),
                 by = c("tag_id" = "id")
-            ) 
+            ) %>% 
+            compute()
     })
     
     group_members_con <- reactive({
@@ -202,7 +204,8 @@ cohort_selection <- function(
                 by = c("related_tag_id")
             ) %>% 
             dplyr::as_tibble() %>% 
-            dplyr::select(group = name, parent_group = display)
+            dplyr::select(group = name, parent_group = display) %>% 
+            dplyr::compute()
     })
     
     feature_values_con <- reactive({
@@ -212,7 +215,8 @@ cohort_selection <- function(
             dplyr::inner_join(
                 create_conection("features"), 
                 by = c("feature_id" = "id")
-            ) 
+            ) %>% 
+            dplyr::compute()
     })
     
     
@@ -513,7 +517,7 @@ cohort_selection <- function(
                     create_conection("samples"),
                     by = c("sample_id" = "id")
                 ) %>% 
-                dplyr::select(sample_id = sample_id.x, name = sample_id.y, tag_id, group)
+                dplyr::select(sample_id = sample_id.x, name = sample_id.y, tag_id, group) 
             group_con <- sample_con %>% 
                 dplyr::group_by(tag_id) %>% 
                 dplyr::summarise(size = dplyr::n()) %>% 
@@ -521,8 +525,11 @@ cohort_selection <- function(
                     create_conection("tags"), 
                     by = c("tag_id" = "id")
                 ) %>% 
-                dplyr::select(group = name, name = display, size, characteristics, color)
-            sample_con <- dplyr::select(sample_con, -tag_id)
+                dplyr::select(group = name, name = display, size, characteristics, color) %>% 
+                dplyr::compute()
+            sample_con <- sample_con %>% 
+                dplyr::select(-tag_id) %>% 
+                dplyr::compute()
         } else if (group_choice == "Custom Mutation"){
             req(input$custom_gene_mutaton_choice)
             group_name <- input$custom_gene_mutaton_choice
@@ -533,7 +540,8 @@ cohort_selection <- function(
                     !is.na(status),
                     sample_id %in% local(selected_samples())
                 ) %>% 
-                dplyr::select(sample_id, group = status)
+                dplyr::select(sample_id, group = status) %>% 
+                dplyr::compute()
             group_con <- sample_con %>% 
                 dplyr::group_by(group) %>% 
                 dplyr::summarise(size = dplyr::n()) %>% 
@@ -543,7 +551,8 @@ cohort_selection <- function(
                     name = "",
                     characteristics = "",
                     color = NA
-                )
+                ) %>% 
+                dplyr::compute()
         } else if (group_choice == "Custom Numeric"){
             req(
                 input$custom_numeric_feature_choice,
@@ -565,7 +574,7 @@ cohort_selection <- function(
                 dplyr::mutate(group = (group / (max(value) / (local(input$custom_numeric_group_number_choice) -1))) + 1) %>%
                 dplyr::mutate(group = as.character(as.integer(group))) %>% 
                 dplyr::select(sample_id, group) %>% 
-                dplyr::compute()
+                dplyr::compute() 
             group_con <- sample_con %>% 
                 dplyr::group_by(group) %>% 
                 dplyr::summarise(size = dplyr::n()) %>% 
