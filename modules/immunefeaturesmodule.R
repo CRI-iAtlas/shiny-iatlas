@@ -23,27 +23,27 @@ immunefeatures <- function(
     input,
     output, 
     session,
-    feature_values_tbl,
-    features_tbl,
-    sample_tbl,
-    group_tbl,
+    feature_values_con,
+    features_con,
+    sample_con,
+    group_con,
     group_name,
     cohort_colors
 ){
     
-    distributions_feature_tbl <- reactive({
-        features_tbl() %>% 
+    distributions_feature_con <- reactive({
+        features_con() %>%
             dplyr::select(DISPLAY = feature_name, INTERNAL = feature_id, CLASS = class_name)
     })
-    
+
     callModule(
         distributions_plot_module,
         "dist",
         plot_source_name           = "immunefeatures_dist_plot",
-        feature_values_tbl         = feature_values_tbl,
-        feature_metadata_tbl       = distributions_feature_tbl,
-        sample_tbl                 = sample_tbl,
-        groups_tbl                 = group_tbl,
+        feature_values_con         = feature_values_con,
+        feature_metadata_con       = distributions_feature_con,
+        sample_con                 = sample_con,
+        groups_con                 = group_con,
         group_display_choice       = group_name,
         plot_colors                = cohort_colors,
         variable_selection_default = 36,
@@ -55,10 +55,10 @@ immunefeatures <- function(
     callModule(
         immunefeatures_correlations,
         "immunefeatures_correlations",
-        sample_tbl = sample_tbl,
-        feature_values_tbl = feature_values_tbl, 
-        features_tbl = features_tbl, 
-        group_tbl  = group_tbl
+        sample_con = sample_con,
+        feature_values_con = feature_values_con, 
+        features_con = features_con, 
+        group_con  = group_con
     )
 
 }
@@ -125,20 +125,20 @@ immunefeatures_correlations <- function(
     input,
     output, 
     session, 
-    sample_tbl,
-    feature_values_tbl,
-    features_tbl,
-    group_tbl
+    sample_con,
+    feature_values_con,
+    features_con,
+    group_con
 ){
     
     ns <- session$ns
-    
-    
+
     output$heatmap_class_selection_ui <- renderUI({
-        req(features_tbl())
-        choices <- features_tbl() %>% 
+        req(features_con())
+        choices <- features_con() %>% 
             dplyr::select(class_name, class_id) %>% 
             dplyr::distinct() %>% 
+            dplyr::collect() %>% 
             tibble::deframe()
         
         selectInput(
@@ -150,13 +150,14 @@ immunefeatures_correlations <- function(
     })
     
     output$heatmap_response_selection_ui <- renderUI({
-        req(features_tbl())
-        choices <- features_tbl() %>% 
+        req(features_con())
+        choices <- features_con() %>% 
             dplyr::select(
                 class = class_name, 
                 display = feature_name, 
                 feature = feature_id
             ) %>% 
+            dplyr::collect() %>% 
             create_nested_named_list()
         
         selectInput(
@@ -168,64 +169,64 @@ immunefeatures_correlations <- function(
     })
     
     response_display_name <- reactive({
-        req(features_tbl(), input$heatmap_response_choice_id)
-        features_tbl() %>% 
-            dplyr::filter(feature_id == local(
-                as.numeric(input$heatmap_response_choice_id))
+        req(features_con(), input$heatmap_response_choice_id)
+        features_con() %>% 
+            dplyr::filter(
+                feature_id == local(as.numeric(input$heatmap_response_choice_id))
             ) %>% 
             dplyr::pull(feature_name)
     })
     
     feature_ids <- reactive({
-        req(features_tbl(), input$heatmap_class_choice_id)
-        con <- features_tbl() %>% 
-            dplyr::filter(class_id == local(
-                as.numeric(input$heatmap_class_choice_id))
+        req(features_con(), input$heatmap_class_choice_id)
+        con <- features_con() %>% 
+            dplyr::filter(
+                class_id == local(as.numeric(input$heatmap_class_choice_id))
             ) %>% 
             dplyr::arrange(order) %>% 
             dplyr::pull(feature_id)
         
     })
     
-    heatmap_response_tbl <- reactive({
+    heatmap_response_con <- reactive({
         req(
-            feature_values_tbl(),
-            features_tbl(),
+            feature_values_con(),
+            features_con(),
             input$heatmap_response_choice_id
         )
         
-        build_immune_feature_heatmap_response_tbl(
-            feature_values_tbl(),
-            features_tbl(),
+        build_immune_feature_heatmap_response_con(
+            feature_values_con(),
+            features_con(),
             as.numeric(input$heatmap_response_choice_id)
         )
     })
     
-    heatmap_feature_tbl <- reactive({
+    heatmap_feature_con <- reactive({
         req(
-            feature_values_tbl(),
-            features_tbl(),
+            feature_values_con(),
+            features_con(),
             feature_ids()
         )
         
-        build_immune_feature_heatmap_feature_tbl(
-            feature_values_tbl(),
-            features_tbl(),
+        build_immune_feature_heatmap_feature_con(
+            feature_values_con(),
+            features_con(),
             as.numeric(feature_ids())
         )
     })
     
     heatmap_tbl <- reactive({
         req(
-            heatmap_response_tbl(),
-            heatmap_feature_tbl(),
-            sample_tbl()
+            heatmap_response_con(),
+            heatmap_feature_con(),
+            sample_con()
         )
         
         build_immune_feature_heatmap_tbl(
-            heatmap_response_tbl(),
-            heatmap_feature_tbl(),
-            sample_tbl()
+            heatmap_response_con(),
+            heatmap_feature_con(),
+            sample_con()
         )
     })
     
@@ -243,10 +244,10 @@ immunefeatures_correlations <- function(
     
     
     output$heatmap_group_text <- renderText({
-        req(group_tbl())
+        req(group_con())
         eventdata <- event_data("plotly_click", source =  "heatplot")
         validate(need(eventdata, "Click above heatmap"))
-        group_tbl() %>% 
+        group_con() %>% 
             dplyr::filter(group == local(unique(dplyr::pull(eventdata, "x")))) %>% 
             dplyr::mutate(text = paste0(name, ": ", characteristics)) %>%
             dplyr::pull(text)
@@ -260,6 +261,8 @@ immunefeatures_correlations <- function(
         
         clicked_group <- eventdata$x[[1]]
         clicked_feature <- eventdata$y[[1]]
+        
+        heatmap
         
         validate(need(
             all(

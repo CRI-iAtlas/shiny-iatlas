@@ -4,8 +4,8 @@ purrr::walk(config_yaml$function_files, source)
 
 # general data loading & prep
 
-DATAMODE <- "SQLite_db"
-PANIMMUNE_DB   <- create_db2()
+# DATAMODE <- "SQLite_db"
+# PANIMMUNE_DB   <- create_db2()
 source("database/connect_to_db.R")
 PANIMMUNE_DB2 <- connect_to_db()
 

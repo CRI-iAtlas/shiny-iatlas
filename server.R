@@ -73,20 +73,17 @@ shinyServer(function(input, output, session) {
         cohort_group_con
     )
 
-    
-    
-    
-    # Immune features
-    # callModule(
-    #     immunefeatures,
-    #     "module6",
-    #     cohort_feature_values_tbl,
-    #     features_tbl,
-    #     cohort_sample_tbl,
-    #     cohort_group_tbl,
-    #     cohort_group_name,
-    #     cohort_colors
-    # )
+    #Immune features
+    callModule(
+        immunefeatures,
+        "module6",
+        cohort_feature_values_con,
+        features_con,
+        cohort_sample_con,
+        cohort_group_con,
+        cohort_group_name,
+        cohort_colors
+    )
     
     # Immunomodulators
     callModule(
