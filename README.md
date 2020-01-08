@@ -156,7 +156,9 @@ concordanceIndex::concordanceIndex(predictions, observations)
 ... where `predictions` and `observations` are numerical vectors of the same length.
 
 
-## Troubleshooting Startup
+# Troubleshooting
+
+## Startup
 
 To check if 'startup::startup()' ran successfully, type in `DB_HOST` and see if it is set to a non-blank value. For example:
 
@@ -205,3 +207,7 @@ The tail end of your output should look like this:
 0.039s: - .First(): no such function on search()
 0.039s: - Remaining packages per R_DEFAULT_PACKAGES to be attached by base::.First.sys() (in order):
 ```
+
+## Database
+
+- If you are initializing the database with `build_iatlas_db` and having a problem where it fails to connect after creating the tables, check that you are not running Postgress locally, outside of docker.
