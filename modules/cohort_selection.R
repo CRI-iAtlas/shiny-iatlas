@@ -564,7 +564,8 @@ cohort_selection <- function(
                 dplyr::mutate(group = value - value %% (max(value) / (local(input$custom_numeric_group_number_choice) -1))) %>%
                 dplyr::mutate(group = (group / (max(value) / (local(input$custom_numeric_group_number_choice) -1))) + 1) %>%
                 dplyr::mutate(group = as.character(as.integer(group))) %>% 
-                dplyr::select(sample_id, group)
+                dplyr::select(sample_id, group) %>% 
+                dplyr::compute()
             group_con <- sample_con %>% 
                 dplyr::group_by(group) %>% 
                 dplyr::summarise(size = dplyr::n()) %>% 
@@ -574,7 +575,8 @@ cohort_selection <- function(
                     name = "",
                     characteristics = "",
                     color = NA
-                )
+                ) %>% 
+                dplyr::compute()
         } else {
             stop("bad selection")
         }

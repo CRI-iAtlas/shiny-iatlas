@@ -1,75 +1,54 @@
 # survival module -------------------------------------------------------------
 
 build_survival_tbl <- function(
-    con,
-    group_list, 
-    group_feature, 
-    time_feature, 
-    n_groups
+    features_con,
+    values_con,
+    sample_con, 
+    time_feature
 ){
-
-    if (time_feature == "OS_time") {
+    if (time_feature == "OS Time") {
         status_feature <- "OS"
+    } else if (time_feature == "PFI Time"){
+        status_feature <- "PFI"
     } else {
-        status_feature <- "PFI_1"
+        stop("input$time_feature_choice is not a valid choice")
     }
-
-    if (group_feature %in% group_list){
-        tbl <- con %>% 
-            dplyr::filter(feature %in% c(time_feature, status_feature)) %>% 
-            dplyr::as_tibble() %>% 
-            tidyr::pivot_wider(values_from = value, names_from = feature) %>% 
-            dplyr::select(
-                group,
-                time = time_feature,
-                status = status_feature
-            ) %>% 
-            dplyr::filter_all(dplyr::all_vars(!is.na(.)))
-    } else {
-        tbl <- con %>% 
-            dplyr::filter(feature %in% c(time_feature, status_feature, group_feature)) %>% 
-            dplyr::as_tibble() %>% 
-            tidyr::pivot_wider(values_from = value, names_from = feature) %>% 
-            dplyr::filter_all(dplyr::all_vars(!is.na(.))) %>% 
-            dplyr::select(
-                group = group_feature,
-                time = time_feature,
-                status = status_feature
-            ) %>% 
-            dplyr::mutate(group = cut(group, n_groups, ordered_result = T))
-    }
-    return(tbl)
+    tbl <- features_con %>% 
+        dplyr::filter(feature_name %in% c(time_feature, status_feature)) %>% 
+        dplyr::inner_join(values_con, by = "feature_id") %>% 
+        dplyr::inner_join(sample_con, by = "sample_id") %>% 
+        dplyr::select(group, sample_id, feature_name, value) %>% 
+        dplyr::collect() %>% 
+        tidyr::pivot_wider(values_from = value, names_from = feature_name) %>%
+        dplyr::select(
+            group,
+            time = time_feature,
+            status = status_feature
+        ) %>% 
+        dplyr::filter_all(dplyr::all_vars(!is.na(.)))
 }
 
-build_ci_matrix <- function(
-    con, features_con, features, time_feature, status_feature
-){
-    features_tbl <- features_con %>% 
-        dplyr::filter(feature %in% features) %>% 
-        dplyr::arrange(order) %>% 
-        dplyr::select(feature, display) %>% 
-        dplyr::as_tibble()
-    
-    con %>% 
-        dplyr::filter(feature %in% c(features, time_feature, status_feature)) %>% 
-        dplyr::as_tibble() %>% 
-        tidyr::pivot_wider(c(sample, group), names_from = feature, values_from = value) %>% 
-        tidyr::pivot_longer(features) %>% 
-        dplyr::select(-sample) %>% 
-        tidyr::nest(value = value, data = c(time_feature, status_feature)) %>% 
+build_ci_matrix <- function(feature_values_con, survival_values_con){
+
+    mat <-
+        dplyr::inner_join(
+            feature_values_con, 
+            survival_values_con,
+            by = "sample_id"
+        ) %>% 
+        dplyr::select(feature_name, value, time, status, group) %>% 
+        dplyr::collect() %>% 
+        tidyr::nest(value = value, data = c(time, status)) %>% 
         dplyr::mutate(
             value = purrr::map(value, as.matrix),
             data = purrr::map(data, as.matrix)
         ) %>% 
         dplyr::mutate(result = purrr::map2_dbl(value, data, concordanceIndex::concordanceIndex)) %>% 
-        dplyr::select(-c(value, data)) %>% 
-        tidyr::pivot_wider(name, names_from = group, values_from = result) %>% 
-        dplyr::inner_join(features_tbl, by = c("name" = "feature")) %>% 
-        dplyr::select(-name) %>% 
-        tidyr::drop_na() %>% 
+        dplyr::select(feature_name, group, result) %>% 
+        tidyr::pivot_wider(feature_name, names_from = group, values_from = result) %>% 
         as.data.frame() %>% 
-        tibble::column_to_rownames("display") %>% 
-        as.matrix()
+        tibble::column_to_rownames("feature_name") %>% 
+        as.matrix() 
 }
 
 # cell fractions module -------------------------------------------------------

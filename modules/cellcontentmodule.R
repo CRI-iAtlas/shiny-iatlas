@@ -20,8 +20,7 @@ cellcontent <- function(
     feature_values_tbl,
     features_tbl,
     sample_tbl,
-    group_tbl,
-    group_name
+    group_tbl
 ) {
     
     callModule(
@@ -30,8 +29,7 @@ cellcontent <- function(
         feature_values_tbl,
         features_tbl,
         sample_tbl,
-        group_tbl,
-        group_name
+        group_tbl
     )
     
     callModule(
@@ -40,8 +38,7 @@ cellcontent <- function(
         feature_values_tbl,
         features_tbl,
         sample_tbl,
-        group_tbl,
-        group_name
+        group_tbl
     )
 }
 
@@ -93,8 +90,7 @@ overall_cell_proportions_module  <- function(
     feature_values_tbl,
     features_tbl,
     sample_tbl,
-    group_tbl,
-    group_name
+    group_tbl
 ){
     
     cp_feature_tbl <- reactive({
@@ -225,8 +221,7 @@ cell_type_fractions_module <- function(
     feature_values_tbl,
     features_tbl,
     sample_tbl,
-    group_tbl,
-    group_name
+    group_tbl
 ){
     
     cf_value_tbl <- reactive({
