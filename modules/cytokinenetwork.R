@@ -444,7 +444,7 @@ cytokinenetwork <- function(
   })
   
   output$cyjShiny <- cyjShiny::renderCyjShiny({
-    cyjShiny::cyjShiny(graph.json(), layoutName = input$doLayout, style_file = "data/javascript/extracellular_network_stylesEdges.js")
+    cyjShiny::cyjShiny(graph.json(), layoutName = input$doLayout, styleFile = "data/javascript/extracellular_network_stylesEdges.js")
     })
     
   output$table <- DT::renderDataTable(
