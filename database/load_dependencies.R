@@ -4,6 +4,11 @@ load_dependencies <- function() {
     install.packages("crayon")
   }
 
+  # Ensure tictoc is installed. This is used to time functions and performance..
+  if (!'tictoc' %in% installed.packages()) {
+    install.packages("tictoc")
+  }
+
   # Ensure stringi is installed. This is loaded to do some string manipulation with Regex.
   if (!'stringi' %in% installed.packages()) {
     install.packages("stringi")
