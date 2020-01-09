@@ -111,8 +111,7 @@ iotarget <- function(
     io_dt_tbl <- reactive({
         req(io_con())
         
-        x <-
-            io_con() %>%  
+        io_con() %>%  
             dplyr::select(
                 Hugo = hgnc, 
                 `Entrez ID` =  entrez,
@@ -134,13 +133,9 @@ iotarget <- function(
                 "</a>"
             )) %>% 
             dplyr::select(-c(display, url))
-        print(x$`Link to IO Landscape`[[1]])
-        x
         
     })
-# `Link to IO Landscape`
-#<a href=\'https://www.cancerresearch.org/scientists/immuno-oncology-landscape?2019IOpipelineDB=2019;Target;ABCB5\'>ABCB5</a>
-    
+ 
     callModule(
         distributions_plot_module,
         "dist",

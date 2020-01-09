@@ -36,31 +36,39 @@ datainfo <- function(
     input, 
     output, 
     session,
-    features_con,
-    features_named_list
+    features_con
 ){
     ns <- session$ns
     
     output$classes <- renderUI({
-        req(features_named_list())
-        choices <- features_named_list() %>% 
-            names() %>% 
-            sort() %>% 
-            c("All classes", .)
+        req(features_con()) 
+        choices <- features_con() %>%
+            dplyr::filter(!is.na(class_name), !is.na(class_id)) %>%
+            dplyr::select(class_name, class_id) %>% 
+            dplyr::distinct() %>% 
+            dplyr::arrange(class_name) %>% 
+            dplyr::collect() %>% 
+            tibble::deframe() %>% 
+            c("All classes" = -1L)
         selectInput(
-            ns("class_choice"),
+            ns("class_choice_id"),
             label = "Select Class",
-            choices = choices
+            choices = choices,
+            selected = -1
         )
     })
     
     filtered_feature_con <- reactive({
-        req(features_con(), input$class_choice)
-        if(input$class_choice != "All classes"){
-            return(dplyr::filter(features_con(), class == input$class_choice))
+        req(features_con(), input$class_choice_id)
+        class_choice_id <- as.numeric(input$class_choice_id)
+        if(class_choice_id != -1L){
+            con <- features_con() %>% 
+                dplyr::filter(class_id == local(class_choice_id)) %>% 
+                dplyr::compute() 
         } else {
-            return(features_con())
+            con <- features_con()
         }
+        return(con)
     })
     
     output$feature_table <- DT::renderDT({
@@ -68,11 +76,11 @@ datainfo <- function(
         
         tbl <- filtered_feature_con() %>%
             dplyr::select(
-                `Feature Name` = display,
-                `Variable Class` = class,
+                `Feature Name` = feature_name,
+                `Variable Class` = class_name,
                 Unit = unit
             ) %>% 
-            dplyr::as_tibble()
+            dplyr::collect()
 
         DT::datatable(
             tbl, 
@@ -86,16 +94,15 @@ datainfo <- function(
         req(input$feature_table_rows_selected, filtered_feature_con())
         
         clicked_row_num <- input$feature_table_rows_selected
-        print(clicked_row_num)
         
-        selected_class <- filtered_feature_con() %>% 
-            dplyr::pull(class) %>% 
-            .[[clicked_row_num]]
+        selected_class_id <- filtered_feature_con() %>% 
+            dplyr::pull(class_id) %>% 
+            magrittr::extract2(clicked_row_num) 
         
         filtered_feature_con() %>% 
-            dplyr::filter(class == selected_class) %>% 
-            dplyr::arrange(order, display) %>% 
-            dplyr::as_tibble()
+            dplyr::filter(class_id == selected_class_id) %>% 
+            dplyr::arrange(order, feature_name) %>% 
+            dplyr::collect()
     })
     
     output$variable_class_table <- renderTable({
@@ -106,18 +113,20 @@ datainfo <- function(
     output$method_buttons <- renderUI({
         req(feature_class_tbl())
         feature_class_tbl() %>% 
-            dplyr::filter(!is.na(methods_tag)) %>% 
-            dplyr::distinct(methods_tag) %>% 
-            dplyr::pull(methods_tag) %>% 
-            purrr::map(~fluidRow(actionButton(ns(paste0("show_", .x)), .x))) %>%
+            dplyr::filter(!is.na(method_tag)) %>% 
+            dplyr::distinct(method_tag) %>% 
+            dplyr::pull(method_tag) %>% 
+            purrr::map(
+                ~fluidRow(actionButton(ns(paste0("show_", .x)), .x))
+            ) %>%
             tagList()
     })
     
     observeEvent(input$feature_table_rows_selected, {
         feature_class_tbl() %>% 
-            dplyr::filter(!is.na(methods_tag)) %>% 
-            dplyr::distinct(methods_tag) %>% 
-            dplyr::pull(methods_tag) %>% 
+            dplyr::filter(!is.na(method_tag)) %>% 
+            dplyr::distinct(method_tag) %>% 
+            dplyr::pull(method_tag) %>% 
             purrr::map(function(tag) {
                 observeEvent(input[[paste0("show_", tag)]], {
                     showModal(modalDialog(
