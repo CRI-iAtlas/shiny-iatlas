@@ -110,10 +110,22 @@ shinyServer(function(input, output, session) {
         req(cohort_sample_con())
         tbl <- 
             create_conection("features_to_samples") %>% 
-            dplyr::filter(sample_id %in% local(cohort_sample_con()$sample_id)) %>%
-            dplyr::select(sample_id, feature_id, value) %>% 
-            dplyr::compute()
+            dplyr::inner_join(cohort_sample_con(), by = "sample_id") %>% 
+            dplyr::select(sample_id, feature_id, value, name, group) %>% 
+            dplyr::compute() 
     })
+    
+    # # TILmap features
+    callModule(
+        tilmap,
+        "module7",
+        features_con,
+        cohort_feature_values_con,
+        cohort_sample_con,
+        cohort_group_con,
+        cohort_group_name,
+        cohort_colors
+    )
     
     # Data info
     callModule(
@@ -181,17 +193,7 @@ shinyServer(function(input, output, session) {
 
 
     
-    # # TILmap features
-    # callModule(
-    #     tilmap,
-    #     "module7",
-    #     group_display_choice,
-    #     subset_groups_con,
-    #     til_image_links_con,
-    #     subset_feature_values_long_con,
-    #     features_con,
-    #     plot_colors
-    # )
+
     # 
     # Driver associations
     # callModule(

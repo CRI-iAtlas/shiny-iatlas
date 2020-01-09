@@ -168,13 +168,12 @@ distributions_plot_module <- function(
             input$scale_method,
             sample_con()
         )
-        
+
         feature_values_con() %>%  
             dplyr::filter(feature_id == local(input$variable_choice_id)) %>% 
             scale_db_connection(input$scale_method) %>% 
             dplyr::inner_join(sample_con(), by = "sample_id") %>% 
             dplyr::select(label = sample_id, x = group, y = value)
-        
     })
     
     varible_display_name <- reactive({

@@ -29,75 +29,49 @@ tilmap_UI <- function(id) {
 tilmap <- function(
     input, 
     output, 
-    session, 
-    group_display_choice,
-    groups_con,
-    til_image_links_con,
-    feature_values_con,
+    session,
     features_con,
-    plot_colors
+    feature_values_con,
+    sample_con,
+    groups_con,
+    group_name,
+    cohort_colors
 ){
     
     tilmap_feature_con <- reactive({
         req(features_con())
         features_con() %>%  
-            dplyr::filter(class == "TIL Map Characteristic") %>% 
-            dplyr::select(display, feature, class) %>% 
-            dplyr::filter_all(dplyr::all_vars(!is.na(.)))
+            dplyr::filter(class_name == "TIL Map Characteristic") %>% 
+            dplyr::select(feature_name, feature_id, class_name) %>% 
+            dplyr::compute()
     })
     
+    tilmap_con <- reactive({
+        req(tilmap_feature_con(), feature_values_con())
+        tilmap_feature_con() %>% 
+            dplyr::select(feature_id, feature_name) %>% 
+            dplyr::inner_join(feature_values_con(), by = "feature_id") %>% 
+            dplyr::filter_all(dplyr::all_vars(!is.na(.))) %>% 
+            dplyr::compute()
+    })
+    
+
     tilmap_dist_feature_con <- reactive({
         req(tilmap_feature_con())
-        dplyr::rename(
-            tilmap_feature_con(), 
-            DISPLAY = display, 
-            INTERNAL = feature, 
-            CLASS = class
-        )
-    })
-    
-    tilmap_features <- reactive({
-        req(tilmap_feature_con())
-        get_unique_values_from_column(tilmap_feature_con(), "feature")
-    })
-    
-    tilmap_value_con <- reactive({
-        req(feature_values_con(), tilmap_features())
-        dplyr::filter(
-            feature_values_con(), 
-            feature %in% local(tilmap_features())
-        )
+        tilmap_feature_con() %>%  
+            dplyr::rename(
+                DISPLAY = feature_name, 
+                INTERNAL = feature_id, 
+                CLASS = class_name
+            ) %>% 
+            dplyr::compute()
     })
     
     tilmap_dist_value_con <- reactive({
-        req(tilmap_value_con())
-        dplyr::select(
-            tilmap_value_con(), 
-            label = sample, 
-            x = group, 
-            feature, 
-            y = value
-        )
-    })
-    
-    tilmap_tbl <- reactive({
-        req(tilmap_value_con(), tilmap_feature_con(), til_image_links_con())
-        
-        tilmap_value_con() %>% 
-            dplyr::inner_join(tilmap_feature_con(), by = "feature") %>% 
-            dplyr::select(sample, group, feature, value, display) %>% 
-            dplyr::filter_all(dplyr::all_vars(!is.na(.))) %>% 
-            dplyr::mutate(value = round(value, digits = 1)) %>%
-            dplyr::inner_join(til_image_links_con(), by = "sample") %>% 
-            dplyr::select(
-                Link = link, 
-                Sample = sample, 
-                `Selected Group` = group,
-                display,
-                value
-            ) %>% 
-            dplyr::as_tibble() %>% 
-            tidyr::pivot_wider(names_from = display, values_from = value)
+        req(tilmap_con())
+        tilmap_con() %>% 
+            dplyr::select(feature_id, sample_id, value) %>% 
+            dplyr::compute()
     })
     
 
@@ -107,11 +81,28 @@ tilmap <- function(
         "tilmap_dist_plot",
         tilmap_dist_value_con,
         tilmap_dist_feature_con,
+        sample_con,
         groups_con,
-        group_display_choice,
-        plot_colors,
+        group_name,
+        cohort_colors,
         key_col = "label"
     )
+    
+    tilmap_tbl <- reactive({
+        req(tilmap_con())
+        
+        tilmap_con() %>% 
+            dplyr::mutate(value = round(value, digits = 1)) %>%
+            dplyr::select(
+                # Link = link,
+                Sample = name,
+                `Selected Group` = group,
+                feature_name,
+                value
+            ) %>%
+            dplyr::collect() %>%
+            tidyr::pivot_wider(names_from = feature_name, values_from = value)
+    })
 
     
     callModule(data_table_module, "til_table", tilmap_tbl, escape = F)
