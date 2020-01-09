@@ -41,11 +41,11 @@ iotarget <- function(
     input, 
     output, 
     session, 
-    group_display_choice, 
+    sample_con,
     group_con,
-    io_target_expr_con,
-    io_targets_con,
-    plot_colors
+    genes_con,
+    group_name,
+    cohort_colors
 ) {
     
     ns <- session$ns
@@ -61,44 +61,85 @@ iotarget <- function(
         return(url_gene)
     })
     
+    io_id_con <- reactive({
+        create_conection("gene_types") %>% 
+            dplyr::filter(name == "io_target") %>% 
+            dplyr::select(id) %>% 
+            dplyr::inner_join(
+                create_conection("genes_to_types"), 
+                by = c("id" = "type_id")
+            ) %>% 
+            dplyr::select(gene_id) %>% 
+            dplyr::compute()
+    })
+    
     expression_con <- reactive({
-        req(io_target_expr_con())
-        io_target_expr_con() %>% 
-            dplyr::select(
-                label = sample,
-                x = group,
-                y = value,
-                feature = gene
-            )
+        req(
+            io_id_con()
+        )
+        
+        io_id_con() %>% 
+            dplyr::inner_join(
+                create_conection("genes_to_samples"), 
+                by = c("gene_id")
+            ) %>% 
+            dplyr::select(feature_id = gene_id, sample_id, value = rna_seq_expr) %>% 
+            dplyr::compute()
+    })
+    
+    io_con <- reactive({
+        req(io_id_con(), genes_con())
+        
+        genes_con() %>% 
+            dplyr::inner_join(io_id_con(), by = "gene_id") %>% 
+            dplyr::compute() 
     })
     
     relationship_con <- reactive({
-        req(io_targets_con())
-        io_targets_con() %>% 
+        req(io_con())
+        
+        io_con() %>% 
             dplyr::select(
-                INTERNAL = gene,
-                DISPLAY = display,
-                pathway, 
-                therapy_type
-            )
+                INTERNAL = gene_id,
+                DISPLAY = hgnc, 
+                pathway,
+                therapy
+            ) %>% 
+            dplyr::compute()
     })
     
-    io_tbl <- reactive({
-        req(io_targets_con())
-        io_targets_con() %>% 
+    io_dt_tbl <- reactive({
+        req(io_con())
+        
+        x <-
+            io_con() %>%  
             dplyr::select(
-                Gene = display, 
-                `HGNC Symbol` = gene, 
-                `Friendly Name` = display2,
+                Hugo = hgnc, 
                 `Entrez ID` =  entrez,
                 Pathway = pathway,
-                `Therapy Type` = therapy_type,
-                Description = description, 
-                `Link to IO Landscape` = link
+                `Therapy Type` = therapy,
+                Description = description,
+                display
             ) %>% 
-            dplyr::as_tibble()
-    })  
-
+            dplyr::collect() %>% 
+            dplyr::mutate(url = stringr::str_c(
+                "https://www.cancerresearch.org/scientists/immuno-oncology-landscape?2019IOpipelineDB=2019;Target;",
+                display
+            )) %>% 
+            dplyr::mutate(`Link to IO Landscape` =  stringr::str_c(
+                "<a href=\'",
+                url,
+                "\'>",
+                display,
+                "</a>"
+            )) %>% 
+            dplyr::select(-c(display, url))
+        print(x$`Link to IO Landscape`[[1]])
+        x
+        
+    })
+# `Link to IO Landscape`
+#<a href=\'https://www.cancerresearch.org/scientists/immuno-oncology-landscape?2019IOpipelineDB=2019;Target;ABCB5\'>ABCB5</a>
     
     callModule(
         distributions_plot_module,
@@ -106,14 +147,14 @@ iotarget <- function(
         "io_targets_dist_plot",
         expression_con,
         relationship_con,
+        sample_con,
         group_con,
-        group_display_choice,
-        plot_colors,
-        variable_selection_default = url_gene(),
+        group_name,
+        cohort_colors,
         key_col = "label",
         variable_group_names = c("Pathway", "Therapy Type")
     )
     
-    callModule(data_table_module, "io_table", io_tbl, escape = F)
+    callModule(data_table_module, "io_table", io_dt_tbl, escape = F)
     
 }

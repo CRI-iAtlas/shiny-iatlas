@@ -137,10 +137,6 @@ shinyServer(function(input, output, session) {
         cohort_group_name,
         cohort_colors
     )
-    
-    
-
-    
 
     # Survival curves
     callModule(
@@ -150,6 +146,17 @@ shinyServer(function(input, output, session) {
         features_con,
         cohort_sample_con,
         cohort_group_con,
+        cohort_group_name,
+        cohort_colors
+    )
+    
+    # # IO Target
+    callModule(
+        iotarget,
+        "module9",
+        cohort_sample_con,
+        cohort_group_con,
+        genes_con,
         cohort_group_name,
         cohort_colors
     )
@@ -182,16 +189,7 @@ shinyServer(function(input, output, session) {
     #     subset_category_values_wide_con
     # )
     # 
-    # # IO Target
-    # callModule(
-    #     iotarget,
-    #     "module9",
-    #     group_display_choice,
-    #     subset_groups_con,
-    #     subset_io_target_expr_con,
-    #     io_targets_con,
-    #     plot_colors
-    # )
+
     # 
     
     # Data info
