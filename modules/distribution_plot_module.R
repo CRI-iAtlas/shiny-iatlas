@@ -96,7 +96,6 @@ distributions_plot_module <- function(
     plot_source_name,
     feature_values_con,
     feature_metadata_con,
-    sample_con,
     groups_con,
     group_display_choice,
     plot_colors,
@@ -165,15 +164,13 @@ distributions_plot_module <- function(
         req(
             feature_values_con(),
             input$variable_choice_id,
-            input$scale_method,
-            sample_con()
+            input$scale_method
         )
 
         feature_values_con() %>%  
             dplyr::filter(feature_id == local(input$variable_choice_id)) %>% 
             scale_db_connection(input$scale_method) %>% 
-            dplyr::inner_join(sample_con(), by = "sample_id") %>% 
-            dplyr::select(label = sample_id, x = group, y = value)
+            dplyr::select(label = sample_id, x = group, y = value) 
     })
     
     varible_display_name <- reactive({

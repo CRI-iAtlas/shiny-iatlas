@@ -94,26 +94,33 @@ shinyServer(function(input, output, session) {
             dplyr::compute()
     })
     
-
-    
     cohort_cons <- callModule(
         cohort_selection,
         "cohort_selection"
     )
     
-    cohort_sample_con <- reactive(cohort_cons()$sample_con)
+    cohort_sample_con <- reactive(cohort_cons()$sample_con) 
     cohort_group_con  <- reactive(cohort_cons()$group_con)
     cohort_group_name <- reactive(cohort_cons()$group_name)
-    cohort_colors     <- reactive(cohort_cons()$plot_colors)
+    cohort_colors     <- reactive(cohort_cons()$plot_colors) 
     
     cohort_feature_values_con <- reactive({
         req(cohort_sample_con())
         tbl <- 
             create_conection("features_to_samples") %>% 
             dplyr::inner_join(cohort_sample_con(), by = "sample_id") %>% 
-            dplyr::select(sample_id, feature_id, value, name, group) %>% 
+            dplyr::select(sample_id, feature_id, value, sample_name = name, group) %>% 
             dplyr::compute() 
     })
+    
+    # Cell content
+    callModule(
+        cellcontent,
+        "module1",
+        cohort_feature_values_con,
+        features_con,
+        cohort_group_con
+    )
     
     # # TILmap features
     callModule(
@@ -134,23 +141,12 @@ shinyServer(function(input, output, session) {
         features_con
     )
     
-    # Cell content
-    callModule(
-        cellcontent,
-        "module1",
-        cohort_feature_values_con,
-        features_con,
-        cohort_sample_con,
-        cohort_group_con
-    )
-
     #Immune features
     callModule(
         immunefeatures,
         "module6",
         cohort_feature_values_con,
         features_con,
-        cohort_sample_con,
         cohort_group_con,
         cohort_group_name,
         cohort_colors
@@ -173,7 +169,6 @@ shinyServer(function(input, output, session) {
         "module4",
         cohort_feature_values_con,
         features_con,
-        cohort_sample_con,
         cohort_group_con,
         cohort_group_name,
         cohort_colors

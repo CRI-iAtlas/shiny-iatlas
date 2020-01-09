@@ -59,7 +59,8 @@ immunomodulator <- function(
     
     expression_con <- reactive({
         req(
-            im_id_con()
+            im_id_con(),
+            sample_con()
         )
         
         im_id_con() %>% 
@@ -68,6 +69,7 @@ immunomodulator <- function(
                 by = c("gene_id")
             ) %>% 
             dplyr::select(feature_id = gene_id, sample_id, value = rna_seq_expr) %>% 
+            dplyr::inner_join(sample_con(), by = "sample_id") %>% 
             dplyr::compute()
     })
     
@@ -115,7 +117,6 @@ immunomodulator <- function(
         "immunomodulators_dist_plot",
         expression_con,
         relationship_con,
-        sample_con,
         group_con,
         group_name,
         cohort_colors,

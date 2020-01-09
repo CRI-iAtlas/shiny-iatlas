@@ -3,7 +3,6 @@
 build_survival_tbl <- function(
     features_con,
     values_con,
-    sample_con, 
     time_feature
 ){
     if (time_feature == "OS Time") {
@@ -16,7 +15,6 @@ build_survival_tbl <- function(
     tbl <- features_con %>% 
         dplyr::filter(feature_name %in% c(time_feature, status_feature)) %>% 
         dplyr::inner_join(values_con, by = "feature_id") %>% 
-        dplyr::inner_join(sample_con, by = "sample_id") %>% 
         dplyr::select(group, sample_id, feature_name, value) %>% 
         dplyr::collect() %>% 
         tidyr::pivot_wider(values_from = value, names_from = feature_name) %>%
@@ -53,11 +51,10 @@ build_ci_matrix <- function(feature_values_con, survival_values_con){
 
 # cell fractions module -------------------------------------------------------
 
-build_cell_fractions_barplot_tbl <- function(feature_tbl, value_tbl, sample_tbl, class_value){
+build_cell_fractions_barplot_tbl <- function(feature_tbl, value_tbl, class_value){
     feature_tbl %>% 
         dplyr::filter(class_name == class_value) %>% 
         dplyr::inner_join(value_tbl, by = "feature_id") %>% 
-        dplyr::inner_join(sample_tbl, by = "sample_id") %>% 
         dplyr::group_by(feature_name, group) %>% 
         dplyr::arrange(order) %>% 
         dplyr::summarise(mean = mean(value), count = dplyr::n()) %>%
@@ -138,40 +135,6 @@ create_volcano_drilldown_plot_title <- function(
     )
 }
 
-# server ----------------------------------------------------------------------
-
-subset_long_con_with_group <- function(
-    con, 
-    user_group_tbl,
-    group_col, 
-    group_values = "none",
-    feature_col = "feature",
-    value_col = "value"
-){
-    if(is.data.frame(user_group_tbl) & !(group_col %in% colnames(con))){
-        # needs to be a general solution to any backend
-        
-        # DBI::dbCreateTable(PANIMMUNE_DB, "user_groups", user_group_tbl)
-        # DBI::dbAppendTable(PANIMMUNE_DB, "user_groups", user_group_tbl)
-        # user_groups_con <- dplyr::tbl(PANIMMUNE_DB, "user_groups")
-        # 
-        # con <- con %>% 
-        #     dplyr::inner_join(user_groups_con, by = "sample") %>% 
-        #     dplyr::select("sample", "group" = group_col, feature_col, value_col) %>% 
-        #     dplyr::filter_all(dplyr::all_vars(!is.na(.)))
-        
-    } else {
-        con <- con %>% 
-            dplyr::select("sample", "group" = group_col, feature_col, value_col) %>% 
-            dplyr::filter_all(dplyr::all_vars(!is.na(.)))
-    }
-    
-    if(group_values[[1]] != "none"){
-        con <- dplyr::filter(con, group %in% group_values)
-    }
-    return(con)
-}
-
 
 # immunefeatures --------------------------------------------------------------
 
@@ -182,10 +145,10 @@ build_immune_feature_heatmap_response_con <- function(
 ){
     feature_values_con %>% 
         dplyr::filter(feature_id == response_feature_id) %>%
-        dplyr::select(feature_id, sample_id, value) %>%
+        dplyr::select(feature_id, sample_id, value, group, sample_name) %>%
         dplyr::filter_all(dplyr::all_vars(!is.na(.))) %>% 
         dplyr::inner_join(features_con, by = "feature_id") %>% 
-        dplyr::select(sample_id, value1 = value, feature1 = feature_name) %>% 
+        dplyr::select(sample_id, sample_name, value1 = value, feature1 = feature_name, group) %>% 
         dplyr::compute()
 }
 
@@ -203,16 +166,11 @@ build_immune_feature_heatmap_feature_con <- function(
         dplyr::compute()
 }
 
-build_immune_feature_heatmap_tbl <- function(
-    response_con,
-    feature_con,
-    sample_con
-){
+build_immune_feature_heatmap_tbl <- function(response_con, feature_con){
     tbl <-
         dplyr::inner_join(response_con, feature_con, by = "sample_id") %>%
         dplyr::arrange(order) %>% 
-        dplyr::select(sample_id, feature = feature2, value1, value2, order) %>% 
-        dplyr::inner_join(sample_con, by = "sample_id") %>% 
+        dplyr::select(sample_name, feature = feature2, value1, value2, order, group) %>% 
         dplyr::collect()
 }
 
@@ -236,7 +194,7 @@ build_immune_feature_heatmap_matrix <- function(tbl, method){
 build_immune_feature_scatterplot_tbl <- function(tbl, clicked_feature, clicked_group){
     tbl %>%
         dplyr::filter(feature == clicked_feature, group == clicked_group) %>%
-        dplyr::select(sample = sample_id, group, y = value1, x = value2, name) %>%
+        dplyr::select(group, y = value1, x = value2, name = sample_name) %>%
         create_plotly_label(
             name_column = "name",
             group_column = "group",

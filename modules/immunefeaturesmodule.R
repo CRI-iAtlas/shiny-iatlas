@@ -25,7 +25,6 @@ immunefeatures <- function(
     session,
     feature_values_con,
     features_con,
-    sample_con,
     group_con,
     group_name,
     cohort_colors
@@ -42,7 +41,6 @@ immunefeatures <- function(
         plot_source_name           = "immunefeatures_dist_plot",
         feature_values_con         = feature_values_con,
         feature_metadata_con       = distributions_feature_con,
-        sample_con                 = sample_con,
         groups_con                 = group_con,
         group_display_choice       = group_name,
         plot_colors                = cohort_colors,
@@ -55,7 +53,6 @@ immunefeatures <- function(
     callModule(
         immunefeatures_correlations,
         "immunefeatures_correlations",
-        sample_con = sample_con,
         feature_values_con = feature_values_con, 
         features_con = features_con, 
         group_con  = group_con
@@ -125,7 +122,6 @@ immunefeatures_correlations <- function(
     input,
     output, 
     session, 
-    sample_con,
     feature_values_con,
     features_con,
     group_con
@@ -219,14 +215,12 @@ immunefeatures_correlations <- function(
     heatmap_tbl <- reactive({
         req(
             heatmap_response_con(),
-            heatmap_feature_con(),
-            sample_con()
+            heatmap_feature_con()
         )
         
         build_immune_feature_heatmap_tbl(
             heatmap_response_con(),
-            heatmap_feature_con(),
-            sample_con()
+            heatmap_feature_con()
         )
     })
     

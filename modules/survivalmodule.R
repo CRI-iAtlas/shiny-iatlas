@@ -95,7 +95,6 @@ survival <- function(
     session, 
     feature_values_con,
     features_con,
-    samples_con,
     groups_con,
     group_name,
     cohort_colors
@@ -108,17 +107,14 @@ survival <- function(
         req(
             features_con(),
             feature_values_con(),
-            samples_con(),
             input$suvivial_time_feature_choice
         )
         
-        tbl <- build_survival_tbl(
+        build_survival_tbl(
             features_con(),
             feature_values_con(),
-            samples_con(),
             input$suvivial_time_feature_choice
-        ) %>%  
-            print()
+        ) 
     })
     
     output$survival_plot <- renderPlot({
@@ -232,7 +228,7 @@ survival <- function(
             dplyr::filter(feature_id %in% local(heatmap_time_feature_id())) %>% 
             dplyr::filter(!is.na(value)) %>% 
             dplyr::inner_join(features_con(), by = "feature_id") %>% 
-            dplyr::select(sample_id, time = value) %>% 
+            dplyr::select(sample_id, group, time = value) %>% 
             dplyr::compute()
     })
     
@@ -255,8 +251,7 @@ survival <- function(
     heatmap_survial_values_con <- reactive({
         req(
             heatmap_time_feature_con(),
-            heatmap_status_feature_con(),
-            samples_con()
+            heatmap_status_feature_con()
         )
         
         con <-
@@ -264,8 +259,7 @@ survival <- function(
                 heatmap_time_feature_con(),
                 heatmap_status_feature_con(),
                 by = "sample_id"
-            ) %>% 
-            dplyr::inner_join(samples_con(), by = "sample_id") %>% 
+            ) %>%  
             dplyr::select(sample_id, time, status, group) %>% 
             dplyr::compute() 
     })

@@ -19,7 +19,6 @@ cellcontent <- function(
     session, 
     feature_values_con,
     features_con,
-    sample_con,
     group_con
 ) {
     
@@ -28,7 +27,6 @@ cellcontent <- function(
         "ocp_module",
         feature_values_con,
         features_con,
-        sample_con,
         group_con
     )
     
@@ -37,7 +35,6 @@ cellcontent <- function(
         "ctf_module",
         feature_values_con,
         features_con,
-        sample_con,
         group_con
     )
 }
@@ -89,7 +86,6 @@ overall_cell_proportions_module  <- function(
     session,
     feature_values_con,
     features_con,
-    sample_con,
     group_con
 ){
     
@@ -102,15 +98,17 @@ overall_cell_proportions_module  <- function(
                     "Stromal Fraction",
                     "Tumor Fraction"
                 ) 
-            )
+            ) %>% 
+            dplyr::select(feature_id, feature_name) %>% 
+            dplyr::compute() 
     })
     
     cp_value_con <- reactive({
         req(feature_values_con(), cp_feature_con())
         feature_values_con() %>% 
             dplyr::inner_join(cp_feature_con(), by = "feature_id") %>% 
-            dplyr::inner_join(sample_con(), by = "sample_id") %>% 
-            dplyr::select(value, class_name, feature_name, order, sample_name = name, group) 
+            dplyr::select(sample_name, feature_name, value, group) %>% 
+            dplyr::compute()
     })
     
     barplot_tbl <- reactive({
@@ -119,7 +117,6 @@ overall_cell_proportions_module  <- function(
     })
     
     output$barplot <- renderPlotly({
-        
         req(barplot_tbl())
         
         validate(need(
@@ -222,7 +219,6 @@ cell_type_fractions_module <- function(
     session,
     feature_values_con,
     features_con,
-    sample_con,
     group_con
 ){
     
@@ -230,13 +226,11 @@ cell_type_fractions_module <- function(
         req(
             features_con(),
             feature_values_con(),
-            sample_con(),
             input$fraction_group_choice
         )
         build_cell_fractions_barplot_tbl(
             features_con(), 
             feature_values_con(),
-            sample_con(),
             input$fraction_group_choice
         )
     })

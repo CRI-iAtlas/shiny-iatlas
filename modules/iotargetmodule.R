@@ -75,7 +75,8 @@ iotarget <- function(
     
     expression_con <- reactive({
         req(
-            io_id_con()
+            io_id_con(),
+            sample_con()
         )
         
         io_id_con() %>% 
@@ -84,6 +85,7 @@ iotarget <- function(
                 by = c("gene_id")
             ) %>% 
             dplyr::select(feature_id = gene_id, sample_id, value = rna_seq_expr) %>% 
+            dplyr::inner_join(sample_con(), by = "sample_id") %>% 
             dplyr::compute()
     })
     
@@ -142,7 +144,6 @@ iotarget <- function(
         "io_targets_dist_plot",
         expression_con,
         relationship_con,
-        sample_con,
         group_con,
         group_name,
         cohort_colors,

@@ -133,12 +133,12 @@ cohort_selection <- function(
             "Clinical Outcomes",      "TCGA",
             "IO Targets",             "TCGA",
             "TIL Maps",               "TCGA",
-            "Driver Associations",    "TCGA",
-            "Sample Group Overview",  "PCAWG",
-            "Tumor Microenvironment", "PCAWG",
-            "Immune Feature Trends",  "PCAWG",
-            "IO Targets",             "PCAWG",
-            "Driver Associations",    "PCAWG"
+            "Driver Associations",    "TCGA"
+            # "Sample Group Overview",  "PCAWG",
+            # "Tumor Microenvironment", "PCAWG",
+            # "Immune Feature Trends",  "PCAWG",
+            # "IO Targets",             "PCAWG",
+            # "Driver Associations",    "PCAWG"
         )
     })
     
@@ -148,16 +148,16 @@ cohort_selection <- function(
             "Immune Subtype",  "TCGA",   "tag",
             "TCGA Subtype",    "TCGA",   "tag",
             "TCGA Study",      "TCGA",   "tag",
-            "Gender",          "TCGA",   "sample",
-            "Race",            "TCGA",   "sample",
-            "Ethnicity",       "TCGA",   "sample",
+            # "Gender",          "TCGA",   "sample",
+            # "Race",            "TCGA",   "sample",
+            # "Ethnicity",       "TCGA",   "sample",
             "Custom Numeric",  "TCGA",   NA,
-            "Custom Mutation", "TCGA",   NA,
-            "Immune Subtype",  "PCAWG",  "tag",
-            "PCAWG Study",     "PCAWG",  "tag",
-            "Gender",          "PCAWG",  "sample",
-            "Race",            "PCAWG",  "sample",
-            "Custom Numeric",  "PCAWG",   NA
+            "Custom Mutation", "TCGA",   NA
+            # "Immune Subtype",  "PCAWG",  "tag",
+            # "PCAWG Study",     "PCAWG",  "tag",
+            # "Gender",          "PCAWG",  "sample",
+            # "Race",            "PCAWG",  "sample",
+            # "Custom Numeric",  "PCAWG",   NA
         ) 
     })
     
@@ -378,45 +378,17 @@ cohort_selection <- function(
         remove_ui_event = reactive(input$dataset_choice)
     )
     
-    selected_samples <- reactive({
-        req(samples_con(), group_filter_output(), numeric_filter_output())
-        group_filters <- group_filter_output() %>% 
-            reactiveValuesToList() %>% 
-            purrr::discard(purrr::map_lgl(., is.null))
+    sample_ids <- reactive({
+        req(samples_con())
+        dplyr::pull(samples_con(), sample_id)
+    })
+    
+    numeric_filter_samples <- reactive({
+        req(sample_ids(), numeric_filter_output())
+        samples <- sample_ids()
         numeric_filters <- numeric_filter_output() %>% 
             reactiveValuesToList() %>% 
-            purrr::discard(purrr::map_lgl(., is.null))
-        samples <- samples_con() %>% 
-            dplyr::pull(sample_id)
-        for(item in group_filters){
-            req(item$parent_group_choice, item$group_choices)
-            if(item$parent_group_choice %in% c("Gender","Race", "Ethnicity")){
-            } else if (item$parent_group_choice %in% c("Immune Subtype", "TCGA Subtype", "TCGA Study")){
-                sample_ids <- 
-                    dplyr::inner_join(
-                        create_conection("tags_to_tags"),
-                        create_conection("tags") %>%
-                            # dplyr::filter(display == "Immune Subtype"), 
-                            dplyr::filter(display ==  local(item$parent_group_choice)),
-                        by = c("related_tag_id" = "id")
-                    ) %>% 
-                    dplyr::select(tag_id) %>% 
-                    dplyr::inner_join(
-                        create_conection("tags"),
-                        by = c("tag_id" = "id")
-                    ) %>%
-                    dplyr::filter(name %in% local(item$group_choices)) %>%
-                    # dplyr::filter(name %in% c("C1", "C2")) %>%
-                    dplyr::select(tag_id) %>%
-                    dplyr::inner_join(
-                        create_conection("samples_to_tags")
-                    ) %>%
-                    dplyr::pull(sample_id)
-                samples <- intersect(samples, sample_ids)
-            } else {
-                stop("bad selection")
-            }
-        }
+            purrr::discard(purrr::map_lgl(., is.null)) 
         for(item in numeric_filters){
             req(item$feature_choice, item$feature_range)
             sample_ids <- 
@@ -437,6 +409,42 @@ cohort_selection <- function(
             samples <- intersect(samples, sample_ids)
         }
         return(samples)
+    })
+    
+    group_filter_samples <- reactive({
+        req(sample_ids(), group_filter_output())
+        group_filters <- group_filter_output() %>% 
+            reactiveValuesToList() %>% 
+            purrr::discard(purrr::map_lgl(., is.null))
+        samples <- sample_ids()
+        for(item in group_filters){
+            req(item$parent_group_choice, item$group_choices)
+            sample_ids <- 
+                dplyr::inner_join(
+                    create_conection("tags_to_tags"),
+                    create_conection("tags") %>%
+                        dplyr::filter(display ==  local(item$parent_group_choice)),
+                    by = c("related_tag_id" = "id")
+                ) %>% 
+                dplyr::select(tag_id) %>% 
+                dplyr::inner_join(
+                    create_conection("tags"),
+                    by = c("tag_id" = "id")
+                ) %>%
+                dplyr::filter(name %in% local(item$group_choices)) %>%
+                dplyr::select(tag_id) %>%
+                dplyr::inner_join(
+                    create_conection("samples_to_tags")
+                ) %>%
+                dplyr::pull(sample_id)
+            samples <- intersect(samples, sample_ids)
+        }
+        return(samples)
+    })
+    
+    selected_samples <- reactive({
+        req(numeric_filter_samples(), group_filter_samples())
+        intersect(numeric_filter_samples(), group_filter_samples())
     })
     
     output$samples_text <- renderText({
@@ -488,14 +496,11 @@ cohort_selection <- function(
             group_choice <- input$group_choice
         }
         req(selected_samples())
-        if(group_choice %in% c("Gender","Race", "Ethnicity")){
-            group_name <- group_choice
-        } else if (group_choice %in% c("Immune Subtype", "TCGA Subtype", "TCGA Study")){
+        if (group_choice %in% c("Immune Subtype", "TCGA Subtype", "TCGA Study")){
             group_name <- group_choice
             parent_id <-  
                 create_conection("tags") %>% 
                 dplyr::filter(display == group_choice) %>%
-                # dplyr::filter(display == "Immune Subtype") %>%
                 dplyr::pull(id)
             sample_con <- 
                 create_conection("samples_to_tags") %>%
@@ -510,7 +515,6 @@ cohort_selection <- function(
                 dplyr::filter(
                     related_tag_id == parent_id,
                     sample_id %in% local(selected_samples())
-                    # sample_id %in% c(9747, 9475)
                 ) %>% 
                 dplyr::select(sample_id, tag_id, group = name) %>% 
                 dplyr::inner_join(
@@ -562,14 +566,10 @@ cohort_selection <- function(
             sample_con <-
                 create_conection("features_to_samples") %>%
                 dplyr::filter(
-                    # feature_id == 1,
                     feature_id == as.integer(local(input$custom_numeric_feature_choice)),
                     !is.na(value),
-                    # sample_id %in% c(1L,2L,3L,4L,5L)
                     sample_id %in% local(selected_samples())
                 ) %>%
-                # dplyr::mutate(group = value - value %% (max(value) / (2 -1))) %>% 
-                # dplyr::mutate(group = (group / (max(value) / (2 -1))) + 1) %>% 
                 dplyr::mutate(group = value - value %% (max(value) / (local(input$custom_numeric_group_number_choice) -1))) %>%
                 dplyr::mutate(group = (group / (max(value) / (local(input$custom_numeric_group_number_choice) -1))) + 1) %>%
                 dplyr::mutate(group = as.character(as.integer(group))) %>% 
