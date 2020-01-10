@@ -120,7 +120,7 @@
       "RemoteUsername": "Gibbsdavidl",
       "RemoteRef": "master",
       "RemoteSha": "59e9aa1d377706819da69771dc0cb2cd13bb23d1",
-      "Hash": "20ea1024f5bffaaf0322ef07c5796b93"
+      "Hash": "143380067bd6b9f075c681950181fba7"
     },
     "KMsurv": {
       "Package": "KMsurv",
@@ -1454,6 +1454,13 @@
       "Source": "Repository",
       "Repository": "CRAN",
       "Hash": "8248ee35d1e15d1e506f05f5a5d46a75"
+    },
+    "tictoc": {
+      "Package": "tictoc",
+      "Version": "1.0",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "f8cc5adf4671b013434bbe127f35b28c"
     },
     "tidyr": {
       "Package": "tidyr",
