@@ -10,13 +10,13 @@ The portal is built entirely in **R** and **Shiny** using the **RStudio** develo
 
 ## Install
 
-### Install Core Apps and System libraries:
+### Install Core Apps and System libraries
 
 - R: [https://www.r-project.org/](https://www.r-project.org/) - v3.6.2
 
 - RStudio: [https://rstudio.com/products/rstudio/download/](https://rstudio.com/products/rstudio/download/)
 
-- lib cairo: https://www.cairographics.org/
+- lib cairo: [https://www.cairographics.org/](https://www.cairographics.org/)
 
 - Docker: [https://www.docker.com/products/docker-desktop](https://www.docker.com/products/docker-desktop)
 
@@ -90,7 +90,7 @@ The first time you deploy, go through the Deployment-Setup instructions. Afterwa
 
 You'll need to set up your credentials for shinyapps.io. You can get your codes from:
 
-- https://www.shinyapps.io/admin/#/tokens
+- [https://www.shinyapps.io/admin/#/tokens](https://www.shinyapps.io/admin/#/tokens)
 
 Paste and evaluate your tokens in the RStudio console. They look like this:
 
@@ -110,7 +110,6 @@ Once your account info is set up, you can deploy with:
 ```R
 rsconnect::deployApp()
 ```
-
 
 ## Data
 
@@ -155,8 +154,7 @@ concordanceIndex::concordanceIndex(predictions, observations)
 
 ... where `predictions` and `observations` are numerical vectors of the same length.
 
-
-# Troubleshooting
+## Troubleshooting
 
 ## Startup
 
@@ -177,17 +175,17 @@ startup::startup(debug=TRUE)
 
 Skip the first half of the output until you see this line:
 
-* `x.xxxs: startup::startup()-specific processing...`
+- `x.xxxs: startup::startup()-specific processing...`
 
 Just below you should see it loading the `./.Renviron.d` and later `./.Rprofile.d`. If yours says anything different than dot-slash-dot-Renviron-dot-d, startup is loading the wrong files.
 
-* If you ran `startup::install` at some point, startup may have created these folders in your user directory. They are probably empty or simply the default values. If so, you can trash them. Then re-run startup with debug=TRUE and see if it works.
+- If you ran `startup::install` at some point, startup may have created these folders in your user directory. They are probably empty or simply the default values. If so, you can trash them. Then re-run startup with debug=TRUE and see if it works.
 
-* Otherwise, you may need to check your R startup path and see why startup is finding the wrong files. Read more about it here: https://cran.r-project.org/web/packages/startup/vignettes/startup-intro.html
+- Otherwise, you may need to check your R startup path and see why startup is finding the wrong files. Read more about it here: [https://cran.r-project.org/web/packages/startup/vignettes/startup-intro.html](https://cran.r-project.org/web/packages/startup/vignettes/startup-intro.html)
 
 The tail end of your output should look like this:
 
-```
+```bash
 0.005s: startup::startup()-specific processing ...
 0.006s: Found startup directory ‘./.Renviron.d’.
 0.010s: Processing 1 Renviron files ...
