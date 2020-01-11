@@ -1,3 +1,5 @@
+# used in cohort selection ----------------------------------------------------
+
 numeric_filter_element_module_ui <- function(id){
     ns <- NS(id)
     tagList(
@@ -109,6 +111,89 @@ group_filter_element_module <- function(
     
     observeEvent(input$group_choices, {
         reactive_values[[module_id]]$group_choices <- input$group_choices
+    })
+    
+    return(reactive_values)
+}
+
+# used in driver module -------------------------------------------------------
+
+numeric_model_feature_element_ui <- function(id){
+    ns <- NS(id)
+    tagList(
+        uiOutput(ns("select_feature_ui")),
+        uiOutput(ns("select_transformation_ui"))
+    )
+}
+
+numeric_model_feature_element <- function(
+    input,
+    output,
+    session,
+    reactive_values,
+    module_id,
+    feature_named_list
+){
+    
+    ns <- session$ns
+    
+    output$select_feature_ui <- renderUI({
+        req(feature_named_list())
+        selectInput(
+            inputId = ns("feature_choice_id"),
+            label = "Select Feature:",
+            choices = feature_named_list()
+        )
+    })
+    
+    output$select_transformation_ui <- renderUI({
+        selectInput(
+            inputId = ns("transformation_choice"),
+            label = "Select Transformation:",
+            choices = c("None", "Squared", "Log10", "Reciprocal")
+        )
+    })
+    
+    observeEvent(input$feature_choice_id, {
+        reactive_values[[module_id]]$feature_choice_id <- as.numeric(input$feature_choice_id)
+    })
+    
+    observeEvent(input$transformation_choice, {
+        reactive_values[[module_id]]$transformation_choice <- input$transformation_choice
+    })
+    
+    return(reactive_values)
+}
+
+categorical_model_feature_element_ui <- function(id){
+    ns <- NS(id)
+    tagList(
+        uiOutput(ns("select_category_ui"))
+    )
+}
+
+categorical_model_feature_element <- function(
+    input,
+    output,
+    session,
+    reactive_values,
+    module_id,
+    categories_named_list
+){
+    
+    ns <- session$ns
+    
+    output$select_category_ui <- renderUI({
+        req(categories_named_list())
+        selectInput(
+            inputId = ns("category_choice"),
+            label = "Select Category:",
+            choices = categories_named_list()
+        )
+    })
+    
+    observeEvent(input$category_choice, {
+        reactive_values[[module_id]]$category_choice <- input$category_choice
     })
     
     return(reactive_values)

@@ -185,23 +185,19 @@ shinyServer(function(input, output, session) {
         cohort_colors
     )
     
-
-
-    
-
-    # 
     # Driver associations
-    # callModule(
-    #     drivers,
-    #     "module8",
-    #     subset_driver_results_con,
-    #     subset_driver_mutations_con,
-    #     subset_feature_values_long_con,
-    #     subset_feature_values_wide_con,
-    #     features_named_list,
-    #     categories_con,
-    #     subset_category_values_wide_con
-    # )
+    callModule(
+        drivers,
+        "module8",
+        features_con
+        # subset_driver_results_con,
+        # subset_driver_mutations_con,
+        # subset_feature_values_long_con,
+        # subset_feature_values_wide_con,
+        # features_named_list,
+        # categories_con,
+        # subset_category_values_wide_con
+    )
 
     # subtype predictor
     callModule(

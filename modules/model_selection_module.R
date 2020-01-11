@@ -50,11 +50,11 @@ model_selection_module_ui <- function(
                 ),
                 column(
                     width = 12,
-                    insert_remove_element_module_ui(ns("numerical"), "Add numerical covariate")
+                    insert_remove_element_module_ui(ns("select_numeric_feature"), "Add numerical covariate")
                 ),
                 column(
                     width = 12,
-                    insert_remove_element_module_ui(ns("categorical"), "Add categorical covariate")
+                    insert_remove_element_module_ui(ns("select_categorical_feature"), "Add categorical covariate")
                 )
             )
         )
@@ -73,48 +73,68 @@ model_selection_module <- function(
     output$response_options <- renderUI({
         req(numerical_features_named_list())
         selectInput(
-            ns("response_variable"),
+            ns("response_choice_id"),
             "Select Response Variable",
             choices = numerical_features_named_list(),
             selected = "Leukocyte Fraction"
         )
     })
     
-    numerical_ui_function <- reactive({
+    numeric_feature_module <- reactive({
         purrr::partial(
-            create_numerical_covariate_ui,
-            variable_choice_func = numerical_features_named_list
+            numeric_model_feature_element,
+            feature_named_list = numerical_features_named_list
         )
     })
     
-    numerical_module_output <- callModule(
+    numeric_feature_module_ui <- reactive(numeric_model_feature_element_ui)
+    
+    numeric_feature_output <- callModule(
         insert_remove_element_module,
-        "numerical",
-        ui_creation_function = numerical_ui_function,
-        output_function = reactive(output_numerical_covariate_selections)
+        "select_numeric_feature",
+        element_module = numeric_feature_module,
+        element_module_ui = numeric_feature_module_ui
     )
     
-    categorical_ui_function <- reactive({
-        # if(input$group_mode == "Across groups") {
-        #     choice_function <- 
-        #         get_categorical_covariate_nested_list_with_sample_groups
-        # } else if (input$group_mode == "By group"){
-        #     choice_function <- 
-        #         get_categorical_covariate_nested_list
-        # }
+    
+    categorical_feature_module <- reactive({
         purrr::partial(
-            create_categorical_covariate_ui,
-            variable_choice_func = categorical_features_named_list
+            categorical_model_feature_element,
+            categories_named_list = categorical_features_named_list
         )
     })
     
-    catgorical_module_output <- callModule(
+    categorical_feature_module_ui <- reactive(categorical_model_feature_element_ui)
+    
+    categorical_feature_output <- callModule(
         insert_remove_element_module,
-        "categorical",
-        ui_creation_function = categorical_ui_function,
-        output_function = reactive(output_categorical_covariate_selections),
-        remove_ui_event = reactive(input$group_mode)
+        "select_categorical_feature",
+        element_module = categorical_feature_module,
+        element_module_ui = categorical_feature_module_ui
     )
+    
+    categorical_covariates <- reactive({
+        categorical_feature_output() %>% 
+            reactiveValuesToList() %>% 
+            purrr::discard(purrr::map_lgl(., is.null)) %>% 
+            unlist()
+    })
+    
+    numerical_covariates <- reactive({
+        numeric_feature_output() %>% 
+            reactiveValuesToList() %>% 
+            purrr::discard(purrr::map_lgl(., is.null)) %>% 
+            purrr::map(purrr::pluck, "feature_choice_id") %>% 
+            unlist()
+    })
+    
+    numerical_transformations <- reactive({
+        numeric_feature_output() %>% 
+            reactiveValuesToList() %>% 
+            purrr::discard(purrr::map_lgl(., is.null)) %>% 
+            purrr::map(purrr::pluck, "transformation_choice") %>% 
+            unlist()
+    })
     
     reactive({
         req(
@@ -125,13 +145,14 @@ model_selection_module <- function(
             !is.null(input$scale_response)
         )
         c(
-            "response_variable" = input$response_variable,
+            "response_variable" = input$response_choice_id,
             "min_mutants" = input$min_mutants,
             "min_wildtype" = input$min_wildtype,
             "group_mode" = input$group_mode,
             "scale_response" = input$scale_response,
-            numerical_module_output(),
-            catgorical_module_output()
+            "categorical_covariates" = categorical_covariates(),
+            "numerical_covariates" = numerical_covariates(),
+            "numerical_transformations" = numerical_transformations()
         )
     })
 }

@@ -350,7 +350,7 @@ cohort_selection <- function(
     group_element_module_ui <- reactive(group_filter_element_module_ui)
     
     group_filter_output <- callModule(
-        insert_remove_element_module2,
+        insert_remove_element_module,
         "group_filter",
         element_module = group_element_module,
         element_module_ui = group_element_module_ui,
@@ -371,7 +371,7 @@ cohort_selection <- function(
     numeric_element_module_ui <- reactive(numeric_filter_element_module_ui)
     
     numeric_filter_output <- callModule(
-        insert_remove_element_module2,
+        insert_remove_element_module,
         "numeric_filter",
         element_module = numeric_element_module,
         element_module_ui = numeric_element_module_ui,

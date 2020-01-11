@@ -9,71 +9,71 @@ drivers_UI <- function(id) {
         ),
         
         # single variable ----
-        sectionBox(
-            title = "Immune Response Association With Driver Mutations -- single variable",
-            messageBox(
-                width = 12,
-                includeMarkdown("data/markdown/driver_single.markdown")
-            ),
-            fluidRow(
-                optionsBox(
-                    width = 12,
-                    column(
-                        width = 4,
-                        uiOutput(ns("response_options"))
-                    ),
-                    column(
-                        width = 4,
-                        numericInput(
-                            ns("min_mut"),
-                            "Minimum number of mutant samples per group:", 
-                            20, 
-                            min = 2
-                        )
-                    ),
-                    column(
-                        width = 4,
-                        numericInput(
-                            ns("min_wt"),
-                            "Minimum number of wild type samples per group:", 
-                            20, 
-                            min = 2
-                        )
-                    )
-                )
-            ),
-            volcano_plot_module_ui(ns("single_variable"))
-        ),
-        
-        # multi_variable ----
         # sectionBox(
-        #     title = "Immune Response Association With Driver Mutations -- multi-variable",
+        #     title = "Immune Response Association With Driver Mutations -- single variable",
         #     messageBox(
         #         width = 12,
-        #         includeMarkdown("data/markdown/driver_multi.markdown")
+        #         includeMarkdown("data/markdown/driver_single.markdown")
         #     ),
-        #     model_selection_module_ui(ns("module1")),
         #     fluidRow(
         #         optionsBox(
         #             width = 12,
         #             column(
-        #                 width = 6,
-        #                 textOutput(ns("model_text"))
+        #                 width = 4,
+        #                 uiOutput(ns("response_options"))
         #             ),
         #             column(
-        #                 width = 6,
-        #                 actionButton(ns("calculate_button"), "Calculate")
+        #                 width = 4,
+        #                 numericInput(
+        #                     ns("min_mut"),
+        #                     "Minimum number of mutant samples per group:", 
+        #                     20, 
+        #                     min = 2
+        #                 )
+        #             ),
+        #             column(
+        #                 width = 4,
+        #                 numericInput(
+        #                     ns("min_wt"),
+        #                     "Minimum number of wild type samples per group:", 
+        #                     20, 
+        #                     min = 2
+        #                 )
         #             )
         #         )
         #     ),
-        #     fluidRow(
-        #         plotBox(
-        #             width = 12,
-        #             plotlyOutput(ns("scatter_plot2")) %>%
-        #                 shinycssloaders::withSpinner()
-        #         )
-        #     )
-        # )
+        #     volcano_plot_module_ui(ns("single_variable"))
+        # ),
+        
+        # multi_variable ----
+        sectionBox(
+            title = "Immune Response Association With Driver Mutations -- multi-variable",
+            messageBox(
+                width = 12,
+                includeMarkdown("data/markdown/driver_multi.markdown")
+            ),
+            model_selection_module_ui(ns("module1")),
+            fluidRow(
+                optionsBox(
+                    width = 12,
+                    column(
+                        width = 6,
+                        textOutput(ns("model_text"))
+                    ),
+                    column(
+                        width = 6,
+                        actionButton(ns("calculate_button"), "Calculate")
+                    )
+                )
+            ),
+            fluidRow(
+                plotBox(
+                    width = 12,
+                    plotlyOutput(ns("scatter_plot2")) %>%
+                        shinycssloaders::withSpinner()
+                )
+            )
+        )
     )
 }
 
@@ -81,14 +81,15 @@ drivers_UI <- function(id) {
 drivers <- function(
     input, 
     output, 
-    session, 
-    driver_results_con,
-    driver_mutations_con,
-    feature_values_con,
-    feature_values_wide_con,
-    features_named_list,
-    categories_con,
-    category_values_wide_con
+    session,
+    features_con
+    # driver_results_con,
+    # driver_mutations_con,
+    # feature_values_con,
+    # feature_values_wide_con,
+    # features_named_list,
+    # categories_con,
+    # category_values_wide_con
 ){
     ns <- session$ns
     
@@ -150,34 +151,34 @@ drivers <- function(
     
     ## multi-variable models ----
     
-    categorical_features_named_list <- reactive({
-        create_named_list(categories_con(), "display", "category")
+    features_named_list <- reactive({
+        req(features_con()) 
+        features_con() %>% 
+            dplyr::select(
+                class = class_name, 
+                display = feature_name, 
+                feature = feature_id
+            ) %>% 
+            create_nested_named_list() 
+    })
+    
+    categories_named_list <- reactive({
+        c("Gender", "Race", "Ethnicty")
     })
     
     module_parameters <- callModule(
         model_selection_module, 
         "module1", 
         features_named_list,
-        categorical_features_named_list
+        categories_named_list
     )
     
-    covariates <- reactive({
-        c(
-            module_parameters()$numerical_covariates,
-            module_parameters()$categorical_covariates
-        )
-    })
-    
-    transformations <- reactive({
-        c(
-            module_parameters()$numerical_transformations,
-            module_parameters()$categorical_transformations
-        )
-    })
     
     display_formula_string <- reactive({
-        req(module_parameters(), covariates(), transformations())
+        req(module_parameters())
+        print(module_parameters())
         response  <- module_parameters()$response_variable
+        print(response)
         
         transform_variable <- function(var, trans){
             if(trans == "None") res <- var
@@ -187,12 +188,14 @@ drivers <- function(
             return(res)
         }
         
-        string <-  covariates() %>% 
+        string1
+        
+        string1 <-  covariates() %>% 
             purrr::map(get_variable_display_name) %>% 
             purrr::map2_chr(transformations(), transform_variable) %>% 
             stringr::str_c(collapse = " + ") %>% 
             stringr::str_c(
-                get_variable_display_name(response),
+                as.character(response), # fix!!!
                 " ~ Mutation status + ", 
                 .
             )
@@ -220,10 +223,10 @@ drivers <- function(
         display_formula_string()
     })
 
-    scatter_plot_df2 <- reactive({
-        print(categor)
-        print(category_values_wide_con())
-        print(feature_values_wide_con())
+    mv_scatter_plot <- reactive({
+        # print(categor)
+        # print(category_values_wide_con())
+        # print(feature_values_wide_con())
         
         
         # 
