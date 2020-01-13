@@ -10,7 +10,7 @@ cat("In if block",fill = TRUE)
 try(startup::startup())
 
 if (Sys.getenv("DOCKERBUILD") == "1") {
-  try(renv::restore())
+  try(renv::restore(confirm = FALSE))
   local({
    options(shiny.port = 3838, shiny.host = "0.0.0.0")
   })
