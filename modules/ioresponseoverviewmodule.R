@@ -49,7 +49,7 @@ ioresponseoverview <- function(input,
     
     output$io_datasets_df <- DT::renderDT({
         DT::datatable((sample %>% 
-                           group_by(Dataset, Tissue, Drug, CTLA4_Pretreatment, Treatment) %>% 
+                           group_by(Dataset, Tissue, Drug, Antibody) %>% 
                            summarise(Samples = n())),
                       options = list(pageLength = 20))
         
