@@ -19,6 +19,29 @@ shinyServer(function(input, output, session) {
     
     # analysis modules --------------------------------------------------------
     
+    tags_con <- reactive({
+        create_conection("tags") %>% 
+            dplyr::select(
+                parent_group_id = id, 
+                parent_group_name = name, 
+                parent_group_display = display
+            ) %>% 
+            dplyr::filter( parent_group_display %in% c(
+                    "Immune Subtype", 
+                    "TCGA Study", 
+                    "TCGA Subtype"
+            )) %>% 
+            dplyr::inner_join(
+                create_conection("tags_to_tags"),
+                by = c("parent_group_id" = "related_tag_id")
+            ) %>% 
+            dplyr::inner_join(
+                create_conection("tags"),
+                by = c("tag_id" = "id")
+            ) %>% 
+            dplyr::select(parent_group, group = name, tag_id) %>% 
+            dplyr::compute()
+    })
     
     features_con <- reactive({
         con <- 

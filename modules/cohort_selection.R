@@ -185,7 +185,7 @@ cohort_selection <- function(
                 create_conection("tags"),
                 by = c("tag_id" = "id")
             ) %>% 
-            compute()
+            dplyr::compute()
     })
     
     group_members_con <- reactive({
