@@ -82,9 +82,17 @@ build_immunefeatures_correlation_matrix <- function(df, method = "spearman") {
             method = method,
             use = "pairwise.complete.obs")) %>%
         tidyr::spread(key = "GROUP", value = "COR", fill = NA) %>%
-        dplyr::mutate(VARIABLE = purrr::map(VARIABLE, get_variable_display_name)) %>%
+        dplyr::left_join(
+            dplyr::select(
+              panimmune_data$feature_df, 
+              FeatureMatrixLabelTSV, 
+              `Variable Class Order`, 
+              FriendlyLabel),
+            by = c("VARIABLE" = "FeatureMatrixLabelTSV")) %>% 
+        dplyr::arrange(dplyr::desc(`Variable Class Order`)) %>% 
+        dplyr::select(- c(`Variable Class Order`, VARIABLE)) %>% 
         as.data.frame() %>%
-        tibble::column_to_rownames("VARIABLE") %>%
+        tibble::column_to_rownames("FriendlyLabel") %>%
         as.matrix()
 }
 
