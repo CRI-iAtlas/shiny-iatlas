@@ -86,9 +86,7 @@ assert_df_has_rows <- function(df){
 # other -----------------------------------------------------------------------
 
 calculate_lm_pvalue <- function(tbl, lm_formula, term){
-    print(lm_formula)
     tbl %>% 
-        print() %>% 
         lm(formula = lm_formula, data = .) %>% 
         summary %>% 
         magrittr::use_series(coefficients) %>% 

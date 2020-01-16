@@ -121,7 +121,7 @@ create_volcano_drilldown_plot_title <- function(
     tbl <- volcano_plot_tbl %>% 
         dplyr::filter(label == label_value) %>% 
         dplyr::as_tibble() 
-    pvalue  <- round(dplyr::pull(tbl, pvalue), 4)
+    p_value  <- round(dplyr::pull(tbl, p_value), 4)
     fc      <- round(dplyr::pull(tbl, fold_change), 4)
     if(fc >= 1){
         fc_string   <- stringr::str_c(numerator, "/", denominator)
@@ -130,7 +130,7 @@ create_volcano_drilldown_plot_title <- function(
         fc_string <- stringr::str_c(denominator,  "/", numerator)
     }
     title <- stringr::str_c(
-        "Cohort:", label_value, "; P = ", pvalue, ";", fc_string, ":", fc, sep = " "
+        "Cohort:", label_value, "; P = ", p_value, ";", fc_string, ":", fc, sep = " "
     )
 }
 
