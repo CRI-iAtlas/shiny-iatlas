@@ -32,7 +32,7 @@ drivers_UI <- function(id) {
                     width = 6,
                     selectInput(
                         ns("response_variable"),
-                        "Select Response Variable",
+                        "Select or Search for Response Variable",
                         choices = get_feature_df_nested_list(),
                         selected = "Leukocyte Fraction"
                         
