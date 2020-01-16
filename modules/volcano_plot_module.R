@@ -18,52 +18,52 @@ volcano_plot_module_ui <- function(id){
     )
 }
 
-# volcano_con
-# reactive dbi_connection or tibble with the following columns:
-# label, feature, group, parent_group, n_wt, n_mut, pvalue, fold_change, 
-# log10_pvalue, log10_fold_change
-
-# violin_value_con
-# reactive dbi_connection or tibble with the following columns:
-# sample, value
-
-# violin_group_con
-# reactive dbi_connection or tibble with the following columns:
-# sample, label, status
-
 volcano_plot_module <- function(
     input, 
     output, 
     session, 
-    volcano_con,
-    violin_value_con,
-    violin_group_con,
+    volcano_tbl,
+    violin_con,
     volcano_title,
     volcano_source_name,
     fold_change_num,
     fold_change_dem,
+    response_name,
     pval_threshold = 0.05,
     fold_change_threshold = 2
 ){
-    volcano_plot_con <- reactive({
-        req(volcano_con(), pval_threshold, fold_change_threshold)
-        volcano_con() %>% 
+    volcano_plot_tbl <- reactive({
+        
+        req(volcano_tbl(), pval_threshold, fold_change_threshold)
+        volcano_tbl() %>% 
             dplyr::mutate(color = dplyr::if_else(
-                pvalue < pval_threshold & abs(fold_change) > fold_change_threshold,
+                p_value < pval_threshold & abs(fold_change) > fold_change_threshold,
                 "red",
                 "blue"
             )) %>% 
             dplyr::select(
                 x = log10_fold_change, 
-                y = log10_pvalue, 
+                y = log10_p_value,
                 label,
                 color
             )
     })
     
     output$volcano_plot <- renderPlotly({
+        
+        req(
+            volcano_plot_tbl(),
+            volcano_title,
+            volcano_source_name
+        )
+        
+        validate(need(
+            nrow(volcano_plot_tbl()) > 0,
+            "Current parameters did not result in any successful linear regression results."
+        ))
+        
         create_scatterplot(
-            dplyr::as_tibble(volcano_plot_con()),
+            volcano_plot_tbl(),
             xlab = "Log10(Fold Change)",
             ylab = "- Log10(P-value)",
             title = volcano_title,
@@ -88,28 +88,28 @@ volcano_plot_module <- function(
         label_value <- eventdata$key[[1]]
         # plot clicked on but event data stale due to parameter change
         validate(need(
-            label_value %in% dplyr::pull(violin_group_con(), label),
+            label_value %in% dplyr::pull(violin_con(), label),
             "Click a point on the above scatterplot to see a violin plot for the comparison"
         ))
+    
 
         title <- create_volcano_drilldown_plot_title(
-            volcano_con(), 
+            volcano_tbl(), 
             label_value,
             fold_change_num,
             fold_change_dem
         )
         
-        print(violin_value_con())
-        violin_plot_tbl <- violin_group_con() %>% 
+        violin_plot_tbl <- violin_con() %>% 
             dplyr::filter(label == label_value) %>% 
-            dplyr::inner_join(violin_value_con(), by = "sample") %>% 
-            dplyr::select(sample, x = status, y = value) %>% 
-            dplyr::as_tibble()
+            dplyr::select(x = status, y = response) %>% 
+            dplyr::collect()
+        
         
         create_violinplot(
             violin_plot_tbl,
             xlab = label_value,
-            ylab = "feature",
+            ylab = response_name(),
             title = title,
             fill_colors = c("blue"),
             showlegend = FALSE)

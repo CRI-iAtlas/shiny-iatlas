@@ -113,15 +113,14 @@ build_cell_proportion_scatterplot_tbl <- function(con, group_value){
 # volcano plot module ---------------------------------------------------------
 
 create_volcano_drilldown_plot_title <- function(
-    volcano_plot_con, 
+    volcano_plot_tbl, 
     label_value,
     numerator = "Wt",
     denominator = "Mut"
 ){
-    tbl <- volcano_plot_con %>% 
+    tbl <- volcano_plot_tbl %>% 
         dplyr::filter(label == label_value) %>% 
-        dplyr::as_tibble()
-    feature <- get_unique_values_from_column(tbl, "feature")
+        dplyr::as_tibble() 
     pvalue  <- round(dplyr::pull(tbl, pvalue), 4)
     fc      <- round(dplyr::pull(tbl, fold_change), 4)
     if(fc >= 1){
@@ -203,22 +202,7 @@ build_immune_feature_scatterplot_tbl <- function(tbl, clicked_feature, clicked_g
 }
 
 
-# distribution plot functions -------------------------------------------------
 
-# build_distribution_plot_tbl <- function(
-#     con, 
-#     id, 
-#     scale_method = "None"
-# ){
-#     x <- con %>% 
-#         dplyr::filter(feature_id == id) %>% 
-#         dplyr::select(x, y, label) %>% 
-#         dplyr::filter_all(dplyr::all_vars(!is.na(.))) %>% 
-#         scale_db_connection(scale_method)
-#     
-#     dplyr::show_query(x)
-#     return(x)
-# }
 
 # scale db connection functions -----------------------------------------------
 

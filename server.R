@@ -35,6 +35,7 @@ shinyServer(function(input, output, session) {
                 class_name = name.y, 
                 class_id, 
                 feature_name = display, 
+                feature_internal_name = name.x, 
                 feature_id = id,
                 method_tag = name,
                 method_tag_id,
@@ -94,6 +95,17 @@ shinyServer(function(input, output, session) {
             dplyr::compute()
     })
     
+    features_named_list <- reactive({
+        req(features_con()) 
+        features_con() %>% 
+            dplyr::select(
+                class = class_name, 
+                display = feature_name, 
+                feature = feature_id
+            ) %>% 
+            create_nested_named_list() 
+    })
+    
     cohort_cons <- callModule(
         cohort_selection,
         "cohort_selection"
@@ -106,7 +118,7 @@ shinyServer(function(input, output, session) {
     
     cohort_feature_values_con <- reactive({
         req(cohort_sample_con())
-        tbl <- 
+        con <- 
             create_conection("features_to_samples") %>% 
             dplyr::inner_join(cohort_sample_con(), by = "sample_id") %>% 
             dplyr::select(sample_id, feature_id, value, sample_name = name, group) %>% 
@@ -189,14 +201,9 @@ shinyServer(function(input, output, session) {
     callModule(
         drivers,
         "module8",
-        features_con
-        # subset_driver_results_con,
-        # subset_driver_mutations_con,
-        # subset_feature_values_long_con,
-        # subset_feature_values_wide_con,
-        # features_named_list,
-        # categories_con,
-        # subset_category_values_wide_con
+        features_con,
+        cohort_feature_values_con,
+        features_named_list
     )
 
     # subtype predictor

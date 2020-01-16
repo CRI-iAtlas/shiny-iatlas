@@ -44,17 +44,28 @@ translate_values <- function(con, values, from_col, to_col){
         dplyr::pull(to)
 }
 
-add_transformation_string_to_feature <- function(transformation, feature){
+transform_feature_string <- function(feature, transformation){
     switch(
         transformation,
         "None" = feature,
         "Log2" = stringr::str_c("Log2( ", feature, " )"),
         "Log2 + 1" = stringr::str_c("Log2( ", feature,  " + 1 )"),
         "Log10" = stringr::str_c("Log10( ",  feature,  " )"),
-        "Log10 + 1" = stringr::str_c("Log10( ", feature, " + 1 )")
-    )
+        "Log10 + 1" = stringr::str_c("Log10( ", feature, " + 1 )"),
+        "Squared" = stringr::str_c(feature, "**2"),
+        "Reciprocal" = stringr::str_c("1/", feature)
+    ) 
 }
 
+transform_feature_formula <- function(feature, transformation){
+    switch(
+        transformation,
+        "None" = feature,
+        "Squared" = stringr::str_c("I(", feature, "**2)"),
+        "Log10" = stringr::str_c("I(log10(", feature, "))"),
+        "Reciprocal" = stringr::str_c("I(1/", feature, ")")
+    )
+}
 
 # connection/tibble/dataframe checkers ----------------------------------------
 
@@ -72,3 +83,26 @@ assert_df_has_rows <- function(df){
     }
 }
 
+# other -----------------------------------------------------------------------
+
+calculate_lm_pvalue <- function(tbl, lm_formula, term){
+    print(lm_formula)
+    tbl %>% 
+        print() %>% 
+        lm(formula = lm_formula, data = .) %>% 
+        summary %>% 
+        magrittr::use_series(coefficients) %>% 
+        .[term, "Pr(>|t|)"] %>% 
+        as.double()
+}
+
+get_effect_size_from_df <- function(df, method){
+    method(unlist(df$GROUP1), unlist(df$GROUP2))
+}
+
+ratio_effect_size <- function(v1, v2){
+    mean1 <- mean(v1)
+    mean2 <- mean(v2)
+    if(any(mean1 <= 0, mean2 <= 0)) return(NA)
+    mean1 / mean2
+}

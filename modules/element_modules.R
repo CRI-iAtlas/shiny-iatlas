@@ -118,31 +118,32 @@ group_filter_element_module <- function(
 
 # used in driver module -------------------------------------------------------
 
-numeric_model_feature_element_ui <- function(id){
+numeric_model_covariate_element_ui <- function(id){
     ns <- NS(id)
     tagList(
-        uiOutput(ns("select_feature_ui")),
+        uiOutput(ns("select_covariate_ui")),
         uiOutput(ns("select_transformation_ui"))
     )
 }
 
-numeric_model_feature_element <- function(
+numeric_model_covariate_element <- function(
     input,
     output,
     session,
     reactive_values,
     module_id,
-    feature_named_list
+    covariate_tbl
 ){
     
     ns <- session$ns
     
-    output$select_feature_ui <- renderUI({
-        req(feature_named_list())
+    output$select_covariate_ui <- renderUI({
+        req(covariate_tbl())
+        choices <- create_nested_named_list(covariate_tbl())
         selectInput(
-            inputId = ns("feature_choice_id"),
-            label = "Select Feature:",
-            choices = feature_named_list()
+            inputId = ns("covariate_choice_id"),
+            label = "Select Covariate:",
+            choices = choices
         )
     })
     
@@ -154,8 +155,8 @@ numeric_model_feature_element <- function(
         )
     })
     
-    observeEvent(input$feature_choice_id, {
-        reactive_values[[module_id]]$feature_choice_id <- as.numeric(input$feature_choice_id)
+    observeEvent(input$covariate_choice_id, {
+        reactive_values[[module_id]]$covariate_choice_id <- as.numeric(input$covariate_choice_id)
     })
     
     observeEvent(input$transformation_choice, {
@@ -165,35 +166,36 @@ numeric_model_feature_element <- function(
     return(reactive_values)
 }
 
-categorical_model_feature_element_ui <- function(id){
+categorical_model_covariate_element_ui <- function(id){
     ns <- NS(id)
     tagList(
-        uiOutput(ns("select_category_ui"))
+        uiOutput(ns("select_covariate_ui"))
     )
 }
 
-categorical_model_feature_element <- function(
+categorical_model_covariate_element <- function(
     input,
     output,
     session,
     reactive_values,
     module_id,
-    categories_named_list
+    covariate_tbl
 ){
     
     ns <- session$ns
     
-    output$select_category_ui <- renderUI({
-        req(categories_named_list())
+    output$select_covariate_ui <- renderUI({
+        req(covariate_tbl())
+        choices <- create_nested_named_list(covariate_tbl())
         selectInput(
-            inputId = ns("category_choice"),
-            label = "Select Category:",
-            choices = categories_named_list()
+            inputId = ns("covariate_choice"),
+            label = "Select Covariate:",
+            choices = choices
         )
     })
     
-    observeEvent(input$category_choice, {
-        reactive_values[[module_id]]$category_choice <- input$category_choice
+    observeEvent(input$covariate_choice, {
+        reactive_values[[module_id]]$covariate_choice <- input$covariate_choice
     })
     
     return(reactive_values)

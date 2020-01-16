@@ -19,10 +19,7 @@ module_files:
   - "modules/element_modules.R"
   
 function_files:
-  - "functions/misc_functions.R"
-  - "functions/create_db2.R"
   - "functions/transform.R"
-  - "functions/drilldown.R"
   - "functions/utils.R"
   - "functions/boxplot.R"
   - "functions/heatmap.R"
@@ -36,7 +33,6 @@ function_files:
   - "functions/subtype_classifier.R"
   - "functions/tablef_fun.R"
   - "functions/imageplot.R"
-  - "functions/event_data_utils.R"
   - "database/database_functions.R"
 
 page_files:
