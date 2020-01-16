@@ -98,7 +98,7 @@ univariate_driver <- function(
         req(features_named_list())
         selectInput(
             ns("response_variable"),
-            "Select Response Variable",
+            "Select or Search for Response Variable",
             choices = features_named_list(),
             selected = 36
         )
@@ -206,7 +206,7 @@ multivariate_driver_ui <- function(id){
                     width = 3,
                     selectInput(
                         ns("group_mode"),
-                        "Select mode", 
+                        "Select or Search for Mode", 
                         choices = c("By group", "Across groups"),
                         selected = "Across groups"
                     )
@@ -251,7 +251,7 @@ multivariate_driver <- function(
         
         selectInput(
             ns("response_choice_id"),
-            "Select Response Variable",
+            "Select or Search for Response Variable",
             choices = features_named_list(),
             selected = selected_id
         )

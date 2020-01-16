@@ -86,7 +86,7 @@ immunefeatures_correlations_ui <- function(id) {
                     width = 4,
                     selectInput(
                         ns("correlation_method"),
-                        "Select Correlation Method",
+                        "Select or Search for Correlation Method",
                         choices = c(
                             "Pearson"  = "pearson",
                             "Spearman" = "spearman",
@@ -139,7 +139,7 @@ immunefeatures_correlations <- function(
         
         selectInput(
             ns("heatmap_class_choice_id"),
-            "Select Variable Class",
+            "Select or Search for Variable Class",
             selected = 6,
             choices = choices
         )
@@ -158,7 +158,7 @@ immunefeatures_correlations <- function(
         
         selectInput(
             ns("heatmap_response_choice_id"),
-            "Select Response Variable",
+            "Select or Search for Response Variable",
             choices = choices,
             selected = 36
         )

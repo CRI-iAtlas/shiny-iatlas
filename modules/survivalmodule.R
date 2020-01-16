@@ -25,7 +25,7 @@ survival_UI <- function(id) {
                         width = 8,
                         selectInput(
                             ns("suvivial_time_feature_choice"),
-                            "Survival Endpoint",
+                            "Select or Search for Survival Endpoint",
                             c("Overall Survival" = "OS Time", "Progression Free Interval" = "PFI Time"),
                             selected = "OS Time"
                         )
@@ -64,7 +64,7 @@ survival_UI <- function(id) {
                         width = 6,
                         selectInput(
                             ns("heatmap_time_feature_choice"),
-                            "Survival Endpoint",
+                            "Select or Search for Survival Endpoint",
                             c("Overall Survival" = "OS Time", "Progression Free Interval" = "PFI Time"),
                             selected = "OS Time"
                         ),
@@ -171,7 +171,7 @@ survival <- function(
         
         selectInput(
             ns("survival_class_id"),
-            "Select Variables Class (rows)",
+            "Select or Search for Variables Class",
             choices = choices,
             selected = 12
         )

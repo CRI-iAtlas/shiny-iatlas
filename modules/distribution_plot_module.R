@@ -39,7 +39,7 @@ distributions_plot_module_UI <- function(
                         width = 4,
                         selectInput(
                             ns("plot_type"),
-                            "Select Plot Type",
+                            "Select or Search for Plot Type",
                             choices = c("Violin", "Box")
                         )
                     ),
@@ -47,7 +47,7 @@ distributions_plot_module_UI <- function(
                         width = 4,
                         selectInput(
                             ns("scale_method"), 
-                            "Select variable scaling", 
+                            "Select or Search for variable scaling", 
                             selected = scale_default,
                             choices = scale_options
                         )
@@ -131,7 +131,7 @@ distributions_plot_module <- function(
         }
         selectInput(
             ns("group_choice"),
-            label = "Select Group",
+            label = "Select or Search for Group",
             choices = choices)
     })
     
@@ -149,7 +149,7 @@ distributions_plot_module <- function(
         req(variable_choice_class_column(), feature_metadata_con())
         selectInput(
             ns("variable_choice_id"),
-            label = "Select Variable",
+            label = "Select or Search for Variable",
             selected = variable_selection_default,
             choices = create_nested_named_list(
                 feature_metadata_con(),

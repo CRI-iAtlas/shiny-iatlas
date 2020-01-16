@@ -297,7 +297,7 @@ cohort_selection <- function(
         }
         selectInput(
             inputId = ns("dataset_choice"),
-            label = strong("Select Dataset"),
+            label = strong("Select or Search for Dataset"),
             choices = choices,
             selected = "TCGA"
         )
@@ -457,7 +457,7 @@ cohort_selection <- function(
         
         selectInput(
             inputId = ns("group_choice"),
-            label = strong("Select Grouping Variable"),
+            label = strong("Select or Search for Grouping Variable"),
             choices = c(available_groups()),
             selected = "Immune Subtype"
         )
@@ -475,7 +475,7 @@ cohort_selection <- function(
         req(req(input$group_choice == "Custom Numeric"))
         selectInput(
             inputId = ns("custom_numeric_feature_choice"),
-            label = "Select feature:",
+            label = "Select or Search for feature",
             choices = features_list()
         )
     })
@@ -484,7 +484,7 @@ cohort_selection <- function(
         req(req(input$group_choice == "Custom Mutation"))
         selectInput(
             inputId = ns("custom_gene_mutaton_choice"),
-            label = "Select gene:",
+            label = "Select or Search for gene",
             choices = gene_mutation_list()
         )
     })
@@ -659,7 +659,7 @@ cohort_selection <- function(
             req(tcga_subtypes_list())
             selectInput(
                 ns("mosaic_subset_choice"),
-                "Choose study subset:",
+                "Select or Search for Study Subset",
                 choices = tcga_subtypes_list()
             )
         }

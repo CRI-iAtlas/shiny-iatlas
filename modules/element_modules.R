@@ -24,7 +24,7 @@ numeric_filter_element_module <- function(
         req(feature_names_list())
         selectInput(
             inputId = ns("feature_choice"),
-            label = "Select feature:",
+            label = "Select or Search for feature",
             choices = feature_names_list()
         )
     })
@@ -86,7 +86,7 @@ group_filter_element_module <- function(
         req(group_names_list())
         selectInput(
             inputId = ns("parent_group_choice"),
-            label = "Select group:",
+            label = "Select or Search for Group",
             choices = group_names_list()
         )
     })
@@ -142,7 +142,7 @@ numeric_model_covariate_element <- function(
         choices <- create_nested_named_list(covariate_tbl())
         selectInput(
             inputId = ns("covariate_choice_id"),
-            label = "Select Covariate:",
+            label = "Select or Search for Covariate",
             choices = choices
         )
     })
@@ -150,7 +150,7 @@ numeric_model_covariate_element <- function(
     output$select_transformation_ui <- renderUI({
         selectInput(
             inputId = ns("transformation_choice"),
-            label = "Select Transformation:",
+            label = "Select or Search for Transformation",
             choices = c("None", "Squared", "Log10", "Reciprocal")
         )
     })
@@ -189,7 +189,7 @@ categorical_model_covariate_element <- function(
         choices <- create_nested_named_list(covariate_tbl())
         selectInput(
             inputId = ns("covariate_choice"),
-            label = "Select Covariate:",
+            label = "Select or Search for Covariate",
             choices = choices
         )
     })

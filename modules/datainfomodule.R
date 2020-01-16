@@ -52,7 +52,7 @@ datainfo <- function(
             c("All classes" = -1L)
         selectInput(
             ns("class_choice_id"),
-            label = "Select Class",
+            label = "Select or Search for Class",
             choices = choices,
             selected = -1
         )
