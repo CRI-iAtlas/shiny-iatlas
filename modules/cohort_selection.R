@@ -600,9 +600,10 @@ cohort_selection <- function(
             "sample_con" = sample_con, 
             "group_con" = group_con, 
             "group_name" = group_name,
-            "plot_colors" = plot_colors,
-            "dataset" = input$dataset_choice,
-            "groups" = available_groups()
+            "plot_colors" = plot_colors
+            # ,
+            # "dataset" = input$dataset_choice,
+            # "groups" = available_groups()
         )
     })
     
