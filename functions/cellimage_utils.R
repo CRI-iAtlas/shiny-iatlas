@@ -159,8 +159,10 @@ data_ranges <- function(inputdata){
 #--------- color functions -----------
 
 ## For the variable of interest, get min max possible values, color range and color value
-getVarColor <- function(voi,soi,colormap,datarange){
+getVarColor <- function(voi,soi,colormap,datarange,alpha=1.){
 
+  alpha.hex <- toupper(as.hexmode(0:255))[round(alpha*255)+1]
+  
   minvec <- datarange$minvec
   maxvec <- datarange$maxvec
   meanz <- datarange$meanz
@@ -179,8 +181,9 @@ getVarColor <- function(voi,soi,colormap,datarange){
   cind <- min(which(!(display.val-breakList)>0)) ## right turnover point
   
   allcolors <- grDevices::colorRampPalette(RColorBrewer::brewer.pal(n = 7,name=colormap))(length(breakList))
-    
-  usecolor <- allcolors[cind]
+  allcolors.with.alpha <- paste(allcolors,alpha.hex,sep = "")
+      
+  usecolor <- allcolors.with.alpha[cind]
   usecolor
 }
 
@@ -201,7 +204,8 @@ get_colored_image <- function(soi,cell_image_base,dfv){
     ioa <- image_object_labels[ind]
     datavar <- variable_annotations %>% dplyr::filter(ImageVariableID==ioa) %>% purrr::pluck("FeatureLabel")
     colormap <-   variable_annotations %>% dplyr::filter(ImageVariableID==ioa) %>% purrr::pluck("ColorScale")
-    fill_color[ind] <- getVarColor(datavar,soi,colormap,dfv_ranges)
+    alpha <-   variable_annotations %>% dplyr::filter(ImageVariableID==ioa) %>% purrr::pluck("alpha")
+    fill_color[ind] <- getVarColor(datavar,soi,colormap,dfv_ranges,alpha)
   }
   for (s in pathlabels[1:28] ){
     image_grob$children[[gTree_name]]$children[[s]]$gp$fill <- fill_color[s]

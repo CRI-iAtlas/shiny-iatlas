@@ -92,8 +92,8 @@ cellimage <- function(
     all_vals_df <- generate_value_df(group_df,group_col,cell_image_base)
     #save(group_df,all_vals_df,cell_image_base,file="look.RData")
     #cat("my choice ",input$groupselect_method,"\n")
-    soi <- input$groupselect_method
-    image_grob <- get_colored_image(soi,cell_image_base,all_vals_df)
+    subtype_selected <- input$groupselect_method
+    image_grob <- get_colored_image(subtype_selected,cell_image_base,all_vals_df)
     grid::grid.draw(image_grob)
   })
     
