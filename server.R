@@ -115,6 +115,8 @@ shinyServer(function(input, output, session) {
     cohort_group_con  <- reactive(cohort_cons()$group_con)
     cohort_group_name <- reactive(cohort_cons()$group_name)
     cohort_colors     <- reactive(cohort_cons()$plot_colors) 
+    cohort_dataset    <- reactive(cohort_cons()$dataset) 
+    cohort_groups     <- reactive(cohort_cons()$groups) 
     
     cohort_feature_values_con <- reactive({
         req(cohort_sample_con())
