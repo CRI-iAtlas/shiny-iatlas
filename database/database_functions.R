@@ -65,7 +65,7 @@ write_table_ts <- function(df, table_name) {
 }
 
 create_conection <- function(table_name) {
-    current_pool <- pool::poolCheckout(.GlobalEnv$PANIMMUNE_DB2)
+    current_pool <- pool::poolCheckout(.GlobalEnv$pool)
     result <- dplyr::tbl(current_pool, table_name)
     pool::poolReturn(current_pool)
     return(result)

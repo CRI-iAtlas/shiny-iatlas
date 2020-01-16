@@ -7,8 +7,8 @@ drivers_UI <- function(id) {
             width = 12,
             includeMarkdown("data/markdown/driver.markdown")
         ),
-        univariate_driver_ui(ns("univariate_driver")),
-        # multivariate_driver_ui(ns("multivariate_driver"))
+        # univariate_driver_ui(ns("univariate_driver")),
+        multivariate_driver_ui(ns("multivariate_driver"))
     )
 }
 

@@ -180,10 +180,7 @@ distributions_plot_module <- function(
     })
     
     varible_plot_label <- reactive({
-        add_transformation_string_to_feature(
-            input$scale_method,  
-            varible_display_name()
-        )
+        transform_feature_string(varible_display_name(), input$scale_method)
     })
     
     plot_function <- reactive({
