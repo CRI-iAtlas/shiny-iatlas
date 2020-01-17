@@ -282,6 +282,14 @@ cohort_selection <- function(
         )
     })
     
+    selected_dataset <- reactive({
+        if(is.null(input$dataset_choice)){
+            return("TCGA")
+        } else {
+            return(input$dataset_choice)
+        }
+    })
+    
     output$dataset_selection_ui <- renderUI({
         if(input$select_by_module & !is.null(input$module_choices)){
             choices <- dataset_to_module_tbl() %>% 
@@ -304,19 +312,19 @@ cohort_selection <- function(
     })
     
     available_modules <- reactive({
-        req(input$dataset_choice)
+        req(selected_dataset())
         dataset_to_module_tbl() %>% 
-            dplyr::filter(dataset == input$dataset_choice) %>% 
+            dplyr::filter(dataset == selected_dataset()) %>% 
             dplyr::pull(module)
     })
     
     output$module_availibility_string <- renderText({
-        req(input$dataset_choice, available_modules())
+        req(selected_dataset(), available_modules())
         available_modules() %>% 
             stringr::str_c(collapse = ", ") %>% 
             stringr::str_c(
                 "Modules available for dataset :", 
-                input$dataset_choice,
+                selected_dataset(),
                 "are",
                 .,
                 sep = " "
@@ -324,9 +332,9 @@ cohort_selection <- function(
     })
     
     available_groups <- reactive({
-        req(input$dataset_choice)
+        req(selected_dataset())
         dataset_to_group_tbl() %>% 
-            dplyr::filter(dataset == input$dataset_choice) %>% 
+            dplyr::filter(dataset == selected_dataset()) %>% 
             dplyr::pull(group)
     })
     
@@ -354,7 +362,7 @@ cohort_selection <- function(
         "group_filter",
         element_module = group_element_module,
         element_module_ui = group_element_module_ui,
-        remove_ui_event = reactive(input$dataset_choice)
+        remove_ui_event = reactive(selected_dataset())
     )
     
     numeric_element_module <- reactive({
@@ -375,7 +383,7 @@ cohort_selection <- function(
         "numeric_filter",
         element_module = numeric_element_module,
         element_module_ui = numeric_element_module_ui,
-        remove_ui_event = reactive(input$dataset_choice)
+        remove_ui_event = reactive(selected_dataset())
     )
     
     sample_ids <- reactive({
@@ -600,10 +608,9 @@ cohort_selection <- function(
             "sample_con" = sample_con, 
             "group_con" = group_con, 
             "group_name" = group_name,
-            "plot_colors" = plot_colors
-            # ,
-            # "dataset" = input$dataset_choice,
-            # "groups" = available_groups()
+            "plot_colors" = plot_colors,
+            "dataset" = selected_dataset(),
+            "groups" = available_groups()
         )
     })
     
