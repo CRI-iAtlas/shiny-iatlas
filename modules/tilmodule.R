@@ -59,11 +59,6 @@ tilmap <- function(
     tilmap_dist_feature_con <- reactive({
         req(tilmap_feature_con())
         tilmap_feature_con() %>%  
-            dplyr::rename(
-                DISPLAY = feature_name, 
-                INTERNAL = feature_id, 
-                CLASS = class_name
-            ) %>% 
             dplyr::compute()
     })
     

@@ -99,21 +99,23 @@ distributions_plot_module <- function(
     groups_con,
     group_display_choice,
     plot_colors,
-    variable_group_names = NULL,
     variable_selection_default = NA,
     ...
 ){
     
+    source("functions/distribution_plot_module_functions.R", local = T)
+    
     ns <- session$ns
+    
+    feature_groups <- reactive({
+        req(feature_metadata_con())
+        get_feature_group_names(feature_metadata_con())
+    })
     
     # determines if there are multiple ways to group input variables
     multiple_variable_columns <- reactive({
-        req(feature_metadata_con())
-        num_group_columns <- feature_metadata_con() %>% 
-            dplyr::select(-c(INTERNAL, DISPLAY)) %>% 
-            colnames() %>% 
-            length
-        num_group_columns > 1
+        req(feature_groups())
+        return(length(feature_groups()) > 1)
     })
     
     # This is so that the conditional panel can see output$display_group_choice
@@ -122,17 +124,11 @@ distributions_plot_module <- function(
     
     # used when feature_metadata_con has more than one grouping column
     output$group_choice_ui <- renderUI({
-        req(feature_metadata_con())
-        choices <- feature_metadata_con() %>% 
-            dplyr::select(-c(INTERNAL, DISPLAY)) %>% 
-            colnames()
-        if(!is.null(variable_group_names)){
-            names(choices) <- variable_group_names
-        }
+        req(feature_groups())
         selectInput(
             ns("group_choice"),
             label = "Select or Search for Group",
-            choices = choices)
+            choices = feature_groups())
     })
     
     # used to determine what column to use for group choices
@@ -154,8 +150,8 @@ distributions_plot_module <- function(
             choices = create_nested_named_list(
                 feature_metadata_con(),
                 names_col1 = variable_choice_class_column(),
-                names_col2 = "DISPLAY",
-                values_col = "INTERNAL"
+                names_col2 = "feature_name",
+                values_col = "feature_id"
             )
         )
     })
@@ -175,8 +171,8 @@ distributions_plot_module <- function(
     
     varible_display_name <- reactive({
         feature_metadata_con() %>% 
-            dplyr::filter(INTERNAL == local(input$variable_choice_id)) %>% 
-            dplyr::pull(DISPLAY)
+            dplyr::filter(feature_id == local(input$variable_choice_id)) %>% 
+            dplyr::pull(feature_name)
     })
     
     varible_plot_label <- reactive({

@@ -1,3 +1,5 @@
+
+# misc ------------------------------------------------------------------------
 get_unique_values_from_column <- function(con, col){
     con %>% 
         dplyr::select(col) %>% 
@@ -69,17 +71,21 @@ transform_feature_formula <- function(feature, transformation){
 
 # connection/tibble/dataframe checkers ----------------------------------------
 
-assert_df_has_columns <- function(df, columns){
-    missing_columns <- columns[!columns %in% colnames(df)]
+assert_data_has_columns <- function(data, columns){
+    missing_columns <- columns[!columns %in% colnames(data)]
     if(length(missing_columns) != 0){
-        stop("df has missing columns: ",
+        stop("data has missing columns: ",
              stringr::str_c(missing_columns, collapse = ", "))
     }
 }
 
-assert_df_has_rows <- function(df){
-    if(nrow(df) == 0){
-        stop("result df is empty")
+assert_data_has_rows <- function(data){
+    n_rows <- data %>% 
+        dplyr::tally() %>% 
+        dplyr::pull(n) %>% 
+        as.integer()
+    if(n_rows == 0L){
+        stop("data is empty")
     }
 }
 

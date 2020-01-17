@@ -102,10 +102,10 @@ iotarget <- function(
         
         io_con() %>% 
             dplyr::select(
-                INTERNAL = gene_id,
-                DISPLAY = hgnc, 
-                pathway,
-                therapy
+                feature_id = gene_id,
+                feature_name = hgnc, 
+                Pathway = pathway,
+                Therapy = therapy
             ) %>% 
             dplyr::compute()
     })
@@ -147,8 +147,7 @@ iotarget <- function(
         group_con,
         group_name,
         cohort_colors,
-        key_col = "label",
-        variable_group_names = c("Pathway", "Therapy Type")
+        key_col = "label"
     )
     
     callModule(data_table_module, "io_table", io_dt_tbl, escape = F)

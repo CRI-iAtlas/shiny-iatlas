@@ -86,8 +86,8 @@ immunomodulator <- function(
         
         im_con() %>% 
             dplyr::select(
-                INTERNAL = gene_id,
-                DISPLAY = hgnc, 
+                feature_id = gene_id,
+                feature_name = hgnc, 
                 `Gene Family` = gene_family,
                 `Super Category` = super_category,
                 `Immune Checkpoint` = immune_checkpoint,
@@ -120,12 +120,7 @@ immunomodulator <- function(
         group_con,
         group_name,
         cohort_colors,
-        key_col = "label",
-        variable_group_names = c(
-            "Gene Family", 
-            "Super Category", 
-            "Immune Checkpoint"
-        )
+        key_col = "label"
     )
     
     callModule(

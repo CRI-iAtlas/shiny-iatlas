@@ -32,7 +32,7 @@ immunefeatures <- function(
     
     distributions_feature_con <- reactive({
         features_con() %>%
-            dplyr::select(DISPLAY = feature_name, INTERNAL = feature_id, CLASS = class_name)
+            dplyr::select(feature_name, feature_id, class_name)
     })
 
     callModule(
