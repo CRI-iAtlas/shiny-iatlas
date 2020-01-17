@@ -59,7 +59,6 @@ build_immunefeatures_df <- function(
             value2_columns) %>%
         dplyr::filter(GROUP %in% group_options) %>%
         dplyr::filter(!is.na(VALUE1))
-    assert_df_has_columns(result_df, c("ID", "GROUP", "VALUE1", value2_columns))
     return(result_df)
 }
 
