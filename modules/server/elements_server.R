@@ -1,14 +1,6 @@
 # used in cohort selection ----------------------------------------------------
 
-numeric_filter_element_module_ui <- function(id){
-    ns <- NS(id)
-    tagList(
-        uiOutput(ns("select_ui")),
-        uiOutput(ns("slider_ui"))
-    )
-}
-
-numeric_filter_element_module <- function(
+numeric_filter_element_server <- function(
     input,
     output,
     session,
@@ -62,15 +54,7 @@ numeric_filter_element_module <- function(
     return(reactive_values)
 }
 
-group_filter_element_module_ui <- function(id){
-    ns <- NS(id)
-    tagList(
-        uiOutput(ns("select_ui")),
-        uiOutput(ns("checkbox_ui"))
-    )
-}
-
-group_filter_element_module <- function(
+group_filter_element_server <- function(
     input,
     output,
     session,
@@ -118,15 +102,7 @@ group_filter_element_module <- function(
 
 # used in driver module -------------------------------------------------------
 
-numeric_model_covariate_element_ui <- function(id){
-    ns <- NS(id)
-    tagList(
-        uiOutput(ns("select_covariate_ui")),
-        uiOutput(ns("select_transformation_ui"))
-    )
-}
-
-numeric_model_covariate_element <- function(
+numeric_model_covariate_element_server <- function(
     input,
     output,
     session,
@@ -166,14 +142,8 @@ numeric_model_covariate_element <- function(
     return(reactive_values)
 }
 
-categorical_model_covariate_element_ui <- function(id){
-    ns <- NS(id)
-    tagList(
-        uiOutput(ns("select_covariate_ui"))
-    )
-}
 
-categorical_model_covariate_element <- function(
+categorical_model_covariate_element_server <- function(
     input,
     output,
     session,

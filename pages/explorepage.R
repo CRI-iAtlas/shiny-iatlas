@@ -1,3 +1,10 @@
+
+module_uis <- list.files("modules/ui/", full.names = T)
+
+for(item in module_uis){
+    source(item, local = T)
+}
+
 explorepage <- dashboardPage(
     dashboardHeader(disable = TRUE),
     dashboardSidebar(
@@ -16,7 +23,7 @@ explorepage <- dashboardPage(
                      ),
                      menuSubItem(
                          "Tumor Microenvironment",
-                         tabName = "cell_content",
+                         tabName = "tumor_microenvironment",
                          icon = icon("cog")
                      ),
                      menuSubItem(
@@ -26,7 +33,7 @@ explorepage <- dashboardPage(
                      ),
                      menuSubItem(
                          "Clinical Outcomes",
-                         tabName = "survival_curves",
+                         tabName = "clinical_outcomes",
                          icon = icon("cog")
                      ),
                      menuSubItem(
@@ -36,30 +43,23 @@ explorepage <- dashboardPage(
                      ),
                      menuSubItem(
                          "IO Targets",
-                         tabName = "iotargets",
+                         tabName = "io_targets",
                          icon = icon("cog")
                      ),
-                     # menuSubItem(
-                     #   "Genomic State",
-                     #   icon = icon("chevron-circle-right")),
-                     # menuSubItem(
-                     #   "Immune Interface",
-                     #   tabName = "clonal_diversity",
-                     #   icon = icon("chevron-circle-right")),
                      menuSubItem(
                          "TIL Maps",
-                         tabName = "tilmap_features",
+                         tabName = "til_maps",
                          icon = icon("cog")
                      ),
                      menuSubItem(
                          "Driver Associations",
-                         tabName = "drivers",
+                         tabName = "driver_associations",
                          icon = icon("cog")
                      )
             ),
             menuItem("Data Description",
                      icon = icon("th-list"),
-                     tabName = "datainfo"
+                     tabName = "data_info"
             )
         )
     ),
@@ -102,7 +102,7 @@ explorepage <- dashboardPage(
                     fluidRow(
                         imgLinkBox(
                             width = 6,
-                            linkId = "link_to_cohort_selection_module",
+                            linkId = "link_to_cohort_selection",
                             title = "Cohort Selection",
                             imgSrc = "images/groupsoverview.png",
                             boxText = "Use this module to create a cohort of interest.",
@@ -110,7 +110,7 @@ explorepage <- dashboardPage(
                         ),
                         imgLinkBox(
                             width = 6,
-                            linkId = "link_to_module1",
+                            linkId = "link_to_tumor_microenvironment",
                             title = "Tumor Microenvironment",
                             imgSrc = "images/cellcontent.png",
                             boxText = "Explore the immune cell proportions in your sample groups.",
@@ -121,44 +121,26 @@ explorepage <- dashboardPage(
                         imgLinkBox(
                             width = 6,
                             title = "Immune Feature Trends",
-                            linkId = "link_to_module6",
+                            linkId = "link_to_immune_features",
                             imgSrc = "images/immunefeatures.png",
                             boxText = "This module allows you to see how immune readouts vary across your groups, and how they relate to one another.",
                             linkText = "Open Module"
                         ),
                         imgLinkBox(
                             width = 6,
-                            linkId = "link_to_module4",
+                            linkId = "link_to_clinical_outcomes",
                             title = "Clinical Outcomes",
                             imgSrc = "images/survival.png",
                             boxText = "Plot survival curves based on immune characteristics and identify variables associated with outcome.",
                             linkText = "Open Module"
                         )
-                        #   imgLinkBox(
-                        #     width = 6,
-                        #     linkId = "#",
-                        #     title = "Genomic State",
-                        #     imgSrc = "images/cell_content.png",
-                        #     boxText = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
-                        #     linkText = "Open Module"
-                        #   )
-                        # ),
-                        # fluidRow(
-                        #   imgLinkBox(
-                        #     width = 6,
-                        #     linkId = "link_to_module2",
-                        #     title = "Immune Interface",
-                        #     imgSrc = "images/cell_content.png",
-                        #     boxText = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
-                        #     linkText = "Open Module"
-                        #   ),
                         
                     ),
                     fluidRow(
                         imgLinkBox(
                             width = 6,
                             title = "Immunomodulators",
-                            linkId = "link_to_module5",
+                            linkId = "link_to_immunomodulators",
                             imgSrc = "images/immunomodulators.png",
                             boxText = "Explore the expression of genes that code for immunomodulating proteins, including checkpoint proteins.",
                             linkText = "Open Module"
@@ -166,7 +148,7 @@ explorepage <- dashboardPage(
                         imgLinkBox(
                             width = 6,
                             title = "TIL Maps",
-                            linkId = "link_to_module7",
+                            linkId = "link_to_til_maps",
                             imgSrc = "images/TILmap.png",
                             boxText = "Explore the characteristics of maps of tumor infiltrating lymphocytes obtained from analysis of H&E images.",
                             linkText = "Open Module"
@@ -176,7 +158,7 @@ explorepage <- dashboardPage(
                         imgLinkBox(
                             width = 6,
                             title = "Driver Associations",
-                            linkId = "link_to_module8",
+                            linkId = "link_to_driver_associations",
                             imgSrc = "images/drivers.png",
                             boxText = "Explore Associations of Microenvironment with Driver Mutations.",
                             linkText = "Open Module"
@@ -184,7 +166,7 @@ explorepage <- dashboardPage(
                         imgLinkBox(
                             width = 6,
                             title = "IO Targets",
-                            linkId = "link_to_module9",
+                            linkId = "link_to_io_targets",
                             imgSrc = "images/iotargets.png",
                             boxText = "Explore the expression of genes that code for immuno-oncological (IO) targets .",
                             linkText = "Open Module"
@@ -193,44 +175,40 @@ explorepage <- dashboardPage(
                 )
             ),
             tabItem(
-                tabName = "cell_content",
-                cellcontent_UI("module1")
-            ),
-            tabItem(
-                tabName = "clonal_diversity",
-                immuneinterface_UI("module2")
+                tabName = "tumor_microenvironment",
+                tumor_microenvironment_ui("tumor_microenvironment")
             ),
             tabItem(
                 tabName = "cohort_selection",
-                cohort_selection_UI("cohort_selection")
+                cohort_selection_ui("cohort_selection")
             ),
             tabItem(
-                tabName = "survival_curves",
-                survival_UI("module4")
+                tabName = "clinical_outcomes",
+                clinical_outcomes_ui("clinical_outcomes")
             ),
             tabItem(
                 tabName = "immunomodulators",
-                immunomodulator_UI("module5")
+                immunomodulators_ui("immunomodulators")
             ),
             tabItem(
                 tabName = "immune_features",
-                immunefeatures_UI("module6")
+                immune_features_ui("immune_features")
             ),
             tabItem(
-                tabName = "drivers",
-                drivers_UI("module8")
+                tabName = "driver_associations",
+                driver_associations_ui("driver_associations")
             ),
             tabItem(
-                tabName = "tilmap_features",
-                tilmap_UI("module7")
+                tabName = "til_maps",
+                til_maps_ui("til_maps")
             ),
             tabItem(
-                tabName = "iotargets",
-                iotarget_UI("module9")
+                tabName = "io_targets",
+                io_targets_ui("io_targets")
             ),
             tabItem(
-                tabName = "datainfo",
-                datainfo_UI("moduleX")
+                tabName = "data_info",
+                data_info_ui("data_info")
             )
         )
     )

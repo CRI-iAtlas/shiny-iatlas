@@ -9,15 +9,19 @@ options(shiny.maxRequestSize = 100 * 1024^2)
 # Begin Shiny Server definition.
 ################################################################################
 shinyServer(function(input, output, session) {
-  
-  observe({
-  query <- parseQueryString(session$clientData$url_search)
-    if (!is.null(query[['module']])) {
-      shinydashboard::updateTabItems(session, "explorertabs", query[['module']])
-    }
-  })
     
-    # analysis modules --------------------------------------------------------
+    observe({
+        query <- parseQueryString(session$clientData$url_search)
+        if (!is.null(query[['module']])) {
+            shinydashboard::updateTabItems(session, "explorertabs", query[['module']])
+        }
+    })
+    
+    modules <- list.files("modules/server/", full.names = T)
+    
+    for(item in modules){
+        source(item, local = T)
+    }
     
     tags_con <- reactive({
         create_conection("tags") %>% 
@@ -130,7 +134,7 @@ shinyServer(function(input, output, session) {
     })
     
     cohort_cons <- callModule(
-        cohort_selection,
+        cohort_selection_server,
         "cohort_selection"
     )
     
@@ -150,19 +154,27 @@ shinyServer(function(input, output, session) {
             dplyr::compute() 
     })
     
-    # Cell content
     callModule(
-        cellcontent,
-        "module1",
+        tumor_microenvironment_server,
+        "tumor_microenvironment",
         cohort_feature_values_con,
         features_con,
         cohort_group_con
     )
     
-    # # TILmap features
     callModule(
-        tilmap,
-        "module7",
+        immune_features_server,
+        "immune_features",
+        cohort_feature_values_con,
+        features_con,
+        cohort_group_con,
+        cohort_group_name,
+        cohort_colors
+    )
+    
+    callModule(
+        til_maps_server,
+        "til_maps",
         features_con,
         cohort_feature_values_con,
         cohort_sample_con,
@@ -171,28 +183,15 @@ shinyServer(function(input, output, session) {
         cohort_colors
     )
     
-    # Data info
     callModule(
-        datainfo,
-        "moduleX",
+        data_info_server,
+        "data_info",
         features_con
     )
-    
-    #Immune features
+
     callModule(
-        immunefeatures,
-        "module6",
-        cohort_feature_values_con,
-        features_con,
-        cohort_group_con,
-        cohort_group_name,
-        cohort_colors
-    )
-    
-    # Immunomodulators
-    callModule(
-        immunomodulator,
-        "module5",
+        immunomodulators_server,
+        "immunomodulators",
         cohort_sample_con,
         cohort_group_con,
         genes_con,
@@ -200,10 +199,9 @@ shinyServer(function(input, output, session) {
         cohort_colors
     )
 
-    # Survival curves
     callModule(
-        survival,
-        "module4",
+        clinical_outcomes_server,
+        "clinical_outcomes",
         cohort_feature_values_con,
         features_con,
         cohort_group_con,
@@ -211,10 +209,9 @@ shinyServer(function(input, output, session) {
         cohort_colors
     )
     
-    # # IO Target
     callModule(
-        iotarget,
-        "module9",
+        io_targets_server,
+        "io_targets",
         cohort_sample_con,
         cohort_group_con,
         genes_con,
@@ -222,48 +219,43 @@ shinyServer(function(input, output, session) {
         cohort_colors
     )
     
-    # Driver associations
     callModule(
-        drivers,
-        "module8",
+        driver_associations_server,
+        "driver_associations",
         features_con,
         cohort_feature_values_con,
         features_named_list
     )
 
-    # subtype predictor
     callModule(
-        subtypeclassifier, 
-        "module_subtypeclassifier")
+        immune_subtype_classifier_server, 
+        "immune_subtype_classifier")
 
-    observeEvent(input$link_to_module1, {
-        shinydashboard::updateTabItems(session, "explorertabs", "cell_content")
+    observeEvent(input$link_to_tumor_microenvironment, {
+        shinydashboard::updateTabItems(session, "explorertabs", "tumor_microenvironment")
     })
-    observeEvent(input$link_to_module2, {
-        shinydashboard::updateTabItems(session, "explorertabs", "clonal_diversity")
-    })
-    observeEvent(input$link_to_cohort_selection_module, {
+    observeEvent(input$link_to_cohort_selection, {
         shinydashboard::updateTabItems(session, "explorertabs", "cohort_selection")
     })
-    observeEvent(input$link_to_module4, {
-        shinydashboard::updateTabItems(session, "explorertabs", "survival_curves")
+    observeEvent(input$link_to_clinical_outcomes, {
+        shinydashboard::updateTabItems(session, "explorertabs", "clinical_outcomes")
     })
-    observeEvent(input$link_to_module5, {
+    observeEvent(input$link_to_immunomodulators, {
         shinydashboard::updateTabItems(session, "explorertabs", "immunomodulators")
     })
-    observeEvent(input$link_to_module6, {
+    observeEvent(input$link_to_immune_features, {
         shinydashboard::updateTabItems(session, "explorertabs", "immune_features")
     })
-    observeEvent(input$link_to_module8, {
-        shinydashboard::updateTabItems(session, "explorertabs", "drivers")
+    observeEvent(input$link_to_driver_associations, {
+        shinydashboard::updateTabItems(session, "explorertabs", "driver_associations")
     })
-    observeEvent(input$link_to_module7, {
-        shinydashboard::updateTabItems(session, "explorertabs", "tilmap_features")
+    observeEvent(input$link_to_til_maps, {
+        shinydashboard::updateTabItems(session, "explorertabs", "til_maps")
     })
-    observeEvent(input$link_to_module9, {
-      shinydashboard::updateTabItems(session, "explorertabs", "iotargets")
+    observeEvent(input$link_to_io_targets, {
+      shinydashboard::updateTabItems(session, "explorertabs", "io_targets")
     })
-    observeEvent(input$link_to_module_subtypeclassifier, {
+    observeEvent(input$link_to_immune_subtype_classifier, {
         updateNavlistPanel(session, "toolstabs", "Immune Subtype Classifier")
     })
 

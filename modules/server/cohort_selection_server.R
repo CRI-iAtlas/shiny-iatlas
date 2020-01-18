@@ -1,120 +1,4 @@
-cohort_selection_UI <- function(id) {
-    ns <- NS(id)
-    
-    tagList(
-        titleBox("iAtlas Explorer — Cohort Selection"),
-        textBox(
-            width = 12,
-            includeMarkdown("data/markdown/sample_groups.markdown")
-        ),
-        # cohort selection ----------------------------------------------------
-        sectionBox(
-            title = "Cohort Selection",
-            messageBox(
-                width = 12,
-                p("Group Selection and filtering"),
-            ),
-            # dataset selection ----
-            optionsBox(
-                width = 4,
-                checkboxInput(
-                    inputId = ns("select_by_module"),
-                    label = strong("Select By Module?"),
-                ),
-                conditionalPanel(
-                    condition = "input.select_by_module",
-                    uiOutput(ns("module_selection_ui")),
-                    ns = ns
-                ),
-                uiOutput(ns("dataset_selection_ui")),
-            ),
-            messageBox(
-                width = 12,
-                textOutput(ns("module_availibility_string"))
-            ),
-            # sample filtering ----
-            optionsBox(
-                width = 12,
-                insert_remove_element_module_ui(
-                    ns("group_filter"), 
-                    "Add group filter"
-                )
-            ),
-            optionsBox(
-                width = 12,
-                insert_remove_element_module_ui(
-                    ns("numeric_filter"), 
-                    "Add numeric filter"
-                )
-            ),
-            tableBox(
-                width = 12,
-                textOutput(ns("samples_text"))
-            ),
-            # group selection ----
-            optionsBox(
-                width = 12,
-                uiOutput(ns("select_group_ui")),
-                conditionalPanel(
-                    condition = "output.display_custom_numeric",
-                    uiOutput(ns("select_custom_numeric_group_ui")),
-                    sliderInput(
-                        inputId = ns("custom_numeric_group_number_choice"),
-                        label = "Select number of divsions",
-                        min = 2,
-                        max = 10,
-                        value = 2,
-                        step = 1
-                    ),
-                    ns = ns
-                ),
-                conditionalPanel(
-                    condition = "output.display_custom_mutation",
-                    uiOutput(ns("select_custom_mutation_group_ui")),
-                    ns = ns
-                ),
-            ),
-        ),
-        
-        # group key -----------------------------------------------------------
-        data_table_module_UI(
-            ns("sg_table"),
-            title = "Group Key",
-            message_html = p(stringr::str_c(
-                "This displays attributes and annotations of your choice of",
-                "groups.",
-                sep = " "
-            ))
-        ),
-        # group overlap -------------------------------------------------------
-        # sectionBox(
-        #     title = "Group Overlap",
-        #     messageBox(
-        #         width = 12,
-        #         includeMarkdown("data/markdown/sample_groups_overlap.markdown")
-        #     ),
-        #     fluidRow(
-        #         optionsBox(
-        #             width = 12,
-        #             uiOutput(ns("mosaic_group_select")),
-        #             uiOutput(ns("mosaic_subset_select"))
-        #         ),
-        #     ),
-        #     fluidRow(
-        #         plotBox(
-        #             width = 12,
-        #             column(
-        #                 width = 12,
-        #                 plotlyOutput(ns("mosaicPlot"), height = "600px") %>%
-        #                     shinycssloaders::withSpinner()
-        #             )
-        #         )
-        #     )
-        # )
-    )
-}
-
-cohort_selection <- function(
+cohort_selection_server <- function(
     input, 
     output, 
     session
@@ -346,42 +230,42 @@ cohort_selection <- function(
         setdiff(available_groups(), c("Custom Numeric", "Custom Mutation"))
     })
     
-    group_element_module <- reactive({
+    group_element_module_server <- reactive({
         req(filter_groups, group_members_con)
         purrr::partial(
-            group_filter_element_module,
+            group_filter_element_server,
             group_names_list = filter_groups,
             group_values_con = group_members_con
         )
     })
     
-    group_element_module_ui <- reactive(group_filter_element_module_ui)
+    group_element_module_ui <- reactive(group_filter_element_ui)
     
     group_filter_output <- callModule(
-        insert_remove_element_module,
+        insert_remove_element_server,
         "group_filter",
-        element_module = group_element_module,
+        element_module = group_element_module_server,
         element_module_ui = group_element_module_ui,
         remove_ui_event = reactive(selected_dataset())
     )
     
-    numeric_element_module <- reactive({
+    numeric_element_module_server <- reactive({
         req(features_list, feature_values_con)
         
         purrr::partial(
-            numeric_filter_element_module,
+            numeric_filter_element_server,
             feature_names_list = features_list,
             feature_values_con = feature_values_con
         )
         
     })
     
-    numeric_element_module_ui <- reactive(numeric_filter_element_module_ui)
+    numeric_element_module_ui <- reactive(numeric_filter_element_ui)
     
     numeric_filter_output <- callModule(
-        insert_remove_element_module,
+        insert_remove_element_server,
         "numeric_filter",
-        element_module = numeric_element_module,
+        element_module = numeric_element_module_server,
         element_module_ui = numeric_element_module_ui,
         remove_ui_event = reactive(selected_dataset())
     )
@@ -634,7 +518,7 @@ cohort_selection <- function(
     })
     
     callModule(
-        data_table_module, 
+        data_table_server, 
         "sg_table", 
         group_key_tbl,
         options = list(

@@ -1,32 +1,4 @@
-tilmap_UI <- function(id) {
-    
-    ns <- NS(id)
-    
-    tagList(
-        titleBox("iAtlas Explorer — TIL Maps"),
-        textBox(
-            width = 12,
-            includeMarkdown("data/markdown/tilmap.markdown")
-        ),
-        
-        distributions_plot_module_UI(
-            ns("dist"),
-            message_html = includeMarkdown("data/markdown/tilmap_dist.markdown"),
-            title_text = "TIL Map Characteristics",
-            click_text = 
-                "Click point or violin/box to filter samples in table below"
-        ),
-
-        
-        data_table_module_UI(
-            ns("til_table"),
-            title = "TIL Map Annotations",
-            message_html = includeMarkdown("data/markdown/tilmap_table.markdown")
-        )
-    )
-}
-
-tilmap <- function(
+til_maps_server <- function(
     input, 
     output, 
     session,
@@ -71,7 +43,7 @@ tilmap <- function(
     
 
     callModule(
-        distributions_plot_module,
+        distributions_plot_server,
         "dist",
         "tilmap_dist_plot",
         tilmap_dist_value_con,
@@ -100,7 +72,7 @@ tilmap <- function(
     })
 
     
-    callModule(data_table_module, "til_table", tilmap_tbl, escape = F)
+    callModule(data_table_server, "til_table", tilmap_tbl, escape = F)
     
     
     

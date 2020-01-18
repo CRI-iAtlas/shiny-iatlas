@@ -1,12 +1,4 @@
-insert_remove_element_module_ui <- function(
-    id, 
-    button_label = "Add UI element"
-){
-    ns <- NS(id)
-    actionButton(ns("add_button"), button_label)
-}
-
-insert_remove_element_module <- function(
+insert_remove_element_server <- function(
     input,
     output,
     session, 

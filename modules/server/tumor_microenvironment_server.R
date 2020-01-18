@@ -1,19 +1,4 @@
-# -----------------------------------------------------------------------------
-cellcontent_UI <- function(id) {
-    ns <- NS(id)
-    
-    tagList(
-        titleBox("iAtlas Explorer — Tumor Microenvironment"),
-        textBox(
-            width = 12,
-            p("Explore the immune cell proportions in your sample groups.")  
-        ),
-        overall_cell_proportions_module_UI(ns("ocp_module")),
-        cell_type_fractions_module_UI(ns("ctf_module"))
-    )
-}
-
-cellcontent <- function(
+tumor_microenvironment_server <- function(
     input,
     output, 
     session, 
@@ -23,7 +8,7 @@ cellcontent <- function(
 ) {
     
     callModule(
-        overall_cell_proportions_module, 
+        overall_cell_proportions_server, 
         "ocp_module",
         feature_values_con,
         features_con,
@@ -31,7 +16,7 @@ cellcontent <- function(
     )
     
     callModule(
-        cell_type_fractions_module, 
+        cell_type_fractions_server, 
         "ctf_module",
         feature_values_con,
         features_con,
@@ -40,47 +25,9 @@ cellcontent <- function(
 }
 
 # -----------------------------------------------------------------------------
-overall_cell_proportions_module_UI <- function(id){
-    
-    ns <- NS(id)
-    
-    sectionBox(
-        title = "Overall Cell Proportions",
-        messageBox(
-            width = 12,
-            includeMarkdown("data/markdown/cell_proportions1.markdown")
-        ),
-        fluidRow(
-            plotBox(
-                width = 12,
-                plotlyOutput(ns("barplot")) %>% 
-                    shinycssloaders::withSpinner(),
-                p(),
-                textOutput(ns("barplot_text"))
-            )
-        ),
-        fluidRow(
-            plotBox(
-                width = 12,
-                messageBox(
-                    width = 6,
-                    includeMarkdown("data/markdown/cell_proportions2.markdown")
-                ),
-                column(
-                    width = 6,
-                    br(),
-                    fluidRow(
-                        plotlyOutput(ns("scatterplot")) %>%
-                            shinycssloaders::withSpinner()
-                    )
-                )
-            )
-        )
-    )
-    
-}
 
-overall_cell_proportions_module  <- function(
+
+overall_cell_proportions_server  <- function(
     input, 
     output, 
     session,
@@ -175,45 +122,9 @@ overall_cell_proportions_module  <- function(
 }
 
 # -----------------------------------------------------------------------------
-cell_type_fractions_module_UI <- function(id){
-    
-    ns <- NS(id)
-    
-    sectionBox(
-        title = "Cell Type Fractions",
-        messageBox(
-            width = 12,
-            includeMarkdown("data/markdown/cell_fractions.markdown")
-        ),
-        fluidRow(
-            optionsBox(
-                width = 12,
-                selectInput(
-                    inputId = ns("fraction_group_choice"),
-                    label = "Select Cell Fraction Type",
-                    choices = c(
-                        "Immune Cell Proportion - Common Lymphoid and Myeloid Cell Derivative Class",
-                        "Immune Cell Proportion - Differentiated Lymphoid and Myeloid Cell Derivative Class",
-                        "Immune Cell Proportion - Multipotent Progenitor Cell Derivative Class",
-                        "Immune Cell Proportion - Original"
-                    ),
-                    selected = "Immune Cell Proportion - Differentiated Lymphoid and Myeloid Cell Derivative Class"
-                )
-            )
-        ),
-        fluidRow(
-            plotBox(
-                width = 12,
-                plotlyOutput(ns("barplot")) %>% 
-                    shinycssloaders::withSpinner(),
-                p(),
-                textOutput(ns("barplot_text"))
-            )
-        )
-    )
-}
 
-cell_type_fractions_module <- function(
+
+cell_type_fractions_server <- function(
     input, 
     output, 
     session,

@@ -10,7 +10,7 @@ toolspage <- fluidPage(
         imgLinkBox(
           width = 12,
           title = "Immune Subtype Classifier",
-          linkId = "link_to_module_subtypeclassifier",
+          linkId = "link_to_immune_subtype_classifier",
           imgSrc = "images/immunomodulators.png",
           boxText = "Use an ensemble model trained on all TCGA data to classify gene expression profiles from your own data into the six immune subtypes identified in Thorsson et al.",
           linkText = "Open Tool"
@@ -19,7 +19,7 @@ toolspage <- fluidPage(
     ),
     tabPanel(
       "Immune Subtype Classifier",
-      subtypeclassifier_UI("module_subtypeclassifier")
+      immune_subtype_classifier_ui("immune_subtype_classifier")
     )
   )
 )

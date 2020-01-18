@@ -18,6 +18,8 @@ footerTagList <- list(
 # Define the full user-interface, `ui`	
 ################################################################################
 
+
+
 ui <- navbarPage(
   includeCSS("www/custom.css"),
   includeCSS("www/footer.css"),

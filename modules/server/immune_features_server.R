@@ -1,25 +1,4 @@
-immunefeatures_UI <- function(id) {
-    ns <- NS(id)
-    
-    tagList(
-        titleBox("iAtlas Explorer — Immune Feature Trends"),
-        textBox(
-            width = 12,
-            p(stringr::str_c(
-                "This module allows you to see how immune readouts vary",
-                "across your groups, and how they relate to one another."
-            ))  
-        ),
-        distributions_plot_module_UI(
-            ns("dist"),
-            message_html = includeMarkdown("data/markdown/immune_features_dist.markdown"),
-        ),
-        immunefeatures_correlations_ui(ns("immunefeatures_correlations"))
-    )
-}
-
-# Server ----
-immunefeatures <- function(
+immune_features_server <- function(
     input,
     output, 
     session,
@@ -36,7 +15,7 @@ immunefeatures <- function(
     })
 
     callModule(
-        distributions_plot_module,
+        distributions_plot_server,
         "dist",
         plot_source_name           = "immunefeatures_dist_plot",
         feature_values_con         = feature_values_con,
@@ -48,10 +27,8 @@ immunefeatures <- function(
         key_col                    = "label"
     )
     
-    ### immune features correlations
-    
     callModule(
-        immunefeatures_correlations,
+        immune_features_correlations_server,
         "immunefeatures_correlations",
         feature_values_con = feature_values_con, 
         features_con = features_con, 
@@ -60,65 +37,9 @@ immunefeatures <- function(
 
 }
 
-immunefeatures_correlations_ui <- function(id) {
-    ns <- NS(id)
-    
-    tagList()
-    
-    sectionBox(
-        title = "Correlations",
-        messageBox(
-            width = 12,
-            includeMarkdown("data/markdown/immune_features_correlations.markdown")
-        ),
-        fluidRow(
-            optionsBox(
-                width = 12,
-                column(
-                    width = 8,
-                    uiOutput(ns("heatmap_class_selection_ui"))
-                ),
-                column(
-                    width = 4,
-                    uiOutput(ns("heatmap_response_selection_ui"))
-                ),
-                column(
-                    width = 4,
-                    selectInput(
-                        ns("correlation_method"),
-                        "Select or Search for Correlation Method",
-                        choices = c(
-                            "Pearson"  = "pearson",
-                            "Spearman" = "spearman",
-                            "Kendall"  = "kendall"
-                        ),
-                        selected = "spearman"
-                    )
-                )
-            )
-        ),
-        fluidRow(
-            plotBox(
-                width = 12,
-                fluidRow(
-                    plotlyOutput(ns("heatmap")) %>% 
-                        shinycssloaders::withSpinner(),
-                    p(),
-                    textOutput(ns("heatmap_group_text"))
-                )
-            )
-        ),
-        fluidRow(
-            plotBox(
-                width = 12,
-                plotlyOutput(ns("scatterPlot")) %>%
-                    shinycssloaders::withSpinner()
-            )
-        )
-    )
-}
 
-immunefeatures_correlations <- function(
+
+immune_features_correlations_server <- function(
     input,
     output, 
     session, 

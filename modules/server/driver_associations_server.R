@@ -1,19 +1,4 @@
-drivers_UI <- function(id) {
-    ns <- NS(id)
-    
-    tagList(
-        titleBox("iAtlas Explorer — Association with Driver Mutations"),
-        textBox(
-            width = 12,
-            includeMarkdown("data/markdown/driver.markdown")
-        ),
-        # univariate_driver_ui(ns("univariate_driver")),
-        multivariate_driver_ui(ns("multivariate_driver"))
-    )
-}
-
-# Server ----
-drivers <- function(
+driver_associations_server <- function(
     input, 
     output, 
     session,
@@ -24,7 +9,7 @@ drivers <- function(
     ns <- session$ns
 
     callModule(
-        univariate_driver,
+        univariate_driver_server,
         "univariate_driver",
         features_con,
         feature_values_con,
@@ -32,7 +17,7 @@ drivers <- function(
     )
     
     callModule(
-        multivariate_driver,
+        multivariate_driver_server,
         "multivariate_driver",
         features_con,
         feature_values_con,
@@ -41,48 +26,7 @@ drivers <- function(
  
 }
 
-univariate_driver_ui <- function(id){
-    
-    ns <- NS(id)
-    
-    sectionBox(
-        title = "Immune Response Association With Driver Mutations -- single variable",
-        messageBox(
-            width = 12,
-            includeMarkdown("data/markdown/driver_single.markdown")
-        ),
-        fluidRow(
-            optionsBox(
-                width = 12,
-                column(
-                    width = 4,
-                    uiOutput(ns("response_options"))
-                ),
-                column(
-                    width = 4,
-                    numericInput(
-                        ns("min_mut"),
-                        "Minimum number of mutant samples per group:",
-                        20,
-                        min = 2
-                    )
-                ),
-                column(
-                    width = 4,
-                    numericInput(
-                        ns("min_wt"),
-                        "Minimum number of wild type samples per group:",
-                        20,
-                        min = 2
-                    )
-                )
-            )
-        ),
-        volcano_plot_module_ui(ns("univariate_driver"))
-    )
-}
-
-univariate_driver <- function(
+univariate_driver_server <- function(
     input, 
     output, 
     session,
@@ -155,7 +99,7 @@ univariate_driver <- function(
     
     
     callModule(
-        volcano_plot_module,
+        volcano_plot_server,
         "univariate_driver",
         volcano_con,
         violin_value_con,
@@ -167,72 +111,7 @@ univariate_driver <- function(
     ) 
 }
 
-multivariate_driver_ui <- function(id){
-    
-    ns <- NS(id)
-    
-    sectionBox(
-        title = "Immune Response Association With Driver Mutations -- multivariate",
-        messageBox(
-            width = 12,
-            includeMarkdown("data/markdown/driver_multi.markdown")
-        ),
-        fluidRow(
-            optionsBox(
-                width = 12,
-                column(
-                    width = 3,
-                    uiOutput(ns("response_options"))
-                ),
-                column(
-                    width = 3,
-                    numericInput(
-                        ns("min_mutants"),
-                        "Minimum number of mutant samples per group:", 
-                        20, 
-                        min = 2
-                    )
-                ),
-                column(
-                    width = 3,
-                    numericInput(
-                        ns("min_wildtype"),
-                        "Minimum number of wild type samples per group:", 
-                        20, 
-                        min = 2
-                    )
-                ),
-                column(
-                    width = 3,
-                    selectInput(
-                        ns("group_mode"),
-                        "Select or Search for Mode", 
-                        choices = c("By group", "Across groups"),
-                        selected = "Across groups"
-                    )
-                ),
-            )
-        ),
-        model_selection_module_ui(ns("module1")),
-        fluidRow(
-            optionsBox(
-                width = 12,
-                column(
-                    width = 6,
-                    textOutput(ns("model_text"))
-                ),
-                column(
-                    width = 6,
-                    actionButton(ns("calculate_button"), "Calculate")
-                )
-            )
-        ),
-        volcano_plot_module_ui(ns("multivariate_driver"))
-    )
-}
-
-
-multivariate_driver <- function(
+multivariate_driver_server <- function(
     input, 
     output, 
     session,
@@ -297,7 +176,7 @@ multivariate_driver <- function(
     })
     
     module_parameters <- callModule(
-        model_selection_module, 
+        model_selection_server, 
         "module1", 
         numerical_covariate_tbl,
         categorical_covariate_tbl,
@@ -556,7 +435,7 @@ multivariate_driver <- function(
     })
     
     callModule(
-        volcano_plot_module,
+        volcano_plot_server,
         "multivariate_driver",
         volcano_tbl,
         combined_con2,

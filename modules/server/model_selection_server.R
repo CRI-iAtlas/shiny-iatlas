@@ -1,30 +1,4 @@
-
-
-
-model_selection_module_ui <- function(id){
-    ns <- NS(id)
-    fluidRow(
-        optionsBox(
-            width = 12,
-            column(
-                width = 12,
-                insert_remove_element_module_ui(
-                    ns("select_numeric_covariate"), 
-                    "Add numerical covariate"
-                )
-            ),
-            column(
-                width = 12,
-                insert_remove_element_module_ui(
-                    ns("select_categorical_covariate"), 
-                    "Add categorical covariate"
-                )
-            )
-        )
-    )
-}
-
-model_selection_module <- function(
+model_selection_server <- function(
     input,
     output,
     session,
@@ -38,7 +12,7 @@ model_selection_module <- function(
     
     numeric_covariate_module <- reactive({
         purrr::partial(
-            numeric_model_covariate_element,
+            numeric_model_covariate_element_server,
             covariate_tbl = numerical_covariate_tbl
         )
     })
@@ -46,7 +20,7 @@ model_selection_module <- function(
     numeric_covariate_module_ui <- reactive(numeric_model_covariate_element_ui)
     
     numeric_covariate_output <- callModule(
-        insert_remove_element_module,
+        insert_remove_element_server,
         "select_numeric_covariate",
         element_module = numeric_covariate_module,
         element_module_ui = numeric_covariate_module_ui
@@ -55,7 +29,7 @@ model_selection_module <- function(
     
     categorical_covariate_module <- reactive({
         purrr::partial(
-            categorical_model_covariate_element,
+            categorical_model_covariate_element_server,
             covariate_tbl = categorical_covariate_tbl
         )
     })
@@ -63,7 +37,7 @@ model_selection_module <- function(
     categorical_covariate_module_ui <- reactive(categorical_model_covariate_element_ui)
     
     categorical_covariate_output <- callModule(
-        insert_remove_element_module,
+        insert_remove_element_server,
         "select_categorical_covariate",
         element_module = categorical_covariate_module,
         element_module_ui = categorical_covariate_module_ui
