@@ -18,6 +18,7 @@ create_forestplot <- function(
         scale_x_continuous(name= xlab)+
         ylab(ylab)+
         geom_vline(xintercept=xintercept, color='black', linetype='dashed')+
+        ggtitle(title)+
         theme_bw() 
     
     if (!is.null(facet)) {
