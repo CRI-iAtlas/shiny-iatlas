@@ -268,8 +268,8 @@ create_plotly_label <- function(
             tidyr::spread(value_name, value) %>%
             tidyr::unite(label, label, value_label, sep = "</br></br>")
     )
-    assert_df_has_columns(result_df, c("label", name_column, group_column, value_columns))
-    assert_df_has_rows(result_df)
+    assert_data_has_columns(result_df, c("label", name_column, group_column, value_columns))
+    assert_data_has_rows(result_df)
     return(result_df)
     
 }
