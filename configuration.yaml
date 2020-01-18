@@ -21,7 +21,3 @@ page_files:
   - "pages/toolspage.R"
   - "pages/docspage.R"
   - "pages/resourcespage.R"
-
-libraries:
-  - "shinydashboard"
-  - "plotly"
