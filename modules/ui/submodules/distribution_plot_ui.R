@@ -1,7 +1,7 @@
 distributions_plot_ui <- function(
     id, 
     title_text = "Distributions",
-    message_html = p(stringr::str_c(
+    message_html = shiny::p(stringr::str_c(
         "Select variable to its to see its distribution over sample groups.",
         "Plots are available as violin plots, and box plots with full data",
         "points superimposed."
@@ -20,41 +20,44 @@ distributions_plot_ui <- function(
     
     ns <- NS(id)
     
-    sectionBox(
+    .GlobalEnv$sectionBox(
         title = title_text,
-        messageBox(width = 12, message_html),
-        fluidRow(
-            optionsBox(
+        .GlobalEnv$messageBox(width = 12, message_html),
+        shiny::fluidRow(
+            .GlobalEnv$optionsBox(
                 width = 12,
-                conditionalPanel(
+                shiny::conditionalPanel(
                     condition =  "output.display_group_choice",
-                    column(width = 4,uiOutput(ns("group_choice_ui"))),
+                    shiny::column(
+                        width = 4, 
+                        shiny::uiOutput(ns("group_choice_ui"))
+                    ),
                     ns = ns
                 ),
-                column(
+                shiny::column(
                     width = 4,
-                    uiOutput(ns("variable_choice_ui"))
+                    shiny::uiOutput(ns("variable_choice_ui"))
                 ),
-                column(
+                shiny::column(
                     width = 4,
-                    selectInput(
+                    shiny::selectInput(
                         ns("plot_type"),
                         "Select or Search for Plot Type",
                         choices = c("Violin", "Box")
                     )
                 ),
-                column(
+                shiny::column(
                     width = 4,
-                    selectInput(
+                    shiny::selectInput(
                         ns("scale_method"), 
                         "Select or Search for variable scaling", 
                         selected = scale_default,
                         choices = scale_options
                     )
                 ),
-                column(
+                shiny::column(
                     width = 4,
-                    checkboxInput(
+                    shiny::checkboxInput(
                         ns("see_drilldown"), 
                         "Plot clicked group?", 
                         plot_clicked_group_default
@@ -62,24 +65,26 @@ distributions_plot_ui <- function(
                 )
             )
         ),
-        fluidRow(
-            plotBox(
+        shiny::fluidRow(
+            .GlobalEnv$plotBox(
                 width = 12,
                 plotly::plotlyOutput(ns("plot")) %>%
                     shinycssloaders::withSpinner(),
-                p(),
-                textOutput(ns("plot_text")),
-                h4(click_text)
+                shiny::p(),
+                shiny::textOutput(ns("plot_text")),
+                shiny::h4(click_text)
             )
         ),
-        downloadButton(ns('download_data'), 'Download'),
-        conditionalPanel(
+        shiny::downloadButton(ns('download_data'), 'Download'),
+        shiny::conditionalPanel(
             condition =  "input.see_drilldown",
             ns = ns,
-            fluidRow(
-                plotBox(
+            shiny::fluidRow(
+                .GlobalEnv$plotBox(
                     width = 12,
-                    plotly::plotlyOutput(ns("drilldown_plot")) %>% 
+                    "drilldown_plot" %>% 
+                        ns() %>% 
+                        plotly::plotlyOutput() %>% 
                         shinycssloaders::withSpinner()
                 )
             )

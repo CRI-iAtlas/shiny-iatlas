@@ -8,12 +8,16 @@ options(shiny.maxRequestSize = 100 * 1024^2)
 ################################################################################
 # Begin Shiny Server definition.
 ################################################################################
-shinyServer(function(input, output, session) {
+shiny::shinyServer(function(input, output, session) {
     
-    observe({
-        query <- parseQueryString(session$clientData$url_search)
+    shiny::observe({
+        query <- shiny::parseQueryString(session$clientData$url_search)
         if (!is.null(query[['module']])) {
-            shinydashboard::updateTabItems(session, "explorertabs", query[['module']])
+            shinydashboard::updateTabItems(
+                session, 
+                "explorertabs", 
+                query[['module']]
+            )
         }
     })
     
@@ -28,7 +32,7 @@ shinyServer(function(input, output, session) {
     source("modules/server/analysis_modules/til_maps_server.R", local = T)
     source("modules/server/analysis_modules/tumor_microenvironment_server.R", local = T)
     
-    tags_con <- reactive({
+    tags_con <- shiny::reactive({
         create_connection("tags") %>% 
             dplyr::select(
                 parent_group_id = id, 
@@ -52,7 +56,7 @@ shinyServer(function(input, output, session) {
             dplyr::compute()
     })
     
-    features_con <- reactive({
+    features_con <- shiny::reactive({
         con <- 
             dplyr::left_join(
                 create_connection("features"),
@@ -77,7 +81,7 @@ shinyServer(function(input, output, session) {
             dplyr::compute() 
     })
     
-    genes_con <- reactive({
+    genes_con <- shiny::reactive({
         create_connection("genes") %>% 
             dplyr::left_join(
                 create_connection("gene_families"), 
@@ -127,8 +131,8 @@ shinyServer(function(input, output, session) {
             dplyr::compute()
     })
     
-    features_named_list <- reactive({
-        req(features_con()) 
+    features_named_list <- shiny::reactive({
+        shiny::req(features_con()) 
         features_con() %>% 
             dplyr::select(
                 class = class_name, 
@@ -138,20 +142,20 @@ shinyServer(function(input, output, session) {
             create_nested_named_list() 
     })
     
-    cohort_cons <- callModule(
+    cohort_cons <- shiny::callModule(
         cohort_selection_server,
         "cohort_selection"
     )
     
-    cohort_sample_con <- reactive(cohort_cons()$sample_con) 
-    cohort_group_con  <- reactive(cohort_cons()$group_con)
-    cohort_group_name <- reactive(cohort_cons()$group_name)
-    cohort_colors     <- reactive(cohort_cons()$plot_colors) 
-    cohort_dataset    <- reactive(cohort_cons()$dataset) 
-    cohort_groups     <- reactive(cohort_cons()$groups) 
+    cohort_sample_con <- shiny::reactive(cohort_cons()$sample_con) 
+    cohort_group_con  <- shiny::reactive(cohort_cons()$group_con)
+    cohort_group_name <- shiny::reactive(cohort_cons()$group_name)
+    cohort_colors     <- shiny::reactive(cohort_cons()$plot_colors) 
+    cohort_dataset    <- shiny::reactive(cohort_cons()$dataset) 
+    cohort_groups     <- shiny::reactive(cohort_cons()$groups) 
     
-    cohort_feature_values_con <- reactive({
-        req(cohort_sample_con())
+    cohort_feature_values_con <- shiny::reactive({
+        shiny::req(cohort_sample_con())
         con <- 
             create_connection("features_to_samples") %>% 
             dplyr::inner_join(cohort_sample_con(), by = "sample_id") %>% 
@@ -159,7 +163,7 @@ shinyServer(function(input, output, session) {
             dplyr::compute() 
     })
     
-    callModule(
+    shiny::callModule(
         tumor_microenvironment_server,
         "tumor_microenvironment",
         cohort_feature_values_con,
@@ -167,7 +171,7 @@ shinyServer(function(input, output, session) {
         cohort_group_con
     )
     
-    callModule(
+    shiny::callModule(
         immune_features_server,
         "immune_features",
         cohort_feature_values_con,
@@ -177,7 +181,7 @@ shinyServer(function(input, output, session) {
         cohort_colors
     )
     
-    callModule(
+    shiny::callModule(
         til_maps_server,
         "til_maps",
         features_con,
@@ -188,13 +192,13 @@ shinyServer(function(input, output, session) {
         cohort_colors
     )
     
-    callModule(
+    shiny::callModule(
         data_info_server,
         "data_info",
         features_con
     )
 
-    callModule(
+    shiny::callModule(
         immunomodulators_server,
         "immunomodulators",
         cohort_sample_con,
@@ -204,7 +208,7 @@ shinyServer(function(input, output, session) {
         cohort_colors
     )
 
-    callModule(
+    shiny::callModule(
         clinical_outcomes_server,
         "clinical_outcomes",
         cohort_feature_values_con,
@@ -214,7 +218,7 @@ shinyServer(function(input, output, session) {
         cohort_colors
     )
     
-    callModule(
+    shiny::callModule(
         io_targets_server,
         "io_targets",
         cohort_sample_con,
@@ -224,7 +228,7 @@ shinyServer(function(input, output, session) {
         cohort_colors
     )
     
-    callModule(
+    shiny::callModule(
         driver_associations_server,
         "driver_associations",
         features_con,
@@ -232,35 +236,43 @@ shinyServer(function(input, output, session) {
         features_named_list
     )
 
-    callModule(
+    shiny::callModule(
         immune_subtype_classifier_server, 
         "immune_subtype_classifier")
 
-    observeEvent(input$link_to_tumor_microenvironment, {
+    shiny::observeEvent(input$link_to_tumor_microenvironment, {
         shinydashboard::updateTabItems(session, "explorertabs", "tumor_microenvironment")
     })
-    observeEvent(input$link_to_cohort_selection, {
+    
+    shiny::observeEvent(input$link_to_cohort_selection, {
         shinydashboard::updateTabItems(session, "explorertabs", "cohort_selection")
     })
-    observeEvent(input$link_to_clinical_outcomes, {
+    
+    shiny::observeEvent(input$link_to_clinical_outcomes, {
         shinydashboard::updateTabItems(session, "explorertabs", "clinical_outcomes")
     })
-    observeEvent(input$link_to_immunomodulators, {
+    
+    shiny::observeEvent(input$link_to_immunomodulators, {
         shinydashboard::updateTabItems(session, "explorertabs", "immunomodulators")
     })
-    observeEvent(input$link_to_immune_features, {
+    
+    shiny::observeEvent(input$link_to_immune_features, {
         shinydashboard::updateTabItems(session, "explorertabs", "immune_features")
     })
-    observeEvent(input$link_to_driver_associations, {
+    
+    shiny::observeEvent(input$link_to_driver_associations, {
         shinydashboard::updateTabItems(session, "explorertabs", "driver_associations")
     })
-    observeEvent(input$link_to_til_maps, {
+    
+    shiny::observeEvent(input$link_to_til_maps, {
         shinydashboard::updateTabItems(session, "explorertabs", "til_maps")
     })
-    observeEvent(input$link_to_io_targets, {
+    
+    shiny::observeEvent(input$link_to_io_targets, {
       shinydashboard::updateTabItems(session, "explorertabs", "io_targets")
     })
-    observeEvent(input$link_to_immune_subtype_classifier, {
+    
+    shiny::observeEvent(input$link_to_immune_subtype_classifier, {
         updateNavlistPanel(session, "toolstabs", "Immune Subtype Classifier")
     })
 
