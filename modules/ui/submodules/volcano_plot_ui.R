@@ -1,17 +1,21 @@
 volcano_plot_ui <- function(id){
-    ns <- NS(id)
-    tagList(
+    ns <- shiny::NS(id)
+    shiny::tagList(
         fluidRow(
-            plotBox(
+            .GlobalEnv$plotBox(
                 width = 12,
-                plotly::plotlyOutput(ns("volcano_plot")) %>% 
+                "volcano_plot" %>% 
+                    ns() %>% 
+                    plotly::plotlyOutput() %>% 
                     shinycssloaders::withSpinner()
             )
         ),
-        fluidRow(
-            plotBox(
+        shiny::fluidRow(
+            .GlobalEnv$plotBox(
                 width = 12,
-                plotly::plotlyOutput(ns("violin_plot")) %>%
+                "violin_plot" %>% 
+                    ns() %>% 
+                    plotly::plotlyOutput() %>%
                     shinycssloaders::withSpinner()
             )
         )

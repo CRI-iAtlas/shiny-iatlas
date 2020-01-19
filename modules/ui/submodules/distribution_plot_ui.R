@@ -18,7 +18,7 @@ distributions_plot_ui <- function(
     plot_clicked_group_default = F
 ){
     
-    ns <- NS(id)
+    ns <- shiny::NS(id)
     
     .GlobalEnv$sectionBox(
         title = title_text,

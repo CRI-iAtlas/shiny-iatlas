@@ -4,15 +4,15 @@ data_table_ui <- function(
     message_html = ""
 ){
     
-    ns <- NS(id)
+    ns <- shiny::NS(id)
     
     sectionBox(
         title = title,
-        messageBox(width = 12, message_html),
-        fluidRow(
-            tableBox(
+        .GlobalEnv$messageBox(width = 12, message_html),
+        shiny::fluidRow(
+            .GlobalEnv$tableBox(
                 width = 12,
-                div(style = "overflow-x: scroll",
+                shiny::div(style = "overflow-x: scroll",
                     DT::dataTableOutput(ns("data_table_module")) %>%
                         shinycssloaders::withSpinner()
                 )

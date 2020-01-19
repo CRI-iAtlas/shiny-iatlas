@@ -1,15 +1,15 @@
 io_targets_ui <- function(id) {
     
-    ns <- NS(id)
+    ns <- shiny::NS(id)
     
     source("modules/ui/submodules/data_table_ui.R", local = T)
     source("modules/ui/submodules/distribution_plot_ui.R", local = T)
     
-    tagList(
-        titleBox("iAtlas Explorer — IO Targets"),
-        textBox(
+    shiny::tagList(
+        .GlobalEnv$titleBox("iAtlas Explorer — IO Targets"),
+        .GlobalEnv$textBox(
             width = 12,
-            includeMarkdown("data/markdown/io_target.markdown")
+            shiny::includeMarkdown("data/markdown/io_target.markdown")
         ),
         
         distributions_plot_ui(

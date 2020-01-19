@@ -1,11 +1,11 @@
 driver_associations_ui <- function(id) {
-    ns <- NS(id)
+    ns <- shiny::NS(id)
     
-    tagList(
-        titleBox("iAtlas Explorer — Association with Driver Mutations"),
-        textBox(
+    shiny::tagList(
+        .GlobalEnv$titleBox("iAtlas Explorer — Association with Driver Mutations"),
+        .GlobalEnv$textBox(
             width = 12,
-            includeMarkdown("data/markdown/driver.markdown")
+            shiny::includeMarkdown("data/markdown/driver.markdown")
         ),
         # univariate_driver_ui(ns("univariate_driver")),
         multivariate_driver_ui(ns("multivariate_driver"))
@@ -14,24 +14,24 @@ driver_associations_ui <- function(id) {
 
 univariate_driver_ui <- function(id){
     
-    ns <- NS(id)
+    ns <- shiny::NS(id)
     
     source("modules/ui/submodules/volcano_plot_ui.R", local = T)
     
-    sectionBox(
+    .GlobalEnv$sectionBox(
         title = "Immune Response Association With Driver Mutations -- single variable",
-        messageBox(
+        .GlobalEnv$messageBox(
             width = 12,
-            includeMarkdown("data/markdown/driver_single.markdown")
+            shiny::includeMarkdown("data/markdown/driver_single.markdown")
         ),
-        fluidRow(
-            optionsBox(
+        shiny::fluidRow(
+            .GlobalEnv$optionsBox(
                 width = 12,
-                column(
+                shiny::column(
                     width = 4,
                     uiOutput(ns("response_options"))
                 ),
-                column(
+                shiny::column(
                     width = 4,
                     numericInput(
                         ns("min_mut"),
@@ -40,7 +40,7 @@ univariate_driver_ui <- function(id){
                         min = 2
                     )
                 ),
-                column(
+                shiny::column(
                     width = 4,
                     numericInput(
                         ns("min_wt"),
@@ -57,25 +57,25 @@ univariate_driver_ui <- function(id){
 
 multivariate_driver_ui <- function(id){
     
-    ns <- NS(id)
+    ns <- shiny::NS(id)
     
     source("modules/ui/submodules/volcano_plot_ui.R", local = T)
     source("modules/ui/submodules/model_selection_ui.R", local = T)
     
-    sectionBox(
+    .GlobalEnv$sectionBox(
         title = "Immune Response Association With Driver Mutations -- multivariate",
-        messageBox(
+        .GlobalEnv$messageBox(
             width = 12,
-            includeMarkdown("data/markdown/driver_multi.markdown")
+            shiny::includeMarkdown("data/markdown/driver_multi.markdown")
         ),
-        fluidRow(
-            optionsBox(
+        shiny::fluidRow(
+            .GlobalEnv$optionsBox(
                 width = 12,
-                column(
+                shiny::column(
                     width = 3,
                     uiOutput(ns("response_options"))
                 ),
-                column(
+                shiny::column(
                     width = 3,
                     numericInput(
                         ns("min_mutants"),
@@ -84,7 +84,7 @@ multivariate_driver_ui <- function(id){
                         min = 2
                     )
                 ),
-                column(
+                shiny::column(
                     width = 3,
                     numericInput(
                         ns("min_wildtype"),
@@ -93,9 +93,9 @@ multivariate_driver_ui <- function(id){
                         min = 2
                     )
                 ),
-                column(
+                shiny::column(
                     width = 3,
-                    selectInput(
+                    shiny::selectInput(
                         ns("group_mode"),
                         "Select or Search for Mode", 
                         choices = c("By group", "Across groups"),
@@ -105,16 +105,16 @@ multivariate_driver_ui <- function(id){
             )
         ),
         model_selection_ui(ns("module1")),
-        fluidRow(
-            optionsBox(
+        shiny::fluidRow(
+            .GlobalEnv$optionsBox(
                 width = 12,
-                column(
+                shiny::column(
                     width = 6,
-                    textOutput(ns("model_text"))
+                    shiny::textOutput(ns("model_text"))
                 ),
-                column(
+                shiny::column(
                     width = 6,
-                    actionButton(ns("calculate_button"), "Calculate")
+                    shiny::actionButton(ns("calculate_button"), "Calculate")
                 )
             )
         ),

@@ -1,11 +1,11 @@
 tumor_microenvironment_ui <- function(id) {
-    ns <- NS(id)
+    ns <- shiny::NS(id)
     
-    tagList(
-        titleBox("iAtlas Explorer — Tumor Microenvironment"),
-        textBox(
+    shiny::tagList(
+        .GlobalEnv$titleBox("iAtlas Explorer — Tumor Microenvironment"),
+        .GlobalEnv$textBox(
             width = 12,
-            p("Explore the immune cell proportions in your sample groups.")  
+            shiny::p("Explore the immune cell proportions in your sample groups.")  
         ),
         overall_cell_proportions_module_ui(ns("ocp_module")),
         cell_type_fractions_module_ui(ns("ctf_module"))
@@ -14,34 +14,33 @@ tumor_microenvironment_ui <- function(id) {
 
 overall_cell_proportions_module_ui <- function(id){
     
-    ns <- NS(id)
+    ns <- shiny::NS(id)
     
-    sectionBox(
+    .GlobalEnv$sectionBox(
         title = "Overall Cell Proportions",
-        messageBox(
+        .GlobalEnv$messageBox(
             width = 12,
-            includeMarkdown("data/markdown/cell_proportions1.markdown")
+            shiny::includeMarkdown("data/markdown/cell_proportions1.markdown")
         ),
-        fluidRow(
-            plotBox(
+        shiny::fluidRow(
+            .GlobalEnv$plotBox(
                 width = 12,
                 plotly::plotlyOutput(ns("barplot")) %>% 
                     shinycssloaders::withSpinner(),
-                p(),
-                textOutput(ns("barplot_text"))
+                shiny::textOutput(ns("barplot_text"))
             )
         ),
-        fluidRow(
-            plotBox(
+        shiny::fluidRow(
+            .GlobalEnv$plotBox(
                 width = 12,
-                messageBox(
+                .GlobalEnv$messageBox(
                     width = 6,
-                    includeMarkdown("data/markdown/cell_proportions2.markdown")
+                    shiny::includeMarkdown("data/markdown/cell_proportions2.markdown")
                 ),
                 column(
                     width = 6,
-                    br(),
-                    fluidRow(
+                    shiny::br(),
+                    shiny::fluidRow(
                         plotly::plotlyOutput(ns("scatterplot")) %>%
                             shinycssloaders::withSpinner()
                     )
@@ -55,14 +54,14 @@ cell_type_fractions_module_ui <- function(id){
     
     ns <- NS(id)
     
-    sectionBox(
+    .GlobalEnv$sectionBox(
         title = "Cell Type Fractions",
-        messageBox(
+        .GlobalEnv$messageBox(
             width = 12,
             includeMarkdown("data/markdown/cell_fractions.markdown")
         ),
         fluidRow(
-            optionsBox(
+            .GlobalEnv$optionsBox(
                 width = 12,
                 selectInput(
                     inputId = ns("fraction_group_choice"),
@@ -78,7 +77,7 @@ cell_type_fractions_module_ui <- function(id){
             )
         ),
         fluidRow(
-            plotBox(
+            .GlobalEnv$plotBox(
                 width = 12,
                 plotly::plotlyOutput(ns("barplot")) %>% 
                     shinycssloaders::withSpinner(),

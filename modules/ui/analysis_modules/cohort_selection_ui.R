@@ -1,6 +1,6 @@
 cohort_selection_ui <- function(id) {
     
-    ns <- NS(id)
+    ns <- shiny::NS(id)
     
     source("modules/ui/submodules/data_table_ui.R", local = T)
     source("modules/ui/submodules/insert_remove_element_ui.R", local = T)
