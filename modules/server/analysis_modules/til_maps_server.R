@@ -40,7 +40,7 @@ til_maps_server <- function(
     tilmap_dist_value_con <- reactive({
         req(tilmap_con())
         tilmap_con() %>% 
-            dplyr::select(feature_id, sample_id, value) %>% 
+            dplyr::select(feature_id, sample_id, value, group) %>% 
             dplyr::compute()
     })
     
@@ -48,14 +48,13 @@ til_maps_server <- function(
     callModule(
         distributions_plot_server,
         "dist",
-        "tilmap_dist_plot",
-        tilmap_dist_value_con,
-        tilmap_dist_feature_con,
-        sample_con,
-        groups_con,
-        group_name,
-        cohort_colors,
-        key_col = "label"
+        plot_source_name           = "tilmap_dist_plot",
+        feature_values_con         = tilmap_dist_value_con,
+        feature_metadata_con       = tilmap_dist_feature_con,
+        groups_con                 = groups_con,
+        group_display_choice       = group_name,
+        plot_colors                = cohort_colors,
+        key_col                    = "label"
     )
     
     tilmap_tbl <- reactive({
@@ -63,9 +62,10 @@ til_maps_server <- function(
         
         tilmap_con() %>% 
             dplyr::mutate(value = round(value, digits = 1)) %>%
+            print() %>% 
             dplyr::select(
                 # Link = link,
-                Sample = name,
+                Sample = sample_name,
                 `Selected Group` = group,
                 feature_name,
                 value

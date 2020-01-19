@@ -14,7 +14,7 @@ volcano_plot_server <- function(
 ){
     volcano_plot_tbl <- reactive({
         
-        req(volcano_tbl(), pval_threshold, fold_change_threshold)
+        shiny::req(volcano_tbl(), pval_threshold, fold_change_threshold)
         volcano_tbl() %>% 
             dplyr::mutate(color = dplyr::if_else(
                 p_value < pval_threshold & abs(fold_change) > fold_change_threshold,
@@ -31,13 +31,13 @@ volcano_plot_server <- function(
     
     output$volcano_plot <- renderPlotly({
         
-        req(
+        shiny::req(
             volcano_plot_tbl(),
             volcano_title,
             volcano_source_name
         )
         
-        validate(need(
+        shiny::validate(shiny::need(
             nrow(volcano_plot_tbl()) > 0,
             "Current parameters did not result in any successful linear regression results."
         ))
@@ -57,17 +57,17 @@ volcano_plot_server <- function(
     
     output$violin_plot <- renderPlotly({
         
-        eventdata <- event_data("plotly_click", source = volcano_source_name)
+        eventdata <- plotly::event_data("plotly_click", source = volcano_source_name)
 
         # plot not clicked on yet
-        validate(need(
+        shiny::validate(shiny::need(
             !is.null(eventdata),
             "Click a point on the above scatterplot to see a violin plot for the comparison"
         ))
         
         label_value <- eventdata$key[[1]]
         # plot clicked on but event data stale due to parameter change
-        validate(need(
+        shiny::validate(shiny::need(
             label_value %in% dplyr::pull(violin_con(), label),
             "Click a point on the above scatterplot to see a violin plot for the comparison"
         ))

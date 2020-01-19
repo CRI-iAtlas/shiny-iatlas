@@ -23,7 +23,7 @@ distributions_plot_server <- function(
     
     # determines if there are multiple ways to group input variables
     multiple_variable_columns <- reactive({
-        req(feature_groups())
+        shiny::req(feature_groups())
         return(length(feature_groups()) > 1)
     })
     
@@ -33,7 +33,7 @@ distributions_plot_server <- function(
     
     # used when feature_metadata_con has more than one grouping column
     output$group_choice_ui <- renderUI({
-        req(feature_groups())
+        shiny::req(feature_groups())
         selectInput(
             ns("group_choice"),
             label = "Select or Search for Group",
@@ -51,22 +51,23 @@ distributions_plot_server <- function(
     })
     
     output$variable_choice_ui <- renderUI({
-        req(variable_choice_class_column(), feature_metadata_con())
+        shiny::req(variable_choice_class_column(), feature_metadata_con())
+        choices <- create_nested_named_list(
+            feature_metadata_con(),
+            names_col1 = variable_choice_class_column(),
+            names_col2 = "feature_name",
+            values_col = "feature_id"
+        )
         selectInput(
             ns("variable_choice_id"),
             label = "Select or Search for Variable",
             selected = variable_selection_default,
-            choices = create_nested_named_list(
-                feature_metadata_con(),
-                names_col1 = variable_choice_class_column(),
-                names_col2 = "feature_name",
-                values_col = "feature_id"
-            )
+            choices = choices
         )
     })
     
     distribution_plot_con <- reactive({
-        req(
+        shiny::req(
             feature_values_con(),
             input$variable_choice_id,
             input$scale_method
@@ -108,9 +109,9 @@ distributions_plot_server <- function(
     })
     
     output$plot_text <- renderText({
-        req(groups_con)
-        eventdata <- event_data("plotly_click", source = plot_source_name)
-        validate(need(eventdata, "Click above plot"))
+        shiny::req(groups_con)
+        eventdata <- plotly::event_data("plotly_click", source = plot_source_name)
+        shiny::validate(shiny::need(eventdata, "Click above plot"))
         
         groups_con() %>% 
             dplyr::filter(group == local(unique(dplyr::pull(eventdata, "x")))) %>% 
@@ -126,8 +127,11 @@ distributions_plot_server <- function(
     
     output$drilldown_plot <- renderPlotly({
         
-        eventdata <- event_data("plotly_click", source = plot_source_name)
-        validate(need(!is.null(eventdata), "Click plot above"))
+        eventdata <- plotly::event_data(
+            "plotly_click", 
+            source = plot_source_name
+        )
+        shiny::validate(shiny::need(!is.null(eventdata), "Click plot above"))
         clicked_group <- eventdata$x[[1]]
         
         
@@ -135,7 +139,9 @@ distributions_plot_server <- function(
             dplyr::pull(x) %>% 
             unique
         
-        validate(need(clicked_group %in% current_groups, "Click plot above"))
+        shiny::validate(
+            shiny::need(clicked_group %in% current_groups, "Click plot above")
+        )
         
         distribution_plot_con() %>% 
             dplyr::filter(x == clicked_group) %>% 
