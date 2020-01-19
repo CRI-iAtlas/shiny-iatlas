@@ -11,9 +11,9 @@ clinical_outcomes_server <- function(
     ns <- session$ns
     
     # survival plot ----
-    survival_tbl <- reactive({
+    survival_tbl <- shiny::reactive({
 
-        req(
+        shiny::req(
             features_con(),
             feature_values_con(),
             input$suvivial_time_feature_choice
@@ -26,7 +26,7 @@ clinical_outcomes_server <- function(
         ) 
     })
     
-    output$survival_plot <- renderPlot({
+    output$survival_plot <- shiny::renderPlot({
         
         shiny::req(
             survival_tbl(),
@@ -68,17 +68,17 @@ clinical_outcomes_server <- function(
     
     # heatmap plot ----
     
-    output$survival_class_opts <- renderUI({
+    output$survival_class_opts <- shiny::renderUI({
         
         
-        req(features_con())
+        shiny::req(features_con())
         choices <- features_con() %>% 
             dplyr::select(class_name, class_id) %>% 
             dplyr::distinct() %>% 
             dplyr::collect() %>% 
             tibble::deframe() 
         
-        selectInput(
+        shiny::selectInput(
             ns("survival_class_id"),
             "Select or Search for Variables Class",
             choices = choices,
@@ -86,15 +86,15 @@ clinical_outcomes_server <- function(
         )
     })
     
-    heatmap_time_feature_id <- reactive({
-        req(input$heatmap_time_feature_choice, features_con())
+    heatmap_time_feature_id <- shiny::reactive({
+        shiny::req(input$heatmap_time_feature_choice, features_con())
         features_con() %>% 
             dplyr::filter(feature_name == local(input$heatmap_time_feature_choice)) %>% 
             dplyr::pull(feature_id)
     })
     
-    heatmap_status_feature_id <- reactive({
-        req(input$heatmap_time_feature_choice, features_con())
+    heatmap_status_feature_id <- shiny::reactive({
+        shiny::req(input$heatmap_time_feature_choice, features_con())
         
         if (input$heatmap_time_feature_choice == "OS Time") {
             status_feature <- "OS"
@@ -108,8 +108,8 @@ clinical_outcomes_server <- function(
             dplyr::pull(feature_id)
     })
     
-    heatmap_feature_ids <- reactive({
-        req(features_con(), input$survival_class_id)
+    heatmap_feature_ids <- shiny::reactive({
+        shiny::req(features_con(), input$survival_class_id)
         
         features_con() %>% 
             dplyr::filter(class_id == local(as.numeric(input$survival_class_id))) %>% 
@@ -117,8 +117,8 @@ clinical_outcomes_server <- function(
             dplyr::pull(feature_id)
     })
     
-    heatmap_feature_values_con <- reactive({
-        req(feature_values_con(), heatmap_feature_ids())
+    heatmap_feature_values_con <- shiny::reactive({
+        shiny::req(feature_values_con(), heatmap_feature_ids())
         feature_values_con() %>% 
             dplyr::filter(feature_id %in% local(heatmap_feature_ids())) %>% 
             dplyr::inner_join(features_con(), by = "feature_id") %>% 
@@ -126,8 +126,8 @@ clinical_outcomes_server <- function(
             dplyr::compute()
     })
     
-    heatmap_time_feature_con <- reactive({
-        req(
+    heatmap_time_feature_con <- shiny::reactive({
+        shiny::req(
             heatmap_time_feature_id(),
             feature_values_con(),
             features_con()
@@ -141,8 +141,8 @@ clinical_outcomes_server <- function(
             dplyr::compute()
     })
     
-    heatmap_status_feature_con <- reactive({
-        req(
+    heatmap_status_feature_con <- shiny::reactive({
+        shiny::req(
             heatmap_status_feature_id(),
             feature_values_con(),
             features_con()
@@ -157,8 +157,8 @@ clinical_outcomes_server <- function(
     })
     
     
-    heatmap_survial_values_con <- reactive({
-        req(
+    heatmap_survial_values_con <- shiny::reactive({
+        shiny::req(
             heatmap_time_feature_con(),
             heatmap_status_feature_con()
         )
@@ -193,7 +193,7 @@ clinical_outcomes_server <- function(
         create_heatmap(ci_mat, "ci")
     })
     
-    output$heatmap_group_text <- renderText({
+    output$heatmap_group_text <- shiny::renderText({
         shiny::req(groups_con)
         eventdata <- plotly::event_data("plotly_click", source = "ci")
         shiny::validate(shiny::need(eventdata, "Click above plot"))

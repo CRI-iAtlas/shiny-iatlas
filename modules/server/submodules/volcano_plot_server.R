@@ -12,12 +12,13 @@ volcano_plot_server <- function(
     pval_threshold = 0.05,
     fold_change_threshold = 2
 ){
-    volcano_plot_tbl <- reactive({
+    volcano_plot_tbl <- shiny::reactive({
         
         shiny::req(volcano_tbl(), pval_threshold, fold_change_threshold)
         volcano_tbl() %>% 
             dplyr::mutate(color = dplyr::if_else(
-                p_value < pval_threshold & abs(fold_change) > fold_change_threshold,
+                p_value < pval_threshold & 
+                    abs(fold_change) > fold_change_threshold,
                 "red",
                 "blue"
             )) %>% 

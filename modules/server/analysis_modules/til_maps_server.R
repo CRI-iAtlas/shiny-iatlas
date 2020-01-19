@@ -13,16 +13,16 @@ til_maps_server <- function(
     source("modules/server/submodules/data_table_server.R", local = T)
     source("modules/server/submodules/distribution_plot_server.R", local = T)
     
-    tilmap_feature_con <- reactive({
-        req(features_con())
+    tilmap_feature_con <- shiny::reactive({
+        shiny::req(features_con())
         features_con() %>%  
             dplyr::filter(class_name == "TIL Map Characteristic") %>% 
             dplyr::select(feature_name, feature_id, class_name) %>% 
             dplyr::compute()
     })
     
-    tilmap_con <- reactive({
-        req(tilmap_feature_con(), feature_values_con())
+    tilmap_con <- shiny::reactive({
+        shiny::req(tilmap_feature_con(), feature_values_con())
         tilmap_feature_con() %>% 
             dplyr::select(feature_id, feature_name) %>% 
             dplyr::inner_join(feature_values_con(), by = "feature_id") %>% 
@@ -31,21 +31,21 @@ til_maps_server <- function(
     })
     
 
-    tilmap_dist_feature_con <- reactive({
-        req(tilmap_feature_con())
+    tilmap_dist_feature_con <- shiny::reactive({
+        shiny::req(tilmap_feature_con())
         tilmap_feature_con() %>%  
             dplyr::compute()
     })
     
-    tilmap_dist_value_con <- reactive({
-        req(tilmap_con())
+    tilmap_dist_value_con <- shiny::reactive({
+        shiny::req(tilmap_con())
         tilmap_con() %>% 
             dplyr::select(feature_id, sample_id, value, group) %>% 
             dplyr::compute()
     })
     
 
-    callModule(
+    shiny::callModule(
         distributions_plot_server,
         "dist",
         plot_source_name           = "tilmap_dist_plot",
@@ -57,8 +57,8 @@ til_maps_server <- function(
         key_col                    = "label"
     )
     
-    tilmap_tbl <- reactive({
-        req(tilmap_con())
+    tilmap_tbl <- shiny::reactive({
+        shiny::req(tilmap_con())
         
         tilmap_con() %>% 
             dplyr::mutate(value = round(value, digits = 1)) %>%
@@ -75,7 +75,7 @@ til_maps_server <- function(
     })
 
     
-    callModule(data_table_server, "til_table", tilmap_tbl, escape = F)
+    shiny::callModule(data_table_server, "til_table", tilmap_tbl, escape = F)
     
     
     

@@ -12,7 +12,7 @@ immunomodulators_server <- function(
     source("modules/server/submodules/data_table_server.R", local = T)
     source("modules/server/submodules/distribution_plot_server.R", local = T)
     
-    im_id_con <- reactive({
+    im_id_con <- shiny::reactive({
         create_connection("gene_types") %>% 
             dplyr::filter(name == "immunomodulator") %>% 
             dplyr::select(id) %>% 
@@ -24,8 +24,8 @@ immunomodulators_server <- function(
             dplyr::compute()
     })
     
-    expression_con <- reactive({
-        req(
+    expression_con <- shiny::reactive({
+        shiny::req(
             im_id_con(),
             sample_con()
         )
@@ -40,7 +40,7 @@ immunomodulators_server <- function(
             dplyr::compute()
     })
     
-    im_con <- reactive({
+    im_con <- shiny::reactive({
         req(im_id_con(), genes_con())
         
         genes_con() %>% 
@@ -48,8 +48,8 @@ immunomodulators_server <- function(
             dplyr::compute() 
     })
     
-    relationship_con <- reactive({
-        req(im_con())
+    relationship_con <- shiny::reactive({
+        shiny::req(im_con())
         
         im_con() %>% 
             dplyr::select(
@@ -62,8 +62,8 @@ immunomodulators_server <- function(
             dplyr::compute()
     })
     
-    im_dt_tbl <- reactive({
-        req(im_con())
+    im_dt_tbl <- shiny::reactive({
+        shiny::req(im_con())
         
         im_con() %>%  
             dplyr::select(
@@ -78,7 +78,7 @@ immunomodulators_server <- function(
             dplyr::collect()
     })
     
-    callModule(
+    shiny::callModule(
         distributions_plot_server,
         "dist",
         "immunomodulators_dist_plot",
@@ -90,7 +90,7 @@ immunomodulators_server <- function(
         key_col = "label"
     )
     
-    callModule(
+    shiny::callModule(
         data_table_server, 
         "im_table", 
         im_dt_tbl

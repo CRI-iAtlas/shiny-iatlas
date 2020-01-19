@@ -10,12 +10,12 @@ immune_features_server <- function(
 ){
     source("modules/server/submodules/distribution_plot_server.R", local = T)
     
-    distributions_feature_con <- reactive({
+    distributions_feature_con <- shiny::reactive({
         features_con() %>%
             dplyr::select(feature_name, feature_id, class_name)
     })
 
-    callModule(
+    shiny::callModule(
         distributions_plot_server,
         "dist",
         plot_source_name           = "immunefeatures_dist_plot",
@@ -28,7 +28,7 @@ immune_features_server <- function(
         key_col                    = "label"
     )
     
-    callModule(
+    shiny::callModule(
         immune_features_correlations_server,
         "immunefeatures_correlations",
         feature_values_con = feature_values_con, 
@@ -51,15 +51,15 @@ immune_features_correlations_server <- function(
     
     ns <- session$ns
 
-    output$heatmap_class_selection_ui <- renderUI({
-        req(features_con())
+    output$heatmap_class_selection_ui <- shiny::renderUI({
+        shiny::req(features_con())
         choices <- features_con() %>% 
             dplyr::select(class_name, class_id) %>% 
             dplyr::distinct() %>% 
             dplyr::collect() %>% 
             tibble::deframe()
         
-        selectInput(
+        shiny::selectInput(
             ns("heatmap_class_choice_id"),
             "Select or Search for Variable Class",
             selected = 6,
@@ -67,8 +67,8 @@ immune_features_correlations_server <- function(
         )
     })
     
-    output$heatmap_response_selection_ui <- renderUI({
-        req(features_con())
+    output$heatmap_response_selection_ui <- shiny::renderUI({
+        shiny::req(features_con())
         choices <- features_con() %>% 
             dplyr::select(
                 class = class_name, 
@@ -78,7 +78,7 @@ immune_features_correlations_server <- function(
             dplyr::collect() %>% 
             create_nested_named_list()
         
-        selectInput(
+        shiny::selectInput(
             ns("heatmap_response_choice_id"),
             "Select or Search for Response Variable",
             choices = choices,
@@ -86,8 +86,8 @@ immune_features_correlations_server <- function(
         )
     })
     
-    response_display_name <- reactive({
-        req(features_con(), input$heatmap_response_choice_id)
+    response_display_name <- shiny::reactive({
+        shiny::req(features_con(), input$heatmap_response_choice_id)
         features_con() %>% 
             dplyr::filter(
                 feature_id == local(as.numeric(input$heatmap_response_choice_id))
@@ -95,8 +95,8 @@ immune_features_correlations_server <- function(
             dplyr::pull(feature_name)
     })
     
-    feature_ids <- reactive({
-        req(features_con(), input$heatmap_class_choice_id)
+    feature_ids <- shiny::reactive({
+        shiny::req(features_con(), input$heatmap_class_choice_id)
         con <- features_con() %>% 
             dplyr::filter(
                 class_id == local(as.numeric(input$heatmap_class_choice_id))
@@ -106,8 +106,8 @@ immune_features_correlations_server <- function(
         
     })
     
-    heatmap_response_con <- reactive({
-        req(
+    heatmap_response_con <- shiny::reactive({
+        shiny::req(
             feature_values_con(),
             features_con(),
             input$heatmap_response_choice_id
@@ -120,8 +120,8 @@ immune_features_correlations_server <- function(
         )
     })
     
-    heatmap_feature_con <- reactive({
-        req(
+    heatmap_feature_con <- shiny::reactive({
+        shiny::req(
             feature_values_con(),
             features_con(),
             feature_ids()
@@ -134,8 +134,8 @@ immune_features_correlations_server <- function(
         )
     })
     
-    heatmap_tbl <- reactive({
-        req(
+    heatmap_tbl <- shiny::reactive({
+        shiny::req(
             heatmap_response_con(),
             heatmap_feature_con()
         )
@@ -146,8 +146,8 @@ immune_features_correlations_server <- function(
         )
     })
     
-    heatmap_matrix <- reactive({
-        req(heatmap_tbl(), input$correlation_method)
+    heatmap_matrix <- shiny::reactive({
+        shiny::req(heatmap_tbl(), input$correlation_method)
         build_immune_feature_heatmap_matrix(
             heatmap_tbl(), 
             input$correlation_method
@@ -159,8 +159,8 @@ immune_features_correlations_server <- function(
     })
     
     
-    output$heatmap_group_text <- renderText({
-        req(group_con())
+    output$heatmap_group_text <- shiny::renderText({
+        shiny::req(group_con())
         eventdata <- plotly::event_data("plotly_click", source =  "heatplot")
         shiny::validate( shiny::need(eventdata, "Click above heatmap"))
         group_con() %>% 
@@ -171,7 +171,7 @@ immune_features_correlations_server <- function(
     
     
     output$scatterPlot <- plotly::renderPlotly({
-        req(heatmap_tbl(), response_display_name())
+        shiny::req(heatmap_tbl(), response_display_name())
         eventdata <- plotly::event_data("plotly_click", source = "heatplot")
         shiny::validate(shiny::need(eventdata, "Click above heatmap"))
         

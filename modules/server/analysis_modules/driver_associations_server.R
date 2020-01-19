@@ -8,7 +8,7 @@ driver_associations_server <- function(
 ){
     ns <- session$ns
 
-    callModule(
+    shiny::callModule(
         univariate_driver_server,
         "univariate_driver",
         features_con,
@@ -16,7 +16,7 @@ driver_associations_server <- function(
         features_named_list
     )
     
-    callModule(
+    shiny::callModule(
         multivariate_driver_server,
         "multivariate_driver",
         features_con,
@@ -39,8 +39,8 @@ univariate_driver_server <- function(
     source("modules/server/submodules/volcano_plot_server.R", local = T)
     
     
-    output$response_options <- renderUI({
-        req(features_named_list())
+    output$response_options <- shiny::renderUI({
+        shiny::req(features_named_list())
         selectInput(
             ns("response_variable"),
             "Select or Search for Response Variable",
@@ -49,8 +49,8 @@ univariate_driver_server <- function(
         )
     })
     
-    volcano_con <- reactive({
-        req(
+    volcano_con <- shiny::reactive({
+        shiny::req(
             input$response_variable,
             input$min_wt,
             input$min_mut
@@ -84,22 +84,22 @@ univariate_driver_server <- function(
             dplyr::compute() 
     })
     
-    violin_value_con <- reactive({
-        req(feature_values_con(), input$response_variable)
+    violin_value_con <- shiny::reactive({
+        shiny::req(feature_values_con(), input$response_variable)
         feature_values_con() %>% 
             dplyr::filter(feature == local(input$response_variable)) %>% 
             dplyr::select(sample, value) 
     })
     
-    violin_group_con <- reactive({
-        req(driver_mutations_con())
+    violin_group_con <- shiny::reactive({
+        shiny::req(driver_mutations_con())
         driver_mutations_con() %>% 
             dplyr::mutate(label = paste0(gene, ";", group)) %>% 
             dplyr::select(sample, label, status)
     })
     
     
-    callModule(
+    shiny::callModule(
         volcano_plot_server,
         "univariate_driver",
         volcano_con,
@@ -128,13 +128,13 @@ multivariate_driver_server <- function(
     source("modules/ui/submodules/elements_ui.R", local = T)
     source("modules/server/submodules/elements_server.R", local = T)
     
-    output$response_options <- renderUI({
-        req(features_named_list(), features_con())
+    output$response_options <- shiny::renderUI({
+        shiny::req(features_named_list(), features_con())
         selected_id <- features_con() %>% 
             dplyr::filter(feature_name == "Leukocyte Fraction") %>% 
             dplyr::pull(feature_id)
         
-        selectInput(
+        shiny::selectInput(
             ns("response_choice_id"),
             "Select or Search for Response Variable",
             choices = features_named_list(),
@@ -143,7 +143,7 @@ multivariate_driver_server <- function(
     })
     
     
-    numerical_covariate_tbl <- reactive({
+    numerical_covariate_tbl <- shiny::reactive({
         features_con() %>%
             dplyr::select(
                 class = class_name, 
@@ -154,7 +154,7 @@ multivariate_driver_server <- function(
             dplyr::collect() 
     })
     
-    categorical_covariate_tbl <- reactive({
+    categorical_covariate_tbl <- shiny::reactive({
         dplyr::tribble(
             ~class,     ~display,         ~feature,         ~internal,
             "Groups",   "Immune Subtype", "Immune_Subtype", "Immune_Subtype",
@@ -166,8 +166,8 @@ multivariate_driver_server <- function(
         )
     })
     
-    response_variable_name <- reactive({
-        req(features_con(), input$response_choice_id)
+    response_variable_name <- shiny::reactive({
+        shiny::req(features_con(), input$response_choice_id)
         translate_value(
             features_con(),
             as.integer(input$response_choice_id),
@@ -176,12 +176,12 @@ multivariate_driver_server <- function(
         )
     })
     
-    model_string_prefix <- reactive({
-        req(response_variable_name())
+    model_string_prefix <- shiny::reactive({
+        shiny::req(response_variable_name())
         stringr::str_c(response_variable_name(), " ~ Mutation status") 
     })
     
-    module_parameters <- callModule(
+    module_parameters <- shiny::callModule(
         model_selection_server, 
         "module1", 
         numerical_covariate_tbl,
@@ -189,13 +189,13 @@ multivariate_driver_server <- function(
         model_string_prefix
     )
     
-    output$model_text <- renderText({
+    output$model_text <- shiny::renderText({
         module_parameters()$display_string
     })
     
-    response_con <- reactive({
+    response_con <- shiny::reactive({
         
-        req(
+        shiny::req(
             feature_values_con(), 
             input$response_choice_id,
             input$group_mode
@@ -209,7 +209,7 @@ multivariate_driver_server <- function(
         dplyr::compute(res_con)
     })
     
-    status_con <- reactive({
+    status_con <- shiny::reactive({
         create_connection("gene_types") %>%
             dplyr::filter(name == "driver_mutation") %>%
             dplyr::select(type_id = id) %>%
@@ -233,7 +233,7 @@ multivariate_driver_server <- function(
             dplyr::compute()
     })
     
-    group_covariate_tbl <- reactive({
+    group_covariate_tbl <- shiny::reactive({
         covariates <- 
             module_parameters()$categorical_covariates %>% 
             intersect(c("Immune_Subtype", "TCGA_Subtype", "TCGA_Study"))
@@ -264,7 +264,7 @@ multivariate_driver_server <- function(
         return(res)
     })
     
-    feature_covariate_tbl <- reactive({
+    feature_covariate_tbl <- shiny::reactive({
         covariate_ids <- module_parameters()$numerical_covariates
         
         if(is.null(covariate_ids)){
@@ -282,9 +282,9 @@ multivariate_driver_server <- function(
     })
     
     
-    combined_con <- reactive({
+    combined_con <- shiny::reactive({
         
-        req(
+        shiny::req(
             response_con(),
             status_con()
         )
@@ -298,9 +298,9 @@ multivariate_driver_server <- function(
             dplyr::compute()
     })
     
-    cov_combined_con <- reactive({
+    cov_combined_con <- shiny::reactive({
 
-        req(
+        shiny::req(
             combined_con(),
             input$group_mode
         )
@@ -340,8 +340,8 @@ multivariate_driver_server <- function(
     
     
     
-    summary_con <- reactive({
-        req(
+    summary_con <- shiny::reactive({
+        shiny::req(
             cov_combined_con(),
             input$min_mutants,
             input$min_wildtype,
@@ -368,9 +368,9 @@ multivariate_driver_server <- function(
             
     })
     
-    combined_con2 <- reactive({
+    combined_con2 <- shiny::reactive({
 
-        req(
+        shiny::req(
             cov_combined_con(),
             summary_con()
         )
@@ -380,9 +380,9 @@ multivariate_driver_server <- function(
             dplyr::compute()
     })
     
-    model_tbl <- reactive({
+    model_tbl <- shiny::reactive({
 
-        req(
+        shiny::req(
             combined_con2(),
             module_parameters()$formula_string
         )
@@ -401,9 +401,9 @@ multivariate_driver_server <- function(
             dplyr::mutate(log10_p_value = -log10(p_value))
     })
     
-    effect_size_tbl <- reactive({
+    effect_size_tbl <- shiny::reactive({
 
-        req(
+        shiny::req(
             combined_con2()
         )
         combined_con2() %>% 
@@ -425,9 +425,9 @@ multivariate_driver_server <- function(
             tidyr::drop_na() 
     })
     
-    volcano_tbl <- eventReactive(input$calculate_button, {
+    volcano_tbl <- shiny::eventReactive(input$calculate_button, {
 
-        req(
+        shiny::req(
             model_tbl(),
             effect_size_tbl()
         )
@@ -440,7 +440,7 @@ multivariate_driver_server <- function(
             ) 
     })
     
-    callModule(
+    shiny::callModule(
         volcano_plot_server,
         "multivariate_driver",
         volcano_tbl,

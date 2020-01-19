@@ -6,8 +6,8 @@ data_info_server <- function(
 ){
     ns <- session$ns
     
-    output$classes <- renderUI({
-        req(features_con()) 
+    output$classes <- shiny::renderUI({
+        shiny::req(features_con()) 
         choices <- features_con() %>%
             dplyr::filter(!is.na(class_name), !is.na(class_id)) %>%
             dplyr::select(class_name, class_id) %>% 
@@ -16,7 +16,7 @@ data_info_server <- function(
             dplyr::collect() %>% 
             tibble::deframe() %>% 
             c("All classes" = -1L)
-        selectInput(
+        shiny::selectInput(
             ns("class_choice_id"),
             label = "Select or Search for Class",
             choices = choices,
@@ -24,8 +24,8 @@ data_info_server <- function(
         )
     })
     
-    filtered_feature_con <- reactive({
-        req(features_con(), input$class_choice_id)
+    filtered_feature_con <- shiny::reactive({
+        shiny::req(features_con(), input$class_choice_id)
         class_choice_id <- as.numeric(input$class_choice_id)
         if(class_choice_id != -1L){
             con <- features_con() %>% 
@@ -38,7 +38,7 @@ data_info_server <- function(
     })
     
     output$feature_table <- DT::renderDT({
-        req(filtered_feature_con())
+        shiny::req(filtered_feature_con())
         
         tbl <- filtered_feature_con() %>%
             dplyr::select(
@@ -56,8 +56,8 @@ data_info_server <- function(
         )
     }, server = FALSE)
     
-    feature_class_tbl <- reactive({
-        req(input$feature_table_rows_selected, filtered_feature_con())
+    feature_class_tbl <- shiny::reactive({
+        shiny::req(input$feature_table_rows_selected, filtered_feature_con())
         
         clicked_row_num <- input$feature_table_rows_selected
         
@@ -71,13 +71,13 @@ data_info_server <- function(
             dplyr::collect()
     })
     
-    output$variable_class_table <- renderTable({
-        req(feature_class_tbl())
+    output$variable_class_table <- shiny::renderTable({
+        shiny::req(feature_class_tbl())
         feature_class_tbl()
     })
     
-    output$method_buttons <- renderUI({
-        req(feature_class_tbl())
+    output$method_buttons <- shiny::renderUI({
+        shiny::req(feature_class_tbl())
         feature_class_tbl() %>% 
             dplyr::filter(!is.na(method_tag)) %>% 
             dplyr::distinct(method_tag) %>% 
@@ -85,10 +85,10 @@ data_info_server <- function(
             purrr::map(
                 ~fluidRow(actionButton(ns(paste0("show_", .x)), .x))
             ) %>%
-            tagList()
+            shiny::tagList()
     })
     
-    observeEvent(input$feature_table_rows_selected, {
+    shiny::observeEvent(input$feature_table_rows_selected, {
         feature_class_tbl() %>% 
             dplyr::filter(!is.na(method_tag)) %>% 
             dplyr::distinct(method_tag) %>% 
@@ -104,23 +104,23 @@ data_info_server <- function(
             })
     })
     
-    observeEvent(input$feature_table_rows_selected, {
-        output$variable_details_section <- renderUI({
-            sectionBox(
+    shiny::observeEvent(input$feature_table_rows_selected, {
+        output$variable_details_section <- shiny::renderUI({
+            .GlobalEnv$sectionBox(
                 title = "Variable Class Details",
-                messageBox(
+                .GlobalEnv$messageBox(
                     width = 12,
                     p("Here is additional information about the variables in the Variable Class you selected. To the right you can access description of the methods used to obtain the variables.")
                 ),
-                fluidRow(
-                    tableBox(
+                shiny::fluidRow(
+                    .GlobalEnv$tableBox(
                         width = 9,
                         tableOutput(ns('variable_class_table'))
                     ),
-                    column(
+                    shiny::column(
                         width = 3,
-                        h5(strong("Click to view methods")),
-                        uiOutput(ns("method_buttons"))
+                        shiny::h5(shiny::strong("Click to view methods")),
+                        shiny::uiOutput(ns("method_buttons"))
                     )
                 )
             )

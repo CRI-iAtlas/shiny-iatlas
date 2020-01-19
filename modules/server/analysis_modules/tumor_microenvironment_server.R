@@ -7,7 +7,7 @@ tumor_microenvironment_server <- function(
     group_con
 ) {
     
-    callModule(
+    shiny::callModule(
         overall_cell_proportions_server, 
         "ocp_module",
         feature_values_con,
@@ -15,7 +15,7 @@ tumor_microenvironment_server <- function(
         group_con
     )
     
-    callModule(
+    shiny::callModule(
         cell_type_fractions_server, 
         "ctf_module",
         feature_values_con,
@@ -36,8 +36,8 @@ overall_cell_proportions_server  <- function(
     group_con
 ){
     
-    cp_feature_con <- reactive({
-        req(features_con())
+    cp_feature_con <- shiny::reactive({
+        shiny::req(features_con())
         features_con() %>% 
             dplyr::filter(
                 feature_name %in% c(
@@ -50,16 +50,16 @@ overall_cell_proportions_server  <- function(
             dplyr::compute() 
     })
     
-    cp_value_con <- reactive({
-        req(feature_values_con(), cp_feature_con())
+    cp_value_con <- shiny::reactive({
+        shiny::req(feature_values_con(), cp_feature_con())
         feature_values_con() %>% 
             dplyr::inner_join(cp_feature_con(), by = "feature_id") %>% 
             dplyr::select(sample_name, feature_name, value, group) %>% 
             dplyr::compute()
     })
     
-    barplot_tbl <- reactive({
-        req(cp_value_con())
+    barplot_tbl <- shiny::reactive({
+        shiny::req(cp_value_con())
         build_cell_proportion_barplot_tbl(cp_value_con())
     })
     
@@ -80,8 +80,8 @@ overall_cell_proportions_server  <- function(
         )
     })
     
-    output$barplot_text <- renderText({
-        req(group_con())
+    output$barplot_text <- shiny::renderText({
+        shiny::req(group_con())
         eventdata <- plotly::event_data("plotly_click", source = "op_barplot")
         shiny::validate(shiny::need(eventdata, "Click above plot"))
         
@@ -94,7 +94,7 @@ overall_cell_proportions_server  <- function(
     })
     
     output$scatterplot <- plotly::renderPlotly({
-        req(cp_value_con())
+        shiny::req(cp_value_con())
         eventdata <- plotly::event_data( "plotly_click", source = "op_barplot")
         shiny::validate(shiny::need(eventdata, "Click above plot"))
         
@@ -133,8 +133,8 @@ cell_type_fractions_server <- function(
     group_con
 ){
     
-    cf_value_tbl <- reactive({
-        req(
+    cf_value_tbl <- shiny::reactive({
+        shiny::req(
             features_con(),
             feature_values_con(),
             input$fraction_group_choice
@@ -167,8 +167,8 @@ cell_type_fractions_server <- function(
 
     })
     
-    output$barplot_text <- renderText({
-        req(group_con())
+    output$barplot_text <- shiny::renderText({
+        shiny::req(group_con())
         eventdata <- plotly::event_data("plotly_click", source = "cf_barplot")
         shiny::validate(shiny::need(eventdata, "Click above plot"))
         

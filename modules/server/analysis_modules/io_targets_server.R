@@ -14,8 +14,8 @@ io_targets_server <- function(
     
     ns <- session$ns
     
-    url_gene <- reactive({
-        query <- parseQueryString(session$clientData$url_search)
+    url_gene <- shiny::reactive({
+        query <- shiny::parseQueryString(session$clientData$url_search)
         gene  <- query[['gene']]
         if (!is.null(gene)) {
             url_gene <- gene
@@ -25,7 +25,7 @@ io_targets_server <- function(
         return(url_gene)
     })
     
-    io_id_con <- reactive({
+    io_id_con <- shiny::reactive({
         create_connection("gene_types") %>% 
             dplyr::filter(name == "io_target") %>% 
             dplyr::select(id) %>% 
@@ -37,8 +37,8 @@ io_targets_server <- function(
             dplyr::compute()
     })
     
-    expression_con <- reactive({
-        req(
+    expression_con <- shiny::reactive({
+        shiny::req(
             io_id_con(),
             sample_con()
         )
@@ -53,16 +53,16 @@ io_targets_server <- function(
             dplyr::compute()
     })
     
-    io_con <- reactive({
-        req(io_id_con(), genes_con())
+    io_con <- shiny::reactive({
+        shiny::req(io_id_con(), genes_con())
         
         genes_con() %>% 
             dplyr::inner_join(io_id_con(), by = "gene_id") %>% 
             dplyr::compute() 
     })
     
-    relationship_con <- reactive({
-        req(io_con())
+    relationship_con <- shiny::reactive({
+        shiny::req(io_con())
         
         io_con() %>% 
             dplyr::select(
@@ -74,8 +74,8 @@ io_targets_server <- function(
             dplyr::compute()
     })
     
-    io_dt_tbl <- reactive({
-        req(io_con())
+    io_dt_tbl <- shiny::reactive({
+        shiny::req(io_con())
         
         io_con() %>%  
             dplyr::select(
@@ -102,7 +102,7 @@ io_targets_server <- function(
         
     })
  
-    callModule(
+    shiny::callModule(
         distributions_plot_server,
         "dist",
         "io_targets_dist_plot",
@@ -114,6 +114,6 @@ io_targets_server <- function(
         key_col = "label"
     )
     
-    callModule(data_table_server, "io_table", io_dt_tbl, escape = F)
+    shiny::callModule(data_table_server, "io_table", io_dt_tbl, escape = F)
     
 }

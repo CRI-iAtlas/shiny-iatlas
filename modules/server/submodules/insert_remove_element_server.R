@@ -7,12 +7,12 @@ insert_remove_element_server <- function(
     remove_ui_event = reactive(NULL)
 ){
 
-    params  <- reactiveValues(ui_numbers = c())
-    results <- reactiveValues()
+    params  <- shiny::reactiveValues(ui_numbers = c())
+    results <- shiny::reactiveValues()
         
     ns <- session$ns
    
-    observeEvent(input$add_button, {
+    shiny::observeEvent(input$add_button, {
 
         ui_number           <- input$add_button
         params$ui_numbers   <- c(params$ui_numbers, ui_number)
@@ -22,26 +22,30 @@ insert_remove_element_server <- function(
         ui_selector         <- stringr::str_c("#", ui_id)
         module_id           <- stringr::str_c("element", ui_number)
         
-        insertUI(
+        shiny::insertUI(
             selector = add_button_selector,
             where = "afterEnd",
-            ui = div(
+            ui = shiny::div(
                 id = ui_id,
-                actionButton(ns(remove_button_id), 'Remove')
+                shiny::actionButton(ns(remove_button_id), 'Remove')
             )
         )
-        insertUI(
+        shiny::insertUI(
             selector = add_button_selector,
             where = "afterEnd",
-            ui = div(
+            ui = shiny::div(
                 id = ui_id,
                 element_module_ui()(ns(module_id))
             )
         )
         
-        results <- callModule(element_module(), module_id, results, module_id)
+        results <- shiny::callModule(
+            element_module(), 
+            module_id, results, 
+            module_id
+        )
 
-        observeEvent(input[[remove_button_id]], {
+        shiny::observeEvent(input[[remove_button_id]], {
             shiny::removeUI(selector = ui_selector)
             shiny::removeUI(selector = ui_selector)
             results[[module_id]] <- NULL
@@ -50,7 +54,7 @@ insert_remove_element_server <- function(
         })
     })
 
-    observeEvent(remove_ui_event(), {
+    shiny::observeEvent(remove_ui_event(), {
         button_selectors <-
             stringr::str_c("ui", params$ui_numbers) %>%
             ns() %>%
@@ -58,8 +62,8 @@ insert_remove_element_server <- function(
         purrr::walk(button_selectors, removeUI)
         purrr::walk(button_selectors, removeUI)
         params$ui_numbers <- c()
-        results <- reactiveValues()
+        results <- shiny::reactiveValues()
     })
 
-    return(reactive(results))
+    return(shiny::reactive(results))
 }
