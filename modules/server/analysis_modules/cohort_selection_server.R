@@ -7,6 +7,8 @@ cohort_selection_server <- function(
     
     source("modules/server/submodules/data_table_server.R", local = T)
     source("modules/server/submodules/insert_remove_element_server.R", local = T)
+    source("modules/ui/submodules/elements_ui.R", local = T)
+    source("modules/server/submodules/elements_server.R", local = T)
     
     # cohort selection --------------------------------------------------------
     

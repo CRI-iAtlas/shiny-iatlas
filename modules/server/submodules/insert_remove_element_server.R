@@ -6,15 +6,14 @@ insert_remove_element_server <- function(
     element_module_ui,
     remove_ui_event = reactive(NULL)
 ){
-    
-    source("modules/server/submodules/elements_server.R", local = T)
-    
+
     params  <- reactiveValues(ui_numbers = c())
     results <- reactiveValues()
         
     ns <- session$ns
    
     observeEvent(input$add_button, {
+
         ui_number           <- input$add_button
         params$ui_numbers   <- c(params$ui_numbers, ui_number)
         remove_button_id    <- stringr::str_c('remove_button', ui_number)

@@ -125,6 +125,8 @@ multivariate_driver_server <- function(
     
     source("modules/server/submodules/volcano_plot_server.R", local = T)
     source("modules/server/submodules/model_selection_server.R", local = T)
+    source("modules/ui/submodules/elements_ui.R", local = T)
+    source("modules/server/submodules/elements_server.R", local = T)
     
     output$response_options <- renderUI({
         req(features_named_list(), features_con())

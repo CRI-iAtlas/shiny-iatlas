@@ -1,5 +1,8 @@
 model_selection_ui <- function(id){
+    
     ns <- NS(id)
+    source("modules/ui/submodules/insert_remove_element_ui.R", local = T)
+    
     fluidRow(
         optionsBox(
             width = 12,
