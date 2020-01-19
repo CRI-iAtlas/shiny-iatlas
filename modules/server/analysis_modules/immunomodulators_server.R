@@ -13,11 +13,11 @@ immunomodulators_server <- function(
     source("modules/server/submodules/distribution_plot_server.R", local = T)
     
     im_id_con <- reactive({
-        create_conection("gene_types") %>% 
+        create_connection("gene_types") %>% 
             dplyr::filter(name == "immunomodulator") %>% 
             dplyr::select(id) %>% 
             dplyr::inner_join(
-                create_conection("genes_to_types"), 
+                create_connection("genes_to_types"), 
                 by = c("id" = "type_id")
             ) %>% 
             dplyr::select(gene_id) %>% 
@@ -32,7 +32,7 @@ immunomodulators_server <- function(
         
         im_id_con() %>% 
             dplyr::inner_join(
-                create_conection("genes_to_samples"), 
+                create_connection("genes_to_samples"), 
                 by = c("gene_id")
             ) %>% 
             dplyr::select(feature_id = gene_id, sample_id, value = rna_seq_expr) %>% 

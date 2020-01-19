@@ -64,13 +64,6 @@ write_table_ts <- function(df, table_name) {
   return(result)
 }
 
-create_conection <- function(table_name) {
-    current_pool <- pool::poolCheckout(.GlobalEnv$pool)
-    result <- dplyr::tbl(current_pool, table_name)
-    pool::poolReturn(current_pool)
-    return(result)
-}
-
 
 # INSERT INTO features (person_id, group_id)
 # SELECT p.person_id, g.group_id

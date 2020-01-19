@@ -61,16 +61,16 @@ cohort_selection_server <- function(
     
     samples_con <- reactive({
         con <- 
-            create_conection("samples") %>% 
+            create_connection("samples") %>% 
             dplyr::rename(sample_id = id, sample_barcode = sample_id) %>% 
             dplyr::compute()
     })
     
     tags_con <- reactive({
         con <- 
-            create_conection("samples_to_tags") %>% 
+            create_connection("samples_to_tags") %>% 
             dplyr::left_join(
-                create_conection("tags"),
+                create_connection("tags"),
                 by = c("tag_id" = "id")
             ) %>% 
             dplyr::compute()
@@ -80,13 +80,13 @@ cohort_selection_server <- function(
         req(dataset_tags())
         con <- 
             dplyr::inner_join(
-                create_conection("tags") %>% 
+                create_connection("tags") %>% 
                     dplyr::select(tag_id = id, name),
-                create_conection("tags_to_tags"),
+                create_connection("tags_to_tags"),
                 by = c("tag_id")
             ) %>% 
             dplyr::inner_join(
-                create_conection("tags") %>% 
+                create_connection("tags") %>% 
                     dplyr::filter(display %in% local(dataset_tags())) %>% 
                     dplyr::select(related_tag_id = id, display),
                 by = c("related_tag_id")
@@ -98,10 +98,10 @@ cohort_selection_server <- function(
     
     feature_values_con <- reactive({
         con <-
-            create_conection("features_to_samples") %>%
+            create_connection("features_to_samples") %>%
             dplyr::select(sample_id, feature_id, value) %>% 
             dplyr::inner_join(
-                create_conection("features"), 
+                create_connection("features"), 
                 by = c("feature_id" = "id")
             ) %>% 
             dplyr::compute()
@@ -111,8 +111,8 @@ cohort_selection_server <- function(
     features_list <- reactive({
         list <- 
             dplyr::full_join(
-                create_conection("features"),
-                create_conection("classes"), 
+                create_connection("features"),
+                create_connection("classes"), 
                 by = c("class_id" = "id")
             ) %>% 
             dplyr::select(class = name.y, name = display, feature_id = id) %>% 
@@ -130,9 +130,9 @@ cohort_selection_server <- function(
     gene_mutation_list <- reactive({
         list <- 
             dplyr::inner_join(
-                create_conection("genes") %>% 
+                create_connection("genes") %>% 
                     dplyr::select(hgnc, id),
-                create_conection("genes_to_samples") %>%
+                create_connection("genes_to_samples") %>%
                     dplyr::filter(!is.na(status)) %>% 
                     dplyr::select(gene_id) %>% 
                     dplyr::distinct(),
@@ -145,9 +145,9 @@ cohort_selection_server <- function(
     gene_expression_list <- reactive({
         list <- 
             dplyr::inner_join(
-                create_conection("genes") %>% 
+                create_connection("genes") %>% 
                     dplyr::select(hgnc, id),
-                create_conection("genes_to_samples") %>%
+                create_connection("genes_to_samples") %>%
                     dplyr::filter(!is.na(rna_seq_expr)) %>% 
                     dplyr::select(gene_id) %>% 
                     dplyr::distinct(),
@@ -288,10 +288,10 @@ cohort_selection_server <- function(
         for(item in numeric_filters){
             req(item$feature_choice, item$feature_range)
             sample_ids <- 
-                create_conection("features_to_samples") %>%
+                create_connection("features_to_samples") %>%
                 dplyr::select(sample_id, feature_id, value) %>% 
                 dplyr::left_join(
-                    create_conection("features"), 
+                    create_connection("features"), 
                     by = c("feature_id" = "id")
                 ) %>% 
                 dplyr::filter(
@@ -317,20 +317,20 @@ cohort_selection_server <- function(
             req(item$parent_group_choice, item$group_choices)
             sample_ids <- 
                 dplyr::inner_join(
-                    create_conection("tags_to_tags"),
-                    create_conection("tags") %>%
+                    create_connection("tags_to_tags"),
+                    create_connection("tags") %>%
                         dplyr::filter(display ==  local(item$parent_group_choice)),
                     by = c("related_tag_id" = "id")
                 ) %>% 
                 dplyr::select(tag_id) %>% 
                 dplyr::inner_join(
-                    create_conection("tags"),
+                    create_connection("tags"),
                     by = c("tag_id" = "id")
                 ) %>%
                 dplyr::filter(name %in% local(item$group_choices)) %>%
                 dplyr::select(tag_id) %>%
                 dplyr::inner_join(
-                    create_conection("samples_to_tags")
+                    create_connection("samples_to_tags")
                 ) %>%
                 dplyr::pull(sample_id)
             samples <- intersect(samples, sample_ids)
@@ -395,17 +395,17 @@ cohort_selection_server <- function(
         if (group_choice %in% c("Immune Subtype", "TCGA Subtype", "TCGA Study")){
             group_name <- group_choice
             parent_id <-  
-                create_conection("tags") %>% 
+                create_connection("tags") %>% 
                 dplyr::filter(display == group_choice) %>%
                 dplyr::pull(id)
             sample_con <- 
-                create_conection("samples_to_tags") %>%
+                create_connection("samples_to_tags") %>%
                 dplyr::left_join(
-                    create_conection("tags"),
+                    create_connection("tags"),
                     by = c("tag_id" = "id")
                 ) %>% 
                 dplyr::inner_join(
-                    create_conection("tags_to_tags"),
+                    create_connection("tags_to_tags"),
                     by = c("tag_id")
                 ) %>% 
                 dplyr::filter(
@@ -414,7 +414,7 @@ cohort_selection_server <- function(
                 ) %>% 
                 dplyr::select(sample_id, tag_id, group = name) %>% 
                 dplyr::inner_join(
-                    create_conection("samples"),
+                    create_connection("samples"),
                     by = c("sample_id" = "id")
                 ) %>% 
                 dplyr::select(sample_id = sample_id.x, name = sample_id.y, tag_id, group) 
@@ -422,7 +422,7 @@ cohort_selection_server <- function(
                 dplyr::group_by(tag_id) %>% 
                 dplyr::summarise(size = dplyr::n()) %>% 
                 dplyr::inner_join(
-                    create_conection("tags"), 
+                    create_connection("tags"), 
                     by = c("tag_id" = "id")
                 ) %>% 
                 dplyr::select(group = name, name = display, size, characteristics, color) %>% 
@@ -434,7 +434,7 @@ cohort_selection_server <- function(
             req(input$custom_gene_mutaton_choice)
             group_name <- input$custom_gene_mutaton_choice
             sample_con <- 
-                create_conection("genes_to_samples") %>%
+                create_connection("genes_to_samples") %>%
                 dplyr::filter(
                     gene_id == as.integer(local(input$custom_gene_mutaton_choice)),
                     !is.na(status),
@@ -460,7 +460,7 @@ cohort_selection_server <- function(
             )
             group_name <- input$custom_numeric_feature_choice
             sample_con <-
-                create_conection("features_to_samples") %>%
+                create_connection("features_to_samples") %>%
                 dplyr::filter(
                     feature_id == as.integer(local(input$custom_numeric_feature_choice)),
                     !is.na(value),

@@ -2,7 +2,6 @@ function_files:
   - "functions/transform.R"
   - "functions/utils.R"
   - "functions/format.R"
-  - "database/database_functions.R"
 
 plot_files:
   - "functions/plot_functions/scatterplot.R"

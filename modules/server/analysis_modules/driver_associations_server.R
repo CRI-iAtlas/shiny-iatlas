@@ -56,7 +56,7 @@ univariate_driver_server <- function(
             input$min_mut
         )
         
-        tbl <- create_conection("driver_results") %>% 
+        tbl <- create_connection("driver_results") %>% 
             # dplyr::filter(
             #     feature_id == local(input$response_variable),
             #     n_wt    >= local(input$min_wt),
@@ -71,13 +71,13 @@ univariate_driver_server <- function(
             #     by = "feature_id"
             # ) %>% 
             dplyr::left_join(
-                dplyr::select(create_conection("genes"), id, hgnc),
+                dplyr::select(create_connection("genes"), id, hgnc),
                 by = ("gene_id" = "id")
             ) %>% 
             dplyr::select(gene_id, hgnc) %>% 
             dplyr::collect()
             dplyr::left_join(
-                dplyr::select(create_conection("tags"), id, group = display),
+                dplyr::select(create_connection("tags"), id, group = display),
                 by = c("tag_id" = "id")
             ) %>% 
             dplyr::select(-c(feature_id, gene_id, tag_id)) %>% 
@@ -210,22 +210,22 @@ multivariate_driver_server <- function(
     })
     
     status_con <- reactive({
-        create_conection("gene_types") %>%
+        create_connection("gene_types") %>%
             dplyr::filter(name == "driver_mutation") %>%
             dplyr::select(type_id = id) %>%
             dplyr::inner_join(
-                create_conection("genes_to_types"),
+                create_connection("genes_to_types"),
                 by = "type_id"
             ) %>%
             dplyr::select(gene_id) %>%
             dplyr::filter(gene_id < 5L) %>% # remove!
             dplyr::inner_join(
-                create_conection("genes"),
+                create_connection("genes"),
                 by = c("gene_id" = "id")
             ) %>%
             dplyr::select(gene_id, gene_name = hgnc) %>%
             dplyr::inner_join(
-                create_conection("genes_to_samples") %>% 
+                create_connection("genes_to_samples") %>% 
                     dplyr::filter(!is.na(status)),
                 by = "gene_id"
             ) %>%
@@ -240,20 +240,20 @@ multivariate_driver_server <- function(
         if(length(covariates) == 0){
             res <- NULL
         } else {
-            res <- create_conection("tags") %>% 
+            res <- create_connection("tags") %>% 
                 dplyr::filter(name %in% covariates) %>%
                 dplyr::select(parent_group_id = id, parent_group = name) %>% 
                 dplyr::inner_join(
-                    create_conection("tags_to_tags"),
+                    create_connection("tags_to_tags"),
                     by = c("parent_group_id" = "related_tag_id")
                 ) %>% 
                 dplyr::inner_join(
-                    create_conection("tags"),
+                    create_connection("tags"),
                     by = c("tag_id" = "id")
                 ) %>% 
                 dplyr::select(parent_group, group = name, tag_id) %>% 
                 dplyr::inner_join(
-                    create_conection("samples_to_tags"),
+                    create_connection("samples_to_tags"),
                     by = "tag_id"
                 ) %>% 
                 dplyr::collect() %>% 

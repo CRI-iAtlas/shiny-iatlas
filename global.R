@@ -1,8 +1,5 @@
-#library(shiny)
 library(shinydashboard)
 library(plotly)
-
-
 
 config_yaml <- yaml::read_yaml("configuration.yaml")
 purrr::walk(config_yaml$function_files, source)

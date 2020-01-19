@@ -89,6 +89,15 @@ assert_data_has_rows <- function(data){
     }
 }
 
+# database functions ----------------------------------------------------------
+
+create_connection <- function(table_name) {
+    current_pool <- pool::poolCheckout(.GlobalEnv$pool)
+    result <- dplyr::tbl(current_pool, table_name)
+    pool::poolReturn(current_pool)
+    return(result)
+}
+
 # other -----------------------------------------------------------------------
 
 calculate_lm_pvalue <- function(tbl, lm_formula, term){
