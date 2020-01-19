@@ -65,7 +65,7 @@ distributions_plot_ui <- function(
         fluidRow(
             plotBox(
                 width = 12,
-                plotlyOutput(ns("plot")) %>%
+                plotly::plotlyOutput(ns("plot")) %>%
                     shinycssloaders::withSpinner(),
                 p(),
                 textOutput(ns("plot_text")),
@@ -79,7 +79,7 @@ distributions_plot_ui <- function(
             fluidRow(
                 plotBox(
                     width = 12,
-                    plotlyOutput(ns("drilldown_plot")) %>% 
+                    plotly::plotlyOutput(ns("drilldown_plot")) %>% 
                         shinycssloaders::withSpinner()
                 )
             )

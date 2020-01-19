@@ -578,7 +578,7 @@ cohort_selection_server <- function(
         return(subtypes)
     })
     
-    output$mosaicPlot <- renderPlotly({
+    output$mosaicPlot <- plotly::renderPlotly({
         
         
         req(

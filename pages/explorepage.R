@@ -5,67 +5,68 @@ for(item in module_uis){
     source(item, local = T)
 }
 
-explorepage <- dashboardPage(
-    dashboardHeader(disable = TRUE),
-    dashboardSidebar(
-        sidebarMenu(
+explorepage <- shinydashboard::dashboardPage(
+    shinydashboard::dashboardHeader(disable = TRUE),
+    shinydashboard::dashboardSidebar(
+        shinydashboard::sidebarMenu(
             id = "explorertabs",
-            menuItem("iAtlas Explorer Home",
+            shinydashboard::menuItem("iAtlas Explorer Home",
                      tabName = "dashboard",
-                     icon = icon("dashboard")
+                     icon = shiny::icon("dashboard")
             ),
-            menuItem("Analysis Modules",
-                     icon = icon("bar-chart"), startExpanded = TRUE,
-                     menuSubItem(
+            shinydashboard::menuItem("Analysis Modules",
+                     icon = shiny::icon("bar-chart"), 
+                     startExpanded = TRUE,
+                     shinydashboard::menuSubItem(
                          "Cohort Selection",
                          tabName = "cohort_selection",
                          icon = icon("cog")
                      ),
-                     menuSubItem(
+                     shinydashboard::menuSubItem(
                          "Tumor Microenvironment",
                          tabName = "tumor_microenvironment",
                          icon = icon("cog")
                      ),
-                     menuSubItem(
+                     shinydashboard::menuSubItem(
                          "Immune Feature Trends",
                          tabName = "immune_features",
                          icon = icon("cog")
                      ),
-                     menuSubItem(
+                     shinydashboard::menuSubItem(
                          "Clinical Outcomes",
                          tabName = "clinical_outcomes",
                          icon = icon("cog")
                      ),
-                     menuSubItem(
+                     shinydashboard::menuSubItem(
                          "Immunomodulators",
                          tabName = "immunomodulators",
                          icon = icon("cog")
                      ),
-                     menuSubItem(
+                     shinydashboard::menuSubItem(
                          "IO Targets",
                          tabName = "io_targets",
                          icon = icon("cog")
                      ),
-                     menuSubItem(
+                     shinydashboard::menuSubItem(
                          "TIL Maps",
                          tabName = "til_maps",
                          icon = icon("cog")
                      ),
-                     menuSubItem(
+                     shinydashboard::menuSubItem(
                          "Driver Associations",
                          tabName = "driver_associations",
                          icon = icon("cog")
                      )
             ),
-            menuItem("Data Description",
+            shinydashboard::menuItem("Data Description",
                      icon = icon("th-list"),
                      tabName = "data_info"
             )
         )
     ),
-    dashboardBody(
-        tabItems(
-            tabItem(
+    shinydashboard::dashboardBody(
+        shinydashboard::tabItems(
+            shinydashboard::tabItem(
                 tabName = "dashboard",
                 titleBox("iAtlas Explorer — Home"),
                 textBox(
@@ -79,14 +80,38 @@ explorepage <- dashboardPage(
                 sectionBox(
                     title = "What's Inside",
                     fluidRow(
-                        infoBox("Immune Readouts:", 86, width = 3, color = "black", 
-                                fill = FALSE, icon = icon("search")),
-                        infoBox("Classes of Readouts:", 12, width = 3, color = "black", 
-                                fill = FALSE, icon = icon("filter")),
-                        infoBox("TCGA Cancers:", 33, width = 3, color = "black", 
-                                fill = FALSE, icon = icon("flask")),
-                        infoBox("TCGA Samples:", "11,080", width = 3, color = "black", 
-                                fill = FALSE, icon = icon("users"))
+                        shinydashboard::infoBox(
+                            "Immune Readouts:", 
+                            86, 
+                            width = 3, 
+                            color = "black", 
+                            fill = FALSE, 
+                            icon = icon("search")
+                        ),
+                        shinydashboard::infoBox(
+                            "Classes of Readouts:", 
+                            12, 
+                            width = 3, 
+                            color = "black", 
+                            fill = FALSE, 
+                            icon = icon("filter")
+                        ),
+                        shinydashboard::infoBox(
+                            "TCGA Cancers:",
+                            33, 
+                            width = 3, 
+                            color = "black", 
+                            fill = FALSE, 
+                            icon = icon("flask")
+                        ),
+                        shinydashboard::infoBox(
+                            "TCGA Samples:", 
+                            "11,080", 
+                            width = 3, 
+                            color = "black", 
+                            fill = FALSE, 
+                            icon = icon("users")
+                        )
                     )
                 ),
                 sectionBox(
@@ -174,39 +199,39 @@ explorepage <- dashboardPage(
                     )
                 )
             ),
-            tabItem(
+            shinydashboard::tabItem(
                 tabName = "tumor_microenvironment",
                 tumor_microenvironment_ui("tumor_microenvironment")
             ),
-            tabItem(
+            shinydashboard::tabItem(
                 tabName = "cohort_selection",
                 cohort_selection_ui("cohort_selection")
             ),
-            tabItem(
+            shinydashboard::tabItem(
                 tabName = "clinical_outcomes",
                 clinical_outcomes_ui("clinical_outcomes")
             ),
-            tabItem(
+            shinydashboard::tabItem(
                 tabName = "immunomodulators",
                 immunomodulators_ui("immunomodulators")
             ),
-            tabItem(
+            shinydashboard::tabItem(
                 tabName = "immune_features",
                 immune_features_ui("immune_features")
             ),
-            tabItem(
+            shinydashboard::tabItem(
                 tabName = "driver_associations",
                 driver_associations_ui("driver_associations")
             ),
-            tabItem(
+            shinydashboard::tabItem(
                 tabName = "til_maps",
                 til_maps_ui("til_maps")
             ),
-            tabItem(
+            shinydashboard::tabItem(
                 tabName = "io_targets",
                 io_targets_ui("io_targets")
             ),
-            tabItem(
+            shinydashboard::tabItem(
                 tabName = "data_info",
                 data_info_ui("data_info")
             )

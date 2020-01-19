@@ -109,7 +109,7 @@ cohort_selection_ui <- function(id) {
         #             width = 12,
         #             column(
         #                 width = 12,
-        #                 plotlyOutput(ns("mosaicPlot"), height = "600px") %>%
+        #                 plotly::plotlyOutput(ns("mosaicPlot"), height = "600px") %>%
         #                     shinycssloaders::withSpinner()
         #             )
         #         )

@@ -63,7 +63,7 @@ overall_cell_proportions_server  <- function(
         build_cell_proportion_barplot_tbl(cp_value_con())
     })
     
-    output$barplot <- renderPlotly({
+    output$barplot <- plotly::renderPlotly({
         shiny::req(barplot_tbl())
         
         shiny::validate(shiny::need(
@@ -93,7 +93,7 @@ overall_cell_proportions_server  <- function(
             dplyr::pull(text)
     })
     
-    output$scatterplot <- renderPlotly({
+    output$scatterplot <- plotly::renderPlotly({
         req(cp_value_con())
         eventdata <- plotly::event_data( "plotly_click", source = "op_barplot")
         shiny::validate(shiny::need(eventdata, "Click above plot"))
@@ -117,7 +117,7 @@ overall_cell_proportions_server  <- function(
             title = selected_group,
             identity_line = TRUE
         ) %>%
-            layout(margin = list(t = 39))
+            plotly::layout(margin = list(t = 39))
     })
 }
 
@@ -146,7 +146,7 @@ cell_type_fractions_server <- function(
         )
     })
     
-    output$barplot <- renderPlotly({
+    output$barplot <- plotly::renderPlotly({
         
         shiny::req(cf_value_tbl())
 

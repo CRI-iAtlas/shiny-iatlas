@@ -23,13 +23,13 @@ create_histogram <- function(
             LABEL = label_col
         ),
         df %>% 
-            plot_ly(
+            plotly::plot_ly(
                 x = ~X,
                 key = ~KEY,
                 text = label_col
             ) %>% 
-            add_histogram(alpha = 0.8) %>% 
-            layout(
+            plotly::add_histogram(alpha = 0.8) %>% 
+            plotly::layout(
                 title = title,
                 xaxis = list(title = x_lab),
                 yaxis = list(title = y_lab)

@@ -24,7 +24,7 @@ shinyServer(function(input, output, session) {
     }
     
     tags_con <- reactive({
-        create_conection("tags") %>% 
+        create_connection("tags") %>% 
             dplyr::select(
                 parent_group_id = id, 
                 parent_group_name = name, 
@@ -36,11 +36,11 @@ shinyServer(function(input, output, session) {
                     "TCGA Subtype"
             )) %>% 
             dplyr::inner_join(
-                create_conection("tags_to_tags"),
+                create_connection("tags_to_tags"),
                 by = c("parent_group_id" = "related_tag_id")
             ) %>% 
             dplyr::inner_join(
-                create_conection("tags"),
+                create_connection("tags"),
                 by = c("tag_id" = "id")
             ) %>% 
             dplyr::select(parent_group, group = name, tag_id) %>% 
@@ -50,12 +50,12 @@ shinyServer(function(input, output, session) {
     features_con <- reactive({
         con <- 
             dplyr::left_join(
-                create_conection("features"),
-                create_conection("classes"),
+                create_connection("features"),
+                create_connection("classes"),
                 by = c("class_id" = "id")
             ) %>% 
             dplyr::left_join(
-                create_conection("method_tags"),
+                create_connection("method_tags"),
                 by = c("method_tag_id" = "id")
             ) %>% 
             dplyr::select(
@@ -73,34 +73,34 @@ shinyServer(function(input, output, session) {
     })
     
     genes_con <- reactive({
-        create_conection("genes") %>% 
+        create_connection("genes") %>% 
             dplyr::left_join(
-                create_conection("gene_families"), 
+                create_connection("gene_families"), 
                 by = c("gene_family_id" = "id")
             ) %>% 
             dplyr::rename(gene_family = name) %>% 
             dplyr::left_join(
-                create_conection("gene_functions"), 
+                create_connection("gene_functions"), 
                 by = c("gene_function_id" = "id")
             ) %>% 
             dplyr::rename(gene_function = name) %>% 
             dplyr::left_join(
-                create_conection("immune_checkpoints"), 
+                create_connection("immune_checkpoints"), 
                 by = c("immune_checkpoint_id" = "id")
             ) %>% 
             dplyr::rename(immune_checkpoint = name) %>%
             dplyr::left_join(
-                create_conection("pathways"), 
+                create_connection("pathways"), 
                 by = c("pathway_id" = "id")
             ) %>% 
             dplyr::rename(pathway = name) %>% 
             dplyr::left_join(
-                create_conection("super_categories"), 
+                create_connection("super_categories"), 
                 by = c("super_cat_id" = "id")
             ) %>% 
             dplyr::rename(super_category = name) %>% 
             dplyr::left_join(
-                create_conection("therapy_types"), 
+                create_connection("therapy_types"), 
                 by = c("therapy_type_id" = "id")
             ) %>% 
             dplyr::rename(therapy = name) %>% 
@@ -148,7 +148,7 @@ shinyServer(function(input, output, session) {
     cohort_feature_values_con <- reactive({
         req(cohort_sample_con())
         con <- 
-            create_conection("features_to_samples") %>% 
+            create_connection("features_to_samples") %>% 
             dplyr::inner_join(cohort_sample_con(), by = "sample_id") %>% 
             dplyr::select(sample_id, feature_id, value, sample_name = name, group) %>% 
             dplyr::compute() 

@@ -27,7 +27,7 @@ create_barplot <- function(
             COLOR = color_col,
             ERROR = error_col,
             LABEL = label_col),
-        plot_ly(
+        plotly::plot_ly(
             df,
             x = ~X,
             y = ~Y,
@@ -43,7 +43,7 @@ create_barplot <- function(
                 thickness = 1),
             hoverinfo = 'text'
         )) %>% 
-        layout(
+        plotly::layout(
             legend = list(orientation = 'h', x = 0, y = 1),
             title = title,
             xaxis = list(title = xlab),

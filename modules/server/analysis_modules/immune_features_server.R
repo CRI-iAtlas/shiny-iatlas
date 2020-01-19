@@ -154,7 +154,7 @@ immune_features_correlations_server <- function(
         )
     })
     
-    output$heatmap <- renderPlotly({
+    output$heatmap <- plotly::renderPlotly({
         create_heatmap(heatmap_matrix(), "heatplot", scale_colors = T)
     })
     
@@ -170,7 +170,7 @@ immune_features_correlations_server <- function(
     })
     
     
-    output$scatterPlot <- renderPlotly({
+    output$scatterPlot <- plotly::renderPlotly({
         req(heatmap_tbl(), response_display_name())
         eventdata <- plotly::event_data("plotly_click", source = "heatplot")
         shiny::validate(shiny::need(eventdata, "Click above heatmap"))

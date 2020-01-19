@@ -4,14 +4,14 @@ volcano_plot_ui <- function(id){
         fluidRow(
             plotBox(
                 width = 12,
-                plotlyOutput(ns("volcano_plot")) %>% 
+                plotly::plotlyOutput(ns("volcano_plot")) %>% 
                     shinycssloaders::withSpinner()
             )
         ),
         fluidRow(
             plotBox(
                 width = 12,
-                plotlyOutput(ns("violin_plot")) %>%
+                plotly::plotlyOutput(ns("violin_plot")) %>%
                     shinycssloaders::withSpinner()
             )
         )

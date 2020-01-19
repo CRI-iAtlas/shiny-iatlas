@@ -97,7 +97,7 @@ distributions_plot_server <- function(
         )
     })
     
-    output$plot <- renderPlotly({
+    output$plot <- plotly::renderPlotly({
         plot_function()(
             dplyr::collect(distribution_plot_con()),
             xlab = group_display_choice(),
@@ -125,7 +125,7 @@ distributions_plot_server <- function(
         content = function(con) readr::write_csv(plot_df(), con)
     )
     
-    output$drilldown_plot <- renderPlotly({
+    output$drilldown_plot <- plotly::renderPlotly({
         
         eventdata <- plotly::event_data(
             "plotly_click", 

@@ -29,7 +29,7 @@ volcano_plot_server <- function(
             )
     })
     
-    output$volcano_plot <- renderPlotly({
+    output$volcano_plot <- plotly::renderPlotly({
         
         shiny::req(
             volcano_plot_tbl(),
@@ -55,7 +55,7 @@ volcano_plot_server <- function(
         )
     })
     
-    output$violin_plot <- renderPlotly({
+    output$violin_plot <- plotly::renderPlotly({
         
         eventdata <- plotly::event_data("plotly_click", source = volcano_source_name)
 

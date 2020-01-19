@@ -25,7 +25,7 @@ create_boxplot <- function(
             COLOR = color_col,
             LABEL = label_col,
             SPLIT = split_col),
-        plot_ly(
+        plotly::plot_ly(
             df,
             x = ~X,
             y = ~Y,
@@ -40,7 +40,7 @@ create_boxplot <- function(
             colors = fill_colors,
             source = source_name
         )) %>% 
-        layout(
+        plotly::layout(
             title = title,
             xaxis = list(title = xlab),
             yaxis = list(title = ylab)

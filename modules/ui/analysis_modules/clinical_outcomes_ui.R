@@ -75,7 +75,7 @@ clinical_outcomes_ui <- function(id) {
                 plotBox(
                     width = 12,
                     fluidRow(
-                        plotlyOutput(ns("heatmapplot"), height = 600) %>%
+                        plotly::plotlyOutput(ns("heatmapplot"), height = 600) %>%
                             shinycssloaders::withSpinner(),
                         p(),
                         textOutput(ns("heatmap_group_text"))

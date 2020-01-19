@@ -34,7 +34,7 @@ create_scatterplot <- function(
                 colors = fill_colors,
                 key = ~LABEL,
                 source = source_name) %>% 
-                add_markers(
+                plotly::add_markers(
                     alpha = 0.5,
                     hoverinfo = 'text',
                     text = ~LABEL,
@@ -42,7 +42,7 @@ create_scatterplot <- function(
                 ))
             
     p <- p %>% 
-        layout(
+        plotly::layout(
             title = title,
             xaxis = list(title = xlab), 
             yaxis = list(title = ylab)
@@ -50,7 +50,7 @@ create_scatterplot <- function(
     
     if (horizontal_line) {
         p <- p %>%
-            layout(
+            plotly::layout(
                 shapes = list(
                     type = "line",
                     x0 = -1,
@@ -63,7 +63,7 @@ create_scatterplot <- function(
     
     if (identity_line) {
         p %>% 
-            layout(
+            plotly::layout(
                 shapes = list(
                     type = "line", 
                     x0 = 0, 

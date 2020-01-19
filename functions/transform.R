@@ -264,7 +264,7 @@ create_plotly_label <- function(
             ) %>%
             dplyr::group_by(label) %>%
             dplyr::mutate(value_label = stringr::str_c(value_label, collapse = "</br>")) %>%
-            ungroup() %>%
+            dplyr::ungroup() %>%
             tidyr::spread(value_name, value) %>%
             tidyr::unite(label, label, value_label, sep = "</br></br>")
     )

@@ -25,7 +25,7 @@ overall_cell_proportions_module_ui <- function(id){
         fluidRow(
             plotBox(
                 width = 12,
-                plotlyOutput(ns("barplot")) %>% 
+                plotly::plotlyOutput(ns("barplot")) %>% 
                     shinycssloaders::withSpinner(),
                 p(),
                 textOutput(ns("barplot_text"))
@@ -42,7 +42,7 @@ overall_cell_proportions_module_ui <- function(id){
                     width = 6,
                     br(),
                     fluidRow(
-                        plotlyOutput(ns("scatterplot")) %>%
+                        plotly::plotlyOutput(ns("scatterplot")) %>%
                             shinycssloaders::withSpinner()
                     )
                 )
@@ -80,7 +80,7 @@ cell_type_fractions_module_ui <- function(id){
         fluidRow(
             plotBox(
                 width = 12,
-                plotlyOutput(ns("barplot")) %>% 
+                plotly::plotlyOutput(ns("barplot")) %>% 
                     shinycssloaders::withSpinner(),
                 p(),
                 textOutput(ns("barplot_text"))

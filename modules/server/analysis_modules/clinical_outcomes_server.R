@@ -173,7 +173,7 @@ clinical_outcomes_server <- function(
             dplyr::compute() 
     })
     
-    output$heatmapplot <- renderPlotly({
+    output$heatmapplot <- plotly::renderPlotly({
         
         shiny::req(
             heatmap_survial_values_con(),

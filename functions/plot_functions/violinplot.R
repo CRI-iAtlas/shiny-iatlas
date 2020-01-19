@@ -28,7 +28,7 @@ create_violinplot <- function(
             COLOR = color_col,
             SPLIT = split_col,
             LABEL = label_col),
-        plot_ly(
+        plotly::plot_ly(
             df,
             x = ~X,
             y = ~Y,
@@ -48,7 +48,7 @@ create_violinplot <- function(
             meanline = list(
                 visible = TRUE
             ))) %>%
-        layout(
+        plotly::layout(
             title = title,
             xaxis = list(title = xlab),
             yaxis = list(title = ylab)

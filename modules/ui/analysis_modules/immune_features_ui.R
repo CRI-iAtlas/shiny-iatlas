@@ -62,7 +62,7 @@ immune_features_correlations_ui <- function(id) {
             plotBox(
                 width = 12,
                 fluidRow(
-                    plotlyOutput(ns("heatmap")) %>% 
+                    plotly::plotlyOutput(ns("heatmap")) %>% 
                         shinycssloaders::withSpinner(),
                     p(),
                     textOutput(ns("heatmap_group_text"))
@@ -72,7 +72,7 @@ immune_features_correlations_ui <- function(id) {
         fluidRow(
             plotBox(
                 width = 12,
-                plotlyOutput(ns("scatterPlot")) %>%
+                plotly::plotlyOutput(ns("scatterPlot")) %>%
                     shinycssloaders::withSpinner()
             )
         )
