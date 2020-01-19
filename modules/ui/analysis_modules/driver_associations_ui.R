@@ -16,6 +16,8 @@ univariate_driver_ui <- function(id){
     
     ns <- NS(id)
     
+    source("modules/ui/submodules/volcano_plot_ui.R", local = T)
+    
     sectionBox(
         title = "Immune Response Association With Driver Mutations -- single variable",
         messageBox(
@@ -56,6 +58,9 @@ univariate_driver_ui <- function(id){
 multivariate_driver_ui <- function(id){
     
     ns <- NS(id)
+    
+    source("modules/ui/submodules/volcano_plot_ui.R", local = T)
+    source("modules/ui/submodules/model_selection_ui.R", local = T)
     
     sectionBox(
         title = "Immune Response Association With Driver Mutations -- multivariate",

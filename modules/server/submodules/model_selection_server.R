@@ -10,6 +10,8 @@ model_selection_server <- function(
     
     ns <- session$ns
     
+    source("modules/server/submodules/insert_remove_element_server.R", local = T)
+    
     numeric_covariate_module <- reactive({
         purrr::partial(
             numeric_model_covariate_element_server,

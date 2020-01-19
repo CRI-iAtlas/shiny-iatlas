@@ -9,6 +9,9 @@ immunomodulators_server <- function(
     cohort_colors
 ){
     
+    source("modules/server/submodules/data_table_server.R", local = T)
+    source("modules/server/submodules/distribution_plot_server.R", local = T)
+    
     im_id_con <- reactive({
         create_conection("gene_types") %>% 
             dplyr::filter(name == "immunomodulator") %>% 

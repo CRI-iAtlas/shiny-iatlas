@@ -9,6 +9,9 @@ io_targets_server <- function(
     cohort_colors
 ) {
     
+    source("modules/server/submodules/data_table_server.R", local = T)
+    source("modules/server/submodules/distribution_plot_server.R", local = T)
+    
     ns <- session$ns
     
     url_gene <- reactive({

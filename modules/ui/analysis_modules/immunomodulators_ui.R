@@ -2,6 +2,9 @@ immunomodulators_ui <- function(id) {
     
     ns <- NS(id)
     
+    source("modules/ui/submodules/data_table_ui.R", local = T)
+    source("modules/ui/submodules/distribution_plot_ui.R", local = T)
+    
     tagList(
         titleBox("iAtlas Explorer — Immunomodulators"),
         textBox(

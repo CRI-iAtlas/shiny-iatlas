@@ -8,6 +8,7 @@ immune_features_server <- function(
     group_name,
     cohort_colors
 ){
+    source("modules/server/submodules/distribution_plot_server.R", local = T)
     
     distributions_feature_con <- reactive({
         features_con() %>%

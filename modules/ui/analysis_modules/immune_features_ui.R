@@ -1,5 +1,8 @@
 immune_features_ui <- function(id) {
+    
     ns <- NS(id)
+    
+    source("modules/ui/submodules/distribution_plot_ui.R", local = T)
     
     tagList(
         titleBox("iAtlas Explorer — Immune Feature Trends"),

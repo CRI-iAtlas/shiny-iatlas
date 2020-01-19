@@ -17,7 +17,7 @@ shinyServer(function(input, output, session) {
         }
     })
     
-    modules <- list.files("modules/server/", full.names = T)
+    modules <- list.files("modules/server/analysis_modules", full.names = T)
     
     for(item in modules){
         source(item, local = T)

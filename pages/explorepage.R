@@ -1,5 +1,5 @@
 
-module_uis <- list.files("modules/ui/", full.names = T)
+module_uis <- list.files("modules/ui/analysis_modules", full.names = T)
 
 for(item in module_uis){
     source(item, local = T)

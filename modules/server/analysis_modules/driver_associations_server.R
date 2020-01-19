@@ -36,7 +36,8 @@ univariate_driver_server <- function(
 ){
     ns <- session$ns
     
-    ## single variable models ----
+    source("modules/server/submodules/volcano_plot_server.R", local = T)
+    
     
     output$response_options <- renderUI({
         req(features_named_list())
@@ -121,6 +122,9 @@ multivariate_driver_server <- function(
 ){
     
     ns <- session$ns
+    
+    source("modules/server/submodules/volcano_plot_server.R", local = T)
+    source("modules/server/submodules/model_selection_server.R", local = T)
     
     output$response_options <- renderUI({
         req(features_named_list(), features_con())
