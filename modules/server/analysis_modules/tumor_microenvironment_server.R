@@ -64,9 +64,9 @@ overall_cell_proportions_server  <- function(
     })
     
     output$barplot <- renderPlotly({
-        req(barplot_tbl())
+        shiny::req(barplot_tbl())
         
-        validate(need(
+        shiny::validate(shiny::need(
             nrow(barplot_tbl()) > 0, 
             "Samples in current selected groups have no fraction data."))
         
@@ -82,8 +82,8 @@ overall_cell_proportions_server  <- function(
     
     output$barplot_text <- renderText({
         req(group_con())
-        eventdata <- event_data("plotly_click", source = "op_barplot")
-        validate(need(eventdata, "Click above plot"))
+        eventdata <- plotly::event_data("plotly_click", source = "op_barplot")
+        shiny::validate(shiny::need(eventdata, "Click above plot"))
         
         selected_group <- eventdata$x[[1]]
         
@@ -95,13 +95,13 @@ overall_cell_proportions_server  <- function(
     
     output$scatterplot <- renderPlotly({
         req(cp_value_con())
-        eventdata <- event_data( "plotly_click", source = "op_barplot")
-        validate(need(eventdata, "Click above plot"))
+        eventdata <- plotly::event_data( "plotly_click", source = "op_barplot")
+        shiny::validate(shiny::need(eventdata, "Click above plot"))
         
         
         selected_group <- eventdata$x[[1]]
         groups         <- dplyr::pull(cp_value_con(), group)
-        validate(need(selected_group %in% groups, "Click above barchart"))
+        shiny::validate(shiny::need(selected_group %in% groups, "Click above barchart"))
         
         scatterplot_tbl <-  build_cell_proportion_scatterplot_tbl(
             cp_value_con(),
@@ -148,9 +148,9 @@ cell_type_fractions_server <- function(
     
     output$barplot <- renderPlotly({
         
-        req(cf_value_tbl())
+        shiny::req(cf_value_tbl())
 
-        validate(need(
+        shiny::validate(shiny::need(
             nrow(cf_value_tbl()) > 0,
             "Samples in current selected groups have no selected fraction data.")
         )
@@ -169,8 +169,8 @@ cell_type_fractions_server <- function(
     
     output$barplot_text <- renderText({
         req(group_con())
-        eventdata <- event_data("plotly_click", source = "cf_barplot")
-        validate(need(eventdata, "Click above plot"))
+        eventdata <- plotly::event_data("plotly_click", source = "cf_barplot")
+        shiny::validate(shiny::need(eventdata, "Click above plot"))
         
         selected_group <- eventdata$x[[1]]
         

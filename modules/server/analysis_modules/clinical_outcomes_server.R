@@ -28,7 +28,7 @@ clinical_outcomes_server <- function(
     
     output$survival_plot <- renderPlot({
         
-        req(
+        shiny::req(
             survival_tbl(),
             cohort_colors(),
             group_name(),
@@ -36,14 +36,14 @@ clinical_outcomes_server <- function(
         )
         
         
-        validate(need(
+        shiny::validate(shiny::need(
             nrow(survival_tbl()) > 0, 
             "Samples with selected variable don't have selected survival feature"
         ))
         
         num_groups <- length(unique(survival_tbl()$group))
         
-        validate(need(
+        shiny::validate(shiny::need(
             num_groups <= 10,
             paste0(
                 "Too many sample groups (", num_groups, ") ",
@@ -175,7 +175,7 @@ clinical_outcomes_server <- function(
     
     output$heatmapplot <- renderPlotly({
         
-        req(
+        shiny::req(
             heatmap_survial_values_con(),
             heatmap_feature_values_con()
         )
@@ -185,7 +185,7 @@ clinical_outcomes_server <- function(
             heatmap_survial_values_con()
         )
         
-        validate(need(
+        shiny::validate(shiny::need(
             nrow(ci_mat > 0) & ncol(ci_mat > 0), 
             "No results to display, pick a different group."
         ))
@@ -194,9 +194,9 @@ clinical_outcomes_server <- function(
     })
     
     output$heatmap_group_text <- renderText({
-        req(groups_con)
-        eventdata <- event_data("plotly_click", source = "ci")
-        validate(need(eventdata, "Click above plot"))
+        shiny::req(groups_con)
+        eventdata <- plotly::event_data("plotly_click", source = "ci")
+        shiny::validate(shiny::need(eventdata, "Click above plot"))
         
         groups_con() %>% 
             dplyr::filter(group == local(unique(dplyr::pull(eventdata, "x")))) %>% 
