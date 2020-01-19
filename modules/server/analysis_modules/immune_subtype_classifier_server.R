@@ -3,6 +3,8 @@ immune_subtype_classifier_server <- function(
     subset_df, plot_colors) {
 
     ns <- session$ns
+    
+    source("functions/immune_subtype_classifier_functions.R", local = T)
 
     # in src files ... have same path as app.R
     # reportedClusters <- getSubtypeTable()
