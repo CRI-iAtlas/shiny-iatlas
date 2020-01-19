@@ -1,13 +1,13 @@
-resourcespage <- fluidPage(
-  br(),
-  titleBox("Resources"),
-  fluidRow(
-    column(
-      width = 12,
-      column(
-        width = 12,
-        includeMarkdown("www/md/resources.md")
-      )
+resourcespage <- shiny::fluidPage(
+    shiny::br(),
+    .GlobalEnv$titleBox("Resources"),
+    shiny::fluidRow(
+        shiny::column(
+            width = 12,
+            shiny::column(
+                width = 12,
+                shiny::includeMarkdown("www/md/resources.md")
+            )
+        )
     )
-  )
 )

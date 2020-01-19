@@ -17,11 +17,16 @@ shinyServer(function(input, output, session) {
         }
     })
     
-    modules <- list.files("modules/server/analysis_modules", full.names = T)
-    
-    for(item in modules){
-        source(item, local = T)
-    }
+    source("modules/server/analysis_modules/clinical_outcomes_server.R", local = T)
+    source("modules/server/analysis_modules/cohort_selection_server.R", local = T)
+    source("modules/server/analysis_modules/data_info_server.R", local = T)
+    source("modules/server/analysis_modules/driver_associations_server.R", local = T)  
+    source("modules/server/analysis_modules/immune_features_server.R", local = T)
+    source("modules/server/analysis_modules/immunomodulators_server.R", local = T)
+    source("modules/server/analysis_modules/io_targets_server.R", local = T)
+    source("modules/server/analysis_modules/immune_subtype_classifier_server.R", local = T)
+    source("modules/server/analysis_modules/til_maps_server.R", local = T)
+    source("modules/server/analysis_modules/tumor_microenvironment_server.R", local = T)
     
     tags_con <- reactive({
         create_connection("tags") %>% 

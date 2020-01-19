@@ -4,14 +4,15 @@
 ################################################################################
 
 headerTagList <- list(	
-  tags$style(type = "text/css", ".navbar .navbar-nav {float: right; font-size: 14px} .navbar .navbar-nav li a {font-size: 14px} .nav-tabs {font-size: 12px}"),
-  tags$base(target = "_blank")	
+    shiny::tags$style(
+        type = "text/css", 
+        ".navbar .navbar-nav {float: right; font-size: 14px} .navbar .navbar-nav li a {font-size: 14px} .nav-tabs {font-size: 12px}"
+    ),
+    shiny::tags$base(target = "_blank")	
 )
 
 footerTagList <- list(
-  tags$footer(id = "myFooter",
-    shiny::includeHTML("footer.html")
-  )
+    shiny::tags$footer(id = "myFooter", shiny::includeHTML("footer.html"))
 )
 
 ################################################################################	
@@ -24,23 +25,24 @@ source("pages/toolspage.R", local = T)
 source("pages/docspage.R", local = T)
 source("pages/resourcespage.R", local = T)
 
-ui <- navbarPage(
-  includeCSS("www/custom.css"),
-  includeCSS("www/footer.css"),
-  includeCSS("www/bootstrapTable.min.css"),
-  title = strong("CRI iAtlas Portal"), selected = "Explore",	
-  tabPanel("Explore", explorepage, icon = icon("bar-chart")),	
-  tabPanel("Tools", toolspage, icon = icon("wrench")),	
-  tabPanel("About", aboutpage, icon = icon("info-circle")),	
-  tabPanel("Documentation", docspage, icon = icon("file-text")),	
-  tabPanel("Resources", resourcespage, icon = icon("link")),	
-  header = headerTagList,	
-  footer = footerTagList,
-  collapsible = TRUE,	inverse = TRUE,
-  windowTitle = "CRI iAtlas Portal"	,
-  tags$head(
-    tags$script(
-      '
+ui <- shiny::navbarPage(
+    shiny::includeCSS("www/custom.css"),
+    shiny::includeCSS("www/footer.css"),
+    shiny::includeCSS("www/bootstrapTable.min.css"),
+    title = shiny::strong("CRI iAtlas Portal"), selected = "Explore",	
+    shiny::tabPanel("Explore", explorepage, icon = icon("bar-chart")),	
+    shiny::tabPanel("Tools", toolspage, icon = icon("wrench")),	
+    shiny::tabPanel("About", aboutpage, icon = icon("info-circle")),	
+    shiny::tabPanel("Documentation", docspage, icon = icon("file-text")),	
+    shiny::tabPanel("Resources", resourcespage, icon = icon("link")),	
+    header = headerTagList,	
+    footer = footerTagList,
+    collapsible = TRUE,	
+    inverse = TRUE,
+    windowTitle = "CRI iAtlas Portal",
+    shiny::tags$head(
+        shiny::tags$script(
+            '
       var dimension = [0, 0];
       $(document).on("shiny:connected", function(e) {
       dimension[0] = window.innerWidth;
@@ -53,9 +55,9 @@ ui <- navbarPage(
       Shiny.onInputChange("dimension", dimension);
       });
       '
-    ),
-    HTML(
-		  "
+        ),
+        shiny::HTML(
+            "
       <script>
       (function(i,s,o,g,r,a,m){
 		  i['GoogleAnalyticsObject']=r;i[r]=i[r]||
@@ -73,8 +75,8 @@ ui <- navbarPage(
 		  
 		  </script>
       "
+        )
     )
-  )
 )	
 
-shinyUI(ui)
+shiny::shinyUI(ui)

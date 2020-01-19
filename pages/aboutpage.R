@@ -1,12 +1,12 @@
-aboutpage <- fluidPage(
-    br(),
-    titleBox("About"),
-    fluidRow(
-        column(
+aboutpage <- shiny::fluidPage(
+    shiny::br(),
+    .GlobalEnv$titleBox("About"),
+    shiny::fluidRow(
+        shiny::column(
             width = 12,
-            column(
+            shiny::column(
                 width = 12,
-                includeMarkdown("www/md/about.md")     
+                shiny::includeMarkdown("www/md/about.md")     
             )
         )
     )

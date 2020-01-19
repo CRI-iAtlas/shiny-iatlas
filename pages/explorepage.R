@@ -1,66 +1,72 @@
-
-module_uis <- list.files("modules/ui/analysis_modules", full.names = T)
-
-for(item in module_uis){
-    source(item, local = T)
-}
+source("modules/ui/analysis_modules/clinical_outcomes_ui.R", local = T)
+source("modules/ui/analysis_modules/cohort_selection_ui.R", local = T)
+source("modules/ui/analysis_modules/data_info_ui.R", local = T)
+source("modules/ui/analysis_modules/driver_associations_ui.R", local = T)  
+source("modules/ui/analysis_modules/immune_features_ui.R", local = T)
+source("modules/ui/analysis_modules/immunomodulators_ui.R", local = T)
+source("modules/ui/analysis_modules/io_targets_ui.R", local = T)
+source("modules/ui/analysis_modules/til_maps_ui.R", local = T)
+source("modules/ui/analysis_modules/tumor_microenvironment_ui.R", local = T)
 
 explorepage <- shinydashboard::dashboardPage(
     shinydashboard::dashboardHeader(disable = TRUE),
     shinydashboard::dashboardSidebar(
         shinydashboard::sidebarMenu(
             id = "explorertabs",
-            shinydashboard::menuItem("iAtlas Explorer Home",
-                     tabName = "dashboard",
-                     icon = shiny::icon("dashboard")
+            shinydashboard::menuItem(
+                "iAtlas Explorer Home",
+                tabName = "dashboard",
+                icon = shiny::icon("dashboard")
             ),
-            shinydashboard::menuItem("Analysis Modules",
-                     icon = shiny::icon("bar-chart"), 
-                     startExpanded = TRUE,
-                     shinydashboard::menuSubItem(
-                         "Cohort Selection",
-                         tabName = "cohort_selection",
-                         icon = icon("cog")
-                     ),
-                     shinydashboard::menuSubItem(
-                         "Tumor Microenvironment",
-                         tabName = "tumor_microenvironment",
-                         icon = icon("cog")
-                     ),
-                     shinydashboard::menuSubItem(
-                         "Immune Feature Trends",
-                         tabName = "immune_features",
-                         icon = icon("cog")
-                     ),
-                     shinydashboard::menuSubItem(
-                         "Clinical Outcomes",
-                         tabName = "clinical_outcomes",
-                         icon = icon("cog")
-                     ),
-                     shinydashboard::menuSubItem(
-                         "Immunomodulators",
-                         tabName = "immunomodulators",
-                         icon = icon("cog")
-                     ),
-                     shinydashboard::menuSubItem(
-                         "IO Targets",
-                         tabName = "io_targets",
-                         icon = icon("cog")
-                     ),
-                     shinydashboard::menuSubItem(
-                         "TIL Maps",
-                         tabName = "til_maps",
-                         icon = icon("cog")
-                     ),
-                     shinydashboard::menuSubItem(
-                         "Driver Associations",
-                         tabName = "driver_associations",
-                         icon = icon("cog")
-                     )
+            shinydashboard::menuItem(
+                "Analysis Modules",
+                icon = shiny::icon("bar-chart"), 
+                startExpanded = TRUE,
+                shinydashboard::menuSubItem(
+                    "Cohort Selection",
+                    tabName = "cohort_selection",
+                    icon = shiny::icon("cog")
+                ),
+                shinydashboard::menuSubItem(
+                    "Tumor Microenvironment",
+                    tabName = "tumor_microenvironment",
+                    icon = shiny::icon("cog")
+                ),
+                shinydashboard::menuSubItem(
+                    "Immune Feature Trends",
+                    tabName = "immune_features",
+                    icon = shiny::icon("cog")
+                ),
+                shinydashboard::menuSubItem(
+                    "Clinical Outcomes",
+                    tabName = "clinical_outcomes",
+                    icon = shiny::icon("cog")
+                ),
+                shinydashboard::menuSubItem(
+                    "Immunomodulators",
+                    tabName = "immunomodulators",
+                    icon = shiny::icon("cog")
+                ),
+                shinydashboard::menuSubItem(
+                    "IO Targets",
+                    tabName = "io_targets",
+                    icon = shiny::icon("cog")
+                ),
+                shinydashboard::menuSubItem(
+                    "TIL Maps",
+                    tabName = "til_maps",
+                    icon = shiny::icon("cog")
+                ),
+                shinydashboard::menuSubItem(
+                    "Driver Associations",
+                    tabName = "driver_associations",
+                    icon = shiny::icon("cog")
+                )
             ),
-            shinydashboard::menuItem("Data Description",
-                     icon = icon("th-list"),
-                     tabName = "data_info"
+            shinydashboard::menuItem(
+                "Data Description",
+                icon = shiny::icon("th-list"),
+                tabName = "data_info"
             )
         )
     ),
@@ -68,18 +74,14 @@ explorepage <- shinydashboard::dashboardPage(
         shinydashboard::tabItems(
             shinydashboard::tabItem(
                 tabName = "dashboard",
-                titleBox("iAtlas Explorer — Home"),
-                textBox(
+                .GlobalEnv$titleBox("iAtlas Explorer — Home"),
+                .GlobalEnv$textBox(
                     width = 12,
-                    p("Select a module to explore CRI iAtlas data through interactive visualizations. You can organize the data by choosing how to divide tumor samples using ",
-                      strong("“Select Sample Groups”"), " on the left navigation bar.",  
-                      "You can also select ",
-                      strong("“Data Description”"), 
-                      "on the left navigation bar to learn which immune readouts are available.")
+                    shiny::includeMarkdown("www/md/explore.md")
                 ),
-                sectionBox(
+                .GlobalEnv$sectionBox(
                     title = "What's Inside",
-                    fluidRow(
+                    shiny::fluidRow(
                         shinydashboard::infoBox(
                             "Immune Readouts:", 
                             86, 
@@ -114,18 +116,19 @@ explorepage <- shinydashboard::dashboardPage(
                         )
                     )
                 ),
-                sectionBox(
+                .GlobalEnv$sectionBox(
                     title = "Analysis Modules",
-                    messageBox(
+                    .GlobalEnv$messageBox(
                         width = 12,
-                        p("Each module presents information organized by theme, with multiple views and interactive controls.",
-                          "Within each module, you can find ",
-                          strong("“Manuscript Context”"), " describing how that module can generate figures analogous to those in the manuscript ", 
-                          em("Thorsson et al., The Immune Landscape of Cancer, Immunity (2018).")
+                        shiny::p(
+                            "Each module presents information organized by theme, with multiple views and interactive controls.",
+                            "Within each module, you can find ",
+                            shiny::strong("“Manuscript Context”"), " describing how that module can generate figures analogous to those in the manuscript ", 
+                            shiny::em("Thorsson et al., The Immune Landscape of Cancer, Immunity (2018).")
                         )
                     ),
-                    fluidRow(
-                        imgLinkBox(
+                    shiny::fluidRow(
+                        .GlobalEnv$imgLinkBox(
                             width = 6,
                             linkId = "link_to_cohort_selection",
                             title = "Cohort Selection",
@@ -133,7 +136,7 @@ explorepage <- shinydashboard::dashboardPage(
                             boxText = "Use this module to create a cohort of interest.",
                             linkText = "Open Module"
                         ),
-                        imgLinkBox(
+                        .GlobalEnv$imgLinkBox(
                             width = 6,
                             linkId = "link_to_tumor_microenvironment",
                             title = "Tumor Microenvironment",
@@ -142,8 +145,8 @@ explorepage <- shinydashboard::dashboardPage(
                             linkText = "Open Module"
                         )
                     ),
-                    fluidRow(
-                        imgLinkBox(
+                    shiny::fluidRow(
+                        .GlobalEnv$imgLinkBox(
                             width = 6,
                             title = "Immune Feature Trends",
                             linkId = "link_to_immune_features",
@@ -151,7 +154,7 @@ explorepage <- shinydashboard::dashboardPage(
                             boxText = "This module allows you to see how immune readouts vary across your groups, and how they relate to one another.",
                             linkText = "Open Module"
                         ),
-                        imgLinkBox(
+                        .GlobalEnv$imgLinkBox(
                             width = 6,
                             linkId = "link_to_clinical_outcomes",
                             title = "Clinical Outcomes",
@@ -161,8 +164,8 @@ explorepage <- shinydashboard::dashboardPage(
                         )
                         
                     ),
-                    fluidRow(
-                        imgLinkBox(
+                    shiny::fluidRow(
+                        .GlobalEnv$imgLinkBox(
                             width = 6,
                             title = "Immunomodulators",
                             linkId = "link_to_immunomodulators",
@@ -170,7 +173,7 @@ explorepage <- shinydashboard::dashboardPage(
                             boxText = "Explore the expression of genes that code for immunomodulating proteins, including checkpoint proteins.",
                             linkText = "Open Module"
                         ),
-                        imgLinkBox(
+                        .GlobalEnv$imgLinkBox(
                             width = 6,
                             title = "TIL Maps",
                             linkId = "link_to_til_maps",
@@ -179,8 +182,8 @@ explorepage <- shinydashboard::dashboardPage(
                             linkText = "Open Module"
                         )
                     ),
-                    fluidRow(
-                        imgLinkBox(
+                    shiny::fluidRow(
+                        .GlobalEnv$imgLinkBox(
                             width = 6,
                             title = "Driver Associations",
                             linkId = "link_to_driver_associations",
@@ -188,7 +191,7 @@ explorepage <- shinydashboard::dashboardPage(
                             boxText = "Explore Associations of Microenvironment with Driver Mutations.",
                             linkText = "Open Module"
                         ),
-                        imgLinkBox(
+                        .GlobalEnv$imgLinkBox(
                             width = 6,
                             title = "IO Targets",
                             linkId = "link_to_io_targets",
