@@ -210,6 +210,73 @@ multivariate_driver_server <- function(
     })
     
     status_con <- shiny::reactive({
+        # 
+        # sql_query <- build_sql('SELECT a, b, c, avg(c) OVER (PARTITION BY a) AS mean_c FROM x_tbl')
+        # 
+        # y_df <- DBI::dbGetQuery(con, sql_query) # This returns a data frame on memory
+        # 
+        # driver_id <- 
+        #     create_connection("gene_types") %>%
+        #     dplyr::filter(name == "driver_mutation") %>% 
+        #     dplyr::pull(id)
+        # 
+        # driver_ids <-
+        #     create_connection("genes_to_types") %>% 
+        #     dplyr::filter(type_id == driver_id) %>% 
+        #     dplyr::pull(gene_id)
+        #     
+        # con1 <- 
+        #     create_connection("genes_to_samples") %>% 
+        #     dplyr::filter(
+        #         !is.na(status)
+        #         # gene_id %in% driver_ids
+        #     ) %>% 
+        #     dplyr::select(sample_id, gene_id, status) %>% 
+        #     dplyr::show_query()
+        # 
+        # # s <- dplyr::sql(stringr::str_c(
+        # #     'SELECT sample_id, gene_id, status',
+        # #     'FROM genes_to_samples',
+        # #     'WHERE gene_id IN (',
+        # #     stringr::str_c(driver_ids, collapse = ","),
+        # #     ')',
+        # #     sep = " "
+        # # ))
+        # 
+        # 
+        # 
+        # 
+        # subquery <- stringr::str_c(
+        #     'SELECT gene_id',
+        #     'FROM genes_to_types',
+        #     'WHERE (type_id = 3)',
+        #     sep = " "
+        # )
+        # 
+        # query <- dplyr::sql(stringr::str_c(
+        #     'SELECT sample_id, gene_id, status',
+        #     'FROM genes_to_samples',
+        #     'WHERE status IS NOT NULL',
+        #     'AND gene_id IN (',
+        #     subquery,
+        #     ')',
+        #     sep = " "
+        # ))
+        # 
+        # current_pool <- pool::poolCheckout(.GlobalEnv$pool)
+        # system.time(pool::dbGetQuery(current_pool, query))
+        # pool::poolReturn(current_pool)
+        # 
+        # 
+        #     
+        # # 
+        # # WHERE ("gene_id" IN (
+        # #     SELECT "gene_id"
+        # #     FROM "genes_to_types"
+        # #     WHERE ("type_id" = 3)
+        # # )
+        # 
+        # 
         create_connection("gene_types") %>%
             dplyr::filter(name == "driver_mutation") %>%
             dplyr::select(type_id = id) %>%
@@ -225,7 +292,7 @@ multivariate_driver_server <- function(
             ) %>%
             dplyr::select(gene_id, gene_name = hgnc) %>%
             dplyr::inner_join(
-                create_connection("genes_to_samples") %>% 
+                create_connection("genes_to_samples") %>%
                     dplyr::filter(!is.na(status)),
                 by = "gene_id"
             ) %>%
