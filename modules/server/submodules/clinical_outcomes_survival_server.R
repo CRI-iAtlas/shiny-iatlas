@@ -11,6 +11,8 @@ clinical_outcomes_survival_server <- function(
     
     ns <- session$ns
     
+    source("functions/clinical_outcomes_survival_functions.R")
+    
     survival_tbl <- shiny::reactive({
 
         shiny::req(
@@ -57,7 +59,7 @@ clinical_outcomes_survival_server <- function(
             data = survival_tbl()
         )
 
-        create_kmplot(
+        .GlobalEnv$create_kmplot(
             fit = fit,
             df = survival_tbl(),
             confint = input$confint,

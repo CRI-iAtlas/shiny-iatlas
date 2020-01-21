@@ -13,7 +13,7 @@ clinical_outcomes_heatmap_ui <- function(id) {
                 shiny::column(
                     width = 6,
                     shiny::selectInput(
-                        inputId = ns("heatmap_time_feature_choice"),
+                        inputId = ns("time_feature_choice"),
                         label = "Select or Search for Survival Endpoint",
                         selected = "OS Time",
                         choices = c(
