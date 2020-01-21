@@ -98,6 +98,34 @@ create_connection <- function(table_name) {
     return(result)
 }
 
+perform_query <- function(table_name, query) {
+    tictoc::tic(paste0(
+        "Time taken to read from the `",
+        table_name,
+        "`` table in the DB"
+    ))
+    current_pool <- pool::poolCheckout(.GlobalEnv$pool)
+    tbl <- dplyr::as_tibble(pool::dbGetQuery(current_pool, query))
+    pool::poolReturn(current_pool)
+    tictoc::toc()
+    return(result)
+}
+
+read_table <- function(table_name) {
+    tictoc::tic(paste0(
+        "Time taken to read from the `", 
+        table_name,
+        "`` table in the DB"
+    ))
+    current_pool <- pool::poolCheckout(.GlobalEnv$pool)
+    tbl <- dplyr::as_tibble(pool::dbReadTable(current_pool, table_name))
+    pool::poolReturn(current_pool)
+    tictoc::toc()
+    return(tbl)
+}
+
+
+
 # other -----------------------------------------------------------------------
 
 calculate_lm_pvalue <- function(tbl, lm_formula, term){

@@ -148,6 +148,13 @@ shiny::shinyServer(function(input, output, session) {
     )
     
     cohort_sample_con <- shiny::reactive(cohort_cons()$sample_con) 
+    cohort_sample_tbl <- shiny::reactive({
+        req(cohort_sample_con())
+        print(system.time({
+            tbl <- dplyr::collect(cohort_sample_con())
+        }))
+        return(tbl)
+    }) 
     cohort_group_con  <- shiny::reactive(cohort_cons()$group_con)
     cohort_group_name <- shiny::reactive(cohort_cons()$group_name)
     cohort_colors     <- shiny::reactive(cohort_cons()$plot_colors) 
@@ -211,6 +218,7 @@ shiny::shinyServer(function(input, output, session) {
     shiny::callModule(
         clinical_outcomes_server,
         "clinical_outcomes",
+        cohort_sample_tbl,
         cohort_feature_values_con,
         features_con,
         cohort_group_con,

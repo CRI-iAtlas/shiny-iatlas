@@ -2,6 +2,7 @@ clinical_outcomes_server <- function(
     input, 
     output, 
     session, 
+    sample_tbl,
     feature_values_con,
     features_con,
     groups_con,
@@ -26,6 +27,7 @@ clinical_outcomes_server <- function(
     shiny::callModule(
         clinical_outcomes_heatmap_server, 
         "clinical_outcomes_heatmap",
+        cohort_sample_tbl,
         feature_values_con,
         features_con,
         groups_con,

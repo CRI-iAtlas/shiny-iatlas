@@ -2,6 +2,7 @@ clinical_outcomes_heatmap_server <- function(
     input, 
     output, 
     session, 
+    cohort_sample_tbl,
     feature_values_con,
     features_con,
     groups_con,
@@ -55,7 +56,8 @@ clinical_outcomes_heatmap_server <- function(
         build_feature_values_con(
             feature_values_con(), 
             features_con(), 
-            feature_ids()
+            feature_ids(),
+            sample_tbl()
         )
 
     })

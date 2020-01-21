@@ -27,13 +27,36 @@ get_feature_ids <- function(features_con, class_choice_id){
 build_feature_values_con <- function(
     feature_values_con,
     features_con,
-    feature_ids
+    feature_ids,
+    sample_tbl
 ){
-    feature_values_con %>%
+ 
+    con <- feature_values_con %>%
         dplyr::filter(feature_id %in% feature_ids) %>%
         dplyr::inner_join(features_con, by = "feature_id") %>%
         dplyr::select(sample_id, feature_name, value) %>%
         dplyr::compute()
+
+    # sample_id_sting <- sample_tbl %>% 
+    #     dplyr::pull(sample_id) %>% 
+    #     stringr::str_c(collapse = ", ")
+    # feature_id_string <- stringr::str_c(feature_ids, collapse = ", ")
+    # 
+    # query <- dplyr::sql(stringr::str_c(
+    #     'SELECT sample_id, feature_id, value',
+    #     'FROM features_to_samples',
+    #     'WHERE value IS NOT NULL',
+    #     'AND sample_id IN (',
+    #     sample_id_sting,
+    #     ')',
+    #     'AND feature_id IN (',
+    #     feature_id_string,
+    #     ')',
+    #     sep = " "
+    # ))
+    # 
+
+    return(con)
 }
 
 build_survival_values_con <- function(
