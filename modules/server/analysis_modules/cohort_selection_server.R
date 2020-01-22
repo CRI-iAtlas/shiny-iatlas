@@ -9,6 +9,7 @@ cohort_selection_server <- function(
     source("modules/server/submodules/insert_remove_element_server.R", local = T)
     source("modules/ui/submodules/elements_ui.R", local = T)
     source("modules/server/submodules/elements_server.R", local = T)
+    source("functions/cohort_selection_functions.R", local = T)
     
     # cohort selection --------------------------------------------------------
     
@@ -93,7 +94,7 @@ cohort_selection_server <- function(
             ) %>% 
             dplyr::as_tibble() %>% 
             dplyr::select(group = name, parent_group = display) %>% 
-            dplyr::compute()
+            dplyr::compute() 
     })
     
     feature_values_con <- shiny::reactive({
@@ -128,18 +129,7 @@ cohort_selection_server <- function(
     })
     
     gene_mutation_list <- shiny::reactive({
-        list <- 
-            dplyr::inner_join(
-                create_connection("genes") %>% 
-                    dplyr::select(hgnc, id),
-                create_connection("genes_to_samples") %>%
-                    dplyr::filter(!is.na(status)) %>% 
-                    dplyr::select(gene_id) %>% 
-                    dplyr::distinct(),
-                by = c("id" = "gene_id")
-            ) %>% 
-            dplyr::as_tibble() %>% 
-            tibble::deframe()
+        create_gene_mutation_list()
     })
     
     gene_expression_list <- shiny::reactive({
@@ -275,8 +265,8 @@ cohort_selection_server <- function(
     )
     
     sample_ids <- shiny::reactive({
-        shiny::req(samples_con())
-        dplyr::pull(samples_con(), sample_id)
+        req(selected_dataset())
+        get_all_dataset_ids(selected_dataset())
     })
     
     numeric_filter_samples <- shiny::reactive({
@@ -286,22 +276,16 @@ cohort_selection_server <- function(
             shiny::reactiveValuesToList() %>% 
             purrr::discard(purrr::map_lgl(., is.null)) 
         for(item in numeric_filters){
-            shiny::req(item$feature_choice, item$feature_range)
-            sample_ids <- 
-                create_connection("features_to_samples") %>%
-                dplyr::select(sample_id, feature_id, value) %>% 
-                dplyr::left_join(
-                    create_connection("features"), 
-                    by = c("feature_id" = "id")
-                ) %>% 
-                dplyr::filter(
-                    feature_id == local(as.integer(item$feature_choice)),
-                    value <=  local(item$feature_range[[2]]),
-                    value >= local(item$feature_range[[1]])
-                ) %>% 
-                dplyr::pull(sample_id)
-            
-            
+            shiny::req(
+                item$feature_choice,
+                item$feature_range[[1]],
+                item$feature_range[[2]]
+            )
+            sample_ids <- get_numeric_filter_samples(
+                item$feature_choice,
+                item$feature_range[[1]],
+                item$feature_range[[2]]
+            )
             samples <- intersect(samples, sample_ids)
         }
         return(samples)
@@ -314,25 +298,14 @@ cohort_selection_server <- function(
             purrr::discard(purrr::map_lgl(., is.null))
         samples <- sample_ids()
         for(item in group_filters){
-            shiny::req(item$parent_group_choice, item$group_choices)
-            sample_ids <- 
-                dplyr::inner_join(
-                    create_connection("tags_to_tags"),
-                    create_connection("tags") %>%
-                        dplyr::filter(display ==  local(item$parent_group_choice)),
-                    by = c("related_tag_id" = "id")
-                ) %>% 
-                dplyr::select(tag_id) %>% 
-                dplyr::inner_join(
-                    create_connection("tags"),
-                    by = c("tag_id" = "id")
-                ) %>%
-                dplyr::filter(name %in% local(item$group_choices)) %>%
-                dplyr::select(tag_id) %>%
-                dplyr::inner_join(
-                    create_connection("samples_to_tags")
-                ) %>%
-                dplyr::pull(sample_id)
+            shiny::req(
+                item$parent_group_choice,
+                item$group_choices
+            )
+            sample_ids <- get_group_filter_samples(
+                item$parent_group_choice,
+                item$group_choices
+            )
             samples <- intersect(samples, sample_ids)
         }
         return(samples)
@@ -394,131 +367,116 @@ cohort_selection_server <- function(
         shiny::req(selected_samples())
         if (group_choice %in% c("Immune Subtype", "TCGA Subtype", "TCGA Study")){
             group_name <- group_choice
-            parent_id <-  
-                create_connection("tags") %>% 
-                dplyr::filter(display == group_choice) %>%
-                dplyr::pull(id)
-            sample_con <- 
-                create_connection("samples_to_tags") %>%
-                dplyr::left_join(
-                    create_connection("tags"),
-                    by = c("tag_id" = "id")
-                ) %>% 
-                dplyr::inner_join(
-                    create_connection("tags_to_tags"),
-                    by = c("tag_id")
-                ) %>% 
-                dplyr::filter(
-                    related_tag_id == parent_id,
-                    sample_id %in% local(selected_samples())
-                ) %>% 
-                dplyr::select(sample_id, tag_id, group = name) %>% 
-                dplyr::inner_join(
-                    create_connection("samples"),
-                    by = c("sample_id" = "id")
-                ) %>% 
-                dplyr::select(sample_id = sample_id.x, name = sample_id.y, tag_id, group) 
-            group_con <- sample_con %>% 
-                dplyr::group_by(tag_id) %>% 
-                dplyr::summarise(size = dplyr::n()) %>% 
-                dplyr::inner_join(
-                    create_connection("tags"), 
-                    by = c("tag_id" = "id")
-                ) %>% 
-                dplyr::select(group = name, name = display, size, characteristics, color) %>% 
-                dplyr::compute()
-            sample_con <- sample_con %>% 
-                dplyr::select(-tag_id) %>% 
-                dplyr::compute()
+            group_tbl <- create_group_tbl1(group_choice) 
+            sample_tbl <- selected_samples() %>% 
+                create_sample_tbl1() %>% 
+                dplyr::inner_join(group_tbl, by = "tag_id") %>% 
+                dplyr::select(sample_id, sample_name, group) 
+            group_tbl <- dplyr::select(group_tbl, - tag_id)
         } else if (group_choice == "Custom Mutation"){
             shiny::req(input$custom_gene_mutaton_choice)
-            group_name <- input$custom_gene_mutaton_choice
-            sample_con <- 
-                create_connection("genes_to_samples") %>%
-                dplyr::filter(
-                    gene_id == as.integer(local(input$custom_gene_mutaton_choice)),
-                    !is.na(status),
-                    sample_id %in% local(selected_samples())
-                ) %>% 
-                dplyr::select(sample_id, group = status) %>% 
-                dplyr::compute()
-            group_con <- sample_con %>% 
-                dplyr::group_by(group) %>% 
-                dplyr::summarise(size = dplyr::n()) %>% 
-                dplyr::ungroup() %>% 
-                dplyr::mutate(
-                    group = as.character(group),
-                    name = "",
-                    characteristics = "",
-                    color = NA
-                ) %>% 
-                dplyr::compute()
-        } else if (group_choice == "Custom Numeric"){
-            shiny::req(
-                input$custom_numeric_feature_choice,
-                input$custom_numeric_group_number_choice
+            group_name <- "Mutation Status"
+            sample_tbl <- create_sample_tbl2(
+                selected_samples(), 
+                input$custom_gene_mutaton_choice
             )
-            group_name <- input$custom_numeric_feature_choice
-            sample_con <-
-                create_connection("features_to_samples") %>%
-                dplyr::filter(
-                    feature_id == as.integer(local(input$custom_numeric_feature_choice)),
-                    !is.na(value),
-                    sample_id %in% local(selected_samples())
-                ) %>%
-                dplyr::mutate(group = value - value %% (max(value) / (local(input$custom_numeric_group_number_choice) -1))) %>%
-                dplyr::mutate(group = (group / (max(value) / (local(input$custom_numeric_group_number_choice) -1))) + 1) %>%
-                dplyr::mutate(group = as.character(as.integer(group))) %>% 
-                dplyr::select(sample_id, group) %>% 
-                dplyr::compute() 
-            group_con <- sample_con %>% 
-                dplyr::group_by(group) %>% 
-                dplyr::summarise(size = dplyr::n()) %>% 
-                dplyr::ungroup() %>% 
+            group_tbl <- sample_tbl %>% 
+                dplyr::select(group) %>% 
+                dplyr::distinct() %>% 
                 dplyr::mutate(
-                    group = as.character(group),
                     name = "",
                     characteristics = "",
                     color = NA
-                ) %>% 
-                dplyr::compute()
+                )
         } else {
             stop("bad selection")
         }
-        color_tbl <- group_con %>% 
-            dplyr::select(group, color) %>% 
-            dplyr::as_tibble()
-        if(any(is.na(color_tbl$color))){
-            color_tbl <- dplyr::mutate(color_tbl, color = viridisLite::viridis(dplyr::n()))
+        group_tbl <- sample_tbl %>% 
+            dplyr::group_by(group) %>% 
+            dplyr::summarise(size = dplyr::n()) %>%
+            dplyr::ungroup() %>% 
+            dplyr::inner_join(group_tbl, by = "group")
+        
+        if(any(is.na(group_tbl$color))){
+            group_tbl <- dplyr::mutate(group_tbl, color = viridisLite::viridis(dplyr::n()))
         }
-        plot_colors <- tibble::deframe(color_tbl)
+        plot_colors <- group_tbl %>% 
+            dplyr::select(group, color) %>% 
+            tibble::deframe() 
         list(
-            "sample_con" = sample_con, 
-            "group_con" = group_con, 
+            "sample_tbl" = sample_tbl, 
+            "group_tbl" = group_tbl, 
             "group_name" = group_name,
             "plot_colors" = plot_colors,
             "dataset" = selected_dataset(),
             "groups" = available_groups()
         )
+        # } else if (group_choice == "Custom Mutation"){
+            # shiny::req(input$custom_gene_mutaton_choice)
+            # group_name <- input$custom_gene_mutaton_choice
+            # sample_con <- 
+            #     create_connection("genes_to_samples") %>%
+            #     dplyr::filter(
+            #         gene_id == as.integer(local(input$custom_gene_mutaton_choice)),
+            #         !is.na(status),
+            #         sample_id %in% local(selected_samples())
+            #     ) %>% 
+            #     dplyr::select(sample_id, group = status) %>% 
+            #     dplyr::compute()
+            # group_con <- sample_con %>% 
+            #     dplyr::group_by(group) %>% 
+            #     dplyr::summarise(size = dplyr::n()) %>% 
+            #     dplyr::ungroup() %>% 
+            #     dplyr::mutate(
+            #         group = as.character(group),
+            #         name = "",
+            #         characteristics = "",
+            #         color = NA
+            #     ) %>% 
+            #     dplyr::compute()
+        # } else if (group_choice == "Custom Numeric"){
+            # shiny::req(
+            #     input$custom_numeric_feature_choice,
+            #     input$custom_numeric_group_number_choice
+            # )
+            # group_name <- input$custom_numeric_feature_choice
+            # sample_con <-
+            #     create_connection("features_to_samples") %>%
+            #     dplyr::filter(
+            #         feature_id == as.integer(local(input$custom_numeric_feature_choice)),
+            #         !is.na(value),
+            #         sample_id %in% local(selected_samples())
+            #     ) %>%
+            #     dplyr::mutate(group = value - value %% (max(value) / (local(input$custom_numeric_group_number_choice) -1))) %>%
+            #     dplyr::mutate(group = (group / (max(value) / (local(input$custom_numeric_group_number_choice) -1))) + 1) %>%
+            #     dplyr::mutate(group = as.character(as.integer(group))) %>% 
+            #     dplyr::select(sample_id, group) %>% 
+            #     dplyr::compute() 
+            # group_con <- sample_con %>% 
+            #     dplyr::group_by(group) %>% 
+            #     dplyr::summarise(size = dplyr::n()) %>% 
+            #     dplyr::ungroup() %>% 
+            #     dplyr::mutate(
+            #         group = as.character(group),
+            #         name = "",
+            #         characteristics = "",
+            #         color = NA
+            #     ) %>% 
+            #     dplyr::compute()
     })
     
     # group key ---------------------------------------------------------------
     
     group_key_tbl <- shiny::reactive({
         shiny::req(cohort_obj())
-        tbl <- cohort_obj()$group_con %>% 
+        tbl <- cohort_obj()$group_tbl %>% 
             dplyr::select(
                 `Sample Group` = group,
                 `Group Name` = name,
                 `Group Size` = size,
                 Characteristics = characteristics,
                 `Plot Color` = color
-            ) %>% 
-            dplyr::as_tibble()
-        if(any(is.na(tbl$`Plot Color`))){
-            tbl <- dplyr::mutate(tbl, `Plot Color` = viridisLite::viridis(dplyr::n()))
-        }
-        return(tbl)
+            ) 
     })
     
     shiny::callModule(

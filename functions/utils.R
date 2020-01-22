@@ -98,17 +98,16 @@ create_connection <- function(table_name) {
     return(result)
 }
 
-perform_query <- function(table_name, query) {
-    tictoc::tic(paste0(
-        "Time taken to read from the `",
-        table_name,
-        "`` table in the DB"
+perform_query <- function(query, string = "") {
+    tictoc::tic(paste(
+        "Time taken to perfrom query",
+        string
     ))
-    current_pool <- pool::poolCheckout(.GlobalEnv$pool)
+    current_pool <- pool::poolCheckout(.GlobalEnv$pool) 
     tbl <- dplyr::as_tibble(pool::dbGetQuery(current_pool, query))
     pool::poolReturn(current_pool)
     tictoc::toc()
-    return(result)
+    return(tbl)
 }
 
 read_table <- function(table_name) {
