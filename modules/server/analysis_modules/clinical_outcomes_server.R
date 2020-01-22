@@ -3,11 +3,9 @@ clinical_outcomes_server <- function(
     output, 
     session, 
     sample_tbl,
-    feature_values_con,
-    features_con,
-    groups_con,
+    group_tbl,
     group_name,
-    cohort_colors
+    plot_colors
 ){
     source("modules/server/submodules/clinical_outcomes_survival_server.R", local = T)
     source("modules/server/submodules/clinical_outcomes_heatmap_server.R", local = T)
@@ -17,22 +15,19 @@ clinical_outcomes_server <- function(
     shiny::callModule(
         clinical_outcomes_survival_server, 
         "clinical_outcomes_survival",
-        feature_values_con,
-        features_con,
-        groups_con,
+        sample_tbl,
+        group_tbl,
         group_name,
-        cohort_colors
+        plot_colors
     )
     
     shiny::callModule(
         clinical_outcomes_heatmap_server, 
         "clinical_outcomes_heatmap",
-        cohort_sample_tbl,
-        feature_values_con,
-        features_con,
-        groups_con,
+        sample_tbl,
+        group_tbl,
         group_name,
-        cohort_colors
+        plot_colors
     )
 }
 

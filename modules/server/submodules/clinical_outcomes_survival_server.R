@@ -2,48 +2,50 @@ clinical_outcomes_survival_server <- function(
     input, 
     output, 
     session, 
-    feature_values_con,
-    features_con,
-    groups_con,
+    sample_tbl,
+    group_tbl,
     group_name,
-    cohort_colors
+    plot_colors
 ){
     
     ns <- session$ns
     
     source("functions/clinical_outcomes_survival_functions.R")
     
-    survival_tbl <- shiny::reactive({
-
+    status_feature_name <- reactive({
+        shiny::req(input$time_feature_choice)
+        get_status_feature_name(input$time_feature_choice)
+    })
+    
+    value_tbl <- shiny::reactive({
         shiny::req(
-            features_con(),
-            feature_values_con(),
-            input$suvivial_time_feature_choice
+            sample_tbl(),
+            input$time_feature_choice, 
+            status_feature_name()
         )
-
-        build_survival_tbl(
-            features_con(),
-            feature_values_con(),
-            input$suvivial_time_feature_choice
+        build_value_tbl(
+            sample_tbl(),
+            input$time_feature_choice, 
+            status_feature_name()
         )
     })
+    
 
     output$survival_plot <- shiny::renderPlot({
 
         shiny::req(
-            survival_tbl(),
-            cohort_colors(),
+            value_tbl(),
+            plot_colors(),
             group_name(),
             input$risktable
         )
 
-
         shiny::validate(shiny::need(
-            nrow(survival_tbl()) > 0,
+            nrow(value_tbl()) > 0,
             "Samples with selected variable don't have selected survival feature"
         ))
 
-        num_groups <- length(unique(survival_tbl()$group))
+        num_groups <- length(unique(value_tbl()$group))
 
         shiny::validate(shiny::need(
             num_groups <= 10,
@@ -56,15 +58,15 @@ clinical_outcomes_survival_server <- function(
 
         fit <- survival::survfit(
             survival::Surv(time, status) ~ group,
-            data = survival_tbl()
+            data = value_tbl()
         )
 
         .GlobalEnv$create_kmplot(
             fit = fit,
-            df = survival_tbl(),
+            df = value_tbl(),
             confint = input$confint,
             risktable = input$risktable,
             title = group_name(),
-            group_colors = unname(cohort_colors()))
+            group_colors = unname(plot_colors()))
     })
 }

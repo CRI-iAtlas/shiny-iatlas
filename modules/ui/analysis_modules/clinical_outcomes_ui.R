@@ -10,8 +10,8 @@ clinical_outcomes_ui <- function(id) {
             shiny::includeMarkdown("data/markdown/clinical_outcomes.markdown")
         ),
         
-        # clinical_outcomes_survival_ui(ns("clinical_outcomes_survival")),
-        clinical_outcomes_heatmap_ui(ns("clinical_outcomes_heatmap"))
+        clinical_outcomes_survival_ui(ns("clinical_outcomes_survival")),
+        # clinical_outcomes_heatmap_ui(ns("clinical_outcomes_heatmap"))
 
         
     )

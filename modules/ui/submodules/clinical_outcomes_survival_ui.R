@@ -15,7 +15,7 @@ clinical_outcomes_survival_ui <- function(id) {
                 shiny::column(
                     width = 8,
                     shiny::selectInput(
-                        inputId = ns("suvivial_time_feature_choice"),
+                        inputId = ns("time_feature_choice"),
                         label ="Select or Search for Survival Endpoint",
                         selected = "OS Time",
                         choices = c(

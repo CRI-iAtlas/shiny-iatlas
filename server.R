@@ -32,19 +32,6 @@ shiny::shinyServer(function(input, output, session) {
     source("modules/server/analysis_modules/til_maps_server.R", local = T)
     source("modules/server/analysis_modules/tumor_microenvironment_server.R", local = T)
     
-
-    # 
-    # features_named_list <- shiny::reactive({
-    #     shiny::req(features_con()) 
-    #     features_con() %>% 
-    #         dplyr::select(
-    #             class = class_name, 
-    #             display = feature_name, 
-    #             feature = feature_id
-    #         ) %>% 
-    #         create_nested_named_list() 
-    # })
-    
     cohort_cons <- shiny::callModule(
         cohort_selection_server,
         "cohort_selection"
@@ -101,16 +88,14 @@ shiny::shinyServer(function(input, output, session) {
     #     cohort_colors
     # )
     # 
-    # shiny::callModule(
-    #     clinical_outcomes_server,
-    #     "clinical_outcomes",
-    #     cohort_sample_tbl,
-    #     cohort_feature_values_con,
-    #     features_con,
-    #     cohort_group_con,
-    #     cohort_group_name,
-    #     cohort_colors
-    # )
+    shiny::callModule(
+        clinical_outcomes_server,
+        "clinical_outcomes",
+        cohort_sample_tbl,
+        cohort_group_tbl,
+        cohort_group_name,
+        cohort_colors
+    )
     # 
     # shiny::callModule(
     #     io_targets_server,
