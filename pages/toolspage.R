@@ -1,4 +1,4 @@
-source("modules/ui/analysis_modules/immune_subtype_classifier_ui.R", local = T)
+source("modules/ui/tool_modules/immune_subtype_classifier_ui.R", local = T)
 
 toolspage <- shiny::fluidPage(
     shiny::br(),

@@ -1,12 +1,10 @@
-source("modules/ui/analysis_modules/clinical_outcomes_ui.R", local = T)
-source("modules/ui/analysis_modules/cohort_selection_ui.R", local = T)
-source("modules/ui/analysis_modules/data_info_ui.R", local = T)
-source("modules/ui/analysis_modules/driver_associations_ui.R", local = T)  
-source("modules/ui/analysis_modules/immune_features_ui.R", local = T)
-source("modules/ui/analysis_modules/immunomodulators_ui.R", local = T)
-source("modules/ui/analysis_modules/io_targets_ui.R", local = T)
-source("modules/ui/analysis_modules/til_maps_ui.R", local = T)
-source("modules/ui/analysis_modules/tumor_microenvironment_ui.R", local = T)
+analysis_module_dir   <- "modules/ui/analysis_modules/"
+analysis_module_files <- list.files(analysis_module_dir, full.names = T)
+for(item in analysis_module_files){
+    source(item, local = T)
+}
+
+source("modules/ui/other_modules/data_info_ui.R", local = T)
 
 explorepage <- shinydashboard::dashboardPage(
     shinydashboard::dashboardHeader(disable = TRUE),
