@@ -40,6 +40,29 @@ shiny::shinyServer(function(input, output, session) {
     cohort_colors      <- shiny::reactive(cohort_cons()$plot_colors) 
     cohort_dataset     <- shiny::reactive(cohort_cons()$dataset) 
     cohort_groups      <- shiny::reactive(cohort_cons()$groups) 
+    
+    feature_named_list <- reactive({
+        subquery1 <- "SELECT id, display, class_id FROM features"
+        subquery2 <- "SELECT * FROM classes"
+        
+        query <- paste(
+            "SELECT b.name AS class, a.display, a.id AS feature FROM",
+            "(", subquery1, ") a",
+            "LEFT OUTER JOIN",
+            "(", subquery2, ") b",
+            "ON a.class_id = b.id"
+        )
+        
+        query %>%
+            dplyr::sql() %>% 
+            .GlobalEnv$perform_query("build feature table") %>% 
+            dplyr::mutate(class = dplyr::if_else(
+                is.na(class),
+                "Other",
+                class
+            )) %>% 
+            .GlobalEnv$create_nested_named_list()
+    })
 
     shiny::callModule(
         tumor_microenvironment_server,
@@ -48,15 +71,15 @@ shiny::shinyServer(function(input, output, session) {
         cohort_group_tbl
     )
     
-    # shiny::callModule(
-    #     immune_features_server,
-    #     "immune_features",
-    #     cohort_feature_values_con,
-    #     features_con,
-    #     cohort_group_con,
-    #     cohort_group_name,
-    #     cohort_colors
-    # )
+    shiny::callModule(
+        immune_features_server,
+        "immune_features",
+        cohort_sample_tbl,
+        cohort_group_tbl,
+        cohort_group_name,
+        feature_named_list,
+        cohort_colors
+    )
     # 
     # shiny::callModule(
     #     til_maps_server,

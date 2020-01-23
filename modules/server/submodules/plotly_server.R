@@ -10,6 +10,7 @@ plotly_server <- function(
     ...
 ){
     
+    
     # This is so that the conditional panel can see output$show_group_text
     output$show_group_text <- shiny::reactive(show_group_text)
     shiny::outputOptions(output, "show_group_text", suspendWhenHidden = FALSE)
@@ -17,9 +18,10 @@ plotly_server <- function(
     
     output$plot <- plotly::renderPlotly({
         shiny::req(plot_tbl(), plot_function(), plot_source_name)
+
         plot_function()(
-            df = plot_tbl(), 
-            source_name = plot_source_name, 
+            df = plot_tbl(),
+            source_name = plot_source_name,
             ...
         )
     })

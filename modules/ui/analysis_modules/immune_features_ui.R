@@ -2,24 +2,22 @@ immune_features_ui <- function(id) {
     
     ns <- shiny::NS(id)
     
-    source("modules/ui/submodules/distribution_plot_ui.R", local = T)
+    source(
+        "modules/ui/submodules/immune_feature_distributions_ui.R",
+        local = T
+    )
     
     shiny::tagList(
-        titleBox("iAtlas Explorer — Immune Feature Trends"),
+        .GlobalEnv$titleBox("iAtlas Explorer — Immune Feature Trends"),
         .GlobalEnv$textBox(
             width = 12,
             shiny::p(stringr::str_c(
-                "This module allows you to see how immune readouts vary",
+                "This module allows you to see how immune readouts vary ",
                 "across your groups, and how they relate to one another."
             ))  
         ),
-        distributions_plot_ui(
-            ns("dist"),
-            message_html = shiny::includeMarkdown(
-                "data/markdown/immune_features_dist.markdown"
-            ),
-        ),
-        immune_features_correlations_ui(ns("immunefeatures_correlations"))
+        immune_feature_distributions_ui(ns("immune_feature_distributions"))
+        # immune_features_correlations_ui(ns("immunefeatures_correlations"))
     )
 }
 

@@ -2,32 +2,29 @@ immune_features_server <- function(
     input,
     output, 
     session,
-    feature_values_con,
-    features_con,
-    group_con,
+    sample_tbl,
+    group_tbl,
     group_name,
-    cohort_colors
+    feature_named_list,
+    plot_colors
 ){
-    source("modules/server/submodules/distribution_plot_server.R", local = T)
     
-    distributions_feature_con <- shiny::reactive({
-        features_con() %>%
-            dplyr::select(feature_name, feature_id, class_name)
-    })
-
-    shiny::callModule(
-        distributions_plot_server,
-        "dist",
-        plot_source_name           = "immunefeatures_dist_plot",
-        feature_values_con         = feature_values_con,
-        feature_metadata_con       = distributions_feature_con,
-        groups_con                 = group_con,
-        group_display_choice       = group_name,
-        plot_colors                = cohort_colors,
-        variable_selection_default = 36,
-        key_col                    = "label"
+    source(
+        "modules/server/submodules/immune_feature_distributions_server.R",
+        local = T
     )
     
+    shiny::callModule(
+        immune_feature_distributions_server,
+        "immune_feature_distributions",
+        sample_tbl,
+        group_tbl,
+        group_name,
+        feature_named_list,
+        plot_colors
+    )
+    
+
     shiny::callModule(
         immune_features_correlations_server,
         "immunefeatures_correlations",
