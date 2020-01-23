@@ -13,25 +13,19 @@ immune_feature_distributions_server <- function(
     
     source("functions/immune_feature_distributions_functions.R", local = T)
     
-    leukocyte_fraction_id <- shiny::reactive(get_leukocyte_fraction_id())
-    
     output$selection_ui <- shiny::renderUI({
-        req(leukocyte_fraction_id(), feature_named_list())
+        req(feature_named_list())
         
         shiny::selectInput(
             ns("feature_choice_id"),
             label = "Select or Search for Variable",
-            selected = leukocyte_fraction_id(),
+            selected = get_leukocyte_fraction_id(),
             choices = feature_named_list()
         )
     })
     
     feature_name <- shiny::reactive({
-        shiny::req(
-            sample_tbl(),
-            input$feature_choice_id,
-            input$scale_method
-        )
+        shiny::req(input$feature_choice_id)
         get_feature_name(input$feature_choice_id)
     })
     
@@ -109,6 +103,7 @@ immune_feature_distributions_server <- function(
         content = function(con) readr::write_csv(plot_tbl(), con)
     )
     
+    # histplot ----------------------------------------------------------------
     histplot_tbl <- reactive({
         shiny::validate(shiny::need(distplot_eventdata(), "Click above plot"))
         shiny::req(distplot_tbl(), distplot_selected_group())
@@ -119,7 +114,6 @@ immune_feature_distributions_server <- function(
             "Click above barchart"
         ))
         
-        print(feature_name())
         distplot_tbl() %>% 
             dplyr::filter(x == distplot_selected_group()) %>% 
             dplyr::select(x = y)
