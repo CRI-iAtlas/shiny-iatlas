@@ -1,4 +1,4 @@
-build_value_tbl <- function(class_name){
+build_plot_tbl <- function(class_name){
     subquery1 <- paste0(
         "SELECT id FROM classes WHERE name = '",
         class_name,

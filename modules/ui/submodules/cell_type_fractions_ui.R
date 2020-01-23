@@ -1,17 +1,19 @@
 cell_type_fractions_ui <- function(id){
     
-    ns <- NS(id)
+    ns <- shiny::NS(id)
+    
+    source("modules/ui/submodules/plotly_ui.R", local = T)
     
     .GlobalEnv$sectionBox(
         title = "Cell Type Fractions",
         .GlobalEnv$messageBox(
             width = 12,
-            includeMarkdown("data/markdown/cell_type_fractions.markdown")
+            shiny::includeMarkdown("data/markdown/cell_type_fractions.markdown")
         ),
         fluidRow(
             .GlobalEnv$optionsBox(
                 width = 12,
-                selectInput(
+                shiny::selectInput(
                     inputId = ns("fraction_group_choice"),
                     label = "Select Cell Fraction Type",
                     choices = c(
@@ -24,14 +26,8 @@ cell_type_fractions_ui <- function(id){
                 )
             )
         ),
-        fluidRow(
-            .GlobalEnv$plotBox(
-                width = 12,
-                plotly::plotlyOutput(ns("barplot")) %>% 
-                    shinycssloaders::withSpinner(),
-                p(),
-                textOutput(ns("barplot_text"))
-            )
+        shiny::fluidRow(
+            plotly_ui(ns("plotly_barplot"))
         )
     )
 }

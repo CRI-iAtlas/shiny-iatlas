@@ -30,7 +30,6 @@ clinical_outcomes_survival_server <- function(
         )
     })
     
-
     output$survival_plot <- shiny::renderPlot({
 
         shiny::req(
