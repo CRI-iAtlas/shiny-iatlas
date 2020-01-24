@@ -56,10 +56,8 @@ til_maps_server <- function(
             .GlobalEnv$perform_query("build feature table") %>%
             dplyr::mutate(value = round(value, digits = 1)) %>%
             tidyr::pivot_wider(names_from = display, values_from = value) %>% 
-            print() %>% 
             dplyr::inner_join(sample_tbl(), by = "sample_id") %>% 
             dplyr::filter(!is.na(slide_id)) %>% 
-            print() %>% 
             dplyr::mutate(Image = stringr::str_c(
                 "<a href=\"",
                 "https://quip1.bmi.stonybrook.edu:443/camicroscope/osdCamicroscope.php?tissueId=",
