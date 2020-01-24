@@ -32,7 +32,8 @@ create_scatterplot <- function(
                 y = ~Y,
                 color = ~COLOR,
                 colors = fill_colors,
-                key = ~LABEL,
+                text = ~LABEL,
+                key = ~KEY,
                 source = source_name) %>% 
                 plotly::add_markers(
                     alpha = 0.5,

@@ -1,3 +1,28 @@
+# query functions -------------------------------------------------------------
+
+get_feature_id <- function(display_name){
+    query <- paste0(
+        "SELECT id FROM features WHERE display = '",
+        display_name,
+        "'"
+    )
+    query %>% 
+        dplyr::sql() %>% 
+        .GlobalEnv$perform_query("get feature id") %>% 
+        dplyr::pull(id)
+}
+
+get_feature_name <- function(id){
+    query <- paste0(
+        "SELECT display FROM features WHERE id = ",
+        id
+    )
+    query %>% 
+        dplyr::sql() %>% 
+        .GlobalEnv$perform_query("get feature name") %>% 
+        dplyr::pull(display)
+}
+
 
 # misc ------------------------------------------------------------------------
 get_unique_values_from_column <- function(con, col){

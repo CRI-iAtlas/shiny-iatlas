@@ -7,8 +7,8 @@ driver_associations_ui <- function(id) {
             width = 12,
             shiny::includeMarkdown("data/markdown/driver.markdown")
         ),
-        # univariate_driver_ui(ns("univariate_driver")),
-        multivariate_driver_ui(ns("multivariate_driver"))
+        univariate_driver_ui(ns("univariate_driver")),
+        # multivariate_driver_ui(ns("multivariate_driver"))
     )
 }
 
@@ -29,11 +29,11 @@ univariate_driver_ui <- function(id){
                 width = 12,
                 shiny::column(
                     width = 4,
-                    uiOutput(ns("response_options"))
+                    shiny::uiOutput(ns("response_options"))
                 ),
                 shiny::column(
                     width = 4,
-                    numericInput(
+                    shiny::numericInput(
                         ns("min_mut"),
                         "Minimum number of mutant samples per group:",
                         20,
@@ -42,7 +42,7 @@ univariate_driver_ui <- function(id){
                 ),
                 shiny::column(
                     width = 4,
-                    numericInput(
+                    shiny::numericInput(
                         ns("min_wt"),
                         "Minimum number of wild type samples per group:",
                         20,
@@ -51,7 +51,24 @@ univariate_driver_ui <- function(id){
                 )
             )
         ),
-        volcano_plot_ui(ns("univariate_driver"))
+        fluidRow(
+            .GlobalEnv$plotBox(
+                width = 12,
+                "volcano_plot" %>% 
+                    ns() %>% 
+                    plotly::plotlyOutput() %>% 
+                    shinycssloaders::withSpinner()
+            )
+        ),
+        shiny::fluidRow(
+            .GlobalEnv$plotBox(
+                width = 12,
+                "violin_plot" %>% 
+                    ns() %>% 
+                    plotly::plotlyOutput() %>%
+                    shinycssloaders::withSpinner()
+            )
+        )
     )
 }
 
@@ -77,7 +94,7 @@ multivariate_driver_ui <- function(id){
                 ),
                 shiny::column(
                     width = 3,
-                    numericInput(
+                    shiny::numericInput(
                         ns("min_mutants"),
                         "Minimum number of mutant samples per group:", 
                         20, 
@@ -86,7 +103,7 @@ multivariate_driver_ui <- function(id){
                 ),
                 shiny::column(
                     width = 3,
-                    numericInput(
+                    shiny::numericInput(
                         ns("min_wildtype"),
                         "Minimum number of wild type samples per group:", 
                         20, 
