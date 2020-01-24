@@ -1,10 +1,32 @@
-get_time_feature_id <- function(features_con, name){
-    features_con %>% 
-        dplyr::filter(feature_name == name) %>% 
-        dplyr::pull(feature_id)
+get_t_helper_score_class_id <- function(){
+    query <- "SELECT * FROM classes WHERE name = 'T Helper Cell Score'"
+    query %>%
+        dplyr::sql() %>%
+        .GlobalEnv$perform_query("get class id") %>%
+        dplyr::pull(id)
 }
 
-get_status_feature_id <- function(features_con, time_feature){
+create_class_list <- function(){
+    query <- "SELECT name, id FROM classes"
+    query %>%
+        dplyr::sql() %>%
+        .GlobalEnv$perform_query("get class id") %>%
+        tibble::deframe()
+}
+
+get_feature_id <- function(name){
+    query <- paste0(
+        "SELECT id FROM features WHERE display = '",
+        name,
+        "'"
+    )
+    query %>% 
+        dplyr::sql() %>%
+        .GlobalEnv$perform_query("get feature id") %>%
+        dplyr::pull(id)
+}
+
+get_status_feature_name <- function(time_feature){
     if(time_feature == "OS Time") {
         status_feature <- "OS"
     } else if (time_feature == "PFI Time"){
@@ -12,109 +34,76 @@ get_status_feature_id <- function(features_con, time_feature){
     } else {
         stop("time_feature is not a valid choice")
     }
-    features_con %>% 
-        dplyr::filter(feature_name == status_feature) %>% 
-        dplyr::pull(feature_id)
+    return(status_feature)
 }
 
-get_feature_ids <- function(features_con, class_choice_id){
-    features_con %>% 
-        dplyr::filter(class_id == class_choice_id) %>% 
-        dplyr::arrange(order) %>% 
-        dplyr::pull(feature_id)
-}
-
-build_feature_values_con <- function(
-    feature_values_con,
-    features_con,
-    feature_ids,
-    sample_tbl
-){
- 
-    con <- feature_values_con %>%
-        dplyr::filter(feature_id %in% feature_ids) %>%
-        dplyr::inner_join(features_con, by = "feature_id") %>%
-        dplyr::select(sample_id, feature_name, value) %>%
-        dplyr::compute()
-
-    # sample_id_sting <- sample_tbl %>% 
-    #     dplyr::pull(sample_id) %>% 
-    #     stringr::str_c(collapse = ", ")
-    # feature_id_string <- stringr::str_c(feature_ids, collapse = ", ")
-    # 
-    # query <- dplyr::sql(stringr::str_c(
-    #     'SELECT sample_id, feature_id, value',
-    #     'FROM features_to_samples',
-    #     'WHERE value IS NOT NULL',
-    #     'AND sample_id IN (',
-    #     sample_id_sting,
-    #     ')',
-    #     'AND feature_id IN (',
-    #     feature_id_string,
-    #     ')',
-    #     sep = " "
-    # ))
-    # 
-
-    return(con)
-}
-
-build_survival_values_con <- function(
-    feature_values_con,
-    features_con,
-    status_feature_id,
-    time_feature_id
-){
-
-    time_con <- feature_values_con %>% 
-        dplyr::filter(feature_id == time_feature_id) %>%
-        dplyr::filter(!is.na(value)) %>%
-        dplyr::inner_join(features_con, by = "feature_id") %>%
-        dplyr::select(sample_id, group, time = value)
+build_value_tbl <- function(tbl, class_id, time_feature_id, status_feature_id){
+    subquery1 <- paste(
+        "SELECT id FROM features WHERE class_id =",
+        class_id
+    )
     
-    status_con <- feature_values_con %>% 
-        dplyr::filter(feature_id == status_feature_id) %>%
-        dplyr::filter(!is.na(value)) %>%
-        dplyr::inner_join(features_con, by = "feature_id") %>%
-        dplyr::select(sample_id, status = value)
+    subquery2 <- paste(
+        "SELECT sample_id, feature_id, value FROM features_to_samples",
+        "WHERE feature_id IN (",
+        subquery1,
+        ")"
+    )
     
-    con <-
-        dplyr::inner_join(
-            time_con,
-            status_con,
-            by = "sample_id"
-        ) %>%  
-        dplyr::select(sample_id, time, status, group) %>% 
-        dplyr::compute() 
-
+    subquery3 <- paste(
+        "SELECT sample_id, value AS time",
+        "FROM features_to_samples",
+        "WHERE feature_id =",
+        time_feature_id
+    )
+    
+    subquery4 <- paste(
+        "SELECT sample_id, value AS status",
+        "FROM features_to_samples",
+        "WHERE feature_id =",
+        status_feature_id
+    )
+    
+    query <- paste(
+        "SELECT a.sample_id, a.value, b.time, c.status,",
+        "d.display as feature FROM",
+        "(", subquery2, ") a",
+        "INNER JOIN",
+        "(", subquery3, ") b",
+        "ON a.sample_id = b.sample_id",
+        "INNER JOIN",
+        "(", subquery4, ") c",
+        "ON a.sample_id = c.sample_id",
+        "INNER JOIN features d",
+        "ON a.feature_id = d.id"
+    )
+    
+    query %>%
+        dplyr::sql() %>%
+        .GlobalEnv$perform_query("build value tbl") %>% 
+        dplyr::inner_join(tbl, by = "sample_id")
 }
 
-build_ci_matrix <- function(feature_values_con, survival_values_con){
-    mat <-
-        dplyr::inner_join(
-            feature_values_con, 
-            survival_values_con,
-            by = "sample_id"
-        ) %>% 
-        dplyr::select(feature_name, value, time, status, group) %>% 
-        dplyr::collect() %>% 
-        tidyr::nest(value = value, data = c(time, status)) %>% 
+build_hetamap_matrix <- function(tbl){
+    mat <- tbl %>% 
+        dplyr::select(feature, value, time, status, group) %>%
+        tidyr::nest(value = value, data = c(time, status)) %>%
         dplyr::mutate(
             value = purrr::map(value, as.matrix),
             data = purrr::map(data, as.matrix)
-        ) %>% 
+        ) %>%
         dplyr::mutate(result = purrr::map2_dbl(
             value,
-            data, 
+            data,
             concordanceIndex::concordanceIndex
-        )) %>% 
-        dplyr::select(feature_name, group, result) %>% 
+        )) %>%
+        dplyr::select(feature, group, result) %>%
         tidyr::pivot_wider(
-            feature_name,
+            feature,
             names_from = group,
             values_from = result
-        ) %>% 
-        as.data.frame() %>% 
-        tibble::column_to_rownames("feature_name") %>% 
+        ) %>%
+        as.data.frame() %>%
+        tibble::column_to_rownames("feature") %>%
         as.matrix()
 }

@@ -80,17 +80,15 @@ shiny::shinyServer(function(input, output, session) {
         feature_named_list,
         cohort_colors
     )
-    # 
-    # shiny::callModule(
-    #     til_maps_server,
-    #     "til_maps",
-    #     features_con,
-    #     cohort_feature_values_con,
-    #     cohort_sample_con,
-    #     cohort_group_con,
-    #     cohort_group_name,
-    #     cohort_colors
-    # )
+
+    shiny::callModule(
+        til_maps_server,
+        "til_maps",
+        cohort_sample_tbl,
+        cohort_group_tbl,
+        cohort_group_name,
+        cohort_colors
+    )
     # 
     # 
     # shiny::callModule(

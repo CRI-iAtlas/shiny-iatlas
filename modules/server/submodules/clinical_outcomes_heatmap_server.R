@@ -2,109 +2,78 @@ clinical_outcomes_heatmap_server <- function(
     input, 
     output, 
     session, 
-    cohort_sample_tbl,
-    feature_values_con,
-    features_con,
-    groups_con,
+    sample_tbl,
+    group_tbl,
     group_name,
-    cohort_colors
+    plot_colors
 ){
     
     ns <- session$ns
     
     source("functions/clinical_outcomes_heatmap_functions.R", local = T)
     
-    output$survival_class_opts <- shiny::renderUI({
+    output$class_selection_ui <- shiny::renderUI({
         
-        shiny::req(features_con())
-        choices <- features_con() %>% 
-            dplyr::select(class_name, class_id) %>% 
-            dplyr::distinct() %>% 
-            dplyr::collect() %>% 
-            tibble::deframe() 
-        
+        shiny::req(feature_named_list())
         shiny::selectInput(
-            ns("survival_class_id"),
+            ns("class_choice_id"),
             "Select or Search for Variables Class",
-            choices = choices,
-            selected = 12
+            choices = create_class_list(),
+            selected = get_t_helper_score_class_id()
         )
     })
     
     time_feature_id <- shiny::reactive({
-        shiny::req(features_con(), input$time_feature_choice)
-        get_time_feature_id(features_con(), input$time_feature_choice)
+        shiny::req(input$time_feature_choice)
+        get_feature_id(input$time_feature_choice)
+    })
+    
+    status_feature_name <- shiny::reactive({
+        shiny::req(input$time_feature_choice)
+        get_status_feature_name(input$time_feature_choice)
     })
     
     status_feature_id <- shiny::reactive({
-        shiny::req(features_con(), input$time_feature_choice)
-        get_status_feature_id(features_con(), input$time_feature_choice)
+        shiny::req(status_feature_name())
+        get_feature_id(status_feature_name())
 
     })
     
-    feature_ids <- shiny::reactive({
-        shiny::req(features_con(), input$survival_class_id)
-        get_feature_ids(features_con(), input$survival_class_id)
-    })
-    
-    selected_feature_values_con <- shiny::reactive({
+    value_tbl <- shiny::reactive({
         shiny::req(
-            feature_values_con(), 
-            features_con(), 
-            feature_ids()
+            sample_tbl(),
+            input$class_choice_id,
+            time_feature_id(),
+            status_feature_id()
         )
-        build_feature_values_con(
-            feature_values_con(), 
-            features_con(), 
-            feature_ids(),
-            sample_tbl()
+        build_value_tbl(
+            sample_tbl(),
+            input$class_choice_id,
+            time_feature_id(),
+            status_feature_id()
         )
-
     })
     
-    survial_values_con <- shiny::reactive({
-        req(
-            feature_values_con(),
-            features_con(),
-            status_feature_id(),
-            time_feature_id()
-        )
-        build_survival_values_con(
-            feature_values_con(),
-            features_con(),
-            status_feature_id(),
-            time_feature_id()
-        )
+    output$heatmap <- plotly::renderPlotly({
+        shiny::req(value_tbl())
 
-    })
-    
-    output$heatmapplot <- plotly::renderPlotly({
-        
-        shiny::req(
-            survial_values_con(),
-            selected_feature_values_con()
-        )
-        
-        ci_mat <- build_ci_matrix(
-            survial_values_con(),
-            selected_feature_values_con()
-        )
+        mat <- build_hetamap_matrix(value_tbl())
         
         shiny::validate(shiny::need(
-            nrow(ci_mat > 0) & ncol(ci_mat > 0), 
+            nrow(mat > 0) & ncol(mat > 0), 
             "No results to display, pick a different group."
         ))
         
-        create_heatmap(ci_mat, "ci")
+        create_heatmap(mat, "clinical_outcomes_heatmap")
     })
     
     output$heatmap_group_text <- shiny::renderText({
-        shiny::req(groups_con)
-        eventdata <- plotly::event_data("plotly_click", source = "ci")
+        shiny::req(group_tbl)
+        eventdata <- plotly::event_data("plotly_click", source = "clinical_outcomes_heatmap")
         shiny::validate(shiny::need(eventdata, "Click above plot"))
-        
-        groups_con() %>% 
-            dplyr::filter(group == local(unique(dplyr::pull(eventdata, "x")))) %>% 
+
+        group_tbl() %>%
+            dplyr::filter(group == local(unique(dplyr::pull(eventdata, "x")))) %>%
             dplyr::mutate(text = paste0(name, ": ", characteristics)) %>%
             dplyr::pull(text)
     })

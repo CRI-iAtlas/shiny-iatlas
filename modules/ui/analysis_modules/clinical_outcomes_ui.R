@@ -11,8 +11,6 @@ clinical_outcomes_ui <- function(id) {
         ),
         
         clinical_outcomes_survival_ui(ns("clinical_outcomes_survival")),
-        # clinical_outcomes_heatmap_ui(ns("clinical_outcomes_heatmap"))
-
-        
+        clinical_outcomes_heatmap_ui(ns("clinical_outcomes_heatmap"))
     )
 }

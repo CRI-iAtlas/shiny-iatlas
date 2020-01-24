@@ -24,13 +24,13 @@ clinical_outcomes_heatmap_ui <- function(id) {
                 ),
                 shiny::column(
                     width = 6,
-                    shiny::uiOutput(ns("survival_class_opts"))
+                    shiny::uiOutput(ns("class_selection_ui"))
                 )
             ),
             .GlobalEnv$plotBox(
                 width = 12,
                 shiny::fluidRow(
-                    "heatmapplot" %>% 
+                    "heatmap" %>% 
                         ns() %>% 
                         plotly::plotlyOutput(height = 600) %>%
                         shinycssloaders::withSpinner(),

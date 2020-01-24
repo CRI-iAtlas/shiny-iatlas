@@ -2,76 +2,80 @@ til_maps_server <- function(
     input, 
     output, 
     session,
-    features_con,
-    feature_values_con,
-    sample_con,
-    groups_con,
+    sample_tbl,
+    group_tbl,
     group_name,
-    cohort_colors
+    plot_colors
 ){
     
-    source("modules/server/submodules/data_table_server.R", local = T)
-    source("modules/server/submodules/distribution_plot_server.R", local = T)
+    source(
+        "modules/server/submodules/til_map_distributions_server.R",
+        local = T
+    )
+    source(
+        "modules/server/submodules/data_table_server.R",
+        local = T
+    )
     
-    tilmap_feature_con <- shiny::reactive({
-        shiny::req(features_con())
-        features_con() %>%  
-            dplyr::filter(class_name == "TIL Map Characteristic") %>% 
-            dplyr::select(feature_name, feature_id, class_name) %>% 
-            dplyr::compute()
-    })
-    
-    tilmap_con <- shiny::reactive({
-        shiny::req(tilmap_feature_con(), feature_values_con())
-        tilmap_feature_con() %>% 
-            dplyr::select(feature_id, feature_name) %>% 
-            dplyr::inner_join(feature_values_con(), by = "feature_id") %>% 
-            dplyr::filter_all(dplyr::all_vars(!is.na(.))) %>% 
-            dplyr::compute()
-    })
-    
-
-    tilmap_dist_feature_con <- shiny::reactive({
-        shiny::req(tilmap_feature_con())
-        tilmap_feature_con() %>%  
-            dplyr::compute()
-    })
-    
-    tilmap_dist_value_con <- shiny::reactive({
-        shiny::req(tilmap_con())
-        tilmap_con() %>% 
-            dplyr::select(feature_id, sample_id, value, group) %>% 
-            dplyr::compute()
-    })
-    
-
     shiny::callModule(
-        distributions_plot_server,
-        "dist",
-        plot_source_name           = "tilmap_dist_plot",
-        feature_values_con         = tilmap_dist_value_con,
-        feature_metadata_con       = tilmap_dist_feature_con,
-        groups_con                 = groups_con,
-        group_display_choice       = group_name,
-        plot_colors                = cohort_colors,
-        key_col                    = "label"
+        til_map_distributions_server,
+        "til_map_distributions",
+        sample_tbl,
+        group_tbl,
+        group_name,
+        plot_colors
     )
     
     tilmap_tbl <- shiny::reactive({
-        shiny::req(tilmap_con())
+        subquery1 <- "SELECT id FROM classes WHERE name = 'TIL Map Characteristic'"
         
-        tilmap_con() %>% 
+        subquery2 <- paste(
+            "SELECT id AS feature FROM features",
+            "WHERE class_id = (",
+            subquery1,
+            ")"
+        )
+        
+        subquery3 <- paste(
+            "SELECT feature_id, sample_id, value FROM features_to_samples",
+            "WHERE feature_id IN (",
+            subquery2,
+            ")"
+        )
+        
+        query <- paste(
+            "SELECT a.sample_id, a.value, b.display, c.tissue_id FROM",
+            "(", subquery3, ") a",
+            "INNER JOIN",
+            "(SELECT id, display from features) b",
+            "ON a.feature_id = b.id",
+            "INNER JOIN",
+            "(SELECT * FROM samples) c",
+            "ON a.sample_id = c.id"
+        )
+        
+        query %>%
+            dplyr::sql() %>% 
+            .GlobalEnv$perform_query("build feature table") %>%
+            dplyr::inner_join(sample_tbl(), by = "sample_id") %>% 
             dplyr::mutate(value = round(value, digits = 1)) %>%
-            print() %>% 
             dplyr::select(
-                # Link = link,
+                tissue_id,
                 Sample = sample_name,
                 `Selected Group` = group,
-                feature_name,
+                display,
                 value
             ) %>%
-            dplyr::collect() %>%
-            tidyr::pivot_wider(names_from = feature_name, values_from = value)
+            tidyr::pivot_wider(names_from = display, values_from = value) %>% 
+            dplyr::mutate(Image = stringr::str_c(
+                "<a href=\"",
+                "https://quip1.bmi.stonybrook.edu:443/camicroscope/osdCamicroscope.php?tissueId=",
+                tissue_id,
+                "\">",
+                tissue_id,
+                "</a>"
+            )) %>% 
+            dplyr::select(-tissue_id)
     })
 
     
