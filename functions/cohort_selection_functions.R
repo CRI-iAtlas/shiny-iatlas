@@ -159,13 +159,16 @@ create_group_tbl1 <- function(group){
 
 create_sample_tbl1 <- function(sample_ids){
     subquery <- paste(
-        "SELECT id as sample_id, sample_id as sample_name FROM samples where id IN (",
+        "SELECT id as sample_id, sample_id as sample_name, tissue_id as slide_id FROM samples",
+        "WHERE id IN (",
         stringr::str_c(sample_ids, collapse = ", "),
+        # stringr::str_c(1:20, collapse = ", "),
         ")"
     ) 
+        
     
     query <- dplyr::sql(paste(
-        "SELECT a.sample_id, a.sample_name, b.tag_id FROM",
+        "SELECT a.sample_id, a.sample_name, a.slide_id, b.tag_id FROM",
         "(", subquery, ") a",
         "INNER JOIN", 
         "(SELECT * FROM samples_to_tags) b",
@@ -185,8 +188,8 @@ create_sample_tbl2 <- function(sample_ids, gene_id){
     )
     
     query <- dplyr::sql(paste(
-        "SELECT a.sample_id, a.sample_name, b.group FROM",
-        "(SELECT id as sample_id, sample_id as sample_name FROM samples) a",
+        "SELECT a.sample_id, a.sample_name, a.slide_id, b.group FROM",
+        "(SELECT id as sample_id, sample_id as sample_name, tissue_id as slide_id FROM samples) a",
         "INNER JOIN", 
         "(", subquery, ") b",
         "ON a.sample_id = b.sample_id"

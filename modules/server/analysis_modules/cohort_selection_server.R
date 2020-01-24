@@ -40,7 +40,7 @@ cohort_selection_server <- function(
             # "Gender",          "TCGA",   "sample",
             # "Race",            "TCGA",   "sample",
             # "Ethnicity",       "TCGA",   "sample",
-            "Custom Numeric",  "TCGA",   NA,
+            # "Custom Numeric",  "TCGA",   NA,
             "Custom Mutation", "TCGA",   NA
             # "Immune Subtype",  "PCAWG",  "tag",
             # "PCAWG Study",     "PCAWG",  "tag",
@@ -371,7 +371,7 @@ cohort_selection_server <- function(
             sample_tbl <- selected_samples() %>% 
                 create_sample_tbl1() %>% 
                 dplyr::inner_join(group_tbl, by = "tag_id") %>% 
-                dplyr::select(sample_id, sample_name, group) 
+                dplyr::select(sample_id, sample_name, slide_id, group) 
             group_tbl <- dplyr::select(group_tbl, - tag_id)
         } else if (group_choice == "Custom Mutation"){
             shiny::req(input$custom_gene_mutaton_choice)
@@ -379,7 +379,7 @@ cohort_selection_server <- function(
             sample_tbl <- create_sample_tbl2(
                 selected_samples(), 
                 input$custom_gene_mutaton_choice
-            )
+            ) 
             group_tbl <- sample_tbl %>% 
                 dplyr::select(group) %>% 
                 dplyr::distinct() %>% 
@@ -411,29 +411,6 @@ cohort_selection_server <- function(
             "dataset" = selected_dataset(),
             "groups" = available_groups()
         )
-        # } else if (group_choice == "Custom Mutation"){
-            # shiny::req(input$custom_gene_mutaton_choice)
-            # group_name <- input$custom_gene_mutaton_choice
-            # sample_con <- 
-            #     create_connection("genes_to_samples") %>%
-            #     dplyr::filter(
-            #         gene_id == as.integer(local(input$custom_gene_mutaton_choice)),
-            #         !is.na(status),
-            #         sample_id %in% local(selected_samples())
-            #     ) %>% 
-            #     dplyr::select(sample_id, group = status) %>% 
-            #     dplyr::compute()
-            # group_con <- sample_con %>% 
-            #     dplyr::group_by(group) %>% 
-            #     dplyr::summarise(size = dplyr::n()) %>% 
-            #     dplyr::ungroup() %>% 
-            #     dplyr::mutate(
-            #         group = as.character(group),
-            #         name = "",
-            #         characteristics = "",
-            #         color = NA
-            #     ) %>% 
-            #     dplyr::compute()
         # } else if (group_choice == "Custom Numeric"){
             # shiny::req(
             #     input$custom_numeric_feature_choice,

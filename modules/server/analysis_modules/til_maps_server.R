@@ -44,38 +44,37 @@ til_maps_server <- function(
         )
         
         query <- paste(
-            "SELECT a.sample_id, a.value, b.display, c.tissue_id FROM",
+            "SELECT a.sample_id, a.value, b.display FROM",
             "(", subquery3, ") a",
             "INNER JOIN",
             "(SELECT id, display from features) b",
-            "ON a.feature_id = b.id",
-            "INNER JOIN",
-            "(SELECT * FROM samples) c",
-            "ON a.sample_id = c.id"
+            "ON a.feature_id = b.id"
         )
         
         query %>%
             dplyr::sql() %>% 
             .GlobalEnv$perform_query("build feature table") %>%
-            dplyr::inner_join(sample_tbl(), by = "sample_id") %>% 
             dplyr::mutate(value = round(value, digits = 1)) %>%
-            dplyr::select(
-                tissue_id,
-                Sample = sample_name,
-                `Selected Group` = group,
-                display,
-                value
-            ) %>%
             tidyr::pivot_wider(names_from = display, values_from = value) %>% 
+            print() %>% 
+            dplyr::inner_join(sample_tbl(), by = "sample_id") %>% 
+            dplyr::filter(!is.na(slide_id)) %>% 
+            print() %>% 
             dplyr::mutate(Image = stringr::str_c(
                 "<a href=\"",
                 "https://quip1.bmi.stonybrook.edu:443/camicroscope/osdCamicroscope.php?tissueId=",
-                tissue_id,
+                slide_id,
                 "\">",
-                tissue_id,
+                slide_id,
                 "</a>"
             )) %>% 
-            dplyr::select(-tissue_id)
+            dplyr::select(-c(slide_id, sample_id)) %>% 
+            dplyr::select(
+                Sample = sample_name, 
+                `Selected Group` = group,
+                Image,
+                dplyr::everything()
+            ) 
     })
 
     
