@@ -28,18 +28,6 @@ shiny::shinyServer(function(input, output, session) {
     for(item in analysis_module_files){
         source(item, local = T)
     }
-
-    cohort_cons <- shiny::callModule(
-        cohort_selection_server,
-        "cohort_selection"
-    )
-    
-    cohort_sample_tbl  <- shiny::reactive(cohort_cons()$sample_tbl)
-    cohort_group_tbl   <- shiny::reactive(cohort_cons()$group_tbl)
-    cohort_group_name  <- shiny::reactive(cohort_cons()$group_name)
-    cohort_colors      <- shiny::reactive(cohort_cons()$plot_colors) 
-    cohort_dataset     <- shiny::reactive(cohort_cons()$dataset) 
-    cohort_groups      <- shiny::reactive(cohort_cons()$groups) 
     
     feature_named_list <- reactive({
         subquery1 <- "SELECT id, display, class_id FROM features"
@@ -63,6 +51,21 @@ shiny::shinyServer(function(input, output, session) {
             )) %>% 
             .GlobalEnv$create_nested_named_list()
     })
+
+    cohort_cons <- shiny::callModule(
+        cohort_selection_server,
+        "cohort_selection",
+        feature_named_list
+    )
+    
+    cohort_sample_tbl  <- shiny::reactive(cohort_cons()$sample_tbl)
+    cohort_group_tbl   <- shiny::reactive(cohort_cons()$group_tbl)
+    cohort_group_name  <- shiny::reactive(cohort_cons()$group_name)
+    cohort_colors      <- shiny::reactive(cohort_cons()$plot_colors) 
+    cohort_dataset     <- shiny::reactive(cohort_cons()$dataset) 
+    cohort_groups      <- shiny::reactive(cohort_cons()$groups) 
+    
+
 
     shiny::callModule(
         tumor_microenvironment_server,

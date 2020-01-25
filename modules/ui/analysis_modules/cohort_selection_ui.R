@@ -2,6 +2,7 @@ cohort_selection_ui <- function(id) {
     
     ns <- shiny::NS(id)
     
+    source("modules/ui/submodules/cohort_group_selection_ui.R", local = T)
     source("modules/ui/submodules/data_table_ui.R", local = T)
     source("modules/ui/submodules/insert_remove_element_ui.R", local = T)
     
@@ -55,29 +56,8 @@ cohort_selection_ui <- function(id) {
                 width = 12,
                 textOutput(ns("samples_text"))
             ),
-            # group selection ----
-            optionsBox(
-                width = 12,
-                uiOutput(ns("select_group_ui")),
-                conditionalPanel(
-                    condition = "output.display_custom_numeric",
-                    uiOutput(ns("select_custom_numeric_group_ui")),
-                    sliderInput(
-                        inputId = ns("custom_numeric_group_number_choice"),
-                        label = "Select number of divsions",
-                        min = 2,
-                        max = 10,
-                        value = 2,
-                        step = 1
-                    ),
-                    ns = ns
-                ),
-                conditionalPanel(
-                    condition = "output.display_custom_mutation",
-                    uiOutput(ns("select_custom_mutation_group_ui")),
-                    ns = ns
-                ),
-            ),
+            cohort_group_selection_ui(ns("cohort_group_selection"))
+
         ),
         
         # group key -----------------------------------------------------------

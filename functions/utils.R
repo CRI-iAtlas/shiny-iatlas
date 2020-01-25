@@ -1,13 +1,69 @@
 # query functions -------------------------------------------------------------
 
+create_feature_value_query <- function(feature_id){
+    paste(
+        "SELECT * FROM features_to_samples",
+        "WHERE feature_id = ",
+        feature_id
+    )
+}
+
+create_sample_id_query <- function(sample_ids){
+    paste(
+        "SELECT * FROM samples WHERE id IN (",
+        stringr::str_c(sample_ids, collapse = ", "),
+        ")"
+    ) 
+}
+
+create_gene_type_query <- function(name){
+    gene_types_subquery <- paste0(
+        "SELECT id FROM gene_types WHERE name = '",
+        name,
+        "'" 
+    ) 
+    
+    gene_ids_subquery <- paste(
+        "SELECT gene_id FROM genes_to_types WHERE type_id IN (",
+        gene_types_subquery,
+        ")"
+    ) 
+    
+    paste(
+        "SELECT * FROM genes WHERE id IN (",
+        gene_ids_subquery,
+        ")"
+    )
+}
+
+create_parent_group_query <- function(parent_group){
+    parent_tag_query <- paste0(
+        "SELECT id FROM tags WHERE display = '", 
+        parent_group,
+        "'"
+    )
+    
+    tag_id_query <- paste(
+        "SELECT tag_id FROM tags_to_tags WHERE related_tag_id = (", 
+        parent_tag_query,
+        ")"
+    )
+    
+    paste(
+        "SELECT * FROM tags WHERE id IN (", 
+        tag_id_query,
+        ")"
+    )
+}
+
+
 get_feature_id <- function(display_name){
     query <- paste0(
         "SELECT id FROM features WHERE display = '",
         display_name,
         "'"
     )
-    query %>% 
-        dplyr::sql() %>% 
+    query %>%  
         .GlobalEnv$perform_query("get feature id") %>% 
         dplyr::pull(id)
 }
@@ -18,9 +74,29 @@ get_feature_name <- function(id){
         id
     )
     query %>% 
-        dplyr::sql() %>% 
         .GlobalEnv$perform_query("get feature name") %>% 
         dplyr::pull(display)
+}
+
+get_gene_id <- function(name){
+    query <- paste0(
+        "SELECT id FROM genes WHERE hgnc = '",
+        name,
+        "'"
+    )
+    query %>% 
+        .GlobalEnv$perform_query("get gene id") %>% 
+        dplyr::pull(id)
+}
+
+get_gene_name <- function(id){
+    query <- paste0(
+        "SELECT hgnc FROM genes WHERE id = ",
+        id
+    )
+    query %>% 
+        .GlobalEnv$perform_query("get gene name") %>% 
+        dplyr::pull(hgnc)
 }
 
 
@@ -116,20 +192,16 @@ assert_data_has_rows <- function(data){
 
 # database functions ----------------------------------------------------------
 
-create_connection <- function(table_name) {
-    current_pool <- pool::poolCheckout(.GlobalEnv$pool)
-    result <- dplyr::tbl(current_pool, table_name)
-    pool::poolReturn(current_pool)
-    return(result)
-}
-
 perform_query <- function(query, string = "") {
     tictoc::tic(paste(
         "Time taken to perfrom query",
         string
     ))
     current_pool <- pool::poolCheckout(.GlobalEnv$pool) 
-    tbl <- dplyr::as_tibble(pool::dbGetQuery(current_pool, query))
+    tbl <- query %>% 
+        dplyr::sql() %>% 
+        pool::dbGetQuery(current_pool, .) %>% 
+        dplyr::as_tibble()
     pool::poolReturn(current_pool)
     tictoc::toc()
     return(tbl)

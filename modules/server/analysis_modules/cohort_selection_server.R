@@ -1,10 +1,12 @@
 cohort_selection_server <- function(
     input, 
     output, 
-    session
+    session,
+    feature_named_list
 ){
     ns <- session$ns
     
+    source("modules/server/submodules/cohort_group_selection_server.R", local = T)
     source("modules/server/submodules/data_table_server.R", local = T)
     source("modules/server/submodules/insert_remove_element_server.R", local = T)
     source("modules/ui/submodules/elements_ui.R", local = T)
@@ -33,15 +35,15 @@ cohort_selection_server <- function(
     
     dataset_to_group_tbl <- shiny::reactive({
         dplyr::tribble(
-            ~group,            ~dataset, ~type,
-            "Immune Subtype",  "TCGA",   "tag",
-            "TCGA Subtype",    "TCGA",   "tag",
-            "TCGA Study",      "TCGA",   "tag",
+            ~group,                 ~dataset, ~type,
+            "Immune Subtype",       "TCGA",   "tag",
+            "TCGA Subtype",         "TCGA",   "tag",
+            "TCGA Study",           "TCGA",   "tag",
             # "Gender",          "TCGA",   "sample",
             # "Race",            "TCGA",   "sample",
             # "Ethnicity",       "TCGA",   "sample",
-            # "Custom Numeric",  "TCGA",   NA,
-            "Custom Mutation", "TCGA",   NA
+            "Immune Feature Bins",  "TCGA",    NA,
+            "Driver Mutation",      "TCGA",    NA
             # "Immune Subtype",  "PCAWG",  "tag",
             # "PCAWG Study",     "PCAWG",  "tag",
             # "Gender",          "PCAWG",  "sample",
@@ -128,9 +130,7 @@ cohort_selection_server <- function(
             tibble::deframe()
     })
     
-    gene_mutation_list <- shiny::reactive({
-        create_gene_mutation_list()
-    })
+
     
     gene_expression_list <- shiny::reactive({
         list <- 
@@ -320,133 +320,22 @@ cohort_selection_server <- function(
         c("Number of current samples:", length(selected_samples()))
     })
     
-    # custom selection ---
-    output$select_group_ui <- shiny::renderUI({
-        shiny::req(available_groups())
-        
-        shiny::selectInput(
-            inputId = ns("group_choice"),
-            label = strong("Select or Search for Grouping Variable"),
-            choices = c(available_groups()),
-            selected = "Immune Subtype"
-        )
-    })
-    
-    # This is so that the conditional panel can see the various shiny::reactives
-    output$display_custom_numeric <- shiny::reactive(input$group_choice == "Custom Numeric")
-    shiny::outputOptions(output, "display_custom_numeric", suspendWhenHidden = FALSE)
-    output$display_custom_mutation <- shiny::reactive(input$group_choice == "Custom Mutation")
-    shiny::outputOptions(output, "display_custom_mutation", suspendWhenHidden = FALSE)
-    
-    
-    
-    output$select_custom_numeric_group_ui <- shiny::renderUI({
-        shiny::req(req(input$group_choice == "Custom Numeric"))
-        selectInput(
-            inputId = ns("custom_numeric_feature_choice"),
-            label = "Select or Search for feature",
-            choices = features_list()
-        )
-    })
-    
-    output$select_custom_mutation_group_ui <- shiny::renderUI({
-        shiny::req(req(input$group_choice == "Custom Mutation"))
-        selectInput(
-            inputId = ns("custom_gene_mutaton_choice"),
-            label = "Select or Search for gene",
-            choices = gene_mutation_list()
-        )
-    })
-    
-    cohort_obj <- shiny::reactive({
-        if(is.null(input$group_choice)){
-            group_choice <- "Immune Subtype"  
-        } else {
-            group_choice <- input$group_choice
-        }
-        shiny::req(selected_samples())
-        if (group_choice %in% c("Immune Subtype", "TCGA Subtype", "TCGA Study")){
-            group_name <- group_choice
-            group_tbl <- create_group_tbl1(group_choice) 
-            sample_tbl <- selected_samples() %>% 
-                create_sample_tbl1() %>% 
-                dplyr::inner_join(group_tbl, by = "tag_id") %>% 
-                dplyr::select(sample_id, sample_name, slide_id, group) 
-            group_tbl <- dplyr::select(group_tbl, - tag_id)
-        } else if (group_choice == "Custom Mutation"){
-            shiny::req(input$custom_gene_mutaton_choice)
-            group_name <- "Mutation Status"
-            sample_tbl <- create_sample_tbl2(
-                selected_samples(), 
-                input$custom_gene_mutaton_choice
-            ) 
-            group_tbl <- sample_tbl %>% 
-                dplyr::select(group) %>% 
-                dplyr::distinct() %>% 
-                dplyr::mutate(
-                    name = "",
-                    characteristics = "",
-                    color = NA
-                )
-        } else {
-            stop("bad selection")
-        }
-        group_tbl <- sample_tbl %>% 
-            dplyr::group_by(group) %>% 
-            dplyr::summarise(size = dplyr::n()) %>%
-            dplyr::ungroup() %>% 
-            dplyr::inner_join(group_tbl, by = "group")
-        
-        if(any(is.na(group_tbl$color))){
-            group_tbl <- dplyr::mutate(group_tbl, color = viridisLite::viridis(dplyr::n()))
-        }
-        plot_colors <- group_tbl %>% 
-            dplyr::select(group, color) %>% 
-            tibble::deframe() 
-        list(
-            "sample_tbl" = sample_tbl, 
-            "group_tbl" = group_tbl, 
-            "group_name" = group_name,
-            "plot_colors" = plot_colors,
-            "dataset" = selected_dataset(),
-            "groups" = available_groups()
-        )
-        # } else if (group_choice == "Custom Numeric"){
-            # shiny::req(
-            #     input$custom_numeric_feature_choice,
-            #     input$custom_numeric_group_number_choice
-            # )
-            # group_name <- input$custom_numeric_feature_choice
-            # sample_con <-
-            #     create_connection("features_to_samples") %>%
-            #     dplyr::filter(
-            #         feature_id == as.integer(local(input$custom_numeric_feature_choice)),
-            #         !is.na(value),
-            #         sample_id %in% local(selected_samples())
-            #     ) %>%
-            #     dplyr::mutate(group = value - value %% (max(value) / (local(input$custom_numeric_group_number_choice) -1))) %>%
-            #     dplyr::mutate(group = (group / (max(value) / (local(input$custom_numeric_group_number_choice) -1))) + 1) %>%
-            #     dplyr::mutate(group = as.character(as.integer(group))) %>% 
-            #     dplyr::select(sample_id, group) %>% 
-            #     dplyr::compute() 
-            # group_con <- sample_con %>% 
-            #     dplyr::group_by(group) %>% 
-            #     dplyr::summarise(size = dplyr::n()) %>% 
-            #     dplyr::ungroup() %>% 
-            #     dplyr::mutate(
-            #         group = as.character(group),
-            #         name = "",
-            #         characteristics = "",
-            #         color = NA
-            #     ) %>% 
-            #     dplyr::compute()
-    })
+    cohort_obj <- shiny::callModule(
+        cohort_group_selection_server,
+        "cohort_group_selection",
+        feature_named_list,
+        sample_ids,
+        selected_dataset,
+        available_groups
+    )
     
     # group key ---------------------------------------------------------------
     
     group_key_tbl <- shiny::reactive({
         shiny::req(cohort_obj())
-        tbl <- cohort_obj()$group_tbl %>% 
+        tbl <- cohort_obj()$plot_colors %>% 
+            tibble::enframe(name = "group", value = "color") %>% 
+            dplyr::inner_join(cohort_obj()$group_tbl, by = "group") %>% 
             dplyr::select(
                 `Sample Group` = group,
                 `Group Name` = name,
