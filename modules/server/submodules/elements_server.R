@@ -6,40 +6,37 @@ numeric_filter_element_server <- function(
     session,
     reactive_values,
     module_id,
-    feature_names_list,
-    feature_values_con
+    feature_named_list
 ){
 
     ns <- session$ns
     
     output$select_ui <- shiny::renderUI({
-        shiny::req(feature_names_list())
+        shiny::req(feature_named_list())
         shiny::selectInput(
             inputId = ns("feature_choice"),
             label = "Select or Search for feature",
-            choices = feature_names_list()
+            choices = feature_named_list()
         )
     })
     
+    features_tbl <- shiny::reactive({
+        req(input$feature_choice)
+        input$feature_choice %>% 
+            .GlobalEnv$create_feature_value_query() %>% 
+            .GlobalEnv$perform_query("build features table") %>% 
+            dplyr::filter(!is.na(value), !is.infinite(value)) %>% 
+            dplyr::summarise(mx = max(value), mn = min(value)) 
+    })
+    
     output$slider_ui <- shiny::renderUI({
-        shiny::req(feature_values_con(), input$feature_choice)
-        tbl <- feature_values_con() %>% 
-            dplyr::filter(feature_id == local(input$feature_choice)) %>% 
-            dplyr::as_tibble() %>% 
-            dplyr::filter(
-                !is.na(value),
-                !is.infinite(value)
-            ) %>% 
-            dplyr::summarise(mx = max(value), mn = min(value))
-        min <- tbl$mn
-        max <- tbl$mx
-        
+        shiny::req(features_tbl())
         shiny::sliderInput(
             inputId = ns("range"),
             label = "Filter:",
-            min = round(min, 2),
-            max = round(max, 2),
-            value = c(min, max)
+            min = round(features_tbl()$mn, 2),
+            max = round(features_tbl()$mx, 2),
+            value = c(features_tbl()$mn, features_tbl()$mx)
         )
     })
     
@@ -60,41 +57,44 @@ group_filter_element_server <- function(
     session,
     reactive_values,
     module_id,
-    group_names_list,
-    group_values_con
+    group_named_list
 ){
     
     ns <- session$ns
     
     output$select_ui <- shiny::renderUI({
-        shiny::req(group_names_list())
+        shiny::req(group_named_list())
         shiny::selectInput(
-            inputId = ns("parent_group_choice"),
+            inputId = ns("parent_group_choice_id"),
             label = "Select or Search for Group",
-            choices = group_names_list()
+            choices = group_named_list()
         )
     })
     
     output$checkbox_ui <- shiny::renderUI({
-        shiny::req(group_values_con(), input$parent_group_choice)
-        choices <- group_values_con() %>% 
-            dplyr::filter(parent_group == local(input$parent_group_choice)) %>% 
-            dplyr::pull(group)
+        shiny::req(input$parent_group_choice_id)
+        group_id_query <- 
+            .GlobalEnv$create_parent_group_query_from_id(
+            input$parent_group_choice_id
+        ) 
+        choices <- paste(
+            "SELECT name, id FROM  (", 
+            group_id_query,
+            ") a"
+        ) %>% 
+            .GlobalEnv$perform_query("build groups table") %>% 
+            tibble::deframe()
         
         shiny::checkboxGroupInput(
-            inputId = ns("group_choices"),
+            inputId = ns("group_choice_ids"),
             label = "Select choices to include:",
             choices = choices,
             inline = T
         )
     })
     
-    shiny::observeEvent(input$parent_group_choice, {
-        reactive_values[[module_id]]$parent_group_choice <- input$parent_group_choice
-    })
-    
-    shiny::observeEvent(input$group_choices, {
-        reactive_values[[module_id]]$group_choices <- input$group_choices
+    shiny::observeEvent(input$group_choice_ids, {
+        reactive_values[[module_id]]$group_choice_ids <- input$group_choice_ids
     })
     
     return(reactive_values)

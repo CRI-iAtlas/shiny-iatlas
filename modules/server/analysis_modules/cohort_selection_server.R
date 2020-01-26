@@ -7,10 +7,8 @@ cohort_selection_server <- function(
     ns <- session$ns
     
     source("modules/server/submodules/cohort_group_selection_server.R", local = T)
+    source("modules/server/submodules/cohort_filter_selection_server.R", local = T)
     source("modules/server/submodules/data_table_server.R", local = T)
-    source("modules/server/submodules/insert_remove_element_server.R", local = T)
-    source("modules/ui/submodules/elements_ui.R", local = T)
-    source("modules/server/submodules/elements_server.R", local = T)
     source("functions/cohort_selection_functions.R", local = T)
     
     # cohort selection --------------------------------------------------------
@@ -33,122 +31,7 @@ cohort_selection_server <- function(
         )
     })
     
-    dataset_to_group_tbl <- shiny::reactive({
-        dplyr::tribble(
-            ~group,                 ~dataset, ~type,
-            "Immune Subtype",       "TCGA",   "tag",
-            "TCGA Subtype",         "TCGA",   "tag",
-            "TCGA Study",           "TCGA",   "tag",
-            # "Gender",          "TCGA",   "sample",
-            # "Race",            "TCGA",   "sample",
-            # "Ethnicity",       "TCGA",   "sample",
-            "Immune Feature Bins",  "TCGA",    NA,
-            "Driver Mutation",      "TCGA",    NA
-            # "Immune Subtype",  "PCAWG",  "tag",
-            # "PCAWG Study",     "PCAWG",  "tag",
-            # "Gender",          "PCAWG",  "sample",
-            # "Race",            "PCAWG",  "sample",
-            # "Custom Numeric",  "PCAWG",   NA
-        ) 
-    })
-    
-    dataset_tags <- shiny::reactive({
-        shiny::req(dataset_to_group_tbl())
-        dataset_to_group_tbl() %>% 
-            dplyr::filter(
-                dataset == input$dataset_choice,
-                type == "tag"
-            ) %>% 
-            dplyr::pull(group)
-    })
-    
-    samples_con <- shiny::reactive({
-        con <- 
-            create_connection("samples") %>% 
-            dplyr::rename(sample_id = id, sample_barcode = sample_id) %>% 
-            dplyr::compute()
-    })
-    
-    tags_con <- shiny::reactive({
-        con <- 
-            create_connection("samples_to_tags") %>% 
-            dplyr::left_join(
-                create_connection("tags"),
-                by = c("tag_id" = "id")
-            ) %>% 
-            dplyr::compute()
-    })
-    
-    group_members_con <- shiny::reactive({
-        shiny::req(dataset_tags())
-        con <- 
-            dplyr::inner_join(
-                create_connection("tags") %>% 
-                    dplyr::select(tag_id = id, name),
-                create_connection("tags_to_tags"),
-                by = c("tag_id")
-            ) %>% 
-            dplyr::inner_join(
-                create_connection("tags") %>% 
-                    dplyr::filter(display %in% local(dataset_tags())) %>% 
-                    dplyr::select(related_tag_id = id, display),
-                by = c("related_tag_id")
-            ) %>% 
-            dplyr::as_tibble() %>% 
-            dplyr::select(group = name, parent_group = display) %>% 
-            dplyr::compute() 
-    })
-    
-    feature_values_con <- shiny::reactive({
-        con <-
-            create_connection("features_to_samples") %>%
-            dplyr::select(sample_id, feature_id, value) %>% 
-            dplyr::inner_join(
-                create_connection("features"), 
-                by = c("feature_id" = "id")
-            ) %>% 
-            dplyr::compute()
-    })
-    
-    
-    features_list <- shiny::reactive({
-        list <- 
-            dplyr::full_join(
-                create_connection("features"),
-                create_connection("classes"), 
-                by = c("class_id" = "id")
-            ) %>% 
-            dplyr::select(class = name.y, name = display, feature_id = id) %>% 
-            dplyr::as_tibble() %>% 
-            dplyr::group_by(class) %>%
-            tidyr::nest() %>% 
-            dplyr::ungroup() %>% 
-            dplyr::mutate(
-                class = dplyr::if_else(is.na(class), "Other", class),
-                data = purrr::map(data, tibble::deframe)
-            ) %>%
-            tibble::deframe()
-    })
-    
 
-    
-    gene_expression_list <- shiny::reactive({
-        list <- 
-            dplyr::inner_join(
-                create_connection("genes") %>% 
-                    dplyr::select(hgnc, id),
-                create_connection("genes_to_samples") %>%
-                    dplyr::filter(!is.na(rna_seq_expr)) %>% 
-                    dplyr::select(gene_id) %>% 
-                    dplyr::distinct(),
-                by = c("id" = "gene_id")
-            ) %>% 
-            dplyr::as_tibble() %>% 
-            tibble::deframe()
-    })
-    
-    # dataset selection ----
-    
     output$module_selection_ui <- shiny::renderUI({
         choices <- dataset_to_module_tbl() %>% 
             dplyr::pull(module) %>% 
@@ -209,124 +92,34 @@ cohort_selection_server <- function(
             )
     })
     
-    available_groups <- shiny::reactive({
-        shiny::req(selected_dataset())
-        dataset_to_group_tbl() %>% 
-            dplyr::filter(dataset == selected_dataset()) %>% 
-            dplyr::pull(group)
-    })
-    
-    
-    # insert/remove filters ----
-    
-    filter_groups <- shiny::reactive({
-        shiny::req(available_groups())
-        setdiff(available_groups(), c("Custom Numeric", "Custom Mutation"))
-    })
-    
-    group_element_module_server <- shiny::reactive({
-        shiny::req(filter_groups, group_members_con)
-        purrr::partial(
-            group_filter_element_server,
-            group_names_list = filter_groups,
-            group_values_con = group_members_con
-        )
-    })
-    
-    group_element_module_ui <- shiny::reactive(group_filter_element_ui)
-    
-    group_filter_output <- shiny::callModule(
-        insert_remove_element_server,
-        "group_filter",
-        element_module = group_element_module_server,
-        element_module_ui = group_element_module_ui,
-        remove_ui_event = shiny::reactive(selected_dataset())
-    )
-    
-    numeric_element_module_server <- shiny::reactive({
-        shiny::req(features_list, feature_values_con)
-        
-        purrr::partial(
-            numeric_filter_element_server,
-            feature_names_list = features_list,
-            feature_values_con = feature_values_con
-        )
-        
-    })
-    
-    numeric_element_module_ui <- shiny::reactive(numeric_filter_element_ui)
-    
-    numeric_filter_output <- shiny::callModule(
-        insert_remove_element_server,
-        "numeric_filter",
-        element_module = numeric_element_module_server,
-        element_module_ui = numeric_element_module_ui,
-        remove_ui_event = shiny::reactive(selected_dataset())
-    )
-    
-    sample_ids <- shiny::reactive({
+    all_sample_ids <- shiny::reactive({
         req(selected_dataset())
         get_all_dataset_ids(selected_dataset())
     })
     
-    numeric_filter_samples <- shiny::reactive({
-        shiny::req(sample_ids(), numeric_filter_output())
-        samples <- sample_ids()
-        numeric_filters <- numeric_filter_output() %>% 
-            shiny::reactiveValuesToList() %>% 
-            purrr::discard(purrr::map_lgl(., is.null)) 
-        for(item in numeric_filters){
-            shiny::req(
-                item$feature_choice,
-                item$feature_range[[1]],
-                item$feature_range[[2]]
-            )
-            sample_ids <- get_numeric_filter_samples(
-                item$feature_choice,
-                item$feature_range[[1]],
-                item$feature_range[[2]]
-            )
-            samples <- intersect(samples, sample_ids)
+    selected_sample_ids <- cohort_obj <- shiny::callModule(
+        cohort_filter_selection_server,
+        "cohort_filter_selection",
+        feature_named_list,
+        selected_dataset,
+        all_sample_ids
+    )
+    
+    sample_ids <- shiny::reactive({
+        if(is.null(selected_sample_ids())){
+            req(all_sample_ids())
+            return(all_sample_ids())
+        } else {
+            return(selected_sample_ids())
         }
-        return(samples)
     })
-    
-    group_filter_samples <- shiny::reactive({
-        shiny::req(sample_ids(), group_filter_output())
-        group_filters <- group_filter_output() %>% 
-            shiny::reactiveValuesToList() %>% 
-            purrr::discard(purrr::map_lgl(., is.null))
-        samples <- sample_ids()
-        for(item in group_filters){
-            shiny::req(
-                item$parent_group_choice,
-                item$group_choices
-            )
-            sample_ids <- get_group_filter_samples(
-                item$parent_group_choice,
-                item$group_choices
-            )
-            samples <- intersect(samples, sample_ids)
-        }
-        return(samples)
-    })
-    
-    selected_samples <- shiny::reactive({
-        shiny::req(numeric_filter_samples(), group_filter_samples())
-        intersect(numeric_filter_samples(), group_filter_samples())
-    })
-    
-    output$samples_text <- shiny::renderText({
-        c("Number of current samples:", length(selected_samples()))
-    })
-    
+
     cohort_obj <- shiny::callModule(
         cohort_group_selection_server,
         "cohort_group_selection",
         feature_named_list,
         sample_ids,
-        selected_dataset,
-        available_groups
+        selected_dataset
     )
     
     # group key ---------------------------------------------------------------

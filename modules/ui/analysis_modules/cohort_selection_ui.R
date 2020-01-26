@@ -3,8 +3,8 @@ cohort_selection_ui <- function(id) {
     ns <- shiny::NS(id)
     
     source("modules/ui/submodules/cohort_group_selection_ui.R", local = T)
+    source("modules/ui/submodules/cohort_filter_selection_ui.R", local = T)
     source("modules/ui/submodules/data_table_ui.R", local = T)
-    source("modules/ui/submodules/insert_remove_element_ui.R", local = T)
     
     tagList(
         titleBox("iAtlas Explorer — Cohort Selection"),
@@ -19,7 +19,6 @@ cohort_selection_ui <- function(id) {
                 width = 12,
                 p("Group Selection and filtering"),
             ),
-            # dataset selection ----
             optionsBox(
                 width = 4,
                 checkboxInput(
@@ -37,25 +36,7 @@ cohort_selection_ui <- function(id) {
                 width = 12,
                 textOutput(ns("module_availibility_string"))
             ),
-            # sample filtering ----
-            optionsBox(
-                width = 12,
-                insert_remove_element_ui(
-                    ns("group_filter"), 
-                    "Add group filter"
-                )
-            ),
-            optionsBox(
-                width = 12,
-                insert_remove_element_ui(
-                    ns("numeric_filter"), 
-                    "Add numeric filter"
-                )
-            ),
-            tableBox(
-                width = 12,
-                textOutput(ns("samples_text"))
-            ),
+            cohort_filter_selection_ui(ns("cohort_filter_selection")),
             cohort_group_selection_ui(ns("cohort_group_selection"))
 
         ),

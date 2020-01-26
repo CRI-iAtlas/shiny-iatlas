@@ -36,6 +36,19 @@ create_gene_type_query <- function(name){
     )
 }
 
+create_parent_group_query_from_id <- function(id) {
+    tag_id_query <- paste(
+        "SELECT tag_id FROM tags_to_tags WHERE related_tag_id = ", 
+        id
+    )
+    
+    paste(
+        "SELECT * FROM tags WHERE id IN (", 
+        tag_id_query,
+        ")"
+    )
+}
+
 create_parent_group_query <- function(parent_group){
     parent_tag_query <- paste0(
         "SELECT id FROM tags WHERE display = '", 

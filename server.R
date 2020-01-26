@@ -63,10 +63,7 @@ shiny::shinyServer(function(input, output, session) {
     cohort_group_name  <- shiny::reactive(cohort_cons()$group_name)
     cohort_colors      <- shiny::reactive(cohort_cons()$plot_colors) 
     cohort_dataset     <- shiny::reactive(cohort_cons()$dataset) 
-    cohort_groups      <- shiny::reactive(cohort_cons()$groups) 
     
-
-
     shiny::callModule(
         tumor_microenvironment_server,
         "tumor_microenvironment",
