@@ -10,10 +10,10 @@ cellimage_UI <-function(id){
     ),
     
     sectionBox(
-      title = "CIM",
+      title = "Cell Image Module",
       messageBox(
         width = 12,
-        p("Driving instructions")
+        p("Select a subtype to view mean abundance among samples in that type")
       ),
       fluidRow(
 
@@ -24,13 +24,6 @@ cellimage_UI <-function(id){
           )
         ),
                 
-#        selectInput(
-#          ns("subtype"),
-#          "Subtype",
-#          c("C1","C2","C3","C4","C5","C6"),
-#          selected = "C5"
-#        ),
-        
         plotBox(
           width = 8,
           plotOutput(ns("cellPlot"), height = 600) %>%
@@ -87,13 +80,11 @@ cellimage <- function(
   output$cellPlot <- renderPlot({
     group_col <- group_internal_choice()
     group_df <- sample_group_df() %>% dplyr::mutate(Tumor_Fraction=1-Stromal_Fraction)
-    cell_image_base <- panimmune_data$cell_image_base
+    cellimage_base <- panimmune_data$cellimage_base
     ### Single data frame with all data values
-    all_vals_df <- generate_value_df(group_df,group_col,cell_image_base)
-    #save(group_df,all_vals_df,cell_image_base,file="look.RData")
-    #cat("my choice ",input$groupselect_method,"\n")
+    all_vals_df <- generate_value_df(group_df,group_col,cellimage_base)
     subtype_selected <- input$groupselect_method
-    image_grob <- get_colored_image(subtype_selected,cell_image_base,all_vals_df)
+    image_grob <- get_colored_image(subtype_selected,cellimage_base,all_vals_df)
     grid::grid.draw(image_grob)
   })
     

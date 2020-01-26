@@ -1,1 +1,1 @@
-This module allows you to explore the cellular receptor and ligand content in a sample set visualized on a well-known image
+This module allows you to depict the estimated abundance of tumor cells and representative innate and adaptive cells in the microenvironment, along with the abunace of receptor and ligands mediating interactions between those cells

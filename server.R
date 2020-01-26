@@ -121,7 +121,7 @@ shinyServer(function(input, output, session) {
     # Cell Image
     callModule(
       cellimage,
-      "module14",
+      "module12",
       reactive(input$ss_choice),
       reactive(group_internal_choice()),
       reactive(input$study_subset_selection),
@@ -159,7 +159,7 @@ shinyServer(function(input, output, session) {
     observeEvent(input$link_to_module9, {
       shinydashboard::updateTabItems(session, "explorertabs", "iotargets")
     })
-    observeEvent(input$link_to_module14, {
+    observeEvent(input$link_to_module12, {
       shinydashboard::updateTabItems(session, "explorertabs", "cell_image")
     })
     observeEvent(input$link_to_module_subtypeclassifier, {

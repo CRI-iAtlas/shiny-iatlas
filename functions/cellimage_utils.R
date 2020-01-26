@@ -45,9 +45,7 @@ build_multi_imageprotein_expression_df <- function(
   # use gather to turn wide input to narrow
   expression_df <- tidyr::gather(expression_df,"Symbol",
                                  "normalized_count",-ParticipantBarcode)
-  #expression_df <- tidyr::gather(expression_df,expression_filter_col,
-  #                               expression_col,-ParticipantBarcode)
-  
+
   expression_df <- multi_filter_imageprotein_expression_df(
     expression_df, 
     id_col, 
@@ -96,11 +94,11 @@ build_cellcontent_df <- function(
 generate_value_df <- function(
   group_df,
   group_col,
-  cell_image_base
+  cellimage_base
   ){
   
-  unique_image_variable_ids <- cell_image_base$unique_image_variable_ids
-  variable_annotations <- cell_image_base$variable_annotations
+  unique_image_variable_ids <- cellimage_base$unique_image_variable_ids
+  variable_annotations <- cellimage_base$variable_annotations
   
   ##
   ## The required cell data
@@ -156,7 +154,11 @@ data_ranges <- function(inputdata){
   list(minvec=minvec,maxvec=maxvec,meanz=meanz,summary_stats=summary_stats,bounds=bounds)
 }
 
-#--------- color functions -----------
+#########################################################################
+##
+## Color Functions
+##
+#########################################################################
 
 ## For the variable of interest, get min max possible values, color range and color value
 getVarColor <- function(voi,soi,colormap,datarange,alpha=1.){
@@ -173,8 +175,6 @@ getVarColor <- function(voi,soi,colormap,datarange,alpha=1.){
   display.val <- meanz %>% dplyr::filter(Group==soi,Variable==voi) %>% purrr::pluck("Mean")
   vmin <- bounds %>% dplyr::filter(Variable==voi) %>% purrr::pluck("MinBound")
   vmax <- bounds %>% dplyr::filter(Variable==voi) %>% purrr::pluck("MaxBound")
-#  vmin <- minvec[voi]
-#  vmax <- maxvec[voi]
   vnstep <- 51
   vstep <- (vmax-vmin)/(vnstep-1) ## size of step 
   breakList <- seq(vmin,vmax,vstep) 
@@ -187,14 +187,13 @@ getVarColor <- function(voi,soi,colormap,datarange,alpha=1.){
   usecolor
 }
 
-get_colored_image <- function(soi,cell_image_base,dfv){
+get_colored_image <- function(soi,cellimage_base,dfv){
 
-  image_object_labels <- cell_image_base$image_object_labels
-  variable_annotations <- cell_image_base$variable_annotations
-  image_grob <- cell_image_base$image_grob 
-  ##unique_image_variable_ids <- cell_image_base$unique_image_variable_ids
-  pathlabels <- cell_image_base$pathlabels
-  gTree_name <- cell_image_base$gTree_name ## label of overall gTree object
+  image_object_labels <- cellimage_base$image_object_labels
+  variable_annotations <- cellimage_base$variable_annotations
+  image_grob <- cellimage_base$image_grob
+  pathlabels <- cellimage_base$pathlabels
+  gTree_name <- cellimage_base$gTree_name ## label of overall gTree object
   
   dfv_ranges <- data_ranges(dfv)
 

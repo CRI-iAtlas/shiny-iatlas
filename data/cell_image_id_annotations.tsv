@@ -24,9 +24,9 @@ OX40L	TNFSF4	im_expr_df	Greens	1
 OX40	TNFRSF4	im_expr_df	Greens	1
 GITRL	ICOS	im_expr_df	Greens	1
 GITR	TNFRSF18	im_expr_df	Greens	1
-TCR	ICOS	im_expr_df	Greens	1
+TCR	T_cells_CD8.Aggregate2	fmx_df	Greens	1
 MHC	HLA-A	im_expr_df	Greens	1
 MHC-II	HLA-DPA1	im_expr_df	Greens	1
 LAG-3	LAG3	im_expr_df	Greens	1
 TIM-3	HAVCR2	im_expr_df	Greens	1
-Galectin_9	ICOS	im_expr_df	Greens	1
+Galectin_9	LGALS9	im_expr_df	Greens	1

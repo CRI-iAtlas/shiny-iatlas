@@ -217,8 +217,8 @@ explorepage <- dashboardPage(
             imgLinkBox(
               width = 6,
               title = "Cell Image",
-              linkId = "link_to_module14",
-              imgSrc = "images/iotargets.png",
+              linkId = "link_to_module12",
+              imgSrc = "images/cell-image.png",
               boxText = "Explore the Cell Image.",
               linkText = "Open Module"
             )
@@ -263,7 +263,7 @@ explorepage <- dashboardPage(
       ),
       tabItem(
         tabName = "cell_image",
-        cellimage_UI("module14")
+        cellimage_UI("module12")
       ),
       tabItem(
         tabName = "datainfo",
