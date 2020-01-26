@@ -8,100 +8,38 @@ cohort_selection_server <- function(
     
     source("modules/server/submodules/cohort_group_selection_server.R", local = T)
     source("modules/server/submodules/cohort_filter_selection_server.R", local = T)
+    source("modules/server/submodules/cohort_dataset_selection_server.R", local = T)
     source("modules/server/submodules/data_table_server.R", local = T)
     source("functions/cohort_selection_functions.R", local = T)
     
     # cohort selection --------------------------------------------------------
     
-    dataset_to_module_tbl <- shiny::reactive({
-        dplyr::tribble(
-            ~module,                  ~dataset,
-            "Sample Group Overview",  "TCGA",
-            "Tumor Microenvironment", "TCGA",
-            "Immune Feature Trends",  "TCGA",
-            "Clinical Outcomes",      "TCGA",
-            "IO Targets",             "TCGA",
-            "TIL Maps",               "TCGA",
-            "Driver Associations",    "TCGA"
-            # "Sample Group Overview",  "PCAWG",
-            # "Tumor Microenvironment", "PCAWG",
-            # "Immune Feature Trends",  "PCAWG",
-            # "IO Targets",             "PCAWG",
-            # "Driver Associations",    "PCAWG"
-        )
-    })
+    default_dataset <- "TCGA"
     
-
-    output$module_selection_ui <- shiny::renderUI({
-        choices <- dataset_to_module_tbl() %>% 
-            dplyr::pull(module) %>% 
-            unique()
-        shiny::checkboxGroupInput(
-            ns("module_choices"),
-            "Select modules:",
-            choices
-        )
-    })
+    selected_dataset <- cohort_obj <- shiny::callModule(
+        cohort_dataset_selection_server,
+        "cohort_dataset_selection",
+        default_dataset
+    )
     
-    selected_dataset <- shiny::reactive({
-        if(is.null(input$dataset_choice)){
-            return("TCGA")
+    dataset <- shiny::reactive({
+        if(is.null(selected_dataset())){
+            return(default_dataset)
         } else {
-            return(input$dataset_choice)
+            return(selected_dataset())
         }
-    })
-    
-    output$dataset_selection_ui <- shiny::renderUI({
-        if(input$select_by_module & !is.null(input$module_choices)){
-            choices <- dataset_to_module_tbl() %>% 
-                dplyr::filter(module %in% input$module_choices) %>% 
-                dplyr::group_by(dataset) %>% 
-                dplyr::summarise(count = dplyr::n()) %>% 
-                dplyr::filter(count == length(input$module_choices)) %>% 
-                dplyr::pull(dataset)
-        } else {
-            choices <- dataset_to_module_tbl() %>% 
-                dplyr::pull(dataset) %>% 
-                unique()
-        }
-        shiny::selectInput(
-            inputId = ns("dataset_choice"),
-            label = strong("Select or Search for Dataset"),
-            choices = choices,
-            selected = "TCGA"
-        )
-    })
-    
-    available_modules <- shiny::reactive({
-        shiny::req(selected_dataset())
-        dataset_to_module_tbl() %>% 
-            dplyr::filter(dataset == selected_dataset()) %>% 
-            dplyr::pull(module)
-    })
-    
-    output$module_availibility_string <- shiny::renderText({
-        shiny::req(selected_dataset(), available_modules())
-        available_modules() %>% 
-            stringr::str_c(collapse = ", ") %>% 
-            stringr::str_c(
-                "Modules available for dataset :", 
-                selected_dataset(),
-                "are",
-                .,
-                sep = " "
-            )
     })
     
     all_sample_ids <- shiny::reactive({
-        req(selected_dataset())
-        get_all_dataset_ids(selected_dataset())
+        req(dataset())
+        get_all_dataset_ids(dataset()) 
     })
     
     selected_sample_ids <- cohort_obj <- shiny::callModule(
         cohort_filter_selection_server,
         "cohort_filter_selection",
         feature_named_list,
-        selected_dataset,
+        dataset,
         all_sample_ids
     )
     
@@ -119,7 +57,7 @@ cohort_selection_server <- function(
         "cohort_group_selection",
         feature_named_list,
         sample_ids,
-        selected_dataset
+        dataset
     )
     
     # group key ---------------------------------------------------------------

@@ -4,6 +4,7 @@ cohort_selection_ui <- function(id) {
     
     source("modules/ui/submodules/cohort_group_selection_ui.R", local = T)
     source("modules/ui/submodules/cohort_filter_selection_ui.R", local = T)
+    source("modules/ui/submodules/cohort_dataset_selection_ui.R", local = T)
     source("modules/ui/submodules/data_table_ui.R", local = T)
     
     tagList(
@@ -19,28 +20,10 @@ cohort_selection_ui <- function(id) {
                 width = 12,
                 p("Group Selection and filtering"),
             ),
-            optionsBox(
-                width = 4,
-                checkboxInput(
-                    inputId = ns("select_by_module"),
-                    label = strong("Select By Module?"),
-                ),
-                conditionalPanel(
-                    condition = "input.select_by_module",
-                    uiOutput(ns("module_selection_ui")),
-                    ns = ns
-                ),
-                uiOutput(ns("dataset_selection_ui")),
-            ),
-            messageBox(
-                width = 12,
-                textOutput(ns("module_availibility_string"))
-            ),
+            cohort_dataset_selection_ui(ns("cohort_dataset_selection")),
             cohort_filter_selection_ui(ns("cohort_filter_selection")),
             cohort_group_selection_ui(ns("cohort_group_selection"))
-
         ),
-        
         # group key -----------------------------------------------------------
         data_table_ui(
             ns("sg_table"),
