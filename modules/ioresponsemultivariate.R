@@ -1,15 +1,3 @@
-#loading data (to be changed to a DB)
-
-IO_DATA="/Users/cheimann/Documents/io-module-eda/"
-
-#diversity <- readr::read_rds(paste(IO_DATA, "diversity/diversity.rds", sep = ""))
-#genes_norm <- readr::read_rds(paste(IO_DATA,"genes_norm/genes_norm.rds", sep = ""))
-#genes_norm_log2 <- readr::read_rds(paste(IO_DATA,"genes_norm_log2/genes_norm_log2.rds", sep = ""))
-#genes_unnorm <- readr::read_rds(paste(IO_DATA,"genes_unnorm/genes_unnorm.rds", sep = ""))
-immune_sigs <- readr::read_rds(paste(IO_DATA,"immune_sigs/immune_sigs.rds", sep = ""))
-panimmune_sigs <- readr::read_rds(paste(IO_DATA,"panimmune_sigs/panimmune_sigs.rds", sep = ""))
-sample <- readr::read_rds(paste(IO_DATA,"sample/sample.rds", sep = ""))
-
 ioresponsemultivariate_UI <- function(id){
     
     ns <- NS(id)
@@ -65,30 +53,29 @@ ioresponsemultivariate <- function(input,
     
     output$heatmap_op <- renderUI({
         #group_choice <- magrittr::set_names(list(group_internal_choice()), ss_choice())
-        var_choices <- colnames(immune_sigs[3:63])
+        var_choices <- colnames(fmx_io)
         selectizeInput(
             ns("var2_cox"),
             "Select features",
             var_choices,
-            selected = c("Palmer_BCell", "Palmer_CD8"),
+            selected = c("CTLA4Th1"),
             multiple = TRUE
         )
     })
 
+    feature_df_mult <- reactive({
+        
+        req(input$datasets_mult, input$var2_cox)
+        
+        fmx_io %>% 
+            filter(Dataset %in% input$datasets_mult & treatment_when_collected == "Pre") %>%
+            select(Sample_ID, Dataset, OS, OS_time, treatment_when_collected, dplyr::one_of(input$var2_cox))
+    })
+    
     #create dataframe with cox proportional hazard ratio for the selected datasets
     
     mult_ph_df <- reactive({
         req(input$datasets_mult, input$var2_cox)
-        survival_data <- sample %>%
-            dplyr::filter(Dataset %in% input$datasets_mult) %>%
-            dplyr::select(Sample_ID, Dataset, Treatment, OS_d, OS_e) %>%
-            dplyr::rename(OS = OS_e, OS_time = OS_d)
-        
-        #Var_data
-        var_data <- immune_sigs %>%
-            dplyr::select(Sample_ID, dplyr::one_of(input$var2_cox))
-        
-        outcome <- merge(survival_data, var_data, by = "Sample_ID")
         
         cox_features <- as.formula(paste(
             "survival::Surv(OS_time, OS) ~", 
@@ -105,7 +92,7 @@ ioresponsemultivariate <- function(input,
             ph
         }
         
-        all_hr <- purrr::map(.x = input$datasets_mult, .f= fit_cox, data = outcome)
+        all_hr <- purrr::map(.x = input$datasets_mult, .f= fit_cox, data = feature_df_mult())
         names(all_hr) <- input$datasets_mult
         
         create_ph_df <- function(coxphList){
@@ -152,6 +139,8 @@ ioresponsemultivariate <- function(input,
 
         print(head(heatmap_df))
 
-        create_heatmap(as.matrix(heatmap_df), "heatmap", scale_colors = T)
+        p <- create_heatmap(t(as.matrix(heatmap_df)), "heatmap", scale_colors = T)
+        
+        p + geom_tile(size = 1, colour = "black")
     })
 }

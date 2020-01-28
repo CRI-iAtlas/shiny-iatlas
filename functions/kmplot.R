@@ -21,6 +21,7 @@ create_kmplot <- function(fit, df, confint, risktable, title, group_colors, face
       fit,
       data = df,
       pval = TRUE,
+      pval.method = TRUE,
       conf.int = confint,
       risk.table = risktable,
       title = title,

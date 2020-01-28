@@ -1,7 +1,13 @@
-#loading data (to be changed to a DB)
+#loading data 
+#The path for the feature matrix needs to be informed. 
+#In unix bash shell, this can be set by running: export IO_PATH=path/to/files
+#In a R Session, this can be set with the command Sys.setenv(IO_PATH="path/to/files")
 
-fmx_io <- feather::read_feather(paste(IO_DATA, "fmx_io.feather", sep = ""))
-feature_io_df <- feather::read_feather(paste(IO_DATA, "feature_io_df.feather", sep = ""))
+IO_PATH = Sys.getenv("IO_PATH")
+
+fmx_io <- feather::read_feather(paste(IO_PATH, "fmx_io.feather", sep = ""))
+feature_io_df <- feather::read_feather(paste(IO_PATH, "feature_io_df.feather", sep = ""))
+dataset_io_df <- feather::read_feather(paste(IO_PATH, "datasets_io_df.feather", sep = ""))
 
 ioresponse_UI <- function(id){
     
@@ -32,20 +38,17 @@ ioresponse_UI <- function(id){
                                 width = 5,
                                 checkboxGroupInput(ns("datasets"), "Select Datasets", choices = c("Gide 2019", "Hugo 2016", 
                                                                                                   "IMVigor210", "Prins 2019", "Riaz 2017", "Van Allen 2015"),
-                                                   selected = c("Gide 2019", "Hugo 2016", 
-                                                                "IMVigor210", "Prins 2019", "Riaz 2017", "Van Allen 2015"))
+                                                   selected = "Gide 2019")
                                 #the Auslander dataset does not have annotation for OS  
                             ),
                             column(
                                 width = 7,
-                                selectizeInput(ns("types"), "Select tumor(s) type(s)", choices = unique(sample$Tissue)),
-                                selectizeInput(ns("therapy"), "Select therapy(ies) type(s)", choices = unique(sample$Antibody)),
-                                selectizeInput(ns("drugs"), "Select drug(s) of treatment", choices = unique(sample$Drug))
+                                selectizeInput(ns("types"), "Select tumor(s) type(s)", choices = c("All", unique(dataset_io_df$Study)), selected = NULL),
+                                selectizeInput(ns("therapy"), "Select therapy(ies) type(s)", choices = c("All", unique(dataset_io_df$Antibody)), selected = NULL),
+                                selectizeInput(ns("drugs"), "Select drug(s) of treatment", choices = c("All", unique(dataset_io_df$Drug)), selected = NULL)
                             )
                         ),    
                         uiOutput(ns("survplot_op")),
-                        #checkboxGroupInput(ns("response"), "Select Response Categories", choices = c("OS_d")),
-                        #c("OS_d", "OS_y", "OS_e", "PR", "CR", "SD")
                         checkboxInput(ns("confint"), "Confidence Intervals", value = F),
                         checkboxInput(ns("risktable"), "Risk Table", value = T),
                    
@@ -55,16 +58,17 @@ ioresponse_UI <- function(id){
                             c("Overall Survival" = "OS_time"),
                             selected = "OS_time"
                         ),
-                        
-                        sliderInput(
-                            ns("divk"),
-                            "Value Range Divisions",
-                            min = 2,
-                            max = 10,
-                            value = 2
-                        ),
-                        # checkboxGroupInput(ns("analyses"), "Select Analyses", choices = c("Groupwise Comparison", "CoxPH")),
-                        # br(),
+                        radioButtons(ns("div_range"), "Divide value range", 
+                                     choices = c("In the median" = "median", "In equal intervals" = "intervals"), 
+                                     inline = TRUE, selected = "median"),
+                        conditionalPanel(condition = paste0("input['", ns("div_range"), "'] == 'intervals'"),
+                                         sliderInput(
+                                           ns("divk"),
+                                           "Value Range Divisions",
+                                           min = 2,
+                                           max = 10,
+                                           value = 2
+                                         )),
                         div(class = "form-group shiny-input-container", actionButton(ns("go_button"), tags$b("GO"), width = "100%"))
                 )
                 
@@ -73,7 +77,7 @@ ioresponse_UI <- function(id){
                 width = 9,
                 plotBox(
                     width = 12,
-                    plotlyOutput(ns("forest")) %>% 
+                    plotlyOutput(ns("forest"), height = "450px") %>% 
                         shinycssloaders::withSpinner()
                 ),
                 plotBox(
@@ -100,38 +104,93 @@ ioresponse <- function(input,
     ns <- session$ns
     
     output$survplot_op <- renderUI({
-        #group_choice <- magrittr::set_names(list(group_internal_choice()), ss_choice())
-        var_choices <- feature_io_df$FeatureMatrixLabelTSV[4:72]
-        selectInput(
-            ns("var1_surv"),
-            "Variable",
-            var_choices,
-            selected = var_choices[1]
-        )
+      
+      var_choices <- create_filtered_nested_list_by_class(feature_df = feature_io_df,
+                                                          filter_value = "Numeric",
+                                                          class_column = "Variable Class",
+                                                          internal_column = "FeatureMatrixLabelTSV",
+                                                          display_column = "FriendlyLabel",
+                                                          filter_column = "VariableType")
+      selectInput(
+        ns("var1_surv"),
+        "Variable",
+        var_choices
+      )
     })
     
-
-    feature_df <- reactive({
+    #Observer to update dataset selection based on choice of study design
+    dataset_select <- reactive({
+      if(input$types == "All"){
+        subset_dataset <- dataset_io_df %>%
+          filter(Dataset != "Auslander 2018") %>% 
+          select(Dataset, Study, Antibody, Drug) %>% unique() 
+      }else{
+        subset_dataset <- dataset_io_df %>%
+          filter(Dataset != "Auslander 2018" & Study == input$types) %>%
+          select(Dataset, Study, Antibody, Drug) %>% unique() 
+      }
+      
+      if(input$therapy != "All"){
+        subset_dataset <- subset_dataset %>% 
+          filter(Antibody == input$therapy)
+      }else{
+        subset_dataset
+      }
+      
+      if(input$drugs != "All"){
+        subset_dataset <- subset_dataset %>% 
+          filter(Drug == input$drugs)
+      }else{
+        subset_dataset
+      }
+      return(subset_dataset)
+    })
+    
+    observeEvent(dataset_select(),{
+      updateCheckboxGroupInput(
+        session,
+        "datasets",
+        choices = c("Gide 2019", "Hugo 2016", "IMVigor210", "Prins 2019", "Riaz 2017", "Van Allen 2015"),
+        selected = dataset_select() %>% dplyr::select(Dataset) %>% unique() %>% .[[1]]
+      )
+    })
+    
+    observeEvent(input$types,{
+      updateSelectInput(session, "therapy", choices = c("All", dataset_select() %>% dplyr::select(Antibody) %>%.[[1]]), selected = "All")
+      updateSelectInput(session, "drugs", choices = c("All", dataset_select() %>% dplyr::select(Drug) %>%.[[1]]), selected = "All")
+    })
+    
+    observeEvent(input$therapy,{
+      #   #current_type(input$types)
+      #   current_drug(input$drugs)
+      #   #updateSelectInput(session, "types", choices = c("All", dataset_select() %>% dplyr::select(Study) %>%.[[1]]), selected = current_type())
+      updateSelectInput(session, "drugs", choices = c("All", dataset_select() %>% dplyr::select(Drug) %>%.[[1]]))
+    })
+                 
+    feature_df <- eventReactive(input$go_button,{
       
         fmx_io %>% 
             filter(Dataset %in% input$datasets & treatment_when_collected == "Pre") %>%
             select(Sample_ID, Dataset, treatment_when_collected, OS, OS_time, input$var1_surv)
     })
     
-    all_survival <- reactive({
+    all_survival <- eventReactive(input$go_button,{
         
         req(!is.null(feature_df()), cancelOutput = T)
         sample_groups <- feature_io_df %>% filter(VariableType == "Categorical") %>% select(FeatureMatrixLabelTSV) %>% as.vector()
         n_groups <- dplyr::n_distinct(sample_groups)
         
-        validate(
-            need(input$var1_surv, "Waiting for input.")
-            # need(dplyr::n_distinct(sample_groups) <= 10, 
-            #      paste0("Too many sample groups (", n_groups, ") for KM plot; ",
-            #             "choose a continuous variable or select different sample groups."))
-        )
+        validate(need(input$var1_surv, "Waiting for input."))
         
         
+        if(input$div_range == "median"){
+          breaks <- 2
+          break_median <- TRUE
+        }else{
+          breaks <- input$divk
+          break_median <- FALSE
+        }
+
         purrr::map(.x = input$datasets, df = feature_df(), .f= function(dataset, df){
             dataset_df <- df %>% 
                 dplyr::filter(Dataset == dataset)
@@ -141,16 +200,17 @@ ioresponse <- function(input,
                 group_column = input$var1_surv,
                 group_options = sample_groups$FeatureMatrixLabelTSV,
                 time_column = "OS_time",
-                k = input$divk
+                k = breaks,
+                by.median = break_median
             )
         })
     })
     
-    all_fit <- reactive({
+    all_fit <- eventReactive(input$go_button,{
         purrr::map(all_survival(), function(df) survival::survfit(survival::Surv(time, status) ~ variable, data = df))
     })
     
-    all_kmplot <- reactive({
+    all_kmplot <- eventReactive(input$go_button,{
         
         sample_groups <- feature_io_df %>% filter(VariableType == "Categorical") %>% select(FeatureMatrixLabelTSV)
         
@@ -195,6 +255,7 @@ ioresponse <- function(input,
    
 #forest plot     
     output$forest <- renderPlotly({
+      req(!is.null(feature_df()), input$var1_surv %in% colnames(feature_df()))
 
         all_hr <- purrr::map(.x = input$datasets, data = feature_df(), variable = input$var1_surv, .f= function(dataset, data, variable){
             data_cox <- data %>%
@@ -204,7 +265,7 @@ ioresponse <- function(input,
         })
 
         names(all_hr) <- input$datasets
-        
+      
         create_ph_df <- function(coxphList){
             
             coef_stats <- as.data.frame(summary(coxphList)$conf.int)
@@ -220,23 +281,16 @@ ioresponse <- function(input,
                    logupper = log10(`upper .95`),
                    loglower = log10(`lower .95`))
         
-        
-        
         print(log_meta_stats)
-        # meta_stats <- data.frame("Dataset" = names(all_hr),
-        #                          "coef"= sapply(all_hr, with, coefficients),
-        #                          "exp.coef" = sapply(all_hr,  function(l) summary(l)$coef[2]),
-        #                          "SE"= sapply(all_hr,  function(l) summary(l)$coef[3]),
-        #                          "upper" = sapply(all_hr,  function(l) summary(l)$conf.int[3]),
-        #                          "lower" = sapply(all_hr,  function(l) summary(l)$conf.int[4]))
-        # print(meta_stats)
-        # log_meta_stats <- meta_stats %>%
-        #     mutate(logHR = log10(exp.coef),
-        #            logupper = log10(upper),
-        #            loglower = log10(lower))
-     
         
-        if(nrow(log_meta_stats)== length(input$datasets)){
+        title <- convert_value_between_columns(input_value = input$var1_surv,
+                                               df = feature_io_df,
+                                               from_column = "FeatureMatrixLabelTSV",
+                                               to_column = "FriendlyLabel")
+        
+       title <- paste(title, " - Forest Plot")
+        
+        if(nrow(log_meta_stats)== base::length(input$datasets)){
             create_forestplot(log_meta_stats,
                               x=log_meta_stats$logHR,
                               y=log_meta_stats$.id,
@@ -245,8 +299,9 @@ ioresponse <- function(input,
                               xintercept = 0,
                               xlab = 'Hazard Ratio (log10)',
                               ylab = "Reference",
-                              title = input$var1_surv)
+                              title = title)
         }else{
+          #when feature is a categorical feature, such as response
             create_forestplot(log_meta_stats,
                               x=log_meta_stats$logHR,
                               y=log_meta_stats$feature,
@@ -254,83 +309,10 @@ ioresponse <- function(input,
                               xmax=log_meta_stats$logupper,
                               xintercept = 0,
                               xlab = 'Hazard Ratio (log10)',
-                              ylab = "Reference",
-                              title = input$var1_surv,
+                              #ylab = "Reference",
+                              title = title,
                               facet = ".id")
         }
     })
  
 }
-
-
-
-
-
-# ##Insert the right number of plot output objects into the web page
-# observe({
-#     output$plots <- renderUI({
-#        
-#         plot_output_list <- 
-#             lapply(1:length(input$datasets), function(i) {
-#                      plotname <- input$datasets[i]
-#                      plotOutput(ns(plotname), height = 400, width = 750)
-#         })
-#         do.call(tagList, plot_output_list)
-#     })
-# })
-# 
-# # Call renderPlot for each one. Plots are only actually generated when they
-# # are visible on the web page.
-# observe({
-#     for (i in 1:length(input$datasets)) {
-#             # Need local so that each item gets its own number. Without it, the value of i in the renderPlot() will be the same across all instances, 
-#             # because of when the expression is evaluated.
-#             local({
-#                 
-#                 my_i <- i
-#                 plotname <- input$datasets[my_i]
-#                 my_var <- input$var1_surv
-#                 
-#                 req(!is.null(my_var))
-#                 survival_data <- sample %>%
-#                     filter(Dataset == input$datasets[my_i] & Treatment == "Pre") %>%
-#                     select(Sample_ID, Dataset, Treatment, OS_d, OS_e) %>%
-#                     dplyr::rename(OS = OS_e, OS_time = OS_d)
-#                 
-#                 #Var_data
-#                 var_data <- panimmune_sigs %>%
-#                     select(Sample_ID, my_var)
-#                 
-#                 outcome <- merge(survival_data, var_data, by = "Sample_ID")
-#               
-#                 survival_df <- build_survival_df(
-#                     df = outcome,
-#                     group_column = my_var,
-#                     group_options = "Other",
-#                     time_column = "OS_time",
-#                     k = input$divk
-#                 )
-#                 
-#                 survival_df %>%
-#                     dplyr::group_by(variable) %>%
-#                     dplyr::summarize(Num1 = sum(status == 1), Num0 = sum(status == 0))
-#                 
-#                 print(head(survival_df))
-#                 fit <- survival::survfit(survival::Surv(time, status) ~ variable, data = survival_df)
-#                 
-#                 group_colors <- viridisLite::viridis(input$divk)
-#                 
-#                 output[[plotname]] <- renderPlot({
-#                     
-#                     create_kmplot(
-#                         fit = fit,
-#                         df = survival_df,
-#                         confint = input$confint,
-#                         risktable = input$risktable,
-#                         title = plotname,
-#                         group_colors = group_colors)
-#                 })#renderPlot
-#             })#local
-#         }#for
-#      }) #observe
-   

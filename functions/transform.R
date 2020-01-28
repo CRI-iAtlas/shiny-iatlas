@@ -422,13 +422,15 @@ build_intermediate_corr_df <- function(
 
 # ** Clinical outcomes module ----
 
-build_survival_df <- function(df, group_column, group_options, time_column, k) {
-    get_groups <- function(df, group_column, k) {
+build_survival_df <- function(df, group_column, group_options, time_column, k, by.median = FALSE) {
+    get_groups <- function(df, group_column, k, by.median = FALSE) {
         if (group_column %in% group_options) {
             # then we don't need to produce catagories.
             as.character(df[[group_column]])
-        }
-        else {
+        } else if(by.median == TRUE){
+          cuts <- c(quantile(df[[group_column]])[[1]], median(df[[group_column]]), quantile(df[[group_column]])[[5]])
+          as.character(cut(df[[group_column]], k,  labels = c("Low", "High"), breaks = cuts, ordered_result = T))
+        }else {
             as.character(cut(df[[group_column]], k, ordered_result = T))
         }
     }
@@ -436,8 +438,8 @@ build_survival_df <- function(df, group_column, group_options, time_column, k) {
     # get the vectors associated with each term
     # if facet_column is already a catagory, just use that.
     # otherwise it needs to be divided into k catagories.
-    groups <- get_groups(df, group_column, k)
-    
+    groups <- get_groups(df, group_column, k, by.median)
+  
     if (time_column == "OS_time") {
         status_column <- "OS"
     } else {

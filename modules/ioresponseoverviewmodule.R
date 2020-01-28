@@ -1,9 +1,3 @@
-#loading data (to be changed to a DB)
-
-IO_DATA="/Users/cheimann/Documents/io-module-eda/"
-
-sample <- readr::read_rds(paste(IO_DATA,"sample/sample.rds", sep = ""))
-
 ioresponseoverview_UI <- function(id){
     
     ns <- NS(id)
@@ -48,8 +42,8 @@ ioresponseoverview <- function(input,
     ns <- session$ns
     
     output$io_datasets_df <- DT::renderDT({
-        DT::datatable((sample %>% 
-                           group_by(Dataset, Tissue, Drug, Antibody) %>% 
+        DT::datatable((fmx_io %>% 
+                           group_by(Dataset, Study, Drug, Antibody) %>% 
                            summarise(Samples = n())),
                       options = list(pageLength = 20))
         
