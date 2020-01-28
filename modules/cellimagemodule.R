@@ -81,11 +81,30 @@ cellimage <- function(
     group_col <- group_internal_choice()
     group_df <- sample_group_df() %>% dplyr::mutate(Tumor_Fraction=1-Stromal_Fraction)
     cellimage_base <- panimmune_data$cellimage_base
+    
     ### Single data frame with all data values
     all_vals_df <- generate_value_df(group_df,group_col,cellimage_base)
+    availability <- all_vals_df %>% dplyr::group_by(Group,Variable) %>% dplyr::summarise(Count=length(Value)) %>% 
+      dplyr::group_by(Group) %>% dplyr::summarize(MinCount=min(Count))
+    
     subtype_selected <- input$groupselect_method
-    image_grob <- get_colored_image(subtype_selected,cellimage_base,all_vals_df)
-    grid::grid.draw(image_grob)
+    
+    enough_data=TRUE
+    if(nrow(availability %>% dplyr::filter(Group==subtype_selected))==0){
+      enough_data=FALSE
+    }
+    if (enough_data==TRUE){
+      scount <- availability %>% dplyr::filter(Group==subtype_selected) %>% purrr::pluck("MinCount")
+      if (scount <= 3 ){ enough_data=FALSE }
+    }
+    
+    if(enough_data){
+      image_grob <- get_colored_image(subtype_selected,cellimage_base,all_vals_df)
+      grid::grid.draw(image_grob)
+    } else {
+      print("Please select another subtype - this one has limited data")
+    }
+    
   })
     
 }

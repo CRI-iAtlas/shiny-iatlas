@@ -176,7 +176,13 @@ getVarColor <- function(voi,soi,colormap,datarange,alpha=1.){
   vmin <- bounds %>% dplyr::filter(Variable==voi) %>% purrr::pluck("MinBound")
   vmax <- bounds %>% dplyr::filter(Variable==voi) %>% purrr::pluck("MaxBound")
   vnstep <- 51
-  vstep <- (vmax-vmin)/(vnstep-1) ## size of step 
+  vstep <- (vmax-vmin)/(vnstep-1) ## size of step
+  if(vstep==0 || is.na(vstep)){
+    stop("step size in getVarColor is 0 or NA")
+  }
+  if (length(display.val) == 0 || is.na(display.val)){
+    stop("Display value: ",display.val," is problematic")
+  }
   breakList <- seq(vmin,vmax,vstep) 
   cind <- min(which(!(display.val-breakList)>0)) ## right turnover point
   
