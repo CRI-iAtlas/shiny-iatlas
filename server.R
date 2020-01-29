@@ -119,9 +119,20 @@ shinyServer(function(input, output, session) {
       reactive(subset_df()),
       reactive(plot_colors()))
     
-    #IO Molecular Response
+    #IO Molecular Response EDA
     callModule(
       ioresponse,
+      "io_response_eda",
+      reactive(input$ss_choice),
+      reactive(group_internal_choice()),
+      reactive(input$study_subset_selection),
+      reactive(sample_group_df()),
+      reactive(subset_df()),
+      reactive(plot_colors()))
+    
+    #IO Molecular Response Clinical Outcomes
+    callModule(
+      iosurvival,
       "io_response1",
       reactive(input$ss_choice),
       reactive(group_internal_choice()),
@@ -184,8 +195,11 @@ shinyServer(function(input, output, session) {
     observeEvent(input$link_to_io_response_overview, {
       shinydashboard::updateTabItems(session, "explorertabs", "ioresponse_overview")
     })
-    observeEvent(input$link_to_io_response1, {
+    observeEvent(input$link_to_io_response_eda, {
       shinydashboard::updateTabItems(session, "explorertabs", "io_response")
+    })
+    observeEvent(input$link_to_io_response1, {
+      shinydashboard::updateTabItems(session, "explorertabs", "io_survival")
     })
     observeEvent(input$link_to_io_response2, {
       shinydashboard::updateTabItems(session, "explorertabs", "ioresponse_mult")

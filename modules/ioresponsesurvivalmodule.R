@@ -1,7 +1,7 @@
 #loading data 
 #The path for the feature matrix needs to be informed. 
-#In unix bash shell, this can be set by running: export IO_PATH=path/to/files
-#In a R Session, this can be set with the command Sys.setenv(IO_PATH="path/to/files")
+#In unix bash shell, this can be set by running: export IO_PATH=path/to/files/
+#In a R Session, this can be set with the command in the console: Sys.setenv(IO_PATH="path/to/files/")
 
 IO_PATH = Sys.getenv("IO_PATH")
 
@@ -9,7 +9,7 @@ fmx_io <- feather::read_feather(paste(IO_PATH, "fmx_io.feather", sep = ""))
 feature_io_df <- feather::read_feather(paste(IO_PATH, "feature_io_df.feather", sep = ""))
 dataset_io_df <- feather::read_feather(paste(IO_PATH, "datasets_io_df.feather", sep = ""))
 
-ioresponse_UI <- function(id){
+iosurvival_UI <- function(id){
     
     ns <- NS(id)
      
@@ -85,13 +85,12 @@ ioresponse_UI <- function(id){
                     uiOutput(ns("plots")) %>%
                         shinycssloaders::withSpinner()
                 )
-                
             )
         ) #sectionBox
     )
 }
 
-ioresponse <- function(input, 
+iosurvival <- function(input, 
                        output, 
                        session, 
                        group_display_choice,
@@ -118,8 +117,10 @@ ioresponse <- function(input,
       )
     })
     
-    #Observer to update dataset selection based on choice of study design
+    #Update dataset selection based on choice of study design
+    
     dataset_select <- reactive({
+      
       if(input$types == "All"){
         subset_dataset <- dataset_io_df %>%
           filter(Dataset != "Auslander 2018") %>% 
@@ -143,29 +144,33 @@ ioresponse <- function(input,
       }else{
         subset_dataset
       }
+      
       return(subset_dataset)
     })
     
     observeEvent(dataset_select(),{
+      #browser()
       updateCheckboxGroupInput(
         session,
         "datasets",
         choices = c("Gide 2019", "Hugo 2016", "IMVigor210", "Prins 2019", "Riaz 2017", "Van Allen 2015"),
         selected = dataset_select() %>% dplyr::select(Dataset) %>% unique() %>% .[[1]]
       )
+      #updateSelectInput(session = session, inputId = "therapy", choices = c("All", dataset_select() %>% dplyr::select(Antibody) %>%.[[1]]),  selected = "All")
+      #updateSelectInput(session, "drugs", choices = c("All", dataset_select() %>% dplyr::select(Drug) %>%.[[1]]))
     })
     
     observeEvent(input$types,{
-      updateSelectInput(session, "therapy", choices = c("All", dataset_select() %>% dplyr::select(Antibody) %>%.[[1]]), selected = "All")
-      updateSelectInput(session, "drugs", choices = c("All", dataset_select() %>% dplyr::select(Drug) %>%.[[1]]), selected = "All")
+     # browser()
+#      updateSelectInput(session, "therapy", choices = c("All", dataset_select() %>% dplyr::select(Antibody) %>%.[[1]]), selected = "All")
+      updateSelectInput(session, "therapy", selected = "All")
     })
     
     observeEvent(input$therapy,{
-      #   #current_type(input$types)
-      #   current_drug(input$drugs)
-      #   #updateSelectInput(session, "types", choices = c("All", dataset_select() %>% dplyr::select(Study) %>%.[[1]]), selected = current_type())
-      updateSelectInput(session, "drugs", choices = c("All", dataset_select() %>% dplyr::select(Drug) %>%.[[1]]))
+      #updateSelectInput(session, "types", choices = c("All", dataset_select() %>% dplyr::select(Study) %>%.[[1]]), selected = current_type())
+      updateSelectInput(session, "drugs", choices = c("All", dataset_select() %>% dplyr::select(Drug) %>%.[[1]]), selected = "All")
     })
+    
                  
     feature_df <- eventReactive(input$go_button,{
       
@@ -180,7 +185,7 @@ ioresponse <- function(input,
         sample_groups <- feature_io_df %>% filter(VariableType == "Categorical") %>% select(FeatureMatrixLabelTSV) %>% as.vector()
         n_groups <- dplyr::n_distinct(sample_groups)
         
-        validate(need(input$var1_surv, "Waiting for input."))
+        #validate(need(input$var1_surv, "Waiting for input."))
         
         
         if(input$div_range == "median"){
@@ -215,9 +220,11 @@ ioresponse <- function(input,
         sample_groups <- feature_io_df %>% filter(VariableType == "Categorical") %>% select(FeatureMatrixLabelTSV)
         
         if (input$var1_surv %in% sample_groups$FeatureMatrixLabelTSV) { 
-            group_colors <- viridisLite::viridis(dplyr::n_distinct(fmx_io[[input$var1_surv]]))
-        } else {
-            group_colors <- viridisLite::viridis(input$divk)
+          group_colors <- viridisLite::viridis(dplyr::n_distinct(fmx_io[[input$var1_surv]]))
+        } else if(input$div_range == "median") {
+          group_colors <- viridisLite::viridis(2)
+        }else{
+          group_colors <- viridisLite::viridis(input$divk)
         }
         
         create_kmplot(
@@ -251,7 +258,7 @@ ioresponse <- function(input,
                 })
         })
     })
-    
+
    
 #forest plot     
     output$forest <- renderPlotly({

@@ -13,8 +13,9 @@ module_files:
   - "modules/subtypeclassifiermodule.R"
   - "modules/submodules.R"
   - "modules/distribution_plot_module.R"
-  - "modules/iomolecularresponsemodule.R"
   - "modules/ioresponseoverviewmodule.R"
+  - "modules/ioresponsesurvivalmodule.R"
+  - "modules/ioresponsemodule.R"
   - "modules/ioresponsemultivariate.R"
   
 function_files:

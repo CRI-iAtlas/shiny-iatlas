@@ -64,9 +64,14 @@ explorepage <- dashboardPage(
                  tabName = "ioresponse_overview",
                  icon = icon("cog")
                ), 
+               menuSubItem(
+                 "IO Response",
+                 tabName = "io_response",
+                 icon = icon("cog")
+               ),
                 menuSubItem(
                    "IO Clinical Outcomes",
-                   tabName = "io_response",
+                   tabName = "io_survival",
                    icon = icon("cog")
                  ), 
                menuSubItem(
@@ -272,7 +277,11 @@ explorepage <- dashboardPage(
       ),
       tabItem(
         tabName = "io_response",
-        ioresponse_UI("io_response1")
+        ioresponse_UI("io_response_eda")
+      ),
+      tabItem(
+        tabName = "io_survival",
+        iosurvival_UI("io_response1")
       ),
       tabItem(
         tabName = "ioresponse_mult",
