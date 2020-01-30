@@ -78,12 +78,21 @@ cellimage <- function(
   })
 
   output$cellPlot <- renderPlot({
+    
     group_col <- group_internal_choice()
     group_df <- sample_group_df() %>% dplyr::mutate(Tumor_Fraction=1-Stromal_Fraction)
-    cellimage_base <- panimmune_data$cellimage_base
+    cellimage_base <- panimmune_data$cellimage_base ## Multipart object with all information on the cell image
+    cois <- get_cells_from_image(cellimage_base) ## Cells  in the image 
+    gois <- get_genes_from_image(cellimage_base) ## Proteins in the image
+
+    ### Single data frame with all data values per subtype and displayed protein and cell . 
+    ### Columns are 
+    ### Group: the subtype
+    ### Variable: the cell or gene variable
+    ### Value: the average value in that subtype and for that variable
+    all_vals_df <- generate_value_df(group_df,group_col,cois,gois)
+    ## all_vals_df could be replaced using another value for subtype summarization 
     
-    ### Single data frame with all data values
-    all_vals_df <- generate_value_df(group_df,group_col,cellimage_base)
     availability <- all_vals_df %>% dplyr::group_by(Group,Variable) %>% dplyr::summarise(Count=length(Value)) %>% 
       dplyr::group_by(Group) %>% dplyr::summarize(MinCount=min(Count))
     

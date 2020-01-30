@@ -91,19 +91,27 @@ build_cellcontent_df <- function(
 
 # ------------------ overall input data matrix ---------------------
 
+get_cells_from_image <- function(cellimage_base){
+    unique_image_variable_ids <- cellimage_base$unique_image_variable_ids
+    variable_annotations <- cellimage_base$variable_annotations
+    get.data.variables(unique_image_variable_ids,variable_annotations,'fmx_df')
+}
+get_genes_from_image <- function(cellimage_base){
+  unique_image_variable_ids <- cellimage_base$unique_image_variable_ids
+  variable_annotations <- cellimage_base$variable_annotations
+  get.data.variables(unique_image_variable_ids,variable_annotations,'im_expr_df')
+}
+
 generate_value_df <- function(
   group_df,
   group_col,
-  cellimage_base
+  cois,
+  gois
   ){
-  
-  unique_image_variable_ids <- cellimage_base$unique_image_variable_ids
-  variable_annotations <- cellimage_base$variable_annotations
   
   ##
   ## The required cell data
   ##
-  cois <- get.data.variables(unique_image_variable_ids,variable_annotations,'fmx_df')
   dfc <- build_cellcontent_df(group_df,cois,group_col) 
   dfc <- dfc %>% dplyr::rename(Group=GROUP,Variable=fraction_type,Value=fraction)
   ## No ParticipantBarcode in rows.  Each Group,Variable combo simply has instances
@@ -113,7 +121,6 @@ generate_value_df <- function(
   ##
   
   ## input unique image variable IDs, get genes with IDs as in expression matrix
-  gois <- get.data.variables(unique_image_variable_ids,variable_annotations,'im_expr_df')
   dfg <- build_multi_imageprotein_expression_df(group_df,gois,group_col)  ## dfg$FILTER is the Gene column 
   dfg <- dfg %>% dplyr::select(Group=GROUP,Variable=FILTER,Value=LOG_COUNT)
   ## Note that "ID" aka ParticipantBarcode is gone.  Each Group,Variable combo simply has instances
