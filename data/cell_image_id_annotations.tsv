@@ -15,14 +15,14 @@ CTLA-4	CTLA4	im_expr_df	Greens	1
 CD40L	CD40LG	im_expr_df	Greens	1
 CD40	CD40	im_expr_df	Greens	1
 ICOSL	ICOSLG	im_expr_df	Greens	1
-CD86	CD80	im_expr_df	Greens	1
+CD86	CD86	im_expr_df	Greens	1
 CD80	CD80	im_expr_df	Greens	1
 PD-1	PDCD1	im_expr_df	Greens	1
 Four.1BB	TNFRSF9	im_expr_df	Greens	1
 Four.1BBL	TNFSF9	im_expr_df	Greens	1
 OX40L	TNFSF4	im_expr_df	Greens	1
 OX40	TNFRSF4	im_expr_df	Greens	1
-GITRL	ICOS	im_expr_df	Greens	1
+GITRL	TNFSF18	im_expr_df	Greens	1
 GITR	TNFRSF18	im_expr_df	Greens	1
 TCR	T_cells_CD8.Aggregate2	fmx_df	Greens	1
 MHC	HLA-A	im_expr_df	Greens	1

@@ -102,7 +102,7 @@ cellimage <- function(
       image_grob <- get_colored_image(subtype_selected,cellimage_base,all_vals_df)
       grid::grid.draw(image_grob)
     } else {
-      print("Please select another subtype - this one has limited data")
+      print("Please select another subtype - this one has limited data") ## This needs to go to the app , not to the terminal
     }
     
   })
