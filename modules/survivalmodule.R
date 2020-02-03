@@ -33,6 +33,10 @@ survival_UI <- function(id) {
                         selected = "OS_time"
                     ),
                     
+                    radioButtons(ns("div_range"), "Divide value range", 
+                                 choices = c("In the median" = "median", "In equal intervals" = "intervals"), 
+                                 inline = TRUE, selected = "median"),
+                    
                     sliderInput(
                         ns("divk"),
                         "Value Range Divisions",
@@ -144,9 +148,6 @@ survival <- function(
       
       group_choice <- magrittr::set_names(list(group_internal_choice()), ss_choice())
         
-      print('group choice') 
-      print(group_choice)
-      
       if (group_choice == 'Study') {
         
           study_choices <- c('All', na.omit(panimmune_data$sample_group_df %>% 
@@ -169,11 +170,21 @@ survival <- function(
         
           selectInput(
             ns("var0_study"),
-            "Select Study",
+            "Select Subtype",
             subtypes,
             selected = 'All'
           )  
-        }
+      } else if (group_choice == "Subtype_Curated_Malta_Noushmehr_et_al") {
+        
+        subtypes <- c('All', get_unique_column_values(group_internal_choice(), subset_df()) )
+        
+        selectInput(
+            ns("var0_study"),
+            "Select Subtype",
+            subtypes,
+            selected = 'All'
+          )  
+      }
         
     })
     
@@ -187,16 +198,8 @@ survival <- function(
       
         sample_groups <- get_unique_column_values(group_internal_choice(), subset_df())
         
-        print('in output surv plot')
-        print('group choice')
-        print(group_choice)
-        print('sample groups')
-        print(sample_groups)
-        
         n_groups <- dplyr::n_distinct(sample_groups)
 
-        print(n_groups)
-        
         validate(
             need(input$var1_surv, "Waiting for input."),
             need(dplyr::n_distinct(sample_groups) <= 10 | !input$var1_surv == group_internal_choice(), 
@@ -209,21 +212,12 @@ survival <- function(
                 group_column = input$var1_surv,
                 group_options = purrr::map(group_options(), get_group_internal_name),
                 time_column = input$timevar,
+                div_range = input$div_range,
                 k = input$divk,
                 group_choice,
                 input$var0_study
             )
 
-        print('survival df')
-        print(head(survival_df))
-        
-        #survival_df %>% 
-        #  dplyr::group_by(variable) %>% 
-        #  dplyr::summarize(Num1 = sum(status == 1), Num0 = sum(status == 0))
-        
-        print('variable')
-        print(unique(survival_df$variable))
-        
         # if you pick Immune Subtype as variable, and then C1, there is no variation in the variable.
         validate(
           need(length(unique(survival_df$variable)) > 1, "No results to display, pick a different variable.")

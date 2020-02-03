@@ -422,12 +422,9 @@ build_intermediate_corr_df <- function(
 
 # ** Clinical outcomes module ----
 
-build_survival_df <- function(df, group_column, group_options, time_column, k, group_choice, group_subset) {
+build_survival_df <- function(df, group_column, group_options, time_column, div_range, k, group_choice, group_subset) {
   
-    print('in build surv df')
-    print(group_choice)
-    print(group_subset)
-    
+    # subset to a smaller group of samples #
     if (group_choice == 'Study' & group_subset != 'All') {
 
       df <- df  %>% dplyr::filter(Study == UQ(group_subset))
@@ -436,11 +433,13 @@ build_survival_df <- function(df, group_column, group_options, time_column, k, g
       
       df <- df %>% dplyr::filter(Subtype_Immune_Model_Based == UQ(group_subset))
     
+    } else if (group_choice == 'Subtype_Curated_Malta_Noushmehr_et_al' & group_subset != 'All') {
+      
+      df <- df %>% dplyr::filter(Subtype_Curated_Malta_Noushmehr_et_al == UQ(group_subset))
+      
     }
   
-    print('df')
-    print(head(df))
-    
+  
     get_groups <- function(df, group_column, k) {
       
         if (group_column %in% group_options) { # then we don't need to produce catagories.
@@ -449,7 +448,15 @@ build_survival_df <- function(df, group_column, group_options, time_column, k, g
         }
         else {
           
+          if (div_range == 'median') {
+            
+            as.character( ifelse(df[[group_column]] < median(df[[group_column]], na.rm=T), yes='lower half', no='upper half') )
+            
+          } else {
+          
             as.character(cut(df[[group_column]], k, ordered_result = T))
+          }
+          
         }
       
     }
