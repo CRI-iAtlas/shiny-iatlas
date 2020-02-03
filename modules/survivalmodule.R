@@ -21,7 +21,10 @@ survival_UI <- function(id) {
             fluidRow(
                 optionsBox(
                     width = 4,
+                    
                     uiOutput(ns("survplot_opts")),
+                    
+                    uiOutput(ns("survplot_study_opts")),
                     
                     selectInput(
                         ns("timevar"),
@@ -104,25 +107,96 @@ survival <- function(
     plot_colors
 ){
     ns <- session$ns
+
     
+    
+    # This function creates the drop down with variable selection like signature scores.
     output$survplot_opts <- renderUI({
-        group_choice <- magrittr::set_names(list(group_internal_choice()), ss_choice())
-        var_choices <- c(
-            list("Current Sample Groups" = group_choice),
-            get_feature_df_nested_list())
+      
+      group_choice <- magrittr::set_names(list(group_internal_choice()), ss_choice())
+      
+      var_choices <- c(
+        list("Current Sample Groups" = group_choice),
+        get_feature_df_nested_list())
+      
+      if (group_choice == 'Study') {  # if we start out at study, then display SOMETHING
         selectInput(
-            ns("var1_surv"),
-            "Variable",
-            var_choices,
-            selected = group_internal_choice()
-        )
+          ns("var1_surv"),
+          "Variable",
+          var_choices,
+          selected = 'leukocyte_fraction'
+        )  
+        
+      } else {  # starting at immune subtypes, we can display those.
+        selectInput(
+          ns("var1_surv"),
+          "Variable",
+          var_choices,
+          selected = group_internal_choice()
+        )  
+      }
+      
     })
     
+        
+    # this is to make a drop down appear when the TCGA study is selected... to select a specific study.
+    output$survplot_study_opts <- renderUI({
+      
+      group_choice <- magrittr::set_names(list(group_internal_choice()), ss_choice())
+        
+      print('group choice') 
+      print(group_choice)
+      
+      if (group_choice == 'Study') {
+        
+          study_choices <- c('All', na.omit(panimmune_data$sample_group_df %>% 
+            dplyr::select("FeatureDisplayName", "TCGA Studies") %>% 
+            dplyr::distinct() %>% 
+            dplyr::arrange(`TCGA Studies`) %>%
+            tibble::deframe())
+          )
+        
+          selectInput(
+            ns("var0_study"),
+            "Select Study",
+            study_choices,
+            selected = 'All'
+          )  
+          
+      } else if (group_choice == "Subtype_Immune_Model_Based") {
+
+          subtypes <- c("All", "C1", "C2", "C3", "C4", "C5", "C6")
+        
+          selectInput(
+            ns("var0_study"),
+            "Select Study",
+            subtypes,
+            selected = 'All'
+          )  
+        }
+        
+    })
+    
+        
+    # here we put the plot together, using the prev. selected options.
     output$survPlot <- renderPlot({
+      
         req(!is.null(subset_df()), cancelOutput = T)
+      
+        group_choice <- magrittr::set_names(list(group_internal_choice()), ss_choice())
+      
         sample_groups <- get_unique_column_values(group_internal_choice(), subset_df())
+        
+        print('in output surv plot')
+        print('group choice')
+        print(group_choice)
+        print('sample groups')
+        print(sample_groups)
+        
         n_groups <- dplyr::n_distinct(sample_groups)
 
+        print(n_groups)
+        
         validate(
             need(input$var1_surv, "Waiting for input."),
             need(dplyr::n_distinct(sample_groups) <= 10 | !input$var1_surv == group_internal_choice(), 
@@ -135,16 +209,34 @@ survival <- function(
                 group_column = input$var1_surv,
                 group_options = purrr::map(group_options(), get_group_internal_name),
                 time_column = input$timevar,
-                k = input$divk
+                k = input$divk,
+                group_choice,
+                input$var0_study
             )
 
-        survival_df %>% 
-          dplyr::group_by(variable) %>% 
-          dplyr::summarize(Num1 = sum(status == 1), Num0 = sum(status == 0))
+        print('survival df')
+        print(head(survival_df))
+        
+        #survival_df %>% 
+        #  dplyr::group_by(variable) %>% 
+        #  dplyr::summarize(Num1 = sum(status == 1), Num0 = sum(status == 0))
+        
+        print('variable')
+        print(unique(survival_df$variable))
+        
+        # if you pick Immune Subtype as variable, and then C1, there is no variation in the variable.
+        validate(
+          need(length(unique(survival_df$variable)) > 1, "No results to display, pick a different variable.")
+        )
         
         fit <- survival::survfit(survival::Surv(time, status) ~ variable, data = survival_df)
         
-        title <- get_variable_display_name(input$var1_surv)
+        title <- ''
+        try({
+          title <- get_variable_display_name(input$var1_surv)
+        })
+
+
         if (identical(title, character(0))){
             title <- input$var1_surv
         }
@@ -204,7 +296,8 @@ survival <- function(
         
         create_heatmap(ci_mat, "ci")
     })
-    
+
+        
     output$heatmap_group_text <- renderText({
         req(group_internal_choice(), sample_group_df(), cancelOutput = T)
       

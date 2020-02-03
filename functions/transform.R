@@ -422,15 +422,36 @@ build_intermediate_corr_df <- function(
 
 # ** Clinical outcomes module ----
 
-build_survival_df <- function(df, group_column, group_options, time_column, k) {
+build_survival_df <- function(df, group_column, group_options, time_column, k, group_choice, group_subset) {
+  
+    print('in build surv df')
+    print(group_choice)
+    print(group_subset)
+    
+    if (group_choice == 'Study' & group_subset != 'All') {
+
+      df <- df  %>% dplyr::filter(Study == UQ(group_subset))
+
+    } else if (group_choice == 'Subtype_Immune_Model_Based' & group_subset != 'All') {
+      
+      df <- df %>% dplyr::filter(Subtype_Immune_Model_Based == UQ(group_subset))
+    
+    }
+  
+    print('df')
+    print(head(df))
+    
     get_groups <- function(df, group_column, k) {
-        if (group_column %in% group_options) {
-            # then we don't need to produce catagories.
+      
+        if (group_column %in% group_options) { # then we don't need to produce catagories.
+            
             as.character(df[[group_column]])
         }
         else {
+          
             as.character(cut(df[[group_column]], k, ordered_result = T))
         }
+      
     }
     
     # get the vectors associated with each term
@@ -447,6 +468,7 @@ build_survival_df <- function(df, group_column, group_options, time_column, k) {
     data.frame(
         status = purrr::pluck(df, status_column), 
         time = purrr::pluck(df, time_column),
+        group = groups,
         variable = groups, 
         measure = purrr::pluck(df, group_column)
     ) %>% 
