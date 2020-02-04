@@ -26,7 +26,8 @@
   }, {
     "selector" : "node[UpBinRatio = 1]",
     "css" : {
-      "background-color" : "rgb(0,68,27)"
+      "background-color" : "rgb(0,68,27)",
+      "color" : "rgb(230,230,230)"
     }
   }, {
     "selector" : "node[UpBinRatio > 0.875][UpBinRatio < 1]",
@@ -111,7 +112,8 @@
   }, {
     "selector" : "node[id = 'T_cells_CD8'][UpBinRatio > 0.875][UpBinRatio < 1]",
     "css" : {
-      "background-color" : "mapData(UpBinRatio,0.875,1,rgb(153,52,4),rgb(102,37,6))"
+      "background-color" : "mapData(UpBinRatio,0.875,1,rgb(153,52,4),rgb(102,37,6))",
+      "color" : "rgb(230,230,230)"
     }
   }, {
     "selector" : "node[id = 'T_cells_CD8'][UpBinRatio = 0.875]",
@@ -191,6 +193,7 @@
   }, {
     "selector" : "node[id = 'Tumor_cell'][UpBinRatio > 0.875][UpBinRatio < 1]",
     "css" : {
+      "color" : "rgb(0,0,0)",
       "background-color" : "mapData(UpBinRatio,0.875,1,rgb(8,81,156),rgb(8,48,107))"
     }
   }, {
