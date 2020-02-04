@@ -1,0 +1,69 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><title>R: Add a spinner (loader) that shows when an output is...</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link rel="stylesheet" type="text/css" href="R.css" />
+</head><body>
+
+<table width="100%" summary="page for withSpinner {shinycssloaders}"><tr><td>withSpinner {shinycssloaders}</td><td style="text-align: right;">R Documentation</td></tr></table>
+
+<h2>Add a spinner (loader) that shows when an output is recalculating</h2>
+
+<h3>Description</h3>
+
+<p>Add a spinner (loader) that shows when an output is recalculating
+</p>
+
+
+<h3>Usage</h3>
+
+<pre>
+withSpinner(ui_element, type = getOption("spinner.type", default = 1),
+  color = getOption("spinner.color", default = "#0275D8"),
+  size = getOption("spinner.size", default = 1),
+  color.background = getOption("spinner.color.background"),
+  custom.css = FALSE, proxy.height = if (grepl("height:\\s*\\d",
+  ui_element)) NULL else "400px")
+</pre>
+
+
+<h3>Arguments</h3>
+
+<table summary="R argblock">
+<tr valign="top"><td><code>ui_element</code></td>
+<td>
+<p>A UI element that should be wrapped with a spinner when the corresponding output is being calculated.</p>
+</td></tr>
+<tr valign="top"><td><code>type</code></td>
+<td>
+<p>The type of spinner to use, valid values are integers between 1-8. They correspond to the enumeration in <a href="https://projects.lukehaas.me/css-loaders/">https://projects.lukehaas.me/css-loaders/</a></p>
+</td></tr>
+<tr valign="top"><td><code>color</code></td>
+<td>
+<p>The color of the spinner to be applied in HTML in hex format</p>
+</td></tr>
+<tr valign="top"><td><code>size</code></td>
+<td>
+<p>The size of the spinner, relative to it's default size.</p>
+</td></tr>
+<tr valign="top"><td><code>color.background</code></td>
+<td>
+<p>For certain spinners (type 2-3), you will need to specify the background colour of the spinner</p>
+</td></tr>
+<tr valign="top"><td><code>custom.css</code></td>
+<td>
+<p>If custom css is to be applied, we don't enforce the color / size options to the given spinner id</p>
+</td></tr>
+<tr valign="top"><td><code>proxy.height</code></td>
+<td>
+<p>If the output doesn't specify the output height, you can set a proxy height. It defaults to 400px for outputs with undefined height.</p>
+</td></tr>
+</table>
+
+
+<h3>Examples</h3>
+
+<pre>
+## Not run: withSpinner(plotOutput("my_plot"))
+</pre>
+
+<hr /><div style="text-align: center;">[Package <em>shinycssloaders</em> version 0.2.0 <a href="00Index.html">Index</a>]</div>
+</body></html>

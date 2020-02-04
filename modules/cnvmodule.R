@@ -138,6 +138,7 @@ cnvs <- function(
             dplyr::filter(metric == input$response_variable) %>%
             dplyr::filter(sample_group == group_internal_choice())  %>%
             dplyr::pull(group)
+        
         selectInput(
             ns("cn_group_point_filter"),
             "Select Group Filter",
