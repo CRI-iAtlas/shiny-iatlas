@@ -450,7 +450,8 @@ build_survival_df <- function(df, group_column, group_options, time_column, div_
           
           if (div_range == 'median') {
             
-            as.character( ifelse(df[[group_column]] < median(df[[group_column]], na.rm=T), yes='lower half', no='upper half') )
+            as.character( ifelse (df[[group_column]] < median(df[[group_column]], na.rm=T), 
+                                  yes='lower half', no='upper half') )
             
           } else {
           

@@ -37,13 +37,14 @@ survival_UI <- function(id) {
                                  choices = c("In the median" = "median", "In equal intervals" = "intervals"), 
                                  inline = TRUE, selected = "median"),
                     
-                    sliderInput(
-                        ns("divk"),
-                        "Value Range Divisions",
-                        min = 2,
-                        max = 10,
-                        value = 2
-                    ),
+                    conditionalPanel(condition = paste0("input['", ns("div_range"), "'] == 'intervals'"),
+                                     sliderInput(
+                                       ns("divk"),
+                                       "Value Range Divisions",
+                                       min = 2,
+                                       max = 10,
+                                       value = 2
+                                     )),
                     
                     checkboxInput(ns("confint"), "Confidence Intervals", value = F),
                     checkboxInput(ns("risktable"), "Risk Table", value = T)
@@ -244,11 +245,14 @@ survival <- function(
               group_colors <- group_colors[names(group_colors) %in% survival_df$variable]
             }
 
-            names(group_colors) <- sapply(names(group_colors), function(a) paste('variable=',a,sep='')) 
+            names(group_colors) <- sapply(names(group_colors), function(a) paste('variable=',a,sep=''))
             
         } else {
             group_colors <- viridisLite::viridis(input$divk)
         }
+        
+        timename <- ifelse(test=input$timevar == 'OS_time', yes='Overall Survival', no='Progression Free Interval')
+        subtitle <- paste0(input$var0_study, ', ', timename)
         
         create_kmplot(
             fit = fit, 
@@ -256,6 +260,7 @@ survival <- function(
             confint = input$confint, 
             risktable = input$risktable, 
             title = title, 
+            subtitle = subtitle,
             group_colors = group_colors)
     })
     
