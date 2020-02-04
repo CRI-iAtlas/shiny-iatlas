@@ -10,7 +10,7 @@ net_data = list(
 styleNodes = "data/javascript/style_network_cellimage.js"
 
 
-#Flag to change the cell image to ABUNDANCE data
+#Flag to change the cell image to ABUNDANCE data. If FALSE uses value average
 abundance <- TRUE
   
 cellimage_UI <-function(id){
@@ -109,50 +109,60 @@ cellimage <- function(
 
   output$cellPlot <- renderPlot({
     req(nodes_ratio())
-    
-    group_col <- group_internal_choice()
-    group_df <- sample_group_df() %>% dplyr::mutate(Tumor_Fraction=1-Stromal_Fraction)
+
     cellimage_base <- panimmune_data$cellimage_base ## Multipart object with all information on the cell image
     cois <- get_cells_from_image(cellimage_base) ## Cells  in the image 
     gois <- get_genes_from_image(cellimage_base) ## Proteins in the image
-
-    ### Single data frame with all data values per subtype and displayed protein and cell . 
+    
+    subtype_selected <- input$groupselect_method
+    enough_data=TRUE  ## assume to start with that we can do the plot, but re-assess as we get data
+    
+    ### Before proceeding with plot, obtain vals_for_cellplot and ranges_for_cellplot
+    
+    ## vals_for_cellplot
     ### Columns are 
     ### Group: the subtype
     ### Variable: the cell or gene variable
-    ### Value: the average value in that subtype and for that variable
-    all_vals_df <- generate_value_df(group_df,group_col,cois,gois)
-    ## all_vals_df could be replaced using another value for subtype summarization 
-    availability <- all_vals_df %>% dplyr::group_by(Group,Variable) %>% dplyr::summarise(Count=length(Value)) %>% 
-      dplyr::group_by(Group) %>% dplyr::summarize(MinCount=min(Count))
+    ### Value: the value in that subtype and for that variable, either by the averaging, or abundance ratio
     
-    subtype_selected <- input$groupselect_method
+    ## ranges_for_cellplot
+    ### Group: the subtype
+    ### Variable: the cell or gene variable
+    ### MinBound and Maxbound: the lower and upper range of values to correspond with the color range
+        
+    if (abundance == TRUE){
+      vals_for_cellplot <- nodes_ratio()
+      ranges_for_cellplot <- tibble::tibble(Variable=c(cois,gois),MinBound=0,MaxBound=1)
+      enough_data= subtype_selected %in% vals_for_cellplot$Group
     
-    enough_data=TRUE
-    if(nrow(availability %>% dplyr::filter(Group==subtype_selected))==0){
-      enough_data=FALSE
+    }else {
+    
+      group_col <- group_internal_choice()
+      group_df <- sample_group_df() %>% dplyr::mutate(Tumor_Fraction=1-Stromal_Fraction)
+      ## values for all proteins, genes, for all subtypes
+      all_vals_df <- generate_value_df(group_df,group_col,cois,gois)
+      dranges <- data_ranges(all_vals_df)
+      vals_for_cellplot <- dranges$meanz %>% dplyr::rename(Value=Mean)
+      ranges_for_cellplot <- dranges$bounds
+      
+      availability <- all_vals_df %>% dplyr::group_by(Group,Variable) %>% dplyr::summarise(Count=length(Value)) %>% 
+        dplyr::group_by(Group) %>% dplyr::summarize(MinCount=min(Count))
+      if(nrow(availability %>% dplyr::filter(Group==subtype_selected))==0){
+        enough_data=FALSE
+      }
+      if (enough_data==TRUE){
+        scount <- availability %>% dplyr::filter(Group==subtype_selected) %>% purrr::pluck("MinCount")
+        if (scount <= 3 ){ enough_data=FALSE }
+      }
+      
     }
-    if (enough_data==TRUE){
-      scount <- availability %>% dplyr::filter(Group==subtype_selected) %>% purrr::pluck("MinCount")
-      if (scount <= 3 ){ enough_data=FALSE }
-    }
-    
     shiny::validate(need((enough_data == TRUE), "Please select another subtype - this one has limited data."))
     
-    #The availability test is still based on the original all_vals_df, only after the test we change the data to abundance values
-    if (abundance == TRUE){
-      all_vals_df <- nodes_ratio()
-    }
+    ## Data ready, now alter the image object and display
     
-    image_grob <- get_colored_image(subtype_selected,cellimage_base,all_vals_df)
+    image_grob <- get_colored_image(subtype_selected,cellimage_base,value_df,range_df)
     grid::grid.draw(image_grob)
     
-    # if(enough_data){
-    #   image_grob <- get_colored_image(subtype_selected,cellimage_base,all_vals_df)
-    #   grid::grid.draw(image_grob)
-    # } else {
-    #   print("Please select another subtype - this one has limited data") ## This needs to go to the app , not to the terminal
-    # }
   })
   
 ##Network visualization

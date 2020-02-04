@@ -155,8 +155,8 @@ data_ranges <- function(inputdata){
     dplyr::summarise(Mean=mean(Value),SD=sd(Value)) %>%
     dplyr::mutate(MeanPlusSD=Mean+SD,MeanMinusSD=Mean-SD)
   
-  bounds <- summary_stats %>% group_by(Variable) %>% 
-    summarise(MaxBound=max(MeanPlusSD),MinBound=min(MeanMinusSD))
+  bounds <- summary_stats %>% dplyr::group_by(Variable) %>% 
+    dplyr::summarise(MaxBound=max(MeanPlusSD),MinBound=min(MeanMinusSD))
       
   list(minvec=minvec,maxvec=maxvec,meanz=meanz,summary_stats=summary_stats,bounds=bounds)
 }
@@ -168,20 +168,13 @@ data_ranges <- function(inputdata){
 #########################################################################
 
 ## For the variable of interest, get min max possible values, color range and color value
-getVarColor <- function(voi,soi,colormap,datarange,alpha=1.){
+getVarColor <- function(voi,soi,colormap,value_df,range_df,alpha=1.){
 
   alpha.hex <- toupper(as.hexmode(0:255))[round(alpha*255)+1]
   
-  minvec <- datarange$minvec
-  maxvec <- datarange$maxvec
-  meanz <- datarange$meanz
-  summary_stats <- datarange$summary_stats
-  bounds <- datarange$bounds
-  
-  ## the display value is the mean within the subtype
-  display.val <- meanz %>% dplyr::filter(Group==soi,Variable==voi) %>% purrr::pluck("Mean")
-  vmin <- bounds %>% dplyr::filter(Variable==voi) %>% purrr::pluck("MinBound")
-  vmax <- bounds %>% dplyr::filter(Variable==voi) %>% purrr::pluck("MaxBound")
+  display.val <- value_df %>% dplyr::filter(Group==soi,Variable==voi) %>% purrr::pluck("Value")
+  vmin <- range_df %>% dplyr::filter(Variable==voi) %>% purrr::pluck("MinBound")
+  vmax <- range_df %>% dplyr::filter(Variable==voi) %>% purrr::pluck("MaxBound")
   vnstep <- 51
   vstep <- (vmax-vmin)/(vnstep-1) ## size of step
   if(vstep==0 || is.na(vstep)){
@@ -200,7 +193,7 @@ getVarColor <- function(voi,soi,colormap,datarange,alpha=1.){
   usecolor
 }
 
-get_colored_image <- function(soi,cellimage_base,dfv){
+get_colored_image <- function(soi,cellimage_base,value_df,range_df){
 
   image_object_labels <- cellimage_base$image_object_labels
   variable_annotations <- cellimage_base$variable_annotations
@@ -208,7 +201,7 @@ get_colored_image <- function(soi,cellimage_base,dfv){
   pathlabels <- cellimage_base$pathlabels
   gTree_name <- cellimage_base$gTree_name ## label of overall gTree object
   
-  dfv_ranges <- data_ranges(dfv)
+  #dfv_ranges <- data_ranges(dfv)
 
   fill_color <- character(length(pathlabels[1:44])) ; names(fill_color) <- pathlabels[1:44] ## this is for editing
   
@@ -217,7 +210,7 @@ get_colored_image <- function(soi,cellimage_base,dfv){
     datavar <- variable_annotations %>% dplyr::filter(ImageVariableID==ioa) %>% purrr::pluck("FeatureLabel")
     colormap <-   variable_annotations %>% dplyr::filter(ImageVariableID==ioa) %>% purrr::pluck("ColorScale")
     alpha <-   variable_annotations %>% dplyr::filter(ImageVariableID==ioa) %>% purrr::pluck("alpha")
-    fill_color[ind] <- getVarColor(datavar,soi,colormap,dfv_ranges,alpha)
+    fill_color[ind] <- getVarColor(datavar,soi,colormap,value_df,range_df,alpha)
   }
   for (s in pathlabels[1:44] ){
     image_grob$children[[gTree_name]]$children[[s]]$gp$fill <- fill_color[s]
