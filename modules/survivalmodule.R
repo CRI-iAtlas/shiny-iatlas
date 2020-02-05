@@ -72,7 +72,7 @@ survival_UI <- function(id) {
                     ),
                     selectInput(
                         ns("survival_class"),
-                        "Select Variables Class (rows)",
+                        "Select or Search for Variables Class (rows)",
                         choices = get_numeric_classes_from_feature_df(),
                         selected = "T Helper Cell Score"
                     )
@@ -112,7 +112,7 @@ survival <- function(
             get_feature_df_nested_list())
         selectInput(
             ns("var1_surv"),
-            "Variable",
+            "Select or Search for Variable",
             var_choices,
             selected = group_internal_choice()
         )
