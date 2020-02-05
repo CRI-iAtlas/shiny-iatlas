@@ -537,31 +537,50 @@ build_cnvs_df <- function(df, response_var, group_column, group_options){
   print('panimmune data names')  
   print(names(panimmune_data))
   
+  print('group_column')
+  print(group_column)
+  
+  if (group_column == 'Subtype_Immune_Model_Based') {
+    load('data/cnv_results_immune_subtype.rda')
+    cnvs_df <- immunetable
+    rm(immunetable); gc();
+  } else if (group_column == 'Study') {
+    load('data/cnv_results_study.rda')
+    cnvs_df <- studytable
+    rm(studytable); gc();
+  } else if (group_column == 'Subtype_Curated_Malta_Noushmehr_et_al') {
+    load('data/cnv_results_study.rda')
+    cnvs_df <- subtypetable
+    rm(subtypetable); gc();
+  }
+  
+  #cnvs_df
+  
   # for test
-  panimmune_data$cnvs_df$Mean_Diff <- panimmune_data$cnvs_df$Mean_Norm - panimmune_data$cnvs_df$Mean_CNV
+  cnvs_df$Mean_Diff <- cnvs_df$Mean_Norm - cnvs_df$Mean_CNV
   
 
-  print('BEFORE JOIN')              
-  print('cnvs_df')
-  print(head(panimmune_data$cnvs_df))
+  #print('BEFORE JOIN')              
+  #print('cnvs_df')
+  #print(head(cnvs_df))
   
-  sample_group_dfx <- feather::read_feather('data/sample_group_df.feather')
-  sample_group_dfx <- sample_group_dfx %>% select(FeatureValue, sample_group)
-  colnames(sample_group_dfx)[1] <- 'group'
+  #sample_group_dfx <- feather::read_feather('data/sample_group_df.feather')
+  #sample_group_dfx <- sample_group_dfx %>% select(FeatureValue, sample_group)
+  #colnames(sample_group_dfx)[1] <- 'group'
 
-  print(head(sample_group_dfx))
+  #print(head(sample_group_dfx))
   
-  panimmune_data$cnvs_df <- dplyr::inner_join(sample_group_dfx, panimmune_data$cnvs_df)
+  #cnvs_df <- dplyr::inner_join(sample_group_dfx, cnvs_df)
   
   
   print('cnvs_df')
-  print(head(panimmune_data$cnvs_df))
+  print(head(cnvs_df))
   
-  if(nrow(panimmune_data$cnvs_df) == 0){
+  if(nrow(cnvs_df) == 0){
     cnvs_df <- NULL
   } 
   
-  return(panimmune_data$cnvs_df)
+  return(cnvs_df)
 }
 
 

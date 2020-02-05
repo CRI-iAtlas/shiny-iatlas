@@ -136,7 +136,7 @@ cnvs <- function(
 
         res0 <- cnvs_df() %>%  # df_for_regression(),
             dplyr::filter(metric == input$response_variable) %>%
-            dplyr::filter(sample_group == group_internal_choice())  %>%
+            dplyr::filter(group_label == group_internal_choice())  %>%
             dplyr::pull(group)
         
         selectInput(
@@ -190,9 +190,12 @@ cnvs <- function(
         #validate(need(
         #    !is.null(cnvs_df()),
         #    "No results to display, pick a different group."))
-        res0 <- cnvs_df() %>%  # df_for_regression(),
-            dplyr::filter(metric == input$response_variable) %>%
-            dplyr::filter(sample_group == group_internal_choice()) 
+        res0 <- cnvs_df() %>% dplyr::filter(metric == input$response_variable)
+        
+        print('dim of res0')
+        print(dim(res0))
+        print('head of res0')
+        print(head(res0))
             
         if (input$cn_gene_point_filter != 'All') {
             res0 <- res0 %>% dplyr::filter(gene == input$cn_gene_point_filter)
@@ -202,13 +205,9 @@ cnvs <- function(
             res0 <- res0 %>% dplyr::filter(direction == input$cn_dir_point_filter)
         }
         
-        if (input$cn_group_point_filter != 'All') {
-            res0 <- res0 %>% dplyr::filter(group == input$cn_group_point_filter)
-        }
-        
-        
-        
-        #dplyr::filter(pvalue < 0.05)  # prefiltered at p-value > 0.1
+        #if (input$cn_group_point_filter != 'All') {
+        #    res0 <- res0 %>% dplyr::filter(group == input$cn_group_point_filter)
+        #}
         
         print('FINISHED FILTER')
         
@@ -249,7 +248,7 @@ cnvs <- function(
         
         DT::datatable(
             scatter_plot_df() %>% 
-                dplyr::select(-sample_group, -label, -group_label, -pvalue) %>%
+                dplyr::select(-group_label, -label, -group_label, -pvalue) %>%
                 dplyr::mutate_at(vars(Mean_Norm, Mean_CNV, t, neg_log10_pvalue , Mean_Diff), dplyr::funs(round(., 3))) %>%
                 dplyr::select(metric, group, gene, direction, Mean_Norm, Mean_CNV, Mean_Diff, t, neg_log10_pvalue),
             extensions = 'Buttons', options = list(
