@@ -138,7 +138,8 @@ cellimage <- function(
     }else {
     
       group_col <- group_internal_choice()
-      group_df <- sample_group_df() %>% dplyr::mutate(Tumor_Fraction=1-Stromal_Fraction)
+      group_df <- sample_group_df() %>% dplyr::mutate(Tumor_Fraction=1-Stromal_Fraction) %>% 
+        dplyr::mutate(Tumor_cell=Tumor_Fraction)
       ## values for all proteins, genes, for all subtypes
       all_vals_df <- generate_value_df(group_df,group_col,cois,gois)
       dranges <- data_ranges(all_vals_df)
@@ -160,7 +161,7 @@ cellimage <- function(
     
     ## Data ready, now alter the image object and display
     
-    image_grob <- get_colored_image(subtype_selected,cellimage_base,value_df,range_df)
+    image_grob <- get_colored_image(subtype_selected,cellimage_base,vals_for_cellplot,ranges_for_cellplot)
     grid::grid.draw(image_grob)
     
   })

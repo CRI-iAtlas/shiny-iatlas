@@ -5,8 +5,8 @@ Dendritic_cell	Dendritic_cells.Aggregate1	fmx_df	Purples	0.9
 Dendritic_cell_nucleus	Dendritic_cells.Aggregate1	fmx_df	Purples	1
 Tissue_macrophage	Macrophage.Aggregate1	fmx_df	YlGn	0.9
 Tissue_macrophage_nucleus	Macrophage.Aggregate1	fmx_df	YlGn	1
-Tumor	Tumor_Fraction	fmx_df	Blues	0.9
-Tumor_nucleus	Tumor_Fraction	fmx_df	Blues	1
+Tumor	Tumor_cell	fmx_df	Blues	0.9
+Tumor_nucleus	Tumor_cell	fmx_df	Blues	1
 ICOS	ICOS	im_expr_df	Greens	1
 PD-L2	PDCD1LG2	im_expr_df	Greens	1
 PD-L1	CD274	im_expr_df	Greens	1
