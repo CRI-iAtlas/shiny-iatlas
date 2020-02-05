@@ -12,23 +12,19 @@ cnvs_UI <- function(id) {
             messageBox(
                 width = 12,
                 p("This module allows exploration of CNV association with immune readouts. Initially, all genes and all groups are shown, use
-                  the filter controls to limit the number of points shown. This also limits the table and violin plots below."),
+                  the filter controls to limit the number of points shown. This limits the plot and table.\n\n"),
+                
                 p("Within each group, a T-test was performed between samples with no copy number variation, and samples with either amplified 
-                  or deleted regions (two separate tests for amplified genes (Amp) and deleted genes (Del)."),
-                p("There are three components to the module: a volcano plot, a table of results, and a violin plot."),
-                p("The violin plot displays the degree of association between copy number events in samples and the immune readout, 
-                  as determined by the Select Response Variable option. Every point in the scatter plot corresponds to a 
-                  comparison of immune readout values in normal samples compared to altered samples. A separate comparison is made within 
-                  each cohort among the Sample Groups. Each point thus corresponds to the T-test of a single gene within a cohort. 
-                  The cnv-cohort combination can be seen by hovering on a point (separated by a dot)."),
+                  or deleted regions (two separate tests for amplified genes (Amp) and deleted genes (Del).\n\n"),
+                
+                p("There are three components to the module: a volcano plot, a table of results, and a violin plot.\n"),
+                
+                p("The  plot displays the distribution of T statistics."),
                 tags$ul(
-                  tags$li("The x-axis shows the T statistic, defined as the ratio of the mean readout value in altered vs non-altered samples."),
-                  tags$li("The y-axis represents the Log10 p-value of the significance test comparing the readout in altered vs non-altered samples. 
-                          A line is drawn for P=0.05, with the more significant values above that line")
+                  tags$li("The x-axis shows the T statistic, positive if the CNV-altered group has a lower score."),
+                  tags$li("The y-axis represents the number of genes with that statistic.")
                 ),
-                p("Immune landscape manuscript context: This allows you to display distributions such as those shown in Figure S4A.","\n"),
-                p("Click on a point to see a violin plot for the immune readout value distribution in 
-                  mutated vs non-mutated samples for the selected cohort and driver."),
+                p("\n\nImmune landscape manuscript context: This allows you to display distributions such as those shown in Figure S4A.","\n"),
                 p(""),
                 p("A statistical test is performed in a group only when the number of altered samples exceeds a minimum required count (currently 3). 
                   In rare instances all (or all but one) samples within a group contain the alteration and a test cannot be performed."),
@@ -54,23 +50,32 @@ cnvs_UI <- function(id) {
                     ),
                     column (
                         width = 6,
-                        selectInput(
-                            ns("cn_gene_point_filter"),
-                            "Select Gene Filter",
-                            choices = c('All', get_cn_feature_df_nested_list('gene')),
-                            selected = "All"
-                        )
+                        uiOutput(ns("select_cn_gene_ui"))
                     ),
                     column (
-                        width = 6,
-                        selectInput(
-                            ns("cn_dir_point_filter"),
-                            "Select CNV Direction",
-                            choices = c('All', 'Amp', 'Del'),
-                            selected = "All"
-                            
-                        )
-                    )
+                      width = 6,
+                      selectInput(
+                        ns("cn_dir_point_filter"),
+                        "Select CNV Direction",
+                        choices = c('All', 'Amp', 'Del'),
+                        selected = "All"
+                        
+                      )
+                    ),
+                    #column (
+                    #  width = 6,
+                    #  numericInput(inputId = ns('num_genes_shown'), 
+                    #               label = 'Number of Points', 
+                    #               min=1, max=1000, value = 200)
+                    #),
+                    #column ( width = 6,
+                    #      selectInput(inputId = ns('sort_genes_on'), 
+                    #                  label = 'Sort results on', 
+                    #                  choices = c('Mean_Diff', 'neg_log10_pvalue', 't'), selected = 't')
+                    #      ),
+                    column(width = 6,
+                           uiOutput(ns('cnv_results_count')))
+                    
                 )
             ),
             fluidRow(
@@ -82,7 +87,7 @@ cnvs_UI <- function(id) {
             fluidRow(
                 plotBox(
                     width = 12,
-                    plotlyOutput(ns("scatterPlot")) %>%
+                    shiny::plotOutput(ns("cnvPlot")) %>%
                         shinycssloaders::withSpinner()
                 )
             ),
@@ -93,15 +98,15 @@ cnvs_UI <- function(id) {
                     DT::dataTableOutput(ns("cnvtable")) %>%
                         shinycssloaders::withSpinner()
                 )
-            ),
+            ) #,
             
-            fluidRow(
-                plotBox(
-                    width = 12,
-                    plotlyOutput(ns("violinPlot")) %>%
-                        shinycssloaders::withSpinner()
-                )
-            )
+            #fluidRow(
+            #    plotBox(
+            #        width = 12,
+            #        plotlyOutput(ns("violinPlot")) %>%
+            #            shinycssloaders::withSpinner()
+            #    )
+            #)
         )
     )
 }
@@ -118,6 +123,7 @@ cnvs <- function(
 
     ns <- session$ns
 
+    library(ggridges)
 
     cnvs_df <- reactive({
         req(!is.null(subset_df()), cancelOutput = T)
@@ -134,181 +140,184 @@ cnvs <- function(
     # for the group selection
     output$select_cn_group_ui <- renderUI({
 
-        res0 <- cnvs_df() %>%  # df_for_regression(),
+        res0 <- sort(unique(cnvs_df() %>%  # df_for_regression(),
             dplyr::filter(metric == input$response_variable) %>%
             dplyr::filter(group_label == group_internal_choice())  %>%
-            dplyr::pull(group)
-        
+            dplyr::pull(group)))
+
         selectInput(
             ns("cn_group_point_filter"),
             "Select Group Filter",
             choices = c('All', res0),
-            selected = "All"
+            selected = "All",
+            multiple = T
         )
+        
+    })
+    
+    # for the gene selection
+    output$select_cn_gene_ui <- renderUI({
+      
+      res1 <- sort(unique(cnvs_df() %>%  # df_for_regression(),
+                            dplyr::filter(metric == input$response_variable) %>%
+                            dplyr::filter(group_label == group_internal_choice())  %>%
+                            dplyr::pull(gene)))
+      
+      selectInput(
+        ns("cn_gene_point_filter"),
+        "Select Gene Filter",
+        choices = c('All', res1),
+        selected = "All",
+        multiple = T
+      )
     })
     
 
-    #cnvs_group_summary_df <- reactive({
-    #    req(!is.null(cnvs_df()), cancelOutput = T)
-    #    build_cnvs_group_summary_df(cnvs_df())
-    #})
-
-    #testable_cnvs_groups <- reactive(get_testable_cnvs_groups(cnvs_group_summary_df()))
-    #untestable_cnvs_groups <- reactive(get_untestable_cnvs_groups(cnvs_group_summary_df(), testable_cnvs_groups()))
-
-    #output$text <- renderText({
-    #    if(is.null(cnvs_df())){
-    #        return("Members in current selected groupings do not have driver CNV data")
-    #    } else if (length(testable_cnvs_groups()) == 0) {
-    #        return("No cohort and driver combinations can be tested.")
-    #    } else {
-    #        string <- stringr::str_c(
-    #            "Testable driver-cohort combinations: ",
-    #            as.character(length(testable_cnvs_groups())),
-    #            ";\t ",as.character(round(length(testable_cnvs_groups())/(length(testable_cnvs_groups())+length(untestable_cnvs_groups()))*100,1)),
-    #            "% of total possible."
-#                "Untestable driver-cohort combinations: ",
-#                as.character(length(untestable_cnvs_groups()))
-     #       )
-     #       return(string)
-     #   }
-    #})
+    output$cnv_results_count <- renderText({
+        if(is.null(cnvs_df())){
+            return("Members in current selected groupings do not have driver CNV results")
+        } else {
+            res1 <- sort(unique(cnvs_df() %>% 
+                                dplyr::filter(metric == input$response_variable) %>%
+                                dplyr::filter(group_label == group_internal_choice())  %>%
+                                dplyr::pull(gene)))
+          
+            string <- stringr::str_c(
+                "total number of rows: ", as.character(  dim(cnvs_df())[1]  ), 
+                ",  number of genes:  ", as.character(length(res1))  
+                )
+            return(string)
+        }
+    })
 
 
-    scatter_plot_df <- reactive({
-        print('IN SCATTER PLOT DF')
-        
-        print('response var')
-        print(input$response_variable)
-        
-        print('group')
-        print(group_internal_choice())
-        
-        print('group display choice')
-        print(group_display_choice())
-        
-        #validate(need(
-        #    !is.null(cnvs_df()),
-        #    "No results to display, pick a different group."))
+    filter_df <- reactive({
+
         res0 <- cnvs_df() %>% dplyr::filter(metric == input$response_variable)
         
-        print('dim of res0')
-        print(dim(res0))
-        print('head of res0')
-        print(head(res0))
-            
         if (input$cn_gene_point_filter != 'All') {
-            res0 <- res0 %>% dplyr::filter(gene == input$cn_gene_point_filter)
+            res0 <- res0 %>% dplyr::filter(gene %in% input$cn_gene_point_filter)
         }
         
         if (input$cn_dir_point_filter != 'All') {
             res0 <- res0 %>% dplyr::filter(direction == input$cn_dir_point_filter)
         }
         
-        #if (input$cn_group_point_filter != 'All') {
-        #    res0 <- res0 %>% dplyr::filter(group == input$cn_group_point_filter)
-        #}
-        
-        print('FINISHED FILTER')
-        
-        print(dim(res0))
-        print(head(res0))
-        
+        if (input$cn_group_point_filter != 'All') {
+            res0 <- res0 %>% dplyr::filter(group == input$cn_group_point_filter)
+        }
+
         return(res0)
     })
     
-    # plots ----
-    output$scatterPlot <- renderPlotly({
-        
-        #validate(
-        #    #need(!is.null(scatter_plot_df()), "No testable cohort and driver combinations, see above for explanation"))
-        #    need(!is.null(scatter_plot_df()), 'empty df'))
-        
-        create_scatterplot_cnv(
-            scatter_plot_df(),
-            ylab = "-log10 p-value",
-            xlab = "Difference in Means",
-            x_col = 'Mean_Diff',
-            y_col = 'neg_log10_pvalue',
-            title = "",
-            source = "scatterplot",
-            key_col = "label",
-            color_col = 'direction',
-            label_col = "label",
-            fill_color = 'direction', # 
-            fill_colors = c('#027AB0', '#AE3918'),
-            horizontal_line = T,
-            horizontal_line_y = (- log10(0.05))
-        )
-    })
     
-
+    #### PLOT ####
+    output$cnvPlot <- shiny::renderPlot(
+      # uses ggridges package
+      ggplot(filter_df(), aes(x = t, y = direction)) + 
+        geom_density_ridges(scale = 1) + facet_wrap(~group)
+      
+    )
+    
     # Filter data based on selections
     output$cnvtable <- DT::renderDataTable(
         
-        DT::datatable(
-            scatter_plot_df() %>% 
-                dplyr::select(-group_label, -label, -group_label, -pvalue) %>%
-                dplyr::mutate_at(vars(Mean_Norm, Mean_CNV, t, neg_log10_pvalue , Mean_Diff), dplyr::funs(round(., 3))) %>%
-                dplyr::select(metric, group, gene, direction, Mean_Norm, Mean_CNV, Mean_Diff, t, neg_log10_pvalue),
-            extensions = 'Buttons', options = list(
-                scrollY = '300px', 
-                paging = FALSE, 
-                scrollX = TRUE,
-                dom = 'Bfrtip',
-                buttons =
-                    list('copy', 'print',
-                         list(
-                             extend = 'collection',
-                             buttons = c('csv', 'excel', 'pdf'),
-                             text = 'Download')
-                    )
+      DT::datatable(
+        
+        filter_df() %>% 
+          dplyr::select(-group_label, -label, -group_label, -pvalue) %>%
+          dplyr::mutate_at(vars(Mean_Norm, Mean_CNV, t, neg_log10_pvalue , Mean_Diff), dplyr::funs(round(., 3))) %>%
+          dplyr::select(metric, group, gene, direction, Mean_Norm, Mean_CNV, Mean_Diff, t, neg_log10_pvalue),
+        
+        extensions = 'Buttons', options = list(
+          scrollY = '300px', 
+          paging = TRUE, 
+          scrollX = TRUE,
+          dom = 'Bfrtip',
+          buttons =
+            list('copy', 'print',
+                 list(
+                   extend = 'collection',
+                   buttons = c('csv', 'excel', 'pdf'),
+                   text = 'Download')
             )
-            
         )
+        
+      )
     )
 
-    output$violinPlot <- renderPlotly({
+    ##########################################
+    ##########################################  COMMENTED OUT
+    ##########################################
+    if (FALSE) {
+      
+          # plots ----
+      output$scatterPlot <- renderPlotly({
+          
+          #validate(
+          #    #need(!is.null(scatter_plot_df()), "No testable cohort and driver combinations, see above for explanation"))
+          #    need(!is.null(scatter_plot_df()), 'empty df'))
+          
+          create_scatterplot_cnv(
+              scatter_plot_df(),
+              ylab = "-log10 p-value",
+              xlab = "Difference in Means",
+              x_col = 'Mean_Diff',
+              y_col = 'neg_log10_pvalue',
+              title = "",
+              source = "scatterplot",
+              key_col = "label",
+              color_col = 'direction',
+              label_col = "label",
+              fill_color = 'direction', # 
+              fill_colors = c('#027AB0', '#AE3918'),
+              horizontal_line = T,
+              horizontal_line_y = (- log10(0.05))
+          )
+      })
+      
+  
+      output$violinPlot <- renderPlotly({
+  
+          eventdata <- event_data("plotly_click", source = "scatterplot")
+  
+          print('EVENTDATA')
+          print(eventdata)
+          
+          if(is.null(eventdata)) {
+              
+              eventdata <- list(key='All')
+              violin_df <- scatter_plot_df()
+              
+          } else {
+              
+              violin_df <- scatter_plot_df() %>% filter(label == eventdata$key)
+              
+          }
+                  
+          vdf1 <- data.frame(y=violin_df$Mean_Norm, x='Normal')
+          
+          vdf2 <- data.frame(y=violin_df$Mean_CNV, 
+                             x=ifelse(input$cn_dir_point_filter != 'All', 
+                                      yes=input$cn_dir_point_filter, 
+                                      no='Copy Number Altered'))
+          vdf <- rbind(vdf1, vdf2)
+          
+          create_violinplot(
+              vdf,
+              xlab = '',
+              ylab = paste0('mean ', input$response_variable),
+              title = ifelse(input$cn_gene_point_filter == 'All', 
+                             yes=ifelse(input$cn_group_point_filter == 'All', 
+                                        yes = paste0('All Genes, ', group_display_choice() ),       # general group all genes
+                                        no  = paste0('All Genes, ', input$cn_group_point_filter)),  # all genes, specific group
+                             no =ifelse(input$cn_group_point_filter == 'All',
+                                        yes = paste0(input$cn_gene_point_filter, ', ', group_display_choice() ),  # selected gene, general groups
+                                        no  = paste0(input$cn_gene_point_filter, ', ', input$cn_group_point_filter)) 
+                             ),  
+              fill_colors = c("blue"),
+              showlegend = FALSE)
+      })
 
-        eventdata <- event_data("plotly_click", source = "scatterplot")
-
-        print('EVENTDATA')
-        print(eventdata)
-        
-        if(is.null(eventdata)) {
-            
-            eventdata <- list(key='All')
-            violin_df <- scatter_plot_df()
-            
-        } else {
-            
-            violin_df <- scatter_plot_df() %>% filter(label == eventdata$key)
-            
-        }
-                
-        vdf1 <- data.frame(y=violin_df$Mean_Norm, x='Normal')
-        
-        vdf2 <- data.frame(y=violin_df$Mean_CNV, 
-                           x=ifelse(input$cn_dir_point_filter != 'All', 
-                                    yes=input$cn_dir_point_filter, 
-                                    no='Copy Number Altered'))
-        vdf <- rbind(vdf1, vdf2)
-        
-        create_violinplot(
-            vdf,
-            xlab = '',
-            ylab = paste0('mean ', input$response_variable),
-            title = ifelse(input$cn_gene_point_filter == 'All', 
-                           yes=ifelse(input$cn_group_point_filter == 'All', 
-                                      yes = paste0('All Genes, ', group_display_choice() ),       # general group all genes
-                                      no  = paste0('All Genes, ', input$cn_group_point_filter)),  # all genes, specific group
-                           no =ifelse(input$cn_group_point_filter == 'All',
-                                      yes = paste0(input$cn_gene_point_filter, ', ', group_display_choice() ),  # selected gene, general groups
-                                      no  = paste0(input$cn_gene_point_filter, ', ', input$cn_group_point_filter)) 
-                           ),  
-            fill_colors = c("blue"),
-            showlegend = FALSE)
-    })
-
-
+  }
 }
