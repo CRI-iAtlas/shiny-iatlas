@@ -80,7 +80,7 @@ survival_UI <- function(id) {
                     ),
                     selectInput(
                         ns("survival_class"),
-                        "Select Variables Class (rows)",
+                        "Select or Search for Variables Class (rows)",
                         choices = get_numeric_classes_from_feature_df(),
                         selected = "T Helper Cell Score"
                     )
@@ -113,8 +113,6 @@ survival <- function(
 ){
     ns <- session$ns
 
-    
-    
     # This function creates the drop down with variable selection like signature scores.
     output$survplot_opts <- renderUI({
       
@@ -127,7 +125,7 @@ survival <- function(
       if (group_choice == 'Study') {  # if we start out at study, then display SOMETHING
         selectInput(
           ns("var1_surv"),
-          "Variable",
+          "Select or Search for Variable",
           var_choices,
           selected = 'leukocyte_fraction'
         )  
@@ -135,7 +133,7 @@ survival <- function(
       } else {  # starting at immune subtypes, we can display those.
         selectInput(
           ns("var1_surv"),
-          "Variable",
+          "Select or Search for Variable",
           var_choices,
           selected = group_internal_choice()
         )  
@@ -160,7 +158,7 @@ survival <- function(
         
           selectInput(
             ns("var0_study"),
-            "Select Study",
+            "Select or Search for Study",
             study_choices,
             selected = 'All'
           )  
@@ -171,7 +169,7 @@ survival <- function(
         
           selectInput(
             ns("var0_study"),
-            "Select Subtype",
+            "Select or Search forSubtype",
             subtypes,
             selected = 'All'
           )  
@@ -181,15 +179,14 @@ survival <- function(
         
         selectInput(
             ns("var0_study"),
-            "Select Subtype",
+            "Select or Search for Subtype",
             subtypes,
             selected = 'All'
           )  
       }
         
     })
-    
-        
+ 
     # here we put the plot together, using the prev. selected options.
     output$survPlot <- renderPlot({
       
