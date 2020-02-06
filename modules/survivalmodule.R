@@ -169,7 +169,7 @@ survival <- function(
         
           selectInput(
             ns("var0_study"),
-            "Select or Search forSubtype",
+            "Select or Search for Subtype",
             subtypes,
             selected = 'All'
           )  
