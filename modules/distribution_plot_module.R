@@ -133,7 +133,7 @@ distributions_plot_module <- function(
             colnames()
         selectInput(
             ns("group_choice"),
-            label = "Select Group",
+            label = "Select or Search Group",
             choices = choices)
     })
     
@@ -154,7 +154,7 @@ distributions_plot_module <- function(
 
         selectInput(
             ns("variable_choice"),
-            label = "Select Variable",
+            label = "Select or Search for Variable",
             choices = choices,
             selected = variable_selection_default)
     })
