@@ -30,3 +30,5 @@ MHC-II	HLA-DPA1	im_expr_df	Greens	1
 LAG-3	LAG3	im_expr_df	Greens	1
 TIM-3	HAVCR2	im_expr_df	Greens	1
 Galectin_9	LGALS9	im_expr_df	Greens	1
+CD155	PVR	im_expr_df	Greens	1
+TIGIT	TIGIT	im_expr_df	Greens	1
