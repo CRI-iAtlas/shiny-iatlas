@@ -9,6 +9,22 @@ net_data = list(
       
 styleNodes = "data/javascript/style_network_cellimage.js"
 
+#organize data to display FriendlyName
+friendly <- panimmune_data$im_direct_relationships %>%
+  dplyr::filter(!is.na(`HGNC Symbol`)) %>% 
+  dplyr::select(`HGNC Symbol`, `Friendly Name`) %>% as.data.frame()
+
+friendly[which(friendly$`HGNC Symbol` == "TNFRSF18"), 2] <- "GITR"
+friendly[which(friendly$`HGNC Symbol` == "CD40LG"), 2] <- "CD40L"
+friendly <- rbind(friendly, c("TNFSF18", "GITRL"))
+friendly <- rbind(friendly, c("PVR", "CD155"))
+friendly <- rbind(friendly, c("T_cells_CD8", "T cell"))
+friendly <- rbind(friendly, c("Dendritic_cells", "Dendritic cell"))
+friendly <- rbind(friendly, c("Tumor_cell", "Tumor"))
+friendly <- rbind(friendly, c("Macrophage", "Tissue Macrophage"))
+
+rownames(friendly) <- friendly$`HGNC Symbol`
+
 
 #Flag to change the cell image to ABUNDANCE data. If FALSE uses value average
 abundance <- TRUE
@@ -188,12 +204,21 @@ cellimage <- function(
     nodes$Variable <- gsub("Dendritic_cells.Aggregate1", "Dendritic_cells",  nodes$Variable)
     nodes$Variable <- gsub("Macrophage.Aggregate1", "Macrophage", nodes$Variable)
     
-    nodes %>%
-      filter(Group == input$groupselect_method) %>% 
-      rename(id = Variable, UpBinRatio = Value) %>% 
-      select(id, UpBinRatio) %>% 
-      arrange(id)
+    nodes <- nodes %>% 
+      dplyr::mutate(FriendlyName = dplyr::case_when(
+        Variable %in% friendly$`HGNC Symbol` ~ friendly[Variable, 2],
+        !(Variable %in% panimmune_data$im_direct_relationships$`HGNC Symbol`) ~ Variable
+      ))
     
+    nodes <- nodes %>%
+      dplyr::filter(Group == input$groupselect_method) %>% 
+      dplyr::rename(id = Variable, UpBinRatio = Value) %>% 
+      dplyr::select(id, UpBinRatio, FriendlyName) %>% 
+      dplyr::arrange(id)
+    
+    #shiny::validate(need(nrow(nodes >0)), "Please select another subtype - this one has limited data.")
+    
+    nodes
   })
   
   graph.json <- reactive({
@@ -201,7 +226,6 @@ cellimage <- function(
   })
   
   output$image_network <- cyjShiny::renderCyjShiny({
-    cyjShiny::cyjShiny(graph.json(), layoutName = "cose", styleFile = styleNodes)
+    cyjShiny::cyjShiny(graph.json(), layoutName = "grid", styleFile = styleNodes)
   })
-    
 }
