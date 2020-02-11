@@ -56,7 +56,7 @@ distributions_plot_module_UI <- function(
                         width = 4,
                         checkboxInput(
                             ns("see_drilldown"), 
-                            "Plot clicked group?", 
+                            "Display histogram of distribution by clicking on a violin", 
                             plot_clicked_group_default
                         )
                     )

@@ -33,8 +33,8 @@ survival_UI <- function(id) {
                         selected = "OS_time"
                     ),
                     
-                    radioButtons(ns("div_range"), "Divide value range", 
-                                 choices = c("In the median" = "median", "In equal intervals" = "intervals"), 
+                    radioButtons(ns("div_range"), "Bin the variable values", 
+                                 choices = c("By their median" = "median", "Into equal intervals of value range" = "intervals"), 
                                  inline = TRUE, selected = "median"),
                     
                     conditionalPanel(condition = paste0("input['", ns("div_range"), "'] == 'intervals'"),
@@ -46,8 +46,8 @@ survival_UI <- function(id) {
                                        value = 2
                                      )),
                     
-                    checkboxInput(ns("confint"), "Confidence Intervals", value = F),
-                    checkboxInput(ns("risktable"), "Risk Table", value = T)
+                    checkboxInput(ns("confint"), "Display Confidence Intervals", value = F),
+                    checkboxInput(ns("risktable"), "Display Risk Table", value = T)
                 ),
                 
                 # ** Survival Kaplan-Meier plot ----
