@@ -16,6 +16,10 @@ The portal is built entirely in **R** and **Shiny** using the **RStudio** develo
 
 - RStudio: https://rstudio.com/products/rstudio/download
 
+- lib cairo: https://www.cairographics.org/ (only required for iAtlas client)
+
+- gfortran (libgfortran): usually installed with gcc
+
 ### MacOS Install instructions
 
 Install brew: https://brew.sh/
@@ -23,6 +27,7 @@ Install brew: https://brew.sh/
 Then:
 
 - brew install R
+- brew install cairo
 - download and install RStudio: https://rstudio.com/products/rstudio/download
 
 ### Initialize R Packages, Database and run App
