@@ -122,11 +122,13 @@ cytokinenetwork_UI <- function(id) {
       
         fluidRow(
             tableBox(
+              width = 5,
               DT::DTOutput(ns("tableNodes")) %>% 
                 shinycssloaders::withSpinner(),
               downloadButton(ns('download_data_nodes'), 'Download')
           ),
             tableBox(
+              width = 7,
               DT::DTOutput(ns("table")) %>% 
                 shinycssloaders::withSpinner(),
               downloadButton(ns('download_data'), 'Download')
@@ -240,20 +242,20 @@ cytokinenetwork <- function(
   })
   
   output$selectCell <- renderUI({
-    selectizeInput(ns("cellInterest"), "Search and select cells of interest (optional)", choices = (panimmune_data$ext_net_labels %>% dplyr::filter(Type == "Cell") %>% dplyr::select("Cells"="Obj")), 
+    selectizeInput(ns("cellInterest"), "Search and select cells of interest (optional)", choices = (panimmune_data$ext_net_labels %>% dplyr::filter(Type == "Cell") %>% dplyr::select("Cells"="Gene")), 
                    multiple = TRUE, options = list(placeholder = "Default: all cells"))
   })
   
   output$selectGene <- renderUI({
     #getting all nodes in the main_scaffold, and displaying it as FriendlyName
     scanodes <- (union(main_scaffold$From, main_scaffold$To) %>% as.data.frame() %>% 
-                   unique() %>% merge(panimmune_data$ext_net_labels, by.x = ".", by.y = "Obj") %>% select(Genes = FriendlyName) %>% filter(!is.na(Genes)))
+                   unique() %>% merge(panimmune_data$ext_net_labels, by.x = ".", by.y = "Obj") %>% select(Genes = Gene) %>% filter(!is.na(Genes)))
     selectizeInput(ns("geneInterest"), "Search and select genes of interest (optional)", choices = scanodes,
                    multiple = TRUE, options = list(placeholder = "Default: immunomodulator genes"))
   })
   
   output$selectNode <- renderUI({
-    selectInput(ns("selectName"), "Search and select Node", choices = c("", tbl_nodes() %>% dplyr::select(Node = FriendlyName) %>% 
+    selectInput(ns("selectName"), "Search and select Node", choices = c("", tbl_nodes() %>% dplyr::select(Node = Gene) %>%
                                                                dplyr::filter(!is.na(Node))))
   })
   
@@ -272,7 +274,7 @@ cytokinenetwork <- function(
     if (is.null(input$geneInterest))  return(as.vector(panimmune_data$im_direct_relationships$`HGNC Symbol`))
     
     #converting the FriendlyName to HGNC Symbol
-    gois <- data.frame(FriendlyName = input$geneInterest) %>% merge(panimmune_data$ext_net_labels) %>% dplyr::select(Obj) 
+    gois <- data.frame(Gene = input$geneInterest) %>% merge(panimmune_data$ext_net_labels) %>% dplyr::select(Obj) 
   
     gois$Obj
   })
@@ -281,7 +283,9 @@ cytokinenetwork <- function(
     #if no cell is selected, all cells are considered cells of interest 
     if (is.null(input$cellInterest)) get_cells_scaffold(main_scaffold, panimmune_data$ext_net_labels)
     
-    as.vector(input$cellInterest)
+    cois <- data.frame(Gene = input$cellInterest) %>% merge(panimmune_data$ext_net_labels) %>% dplyr::select(Obj)
+    cois$Obj
+    #as.vector(input$cellInterest)
   })
   
   ##Scaffold and genes based on list of cells and genes of interest 
@@ -448,8 +452,12 @@ cytokinenetwork <- function(
     })
     
   output$table <- DT::renderDataTable(
-                      DT::datatable(tbl_edges(), colnames= c("From" = "source", "To" = "target", "Concordance" = "score"),
-                                    caption = "Edges Table", width = "100%", rownames = FALSE)
+   
+    DT::datatable(get_edge_table(tbl_edges(), panimmune_data$ext_net_labels),
+                  caption = "Edges Table", width = "100%", rownames = FALSE)
+                      
+                      # DT::datatable(tbl_edges(), colnames= c("From" = "source", "To" = "target", "Concordance" = "score"),
+                      #               caption = "Edges Table", width = "100%", rownames = FALSE)
                       )
   
 
@@ -460,12 +468,12 @@ cytokinenetwork <- function(
   
   output$download_data <- downloadHandler(
     filename = function() stringr::str_c("edges-", Sys.Date(), ".csv"),
-    content = function(con) readr::write_csv(tbl_edges(), con)
+    content = function(con) readr::write_csv(get_node_table(tbl_edges(), panimmune_data$ext_net_labels), con)
   )
   
   output$download_data_nodes <- downloadHandler(
     filename = function() stringr::str_c("nodes-", Sys.Date(), ".csv"),
-    content = function(con) readr::write_csv(get_ab_nodes(abundant_nodes(), tbl_edges(), stratify$byImmune), con)
+    content = function(con) readr::write_csv(get_ab_nodes(abundant_nodes(), tbl_edges(), panimmune_data$ext_net_labels, stratify$byImmune), con)
   )
 
 #----- Network visualization-related (from the cyjShiny examples)  
@@ -483,7 +491,7 @@ cytokinenetwork <- function(
   })
   
   observeEvent(input$selectName,  ignoreInit=TRUE,{
-    snode <- as.character(panimmune_data$ext_net_labels[which(panimmune_data$ext_net_labels$FriendlyName == input$selectName), "Obj"])
+    snode <- as.character(panimmune_data$ext_net_labels[which(panimmune_data$ext_net_labels$Gene == input$selectName), "Obj"])
     session$sendCustomMessage(type="selectNodes", message=list(snode))
   })
   

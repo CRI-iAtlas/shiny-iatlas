@@ -139,14 +139,21 @@ get_ab_nodes <- function(ab_nodes, conc_edges, nodes_annot, byImmune = FALSE){
   all_nodes
 }
 
+get_edge_table <- function(conc_edges, nodes_annot){
+  merge(conc_edges, nodes_annot, by.x = "source", by.y = "Obj") %>% 
+    dplyr::select("From" = "source", "From (Friendly Name)" = "FriendlyName", target, interaction, score) %>% 
+    merge(nodes_annot, by.x = "target", by.y = "Obj") %>%
+    dplyr::select(From, `From (Friendly Name)`, "To" = "target", "To (Friendly Name)" = "FriendlyName", "Group" = "interaction", "Concordance" = "score")
+  
+}
 #---- update list of nodes annotation based on user selection (for nodes color)
 
 filterNodes <- function(list_edges, annot){
-  colnames(annot) <- c("Type", "name", "FriendlyName")
+  colnames(annot) <- c("Type", "name", "FriendlyName", "Gene")
   nodes <- append(list_edges$source, list_edges$target) %>% unique() %>% as.data.frame()
   colnames(nodes) <- "name"
   
-  nodes <- merge(nodes, annot, all.x = TRUE) #we want to keep all nodes, even those that do not have annotations
+  nodes <- merge(nodes, annot, all.x = TRUE) %>% dplyr::arrange(name) #we want to keep all nodes, even those that do not have annotations
   
   return(nodes)
 }
