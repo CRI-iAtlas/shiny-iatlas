@@ -23,11 +23,7 @@ Install brew: https://brew.sh/
 Then:
 
 - brew install R
-- brew install cairo
-- brew install git-lfs
-- brew install postgres
 - download and install RStudio: https://rstudio.com/products/rstudio/download
-- download and install Docker: https://www.docker.com/products/docker-desktop
 
 ### Initialize R Packages, Database and run App
 
