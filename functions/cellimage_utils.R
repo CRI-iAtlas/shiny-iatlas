@@ -219,3 +219,30 @@ get_colored_image <- function(soi,cellimage_base,value_df,range_df){
   image_grob
   
 }
+
+##Function that takes the user selections and builds the final object for plotting
+
+get_cell_image_object <- function(cellimage_base = panimmune_data$cellimage_base, subtype_selected, vals_for_cellplot){
+  ## cellimage_base - Multipart object with all information on the cell image
+  cois <- get_cells_from_image(cellimage_base) ## Cells  in the image 
+  gois <- get_genes_from_image(cellimage_base) ## Proteins in the image
+  
+  vals_for_cellplot$Variable <- gsub("Macrophage.Aggregate1", "Macrophage.Aggregate2",  vals_for_cellplot$Variable)
+  ### Before proceeding with plot, obtain vals_for_cellplot and ranges_for_cellplot
+  
+  ## vals_for_cellplot
+  ### Columns are 
+  ### Group: the subtype
+  ### Variable: the cell or gene variable
+  ### Value: the value in that subtype and for that variable, either by the averaging, or abundance ratio
+  
+  ## ranges_for_cellplot
+  ### Group: the subtype
+  ### Variable: the cell or gene variable
+  ### MinBound and Maxbound: the lower and upper range of values to correspond with the color range
+  
+  ranges_for_cellplot <- tibble::tibble(Variable=c(cois,gois),MinBound=0,MaxBound=1)
+  
+  image_grob <- get_colored_image(subtype_selected,cellimage_base,vals_for_cellplot,ranges_for_cellplot)
+  image_grob
+}
