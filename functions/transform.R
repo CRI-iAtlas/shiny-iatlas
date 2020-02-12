@@ -2,40 +2,386 @@
 ## subset, arrange, or otherwise modify data prior to visualization with tables
 ## or plots
 
-# Global data transform ----
+###############################################################################
+# These functions have been refactored and have unit tests.
+# Do not make any modifications to these!
+# If you want to make a modification, please copy and paste the function the
+# lower section and call it <function_name>2.
+# Make any needed modifcations to the coipied function.
+# The new functionality will get unut tests and be folded back into the 
+# original function.
+###############################################################################
 
-# ** PanImmune data subsetting ----
+# distribution plot functions -------------------------------------------------
 
-# subset by group choices 
-subset_panimmune_df <- function(
-    df = panimmune_data$fmx_df, 
-    group_column, 
-    study_option,
-    user_group_df = NULL) {
-    
-    if (group_column %in% c("Subtype_Immune_Model_Based", "Study")) {
-        return(df)
-    } else if (group_column == "Subtype_Curated_Malta_Noushmehr_et_al") {
-        return(subset_panimmune_df_by_TCGA_subtype(df, group_column, study_option))
-    } else {
-        return(subset_panimmune_df_by_user_groups(df, user_group_df, group_column)) 
-    }
+build_distribution_plot_df <- function(
+  .df, 
+  ycol = "y", 
+  scale_func_choice = "None"
+){
+  
+  scale_function <- switch(
+    scale_func_choice,
+    "None" = identity, 
+    "Log2" = log2,
+    "Log2 + 1" = function(x) log2(x + 1),
+    "Log10" = log10,
+    "Log10 + 1" = function(x) log10(x + 1),
+  )
+  
+  .df %>% 
+    dplyr::select(x, y = ycol, label) %>% 
+    tidyr::drop_na() %>% 
+    dplyr::mutate(y = scale_function(y)) %>% 
+    tidyr::drop_na() %>% 
+    dplyr::filter(!is.infinite(y))
 }
 
-subset_panimmune_df_by_TCGA_subtype <- function(df, group_column, study_option){
-    sample_groups <- panimmune_data$sample_group_df %>% 
-        filter(sample_group == "tcga_subtype", 
-               `TCGA Studies` %in% study_option) %>% 
-        extract2("FeatureValue")
+
+# immunefeatures functions ----------------------------------------------------
+
+build_immunefeatures_df <- function(
+    df,
+    group_column,
+    value1_column,
+    value2_columns,
+    group_options,
+    id_column = "ParticipantBarcode"){
+
+    assert_df_has_columns(
+        df, c(group_column, value1_column, value2_columns, id_column))
+
+    result_df <- df %>%
+        dplyr::select(
+            ID = id_column,
+            GROUP = group_column,
+            VALUE1 = value1_column,
+            value2_columns) %>%
+        dplyr::filter(GROUP %in% group_options) %>%
+        dplyr::filter(!is.na(VALUE1))
+    return(result_df)
+}
+
+build_immunefeatures_correlation_matrix <- function(df, method = "spearman") {
+    long_df  <- df %>%
+        dplyr::select(-ID) %>%
+        tidyr::gather(
+            key = "VARIABLE",
+            value = "VALUE2",
+            -c(GROUP, VALUE1)) %>%
+        dplyr::group_by(GROUP, VARIABLE) %>%
+        tidyr::drop_na()
+
+    if(nrow(long_df) == 0) return(long_df)
+
+    result_matrix <- long_df %>%
+        dplyr::summarise(COR = cor(
+            VALUE1,
+            VALUE2,
+            method = method,
+            use = "pairwise.complete.obs")) %>%
+        tidyr::spread(key = "GROUP", value = "COR", fill = NA) %>%
+        dplyr::left_join(
+            dplyr::select(
+              panimmune_data$feature_df, 
+              FeatureMatrixLabelTSV, 
+              `Variable Class Order`, 
+              FriendlyLabel),
+            by = c("VARIABLE" = "FeatureMatrixLabelTSV")) %>% 
+        dplyr::arrange(dplyr::desc(`Variable Class Order`)) %>% 
+        dplyr::select(- c(`Variable Class Order`, VARIABLE)) %>% 
+        as.data.frame() %>%
+        tibble::column_to_rownames("FriendlyLabel") %>%
+        as.matrix()
+}
+
+
+build_immunefeatures_scatter_plot_df <- function(df, x_col, group_filter_value){
+    assert_df_has_columns(df, c(x_col, "VALUE1", "ID", "GROUP"))
+    df %>%
+        select(ID, GROUP, y = "VALUE1", x = x_col) %>%
+        filter(GROUP == group_filter_value) %>%
+        create_label(
+            name_column = "ID",
+            group_column = "GROUP",
+            value_columns = c("x", "y")) %>%
+        select("x", "y", "label") %>%
+        get_complete_df_by_columns(c("x", "y", "label"))
+}
+
+
+# cellcontent functions -------------------------------------------------------
+
+build_cellcontent_df <- function(df, group_column){
+    assert_df_has_columns(df, c(group_column, "Stromal_Fraction", "leukocyte_fraction"))
+    long_df <- df %>% 
+        dplyr::select(
+            GROUP = group_column,
+            "Stromal_Fraction", 
+            "leukocyte_fraction") %>% 
+        tidyr::drop_na()
     
-    wrapr::let(
-        alias = c(COL = group_column), {
-            
-            df %>% 
-                filter(COL %in% sample_groups) %>% 
-                mutate(COL = fct_drop(COL))
-        }
+    if(nrow(long_df) == 0) return(long_df)
+    
+    result_df <- long_df %>% 
+        dplyr::mutate(Tumor_Fraction = 1 - Stromal_Fraction) %>% 
+        tidyr::gather(fraction_type, fraction, -GROUP)
+    assert_df_has_columns(result_df, c("GROUP", "fraction_type", "fraction"))
+    return(result_df)
+}
+
+build_cell_fraction_df <- function(df, group_column, value_columns){
+    assert_df_has_columns(df, c(group_column, value_columns))
+    result_df <- df %>% 
+        dplyr::select(GROUP = group_column, value_columns) %>% 
+        tidyr::gather(fraction_type, fraction, -GROUP) %>% 
+        tidyr::drop_na()
+    assert_df_has_columns(result_df, c("GROUP", "fraction_type", "fraction"))
+    return(result_df)
+}
+
+
+build_cellcontent_barplot_df <- function(df, x_column, y_column) {
+    assert_df_has_columns(df, c("GROUP", "fraction_type", "fraction"))
+    result_df <- df %>%
+        summarise_df_at_column(
+            column = "fraction",
+            grouping_columns = c("GROUP", "fraction_type"),
+            function_names = c("mean", "se")) %>% 
+        create_label(
+            title = stringr::str_to_title(y_column),
+            name_column = x_column,
+            group_column = "GROUP",
+            value_columns = c("mean", "se")) %>% 
+        dplyr::select(
+            x = "GROUP",
+            y = "mean",
+            color = "fraction_type",
+            error = "se",
+            label)
+    assert_df_has_columns(result_df, c("x", "y", "label", "color", "error"))
+    assert_df_has_rows(result_df)
+    return(result_df)
+}
+
+build_cellcontent_scatterplot_df <- function(
+    df, group_column, group_filter_value, 
+    id_column = "ParticipantBarcode",
+    x_column = "Stromal_Fraction",
+    y_column = "leukocyte_fraction") {
+    
+    result_df  <- df %>%
+        select(
+            GROUP = group_column, 
+            ID = id_column, 
+            x = x_column, 
+            y = y_column) %>%
+        filter(GROUP == group_filter_value) %>%
+        create_label(
+            name_column = "ID",
+            group_column = "GROUP",
+            value_columns = c("x", "y")) %>% 
+        select(x, y, "label")
+    assert_df_has_columns(result_df, c("x", "y", "label"))
+    assert_df_has_rows(result_df)
+    return(result_df)
+}
+
+# samplegroup functions -------------------------------------------------------
+
+build_sample_group_key_df <- function(group_df, group_column, feature_df) {
+    assert_df_has_columns(group_df, group_column)
+    
+    group_size_df <- build_group_size_df(group_df, group_column) 
+    
+    result_df <- feature_df %>% 
+        dplyr::select(
+            Group = FeatureValue,
+            FeatureName,
+            Characteristics,
+            FeatureHex) %>% 
+        dplyr::inner_join(group_size_df, by = "Group") %>% 
+        dplyr::distinct() %>% 
+        dplyr::select(
+            `Sample Group` = Group, 
+            `Group Name` = FeatureName,
+            `Group Size` = Group_Size, 
+            Characteristics, 
+            `Plot Color` = FeatureHex)
+    assert_df_has_columns(
+        result_df, 
+        c("Sample Group", "Group Name", "Group Size", "Characteristics", "Plot Color"))
+    assert_df_has_rows(result_df)
+    return(result_df)
+}
+
+build_group_size_df <- function(df, group_col){
+    assert_df_has_columns(df, group_col)
+    result_df <- df %>% 
+        dplyr::select(Group = group_col) %>% 
+        get_complete_df_by_columns("Group") %>%  
+        dplyr::group_by(Group) %>% 
+        dplyr::summarise(Group_Size = n()) 
+    assert_df_has_columns(result_df, c("Group", "Group_Size"))
+    assert_df_has_rows(result_df)
+    return(result_df)
+}
+
+# functions for making plot df label column -----------------------------------
+
+create_label <- function(
+    df,
+    value_columns,
+    title = "ParticipantBarcode",
+    name_column = "name",
+    group_column = "group") {
+    
+    result_df <- wrapr::let(
+        alias = c(
+            namevar = name_column,
+            groupvar = group_column),
+        df %>%
+            dplyr::mutate(
+                label = stringr::str_glue(
+                    "<b>{title}:</b> {name} ({group})",
+                    title = title,
+                    name = namevar,
+                    group = groupvar
+                )) %>% 
+            tidyr::gather(value_name, value, dplyr::one_of(value_columns)) %>%
+            dplyr::mutate(
+                value_label = stringr::str_glue(
+                    "{name}: {value}",
+                    name = stringr::str_to_upper(value_name),
+                    value = sprintf("%0.3f", value)
+                )
+            ) %>%
+            dplyr::group_by(label) %>%
+            dplyr::mutate(value_label = stringr::str_c(value_label, collapse = "</br>")) %>%
+            ungroup() %>%
+            tidyr::spread(value_name, value) %>%
+            tidyr::unite(label, label, value_label, sep = "</br></br>")
     )
+    assert_df_has_columns(result_df, c("label", name_column, group_column, value_columns))
+    assert_df_has_rows(result_df)
+    return(result_df)
+    
+}
+
+
+# other functions -------------------------------------------------------------
+
+subset_sample_group_df <- function(
+    group_column, study_option, user_group_df,
+    sample_group_df = panimmune_data$sample_group_df
+){
+    if (group_column %in% c("Subtype_Immune_Model_Based", "Study")) {
+        sample_group_df <- dplyr::filter(sample_group_df, sample_group == group_column)
+        
+    } else if (group_column == "Subtype_Curated_Malta_Noushmehr_et_al") {
+        if(is.null(study_option)) return(NULL)
+        sample_group_df <- sample_group_df %>%
+            dplyr::filter(sample_group == group_column) %>%
+            dplyr::filter(`TCGA Studies` == study_option)
+    } else {
+        sample_group_df <- user_group_df %>% 
+            user_group_df_to_sample_group_df() %>% 
+            dplyr::filter(sample_group == group_column) %>%
+            add_missing_plot_colors()
+    }
+    return(sample_group_df)
+
+}
+
+user_group_df_to_sample_group_df <- function(df){
+    df %>% 
+        tidyr::gather(key = 'sample_group' , value = "FeatureValue", -1) %>% 
+        dplyr::select(-(1)) %>% 
+        dplyr::distinct() %>% 
+        dplyr::mutate(FeatureName = FeatureValue) %>% 
+        dplyr::mutate(Characteristics = "") %>% 
+        dplyr::mutate(FeatureHex = NA) %>% 
+        dplyr::mutate(`TCGA Studies` = NA)
+}
+
+add_missing_plot_colors <- function(df){
+    result_df <- df %>% 
+        dplyr::group_by(`TCGA Studies`) %>% 
+        dplyr::mutate(
+            FeatureHex = suppressWarnings(
+                ifelse(
+                    is.na(FeatureHex),
+                    RColorBrewer::brewer.pal(
+                        length(FeatureValue), "Set1") %>%
+                        .[1:length(FeatureValue)],
+                    FeatureHex)
+            )
+        ) %>% 
+        dplyr::ungroup()
+    return(result_df)
+}
+
+translate_to_correct_group_name <- function(df){
+    df %>% 
+        dplyr::mutate(
+            sample_group = dplyr::if_else(
+                sample_group == "tcga_study", 
+                "Study",
+                dplyr::if_else(
+                    sample_group == "immune_subtype", 
+                    "Subtype_Immune_Model_Based",
+                    "Subtype_Curated_Malta_Noushmehr_et_al")))
+}
+
+summarise_df_at_column <- function(df, column, grouping_columns, function_names){
+    assert_df_has_columns(df, c(column, grouping_columns))
+    result_df <- df %>% 
+        dplyr::group_by_at(vars(dplyr::one_of(grouping_columns))) %>%
+        dplyr::summarise_at(column, .funs = function_names) %>%
+        dplyr::ungroup() 
+    if(length(function_names) == 1){
+        result_df <- dplyr::rename(result_df, !!function_names := column)
+    }
+    assert_df_has_columns(result_df, c(grouping_columns, function_names))
+    assert_df_has_rows(result_df)
+    return(result_df)
+}
+
+
+
+build_group_group_mosaic_plot_df <- function(
+    df, x_column, y_column, user_group_df, sample_group_df, study_subset_selection) {
+
+    sample_group_df <- subset_sample_group_df(
+        x_column, 
+        study_subset_selection, 
+        user_group_df)
+    
+    subset_df <- subset_panimmune_df(
+        group_column = x_column, 
+        user_group_df = user_group_df,
+        sample_group_df = sample_group_df,
+        df = df
+    )
+    
+    result_df <- build_mosaicplot_df(subset_df, x_column, y_column) 
+}
+
+
+subset_panimmune_df <- function(
+    group_column, user_group_df, sample_group_df,
+    df = panimmune_data$fmx_df
+    ) {
+    
+    if (!group_column %in% unlist(config_yaml$immune_groups)) {
+        df <- subset_panimmune_df_by_user_groups(df, user_group_df, group_column)
+    }
+    
+    result_df <- wrapr::let(
+        alias = c(COL = group_column),
+        dplyr::filter(df, COL %in% sample_group_df$FeatureValue)
+    )
+    return(result_df)
 }
 
 subset_panimmune_df_by_user_groups <- function(df, user_group_df, group_column){
@@ -44,318 +390,83 @@ subset_panimmune_df_by_user_groups <- function(df, user_group_df, group_column){
             COL1 = colnames(user_group_df[1]),
             COL2 = group_column), {
                 user_group_df %>% 
-                    select(COL1, COL2) %>% 
-                    rename("ParticipantBarcode" = COL1) %>% 
-                    inner_join(df) %>% 
-                    filter(!is.na(COL2))
-        }
+                    dplyr::select(COL1, COL2) %>% 
+                    dplyr::rename("ParticipantBarcode" = COL1) %>% 
+                    dplyr::inner_join(df) 
+            }
     )
 }
 
-
-# Generic plot data transform ----
-
-create_label <- function(
-    df, 
-    value_columns,
-    title = "ParticipantBarcode",
-    name_column = "name", 
-    group_column = "group") {
-    
-    let(
-        alias = c(
-            namevar = name_column, 
-            groupvar = group_column),
-        df %>%
-            mutate(
-                label = str_glue(
-                    "<b>{title}:</b> {name} ({group})", 
-                    title = title,
-                    name = namevar, 
-                    group = groupvar
-                )) %>% 
-            gather(value_name, value, one_of(value_columns)) %>% 
-            mutate(
-                value_label = str_glue(
-                    "{name}: {value}", 
-                    name = str_to_upper(value_name), 
-                    value = sprintf("%0.3f", value)
-                )
-            ) %>% 
-            group_by(label) %>% 
-            mutate(value_label = str_c(value_label, collapse = "</br>")) %>% 
-            ungroup() %>% 
-            spread(value_name, value) %>% 
-            unite(label, label, value_label, sep = "</br></br>")
-    )
-}
-
-
-#' Format a dataframe for plotting summary values (count, sum, mean, etc.) for
-#' different groups with bar plots; grouping is allowed at one to three levels:
-#' group (required), subgroup, and facet
-#'
-#' @param df a tidy dataframe
-#' @param group_column string name of column containing values to summarize; 
-#'     will correspond to size of bars in the plot
-#' @param group_column string name of top level column by which to group; will
-#'     correspond to x- or y-axis ticks in plot
-#' @param subgroup_column string name of second level column by which to group;
-#'     will correspond to fill colors of individual bars/segments
-#' @param facet_column string name of third level column by which to group;
-#'     will correspond to subplots
-#' @param operation string or vector of strings indicating which summary 
-#'     statistic(s) to calculate
-#'
-#' @return
-#' @export
-#'
-#' @examples
-build_barplot_df <- function(
-    df, x_column, y_column, color_column = NULL, facet_column = NULL, 
-    operations = c("sum", "mean", "sd", "se"), add_label = FALSE
-) {
-    se <- function(x) { mean(x) / sqrt(length(x)) }
-    
-    df <- df %>% 
-        group_by(.dots = c(x_column, color_column, facet_column)) %>% 
-        summarise_at(y_column, .funs = operations) %>% 
-        ungroup()
-    if (add_label) {
-        df %>%
-            create_label(
-                title = str_to_title(y_column),
-                name_column = x_column,
-                group_column = color_column,
-                value_columns = operations
-            )
-    } else {
-        df
-    }
-}
-
-#' Format a dataframe for plotting values of one column versus values of a
-#' second column as points in a scatter plot
-#'
-#' @param df a tidy dataframe
-#' @param filter_column string name of column on which to filter values to 
-#'     subset rows
-#' @param filter_value string representing value by which to filter rows 
-#' @param x_column string name of column to use for x-axis
-#' @param y_column string name of column to use for y-axis
-#'
-#' @return
-#' @export
-#'
-#' @examples
-build_scatterplot_df <- function(
-    df, group_column, group_filter_value, x_column, y_column, 
-    id_column = "ParticipantBarcode") {
-    
-    df %>%
-        select(group = group_column, name = id_column, x_column, y_column) %>% 
-        filter(group == group_filter_value) %>% 
-        create_label(value_columns = c(x_column, y_column)) %>%
-        select(id = name, x = x_column, y = y_column, "label")
-}
-
-#' Format a dataframe for plotting values of one column versus values of a
-#' second column for moasic plot
-#'
-#' @param df a tidy data_frame
-#' @param x_column string name of column to use for x-axis
-#' @param y_column string name of column to use for y-axis
-#'
-#' @return 
-#' @export
-#'
-#' @examples
 build_mosaicplot_df <- function(df, x_column, y_column){
     
-    if(!x_column %in% colnames(df)){
-        stop("Input df has no X column: ", x_column)
-    }
-    if(!y_column %in% colnames(df)){
-        stop("Input df has no Y column: ", y_column)
-    }
-    df %>% 
-        dplyr::select(x = x_column, y = y_column) %>%
+    assert_df_has_columns(df, c(x_column, y_column))
+    result_df <- df %>% 
+        dplyr::select(x = x_column, y = y_column) %>% 
         tidyr::drop_na() %>% 
         dplyr::mutate(x = as.factor(x)) %>%
         dplyr::mutate(y = forcats::fct_rev(as.factor(y)))
+    assert_df_has_columns(result_df, c("x", "y"))
+    return(result_df)
 }
 
-build_violinplot_df <- function(df, x_column, y_column){
-    if(!x_column %in% colnames(df)){
-        stop("Input df has no X column: ", x_column)
-    }
-    if(!y_column %in% colnames(df)){
-        stop("Input df has no Y column: ", y_column)
-    }
-    df %>% 
-        dplyr::select(x = x_column, y = y_column) %>% 
-        tidyr::drop_na()
-}
-
-build_boxplot_df <- function(df, x_column, y_column){
-    if(!x_column %in% colnames(df)){
-        stop("Input df has no X column: ", x_column)
-    }
-    if(!y_column %in% colnames(df)){
-        stop("Input df has no Y column: ", y_column)
-    }
-    df %>% 
-        dplyr::select(x = x_column, y = y_column) %>% 
-        tidyr::drop_na()
-}
-
-
-# Module specific data transform ----
-
-# ** Sample groups overview module ----
-
-build_sample_group_key_df <- function(
-    group_df, group_column, color_vector, 
-    feature_df = panimmune_data$sample_group_df) {
-    
-    if(!group_column %in% colnames(group_df)){
-        stop("Group df has no column: ", group_column)
-    }
-    
-    color_df <- build_plot_color_df(color_vector, group_df, group_column) 
-    if(nrow(color_df) == 0){
-        stop("No matching members in groups between color vector, group df column: ", 
-             group_column)
-    }
-    
-    group_size_df <- build_group_size_df(group_df, group_column) 
-    key_df <- build_key_df(feature_df, color_df, group_size_df)
-    
-    if(nrow(key_df) == 0){
-        stop("Result df is empty")
-    }
-    return(key_df)
-}
-
-build_plot_color_df <- function(color_vector, subset_df, group_column){
-    color_vector %>% 
-        tibble::enframe() %>% 
-        magrittr::set_names(c("Group", "Plot_Color")) %>% 
-        dplyr::filter(Group %in% subset_df[[group_column]])
-}
-
-build_group_size_df <- function(df, group_col){
-    df %>% 
-        dplyr::select(Group = group_col) %>% 
-        tidyr::drop_na() %>% 
-        dplyr::group_by(Group) %>% 
-        dplyr::summarise(Group_Size = n()) 
-}
-
-
-build_key_df <- function(feature_df, color_df, group_size_df){
-    feature_df <- dplyr::select(
-        feature_df,
-        Group = FeatureValue,
-        FeatureName,
-        Characteristics)
-    
-    key_df <- 
-        list(feature_df, color_df, group_size_df) %>% 
-        purrr::reduce(dplyr::inner_join, by = "Group") %>% 
-        dplyr::distinct() %>% 
-        dplyr::select(
-            `Sample Group` = Group, 
-            `Group Name` = FeatureName,
-            `Group Size` = Group_Size, 
-            Characteristics, 
-            `Plot Color` = Plot_Color)
-}
-
-build_group_group_mosaic_plot_df <- function(
-    df, x_column, y_column, study_option, user_group_df = NULL) {
-    
-    df %>%
-        subset_panimmune_df(
-            group_col = x_column, 
-            study_option = study_option,
-            user_group_df) %>% 
-        build_mosaicplot_df(x_column, y_column) 
-}
+###############################################################################
+# Tests below this line do not have tests yet, newly writen functions 
+###############################################################################
 
 # ** Immune feature trends module ----
 
 build_intermediate_corr_df <- function(
     df, value1_column, group_column, group_options, value2_columns,
     id_column = "ParticipantBarcode" ) {
-    
+
     wrapr::let(
         c(GROUP = group_column),
-        result_df <- df %>% 
-            dplyr::select(id_column, GROUP, value1_column, value2_columns) %>% 
+        result_df <- df %>%
+            dplyr::select(id_column, GROUP, value1_column, value2_columns) %>%
             dplyr::filter(GROUP %in% group_options))
 }
 
 
-build_heatmap_corr_mat <- function(
-    df, group_column, value1_column, value2_columns) {
-
-    df %>% 
-        dplyr::select(
-            group = group_column,
-            value1 = value1_column,
-            value2_columns) %>% 
-        tidyr::gather(key = "variable", value = "value2", -c(group, value1)) %>% 
-        dplyr::group_by(group, variable) %>% 
-        dplyr::summarise(cor = cor(
-            value1, 
-            value2,
-            method = "spearman", 
-            use = "pairwise.complete.obs")) %>% 
-        tidyr::spread(key = "group", value = "cor", fill = 0) %>% 
-        dplyr::mutate(variable = map(variable, get_variable_display_name)) %>% 
-        as.data.frame %>% 
-        tibble::column_to_rownames("variable") %>% 
-        as.matrix()
-}
-
-
-# ** Tumor composition module ----
-
-build_cell_fraction_df <- function(df, group_column, value_columns){
-    df %>% 
-        dplyr::select(GROUP = group_column, value_columns) %>% 
-        tidyr::drop_na() %>%  
-        tidyr::gather(fraction_type, fraction, -GROUP)
-}
-
-build_tumor_content_df <- function(df, group_column){
-    df %>% 
-        dplyr::select(
-            GROUP = group_column,
-            "Stromal_Fraction", 
-            "leukocyte_fraction") %>% 
-        tidyr::drop_na() %>%  
-        dplyr::mutate(Tumor_Fraction = 1 - Stromal_Fraction) %>% 
-        magrittr::set_colnames(c(
-            "GROUP", 
-            "Stromal Fraction", 
-            "Leukocyte Fraction", 
-            "Tumor Fraction")) %>% 
-        tidyr::gather(fraction_type, fraction, -GROUP)
-}
-
 # ** Clinical outcomes module ----
 
-build_survival_df <- function(df, group_column, group_options, time_column, k) {
+build_survival_df <- function(df, group_column, group_options, time_column, div_range, k, group_choice, group_subset) {
+  
+    # subset to a smaller group of samples #
+    if (group_choice == 'Study' & group_subset != 'All') {
+
+      df <- df  %>% dplyr::filter(Study == UQ(group_subset))
+
+    } else if (group_choice == 'Subtype_Immune_Model_Based' & group_subset != 'All') {
+      
+      df <- df %>% dplyr::filter(Subtype_Immune_Model_Based == UQ(group_subset))
+    
+    } else if (group_choice == 'Subtype_Curated_Malta_Noushmehr_et_al' & group_subset != 'All') {
+      
+      df <- df %>% dplyr::filter(Subtype_Curated_Malta_Noushmehr_et_al == UQ(group_subset))
+      
+    }
+  
+  
     get_groups <- function(df, group_column, k) {
-        if (group_column %in% group_options) {
-            # then we don't need to produce catagories.
+      
+        if (group_column %in% group_options) { # then we don't need to produce catagories.
+            
             as.character(df[[group_column]])
         }
         else {
+          
+          if (div_range == 'median') {
+            
+            as.character( ifelse (df[[group_column]] < median(df[[group_column]], na.rm=T), 
+                                  yes='lower half', no='upper half') )
+            
+          } else {
+          
             as.character(cut(df[[group_column]], k, ordered_result = T))
+          }
+          
         }
+      
     }
     
     # get the vectors associated with each term
@@ -370,10 +481,11 @@ build_survival_df <- function(df, group_column, group_options, time_column, k) {
     }
     
     data.frame(
-        status = pluck(df, status_column), 
-        time = pluck(df, time_column),
+        status = purrr::pluck(df, status_column), 
+        time = purrr::pluck(df, time_column),
+        group = groups,
         variable = groups, 
-        measure = pluck(df, group_column)
+        measure = purrr::pluck(df, group_column)
     ) %>% 
         na.omit()
 }
@@ -388,7 +500,7 @@ get_concordance <- function(
                   timevar = time_column,
                   statusvar = status_column),
         mat <- df %>% 
-            select(valuevar, timevar, statusvar) %>% 
+            dplyr::select(valuevar, timevar, statusvar) %>% 
             .[complete.cases(.),] %>% 
             as.data.frame() %>% 
             as.matrix()
@@ -401,75 +513,121 @@ get_concordance_by_group <- function(
     df, value_columns, time_column, status_column
 ) {
     value_columns %>% 
-        map(function(f) get_concordance(df, f, time_column, status_column)) %>% 
-        set_names(value_columns)
+        purrr::map(function(f) get_concordance(df, f, time_column, status_column)) %>% 
+        magrittr::set_names(value_columns)
 }
 
 build_ci_mat <- function(
     df, group_column, value_columns, time_column, status_column
 ) {
-    value_names <- map(value_columns, get_variable_display_name)
-    group_v <- extract2(df, group_column) 
+    
+    value_names <- purrr::map(value_columns, get_variable_display_name)
+    group_v <- magrittr::extract2(df, group_column) 
     groups <- group_v %>% 
         unique() %>% 
-        discard(is.na(.)) %>% 
+        purrr::discard(is.na(.)) %>% 
         sort()
     
     df %>% 
         split(group_v) %>% 
-        map(get_concordance_by_group, value_columns, time_column, status_column) %>% 
+        purrr::map(get_concordance_by_group, value_columns, time_column, status_column) %>% 
         unlist() %>% 
         unname() %>% 
-        matrix(ncol = length(groups)) %>% 
-        set_rownames(value_names) %>% 
-        set_colnames(groups)
+        matrix(ncol = length(groups)) %>%
+        magrittr::set_rownames(value_names) %>% 
+        magrittr::set_colnames(groups)
 }
 
-# ** Immune interface module ----
 
-build_immuneinterface_df <- function(
-    build_df, sample_group, diversity_vars
-) {
-    df %>%
-        select(sample_group, diversity_vars) %>%
-        .[complete.cases(.), ] %>%
-        gather(metric, diversity, -1) %>%
-        separate(metric, into = c("receptor", "metric"), sep = "_")
-}
 
-ztransform_df <- function(df) {
-    df %>%
-        group_by(receptor, metric) %>%
-        mutate(
-            div_mean = mean(diversity),
-            div_sd = sd(diversity)
-        ) %>%
-        ungroup() %>%
-        mutate(diversity = (diversity - div_mean) / div_sd)
-}
-
-# ** Immunomodulators module ----
-
-build_im_expr_plot_df <- function(df, filter_value, group_option) {
-    panimmune_data$im_expr_df %>%
-        dplyr::filter(Symbol == filter_value) %>%
-        dplyr::left_join(df) %>%
-        dplyr::mutate(log_count = log10(normalized_count + 1)) %>%
-        build_violinplot_df(group_option, "log_count")
-}
 
 # ** Driver correlation module ----
+
+##
+##  Builds data frame used for the regression 
+##
+
+build_mutation_df <- function(df, response_var, group_column, group_options){
+    fmx_df.intermediate <- build_intermediate_fmx_df_for_groups(
+        df,
+        response_var,
+        group_column,
+        group_options)
+    driver_mutation_df.long <-
+        panimmune_data$driver_mutation_df %>%
+        tidyr::gather(key = "mutation", value = "value", -c("ParticipantBarcode")) %>%
+        dplyr::mutate(value = forcats::fct_relevel(value, "Wt", "Mut"))
+    mutation_df <- build_driver_mutation_df(driver_mutation_df.long, fmx_df.intermediate)
+    if(nrow(mutation_df) == 0){
+        mutation_df <- NULL
+    } else {
+        mutation_df <- label_driver_mutation_df(mutation_df, group_column)
+    }
+    return(mutation_df)
+}
+
+
+#
+# join driver data frame and fmx (feature matrix) data frame 
+#
+build_driver_mutation_df <- function(driver_df, fmx_df) {
+    driver_df %>%
+        dplyr::left_join(fmx_df, by="ParticipantBarcode") %>% 
+        tidyr::drop_na()
+}
+
+label_driver_mutation_df <- function(df, group_column){
+    df_labeled <- wrapr::let(
+        c(gc = group_column),
+        dplyr::mutate(df, mutation_group = stringr::str_c(mutation, gc, sep = ".")))
+}
+
+## filter mutation data frame to mutations meeting a minimum overall count_threshold within a group
+## count_threshold is the minimum mutation count required
+## In rare cases, combinations where all samples, or all but one samples is mutations occur
+## These are removed as well as significance testing cannot be performed
+
+#
+# For each combination of mutation and group, compile total count and count mutated
+#
+build_mutation_group_summary_df <- function(df){
+    df %>%
+        dplyr::mutate(value = ifelse(value == "Wt", 0, 1)) %>% 
+        dplyr::select(mutation_group, value) %>%
+        dplyr::group_by(mutation_group) %>%
+        dplyr::summarise(
+            mutation_count = sum(value),
+            cat_count = dplyr::n()) %>%
+        dplyr::ungroup()
+}
+
+#
+# identify which mutation groups combination have sufficient data for test
+#
+# uses a universal minimum count. Better might be to use percent of group size as a minimum.
+get_testable_mutation_groups <- function(df, count_threshold = 4){
+    df %>%
+        dplyr::filter(mutation_count >= count_threshold) %>% # requirement for a minimal mutation count
+        dplyr::filter(mutation_count < cat_count - 1) %>% # cannot test if all mutated or all but one mutated
+        magrittr::use_series(mutation_group)
+}
+
+get_untestable_mutation_groups <- function(df, testable_mutation_groups){
+    df %>% 
+        dplyr::filter(!mutation_group %in% testable_mutation_groups) %>% 
+        magrittr::use_series(mutation_group)
+}
 
 ##
 ## restrict fmx_df to rows with available group values and a single selected value column
 ##
 build_intermediate_fmx_df_for_groups <- function(
-  df, value_column, group_column, group_options, id_column = "ParticipantBarcode" ) {
-  wrapr::let(
-    c(GROUP = group_column),
-    result_df <- df %>% 
-      dplyr::select(id_column, GROUP, value_column) %>% 
-      dplyr::filter(GROUP %in% group_options)) %>% .[complete.cases(.),]    
+    df, value_column, group_column, group_options, id_column = "ParticipantBarcode" ) {
+    wrapr::let(
+        c(GROUP = group_column),
+        result_df <- df %>% 
+            dplyr::select(id_column, GROUP, value_column) %>% 
+            dplyr::filter(GROUP %in% group_options)) %>% .[complete.cases(.),]    
 }
 
 ##
@@ -479,73 +637,43 @@ build_intermediate_fmx_df_for_groups <- function(
 build_filtered_mutation_df_pancan <- function(df,count_threshold=80){   # select greater than 1% mutation for now
   binvec <- c(0,1) ; names(binvec) <- c("Wt","Mut")
   df.boole <- df  %>% 
-    mutate(boole=as.vector(binvec[.$value])) %>% select(-value) %>% rename(value=boole)
-  driver_mutation.mutcount <-  df.boole %>% select(-ParticipantBarcode) %>% 
+    mutate(boole=as.vector(binvec[.$value])) %>% 
+    dplyr::select(-value) %>% 
+    dplyr::rename(value=boole)
+  driver_mutation.mutcount <-  df.boole %>% 
+    dplyr::select(-ParticipantBarcode) %>% 
     dplyr::group_by(mutation) %>%  dplyr::summarise(mutation_count = sum(value)) %>% ungroup()
-  drivers.keep <- driver_mutation.mutcount %>% filter(mutation_count > count_threshold)  %>% .$mutation
-  df %>% filter(mutation %in% drivers.keep)
+  drivers.keep <- driver_mutation.mutcount %>% 
+    dplyr::filter(mutation_count > count_threshold) %>%
+    .$mutation
+  df %>% dplyr::filter(mutation %in% drivers.keep)
 }
 
-## filter mutation data frame to mutations meeting a minimum overall count_threshold within a group
-## count_threshold is the minimum mutation count required
-## In rare cases, combinations where all samples, or all but one samples is mutations occur
-## These are removed as well as significance testing cannot be performed
 
-build_filtered_mutation_df_per_group <- function(df,group_column,count_threshold){   
-  df <- df %>% .[complete.cases(.),]
-  df_labeled <- wrapr::let(c(gc=group_column),df %>% mutate(combo=paste(mutation,gc,sep=".")))
-  binvec <- c(0,1) ; names(binvec) <- c("Wt","Mut")
-  df_boole <- df_labeled  %>% 
-    mutate(boole=as.vector(binvec[.$value])) %>% select(-value) %>% rename(value=boole)
-  driver_mutation_mutcount <- wrapr::let(c(gc=group_column),
-                                         df_boole %>% select(combo,value) %>% 
-                                           dplyr::group_by(combo) %>%  dplyr::summarise(mutation_count = sum(value)) %>% ungroup()
-  )
-  category_count <- wrapr::let(c(gc=group_column),
-                                         df_boole %>% select(combo,value) %>% 
-                                           dplyr::group_by(combo) %>%  dplyr::summarise(cat_count = length(value)) %>% ungroup()
-  )
-  combo_keep <- driver_mutation_mutcount %>% filter(mutation_count > count_threshold) %>% .$combo
-  ## In rare cases, all samples in a category are mutated, or all but one are mutated, and stat differences test not possible
-  all_mutated <- driver_mutation_mutcount$combo[which(driver_mutation_mutcount$mutation_count==category_count$cat_count)]
-  all_but_one_mutated <- driver_mutation_mutcount$combo[which(driver_mutation_mutcount$mutation_count==(category_count$cat_count-1))]
-  ## the above return character(0) in nearly all instances
-  combo_toss = character(length=0)
-  if ( length(all_mutated) > 0 ) {
-    cat("Warning: Removing from statistical test as all cases are mutated: ",all_mutated,"\n")
-    combo_toss = c(combo_toss,all_mutated)
-  } 
-  if ( length(all_but_one_mutated) > 0 ) {
-    cat("Warning: Removing from statistical test as all but one case is mutated:",all_but_one_mutated,"\n")
-    combo_toss = c(combo_toss,all_but_one_mutated)
-  } 
-  df_labeled %>% filter(combo %in% combo_keep & !(combo %in% combo_toss)) 
-}
 
-#
-# join driver data frame and fmx (feature matrix) data frame
-#
-build_driver_mutation_df <- function(driver_df,fmx_df) {
-  driver_df %>%
-    dplyr::left_join(fmx_df,by="ParticipantBarcode")
-}
+
+
 
 ##
 ## Compute p values for each 'combo' of driver mutation and cohort
 ##
 compute_pvals_per_combo <- function(df, value_column, group_column){
-  result_vec <- wrapr::let(
-    c(response_var=value_column,gc=group_column),
-    df %>% # mutate(combo=paste(mutation,gc,sep=".")) %>%
-      split(.$combo) %>% 
-      map( ~ lm(response_var ~ value, data=.)) %>%
-      map(summary) %>%
-      map("coefficients") %>% 
-      map(~. ["valueMut","Pr(>|t|)"]) %>%
-##      map(magrittr::extract("valueMut", "Pr(>|t|)")) %>% ## also works
-      unlist()
-  )
-  data.frame(combo=as.vector(names(result_vec)),neglog_pval=as.vector(-log10(result_vec)),stringsAsFactors = FALSE)
+    result_vec <- wrapr::let(
+        c(response_var=value_column,
+            gc=group_column),
+        df %>% 
+            split(.$mutation_group) %>% 
+            purrr::map( ~ lm(response_var ~ value, data=.)) %>%
+            purrr::map(summary) %>%
+            purrr::map("coefficients") %>% 
+            purrr::map(~. ["valueMut","Pr(>|t|)"]) %>%
+            unlist()
+    )
+    
+    data.frame(
+        mutation_group=as.vector(names(result_vec)),
+        neglog_pval=as.vector(-log10(result_vec)),
+        stringsAsFactors = FALSE)
 }
 
 ##
@@ -553,34 +681,138 @@ compute_pvals_per_combo <- function(df, value_column, group_column){
 ##
 
 compute_effect_size_per_combo <- function(df, value_column, group_column){
-  wrapr::let(
-    c(response_var=value_column,gc=group_column),
-    df_means <- df %>% 
-      group_by(combo,value) %>%
-      summarize(mean_response=mean(response_var)) %>%
-      spread(value,mean_response) %>%
-      mutate(effect_size=-log10(Wt/Mut)) %>%
-      select(-c(Wt,Mut)) %>% as.data.frame
-  )
+    wrapr::let(
+        c(response_var=value_column,gc=group_column),
+        df_means <- df %>% 
+            dplyr::group_by(mutation_group,value) %>%
+            dplyr::summarize(mean_response=mean(response_var)) %>%
+            tidyr::spread(value,mean_response) %>%
+            dplyr::mutate(effect_size=-log10(Wt/Mut)) %>%
+            dplyr::select(-c(Wt,Mut)) %>% 
+            as.data.frame
+    )
 }
 
-##
-##  Builds data frame used for the regression 
-##
-build_df_for_driver_regression <- function(df,response_var,group_column,group_options,count_threshold=5){
-  fmx_df.intermediate <- build_intermediate_fmx_df_for_groups(df,response_var,group_column,group_options)
-  driver_mutation_df.long <- panimmune_data$driver_mutation_df %>%  tidyr::gather(key = "mutation", value = "value", -c("ParticipantBarcode"))
-  driver_mutation_df.long$value <- fct_relevel(driver_mutation_df.long$value,"Wt","Mut") ## For Mut to be 'higher' than Wt in factor analysis
-  df_mid <- build_driver_mutation_df(driver_mutation_df.long,fmx_df.intermediate)
-  build_filtered_mutation_df_per_group(df_mid,group_column,count_threshold) 
-}
+
 
 
 ##
 ## Compute p-value and effect size for each combo and combine to single data frame
 ##
 compute_driver_associations <- function(df_for_regression,response_var,group_column,group_options){
-  res1 <- compute_pvals_per_combo(df_for_regression,response_var, group_column)
-  res2 <- compute_effect_size_per_combo(df_for_regression,response_var, group_column)
-  inner_join(res1,res2,by="combo") ## returns df with combo,neglog_pval,effect_size
+    res1 <- compute_pvals_per_combo(df_for_regression,response_var, group_column)
+    res2 <- compute_effect_size_per_combo(df_for_regression,response_var, group_column)
+    dplyr::inner_join(res1,res2,by="mutation_group") ## returns df with combo,neglog_pval,effect_size
 }
+
+###############################################################################
+# Functions below this line do not have tests yet, newly written functions 
+###############################################################################
+
+
+
+###############################################################################
+# Functions below this line have been deprecated
+###############################################################################
+
+# ** IO target module ----
+
+# build_io_target_expr_plot_df <- function(df, filter_value, group_option) { # added Oct 24, 2018
+#     result_df <- panimmune_data$io_target_expr_df %>%
+#         dplyr::filter(Symbol == filter_value) %>%
+#         dplyr::left_join(df) %>%
+#         dplyr::mutate(log_count = log10(normalized_count + 1)) %>%
+#         dplyr::select(x = group_option, y = log_count) %>% 
+#         tidyr::drop_na()
+# }
+
+
+# ** Immune interface module ----
+
+# build_immuneinterface_df <- function(
+#     build_df, sample_group, diversity_vars
+# ) {
+#     df %>%
+#         select(sample_group, diversity_vars) %>%
+#         .[complete.cases(.), ] %>%
+#         gather(metric, diversity, -1) %>%
+#         separate(metric, into = c("receptor", "metric"), sep = "_")
+# }
+# 
+# ztransform_df <- function(df) {
+#     df %>%
+#         group_by(receptor, metric) %>%
+#         mutate(
+#             div_mean = mean(diversity),
+#             div_sd = sd(diversity)
+#         ) %>%
+#         ungroup() %>%
+#         mutate(diversity = (diversity - div_mean) / div_sd)
+# }
+
+# immunomodulator functions ---------------------------------------------------
+
+# build_immunomodulator_expression_df <- function(
+#     group_df, filter_value, group_col,
+#     expression_df = panimmune_data$im_expr_df,
+#     expression_filter_col = "Symbol",
+#     expression_col = "normalized_count",
+#     id_col = "ParticipantBarcode"){
+#     
+#     expression_df <- filter_immunomodulator_expression_df(
+#         expression_df, 
+#         id_col, 
+#         expression_filter_col, 
+#         expression_col, 
+#         filter_value)
+#     
+#     group_df <- group_df %>% 
+#         get_complete_df_by_columns(c(group_col, id_col)) %>% 
+#         select(GROUP = group_col, ID = id_col)
+#     
+#     
+#     result_df <- 
+#         dplyr::inner_join(group_df, expression_df, by = "ID") %>%
+#         dplyr::select(GROUP, LOG_COUNT)
+#     
+# }
+# 
+# filter_immunomodulator_expression_df <- function(
+#     df, id_col, filter_col, expression_col, filter_value){
+#     
+#     df %>% 
+#         get_complete_df_by_columns(c(
+#             id_col, 
+#             filter_col, 
+#             expression_col)) %>% 
+#         dplyr::select(
+#             FILTER = filter_col, 
+#             COUNT = expression_col,
+#             ID = id_col) %>% 
+#         dplyr::filter(FILTER == filter_value) %>% 
+#         dplyr::mutate(LOG_COUNT = log10(COUNT + 1)) %>% 
+#         dplyr::select(LOG_COUNT, ID)
+# }
+# 
+# 
+# build_immunomodulator_violin_plot_df <- function(df){
+#     df %>%
+#         dplyr::select(x = GROUP, y = LOG_COUNT) %>% 
+#         get_complete_df_by_columns(c("x", "y"))
+# }
+# 
+# build_immunomodulator_histogram_df <- function(df, selected_group){
+#     df %>%
+#         filter(GROUP == selected_group) %>% 
+#         select(x = LOG_COUNT) %>% 
+#         tidyr::drop_na()
+# }
+
+
+# immunefeatures -------------------------------------------
+
+# build_immunefeatures_violin_plot_df <- function(df, x_col, y_col){
+#   df %>%
+#     dplyr::select(x = x_col, y = y_col) %>%
+#     tidyr::drop_na()
+# }

@@ -17,9 +17,9 @@ create_barplot <- function(
     if(is.na(label_col)) label_col <- x_col
     
     if (is.null(bar_colors)) {
-        bar_colors <- viridis::viridis_pal(option = "D")(n_distinct(df[[color_col]]))
+        bar_colors <- viridis::viridis_pal(option = "D")(dplyr::n_distinct(df[[color_col]]))
     }
-    let(
+    wrapr::let(
         alias = c(
             X = x_col, 
             Y = y_col, 

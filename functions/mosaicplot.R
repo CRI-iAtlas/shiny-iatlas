@@ -7,9 +7,9 @@ create_mosaicplot <- function(
 
     plot <- df %>%
         ggplot() +
-        ggmosaic::geom_mosaic(aes_string(x = str_c("product(y, x)") ,fill = "y")) +
-        scale_y_productlist(expand = c(0, 0)) + 
-        scale_x_productlist(expand = c(0, 0)) + 
+        ggmosaic::geom_mosaic(aes_string(x = stringr::str_c("ggmosaic::product(y, x)") ,fill = "y")) +
+        ggmosaic::scale_y_productlist(expand = c(0, 0)) + 
+        ggmosaic::scale_x_productlist(expand = c(0, 0)) + 
         labs(title) +
         xlab(xlab) +
         ylab(ylab) +
@@ -20,7 +20,7 @@ create_mosaicplot <- function(
             axis.text.y = element_blank(),
             axis.ticks.y = element_blank()
         )
-    if (!is.na(fill_colors)) {
+    if (!is.na(fill_colors[[1]])) {
         plot <- plot + scale_fill_manual(values = fill_colors)
     }
     p <- plotly_build(plot) %>%

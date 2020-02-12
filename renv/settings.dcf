@@ -1,0 +1,5 @@
+external.libraries:
+ignored.packages:
+snapshot.type: simple
+use.cache: TRUE
+vcs.ignore.library: TRUE

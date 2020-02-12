@@ -43,23 +43,32 @@ groupsoverview_UI <- function(id) {
                 )
             )
         ),
-        sectionBox(
+        data_table_module_UI(
+            ns("sg_table"),
             title = "Group Key",
-            messageBox(
-                width = 12,
-                p("This displays attributes and annotations of your choice of groups.")  
-            ),
-            fluidRow(
-                tableBox(
-                    width = 12,
-                    title = textOutput(ns("sample_group_name")),
-                    div(style = "overflow-x: scroll",
-                        DT::dataTableOutput(ns("sample_group_table")) %>% 
-                            shinycssloaders::withSpinner()
-                    )
-                )
-            )
+            message_html = p(stringr::str_c(
+                "This displays attributes and annotations of your choice of",
+                "groups.",
+                sep = " "
+            ))
         ),
+        # sectionBox(
+        #     title = "Group Key",
+        #     messageBox(
+        #         width = 12,
+        #         p("This displays attributes and annotations of your choice of groups.")  
+        #     ),
+        #     fluidRow(
+        #         tableBox(
+        #             width = 12,
+        #             title = textOutput(ns("sample_group_name")),
+        #             div(style = "overflow-x: scroll",
+        #                 DT::dataTableOutput(ns("sample_group_table")) %>% 
+        #                     shinycssloaders::withSpinner()
+        #             )
+        #         )
+        #     )
+        # ),
         sectionBox(
             title = "Group Overlap",
             messageBox(
@@ -88,33 +97,44 @@ groupsoverview_UI <- function(id) {
     )
 }
 
-groupsoverview <- function(
-    input, output, session, group_display_choice, group_internal_choice, 
-    subset_df, plot_colors, group_options, width) {
+
     
+groupsoverview <- function(
+    input, 
+    output, 
+    session, 
+    group_display_choice, 
+    group_internal_choice,
+    sample_group_df,
+    subset_df, 
+    plot_colors, 
+    group_options, 
+    width
+){
     ns <- session$ns
     
     # reactives ----
     
     user_group_df <- reactive({
-        req(input$file1)
-        tryCatch(
-            {
-                df <- readr::read_csv(input$file1$datapath)
-            },
-            error = function(e) {
-                stop(safeError(e))
-            }
-        )
-        return(df)
+        if(is.null(input$file1$datapath)){
+            return(NA)
+        }
+        result <- try(readr::read_csv(input$file1$datapath))
+        if(is.data.frame(result)){
+            return(result)  
+        } else {
+            return(NA)
+        }
     })
     
+        
     # ui ----
     
     
     
     output$mosaic_group_select <- renderUI({
-        choices <- setdiff(group_options(), group_display_choice())
+        choices <- setdiff(group_options(), 
+                           group_display_choice())
         radioButtons(ns("sample_mosaic_group"), 
                      "Select second sample group to view overlap:",
                      choices = choices,
@@ -123,19 +143,25 @@ groupsoverview <- function(
     })
     
     output$study_subset_select <- renderUI({
-        req(input$sample_mosaic_group, cancelOutput = TRUE)
+        req(input$sample_mosaic_group, panimmune_data$sample_group_df, cancelOutput = TRUE)
         if (input$sample_mosaic_group == "TCGA Subtype") {
             choices <- panimmune_data$sample_group_df %>% 
-                filter(sample_group == "tcga_subtype", !is.na(FeatureValue)) %>% 
-                distinct(`TCGA Studies`) %>% 
-                extract2("TCGA Studies")
+                dplyr::filter(sample_group == "Subtype_Curated_Malta_Noushmehr_et_al") %>% 
+                dplyr::select("FeatureDisplayName", "TCGA Studies") %>% 
+                dplyr::distinct() %>% 
+                dplyr::arrange(`TCGA Studies`) %>%
+                tibble::deframe()
+            
+            
             
             optionsBox(
                 width = 4,
                 selectInput(ns("study_subset_selection"), 
                             "Choose study subset:",
                             choices = choices,
-                            selected = NULL))}
+                            selected = names(choices[1])))
+            
+            }
     })
     
     # other ----
@@ -151,38 +177,53 @@ groupsoverview <- function(
         paste(group_display_choice(), "Groups")
     })
     
-    output$user_group_df <- DT::renderDataTable(user_group_df())
-    
-    output$sample_group_table <- DT::renderDT({
+    output$user_group_df <- DT::renderDataTable({
         
-        key_df <- build_sample_group_key_df(
-            group_df = subset_df(),
-            group_column = group_internal_choice(),
-            color_vector = plot_colors())
-        
-        dt <- datatable(
-            key_df,
-            rownames = FALSE,
-            options = list(
-                dom = "tip",
-                pageLength = 10,
-                columnDefs = list(
-                    list(width = '50px',
-                         targets = c(1)))))
-        
-        formatStyle(
-            dt,
-            "Plot Color",
-            backgroundColor = styleEqual(
-                plot_colors(), 
-                plot_colors()))
+        req(!is.na(user_group_df()), cancelOutput = T)
+        user_group_df()
     })
+        
+    
+    table_df <- reactive({
+        
+        req(subset_df(), 
+            group_internal_choice(),
+            sample_group_df(),
+            plot_colors(),
+            cancelOutput = T)
+        
+        build_sample_group_key_df(
+                group_df = subset_df(),
+                group_column = group_internal_choice(),
+                feature_df = sample_group_df())
+    })
+    
+    callModule(
+        data_table_module, 
+        "sg_table", 
+        table_df,
+        options = list(
+            dom = "tip",
+            pageLength = 10,
+            columnDefs = list(
+                list(width = '50px',
+                     targets = c(1)))),
+        color = T,
+        color_column = "Plot Color",
+        colors = plot_colors())
     
     # plots ----
     
     output$mosaicPlot <- renderPlotly({
         
-        req(input$sample_mosaic_group, input$study_subset_selection,
+        req(subset_df(),
+            group_display_choice(),
+            group_internal_choice(),
+            input$sample_mosaic_group,
+            input$sample_mosaic_group != group_display_choice(),
+            !is.null(user_group_df()),
+            sample_group_df(),
+            plot_colors(),
             cancelOutput = T)
         
         display_x  <- input$sample_mosaic_group
@@ -190,25 +231,21 @@ groupsoverview <- function(
         internal_x <- get_group_internal_name(display_x)
         internal_y <- group_internal_choice()
         
-##        View(subset_df())
-        # cat("display_x",display_x,"\n")
-        # cat("display_y",display_y,"\n")
-        # cat("internal_x",internal_x,"\n")
-        # cat("internal_y",internal_y,"\n")
-        
         mosaic_df <- build_group_group_mosaic_plot_df(
             subset_df(),
-            x_column = internal_x,
-            y_column = internal_y,
-            study_option = input$study_subset_selection,
-            user_group_df()) 
+            internal_x,
+            internal_y,
+            user_group_df(),
+            sample_group_df(),
+            input$study_subset_selection) 
         
-        # View(mosaic_df)
+        validate(
+            need(nrow(mosaic_df) > 0, "Group choices have no samples in common"))
         
         create_mosaicplot(
             mosaic_df,
-            title = str_c(display_y, "by", display_x, sep = " "),
-            fill_colors = decide_plot_colors(internal_y)) 
+            title = stringr::str_c(display_y, "by", display_x, sep = " "),
+            fill_colors = plot_colors()) 
     })
     
     return(user_group_df)

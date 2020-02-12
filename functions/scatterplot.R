@@ -19,7 +19,7 @@ create_scatterplot <- function(
     if(is.na(label_col)) label_col <- x_col
     
     p <- 
-        let(
+        wrapr::let(
             alias = c(
                 X = x_col,
                 Y = y_col,
