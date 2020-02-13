@@ -3,10 +3,10 @@ T_cell	T_cells_CD8.Aggregate2	fmx_df	YlOrBr	0.9
 T_cell_nucleus	T_cells_CD8.Aggregate2	fmx_df	YlOrBr	1
 Dendritic_cell	Dendritic_cells.Aggregate1	fmx_df	Purples	0.9
 Dendritic_cell_nucleus	Dendritic_cells.Aggregate1	fmx_df	Purples	1
-Tissue_macrophage	Macrophage.Aggregate2	fmx_df	YlGn	0.9
-Tissue_macrophage_nucleus	Macrophage.Aggregate2	fmx_df	YlGn	1
-Tumor	Tumor_cell	fmx_df	Blues	0.9
-Tumor_nucleus	Tumor_cell	fmx_df	Blues	1
+Tissue_macrophage	Macrophage.Aggregate2	fmx_df	Blues	0.9
+Tissue_macrophage_nucleus	Macrophage.Aggregate2	fmx_df	Blues	1
+Tumor	Tumor_cell	fmx_df	YlOrRd	0.9
+Tumor_nucleus	Tumor_cell	fmx_df	YlOrRd	1
 ICOS	ICOS	im_expr_df	Greens	1
 PD-L2	PDCD1LG2	im_expr_df	Greens	1
 PD-L1	CD274	im_expr_df	Greens	1
