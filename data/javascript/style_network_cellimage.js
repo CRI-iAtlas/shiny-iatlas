@@ -146,7 +146,7 @@
       "height" : 60.0
     }
   }, {
-    "selector" : "node[id = 'Tumor_cell'][UpBinRatio >= 0.875][UpBinRatio <= 1]",
+    "selector" : "node[id = 'Macrophage'][UpBinRatio >= 0.875][UpBinRatio <= 1]",
     "css" : {
       "background-color" : "mapData(UpBinRatio,0.875,1,rgb(8,81,156),rgb(8,48,107))",
       "color" : "rgb(230,230,230)",
@@ -157,7 +157,7 @@
       "height" : 60.0
     }
   }, {
-    "selector" : "node[id = 'Tumor_cell'][UpBinRatio >= 0.75][UpBinRatio < 0.875]",
+    "selector" : "node[id = 'Macrophage'][UpBinRatio >= 0.75][UpBinRatio < 0.875]",
     "css" : {
       "background-color" : "mapData(UpBinRatio,0.75,0.875,rgb(33,113,181),rgb(8,81,156))",
       "shape" : "ellipse",
@@ -167,7 +167,7 @@
       "height" : 60.0
     }
   }, {
-    "selector" : "node[id = 'Tumor_cell'][UpBinRatio >= 0.625][UpBinRatio < 0.75]",
+    "selector" : "node[id = 'Macrophage'][UpBinRatio >= 0.625][UpBinRatio < 0.75]",
     "css" : {
       "background-color" : "mapData(UpBinRatio,0.625,0.75,rgb(66,146,198),rgb(33,113,181))",
       "shape" : "ellipse",
@@ -177,7 +177,7 @@
       "height" : 60.0
     }
   }, {
-    "selector" : "node[id = 'Tumor_cell'][UpBinRatio >= 0.5][UpBinRatio < 0.625]",
+    "selector" : "node[id = 'Macrophage'][UpBinRatio >= 0.5][UpBinRatio < 0.625]",
     "css" : {
       "background-color" : "mapData(UpBinRatio,0.5,0.625,rgb(107,174,214),rgb(66,146,198))",
       "shape" : "ellipse",
@@ -187,7 +187,7 @@
       "height" : 60.0
     }
   }, {
-    "selector" : "node[id = 'Tumor_cell'][UpBinRatio >= 0.375][UpBinRatio < 0.5]",
+    "selector" : "node[id = 'Macrophage'][UpBinRatio >= 0.375][UpBinRatio < 0.5]",
     "css" : {
       "background-color" : "mapData(UpBinRatio,0.375,0.5,rgb(158,202,225),rgb(107,174,214))",
       "shape" : "ellipse",
@@ -197,7 +197,7 @@
       "height" : 60.0
     }
   }, {
-    "selector" : "node[id = 'Tumor_cell'][UpBinRatio >= 0.25][UpBinRatio < 0.375]",
+    "selector" : "node[id = 'Macrophage'][UpBinRatio >= 0.25][UpBinRatio < 0.375]",
     "css" : {
       "background-color" : "mapData(UpBinRatio,0.25,0.375,rgb(198,219,239),rgb(158,202,225))",
       "shape" : "ellipse",
@@ -207,7 +207,7 @@
       "height" : 60.0
     }
   }, {
-    "selector" : "node[id = 'Tumor_cell'][UpBinRatio >= 0.125][UpBinRatio < 0.25]",
+    "selector" : "node[id = 'Macrophage'][UpBinRatio >= 0.125][UpBinRatio < 0.25]",
     "css" : {
       "background-color" : "mapData(UpBinRatio,0.125,0.25,rgb(222,235,247),rgb(198,219,239))",
       "shape" : "ellipse",
@@ -217,7 +217,7 @@
       "height" : 60.0
     }
   }, {
-    "selector" : "node[id = 'Tumor_cell'][UpBinRatio >= 0][UpBinRatio < 0.125]",
+    "selector" : "node[id = 'Macrophage'][UpBinRatio >= 0][UpBinRatio < 0.125]",
     "css" : {
       "background-color" : "mapData(UpBinRatio,0,0.125,rgb(247,251,255),rgb(222,235,247))",
       "shape" : "ellipse",
@@ -308,9 +308,9 @@
       "height" : 60.0
     }
   }, {
-    "selector" : "node[id = 'Macrophage'][UpBinRatio >= 0.875][UpBinRatio <= 1]",
+    "selector" : "node[id = 'Tumor_cell'][UpBinRatio >= 0.875][UpBinRatio <= 1]",
     "css" : {
-      "background-color" : "mapData(UpBinRatio,0.875,1,rgb(0,104,55),rgb(0,69,41))",
+      "background-color" : "mapData(UpBinRatio,0.875,1,rgb(189,0,38),rgb(128,0,38))",
       "color" : "rgb(230,230,230)",
       "shape" : "ellipse",
       "text-max-width" : 90.0,
@@ -319,9 +319,9 @@
       "height" : 60.0
     }
   }, {
-    "selector" : "node[id = 'Macrophage'][UpBinRatio >= 0.75][UpBinRatio < 0.875]",
+    "selector" : "node[id = 'Tumor_cell'][UpBinRatio >= 0.75][UpBinRatio < 0.875]",
     "css" : {
-      "background-color" : "mapData(UpBinRatio,0.75,0.875,rgb(35,132,67),rgb(0,104,55))",
+      "background-color" : "mapData(UpBinRatio,0.75,0.875,rgb(227,26,28),rgb(189,0,38))",
       "shape" : "ellipse",
       "text-max-width" : 90.0,
       "text-wrap" : "wrap",
@@ -329,9 +329,9 @@
       "height" : 60.0
     }
   }, {
-    "selector" : "node[id = 'Macrophage'][UpBinRatio >= 0.625][UpBinRatio < 0.75]",
+    "selector" : "node[id = 'Tumor_cell'][UpBinRatio >= 0.625][UpBinRatio < 0.75]",
     "css" : {
-      "background-color" : "mapData(UpBinRatio,0.625,0.75,rgb(65,171,93),rgb(35,132,67))",
+      "background-color" : "mapData(UpBinRatio,0.625,0.75,rgb(252,78,42),rgb(227,26,28))",
       "shape" : "ellipse",
       "text-max-width" : 90.0,
       "text-wrap" : "wrap",
@@ -339,9 +339,9 @@
       "height" : 60.0
     }
   }, {
-    "selector" : "node[id = 'Macrophage'][UpBinRatio >= 0.5][UpBinRatio < 0.625]",
+    "selector" : "node[id = 'Tumor_cell'][UpBinRatio >= 0.5][UpBinRatio < 0.625]",
     "css" : {
-      "background-color" : "mapData(UpBinRatio,0.5,0.625,rgb(120,198,121),rgb(65,171,93))",
+      "background-color" : "mapData(UpBinRatio,0.5,0.625,rgb(253,141,60),rgb(252,78,42))",
       "shape" : "ellipse",
       "text-max-width" : 90.0,
       "text-wrap" : "wrap",
@@ -349,9 +349,9 @@
       "height" : 60.0
     }
   }, {
-    "selector" : "node[id = 'Macrophage'][UpBinRatio >= 0.375][UpBinRatio < 0.5]",
+    "selector" : "node[id = 'Tumor_cell'][UpBinRatio >= 0.375][UpBinRatio < 0.5]",
     "css" : {
-      "background-color" : "mapData(UpBinRatio,0.375,0.5,rgb(173,221,142),rgb(120,198,121))",
+      "background-color" : "mapData(UpBinRatio,0.375,0.5,rgb(254,178,76),rgb(253,141,60))",
       "shape" : "ellipse",
      "text-max-width" : 90.0,
       "text-wrap" : "wrap",
@@ -359,9 +359,9 @@
       "height" : 60.0
     }
   }, {
-    "selector" : "node[id = 'Macrophage'][UpBinRatio >= 0.25][UpBinRatio < 0.375]",
+    "selector" : "node[id = 'Tumor_cell'][UpBinRatio >= 0.25][UpBinRatio < 0.375]",
     "css" : {
-      "background-color" : "mapData(UpBinRatio,0.25,0.375,rgb(217,240,163),rgb(173,221,142))",
+      "background-color" : "mapData(UpBinRatio,0.25,0.375,rgb(254,217,118),rgb(254,178,76))",
       "shape" : "ellipse",
       "text-max-width" : 90.0,
       "text-wrap" : "wrap",
@@ -369,9 +369,9 @@
       "height" : 60.0
     }
   }, {
-    "selector" : "node[id = 'Macrophage'][UpBinRatio >= 0.125][UpBinRatio < 0.25]",
+    "selector" : "node[id = 'Tumor_cell'][UpBinRatio >= 0.125][UpBinRatio < 0.25]",
     "css" : {
-      "background-color" : "mapData(UpBinRatio,0.125,0.25,rgb(247,252,185),rgb(217,240,163))",
+      "background-color" : "mapData(UpBinRatio,0.125,0.25,rgb(255,237,160),rgb(254,217,118))",
       "shape" : "ellipse",
       "text-max-width" : 90.0,
       "text-wrap" : "wrap",
@@ -379,9 +379,9 @@
       "height" : 60.0
     }
   }, {
-    "selector" : "node[id = 'Macrophage'][UpBinRatio >= 0][UpBinRatio < 0.125]",
+    "selector" : "node[id = 'Tumor_cell'][UpBinRatio >= 0][UpBinRatio < 0.125]",
     "css" : {
-      "background-color" : "mapData(UpBinRatio,0,0.125,rgb(255,255,229),rgb(247,252,185))",
+      "background-color" : "mapData(UpBinRatio,0,0.125,rgb(255,255,204),rgb(255,237,160))",
       "shape" : "ellipse",
       "text-max-width" : 90.0,
       "text-wrap" : "wrap",

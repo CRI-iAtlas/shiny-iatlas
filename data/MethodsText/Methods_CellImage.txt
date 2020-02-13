@@ -4,4 +4,4 @@
 
 The Tumor Cells estimate is computed as (1 - Stromal Fraction). Immune cell abundance was estimated with CIBERSORT. The T Cells estimate corresponds to the T Cells CD8 estimate from CIBERSORT; Macrophage are the combination of CIBERSORT Macrophages.M0, Macrophages.M1 and Macrophages.M2;  and Dendritic cells are a combination of CIBERSORT resting and activated Dendritic cells.
 
-**Contributors:** David L. Gibbs, Vesteinn Thorsson, Ilya Shmulevich 
+**Contributors:** David L. Gibbs, Vésteinn Thorsson, Ilya Shmulevich 
