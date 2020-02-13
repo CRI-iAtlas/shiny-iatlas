@@ -1,0 +1,7 @@
+**Title:** Cell, ligands and receptor abundance
+
+**Description:** Cellular fractions were binned into tertiles (low, medium, high), as were gene expression values for ligands and receptors, yielding ternary values for all ‘nodes’ in the network. The binning was performed over all TCGA samples. The abundance is then computed as the fraction of samples within a subtype that map to the mid and high value bins for a given cell or gene. 
+
+The Tumor Cells estimate is computed as (1 - Stromal Fraction). Immune cell abundance was estimated with CIBERSORT. The T Cells estimate corresponds to the T Cells CD8 estimate from CIBERSORT; Macrophage are the combination of CIBERSORT Macrophages.M0, Macrophages.M1 and Macrophages.M2;  and Dendritic cells are a combination of CIBERSORT resting and activated Dendritic cells.
+
+**Contributors:** David L. Gibbs, Vesteinn Thorsson, Ilya Shmulevich 

@@ -13,9 +13,6 @@ styleNodes = "data/javascript/style_network_cellimage.js"
 #organize data to display FriendlyName
 friendly <- feather::read_feather("data/network/network_node_label_friendly.feather") %>% as.data.frame()
 rownames(friendly) <- friendly$Obj
-
-#Flag to change the cell image to ABUNDANCE data. If FALSE uses value average
-abundance <- TRUE
   
 cellimage_UI <-function(id){
   
@@ -25,14 +22,14 @@ cellimage_UI <-function(id){
     titleBox("iAtlas Explorer — Cell Image"),
     textBox(
       width = 12,
-      includeMarkdown("data/markdown/cell_image.markdown")
+      p("This module allows you to depict the estimated abundance of tumor cells and representative innate and adaptive cells in the microenvironment, along with the abundance of receptor and ligands mediating interactions between those cells.")
     ),
     
     sectionBox(
       title = "Cell Image Module",
       messageBox(
         width = 12,
-        p("Select a subtype to view mean abundance among samples in that type")
+        includeMarkdown("data/markdown/cell_image.markdown")
       ),
       fluidRow(
 
@@ -66,7 +63,8 @@ cellimage_UI <-function(id){
             width = 6,
             uiOutput(ns("plot2")) %>% shinycssloaders::withSpinner()
           )
-        )
+        ),
+      actionButton(ns("methodButton"), "Click to view method.")
     ) # closes sectionBox
   ) # closes tagList
 }
@@ -187,6 +185,17 @@ cellimage <- function(
     }
   })
   
+  #Button with method information
+  
+    observeEvent(input$methodButton, {
+      showModal(modalDialog(
+        title = "Method",
+        includeMarkdown("data/MethodsText/Methods_CellImage.txt"),
+        easyClose = TRUE,
+        footer = NULL
+      ))
+    })
+  
   
   #Functions to build the plots
   
@@ -213,7 +222,7 @@ cellimage <- function(
       ))
     
     #include nodes position 
-    nodes <- merge(nodes, positions_df, by = "FriendlyName") #%>% dplyr::select(id, UpBinRatio, FriendlyName)
+    nodes <- merge(nodes, positions_df, by = "Variable") #%>% dplyr::select(id, UpBinRatio, FriendlyName)
     
     tbl_nodes <- nodes %>%
       dplyr::filter(Group == subtype_selected) %>% 
