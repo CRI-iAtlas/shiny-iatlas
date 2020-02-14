@@ -1,18 +1,14 @@
 #Loading data for the network visualization
-cell_scaffold <- readr::read_tsv("data/network/scaffold_network_cellimage.tsv") %>% as.data.frame()
-positions <- readr::read_csv("data/network/nodes_position.csv", col_types = c("cii")) %>% as.data.frame()
+cell_scaffold <- feather::read_feather("data/network/scaffold_network_cellimage.feather") %>% as.data.frame()
+positions <- feather::read_feather("data/network/nodes_position_cell_image.feather") %>% as.data.frame()
+friendly <- feather::read_feather("data/network/network_node_label_friendly.feather") %>% as.data.frame()
+rownames(friendly) <- friendly$Obj
 
 net_data = list(
   "immune"= feather::read_feather("data/network/node_cellimage_immune.feather"),
   "subtype"= feather::read_feather("data/network/node_cellimage_subtype.feather"),
   "study"= feather::read_feather("data/network/node_cellimage_study.feather")
 )
-      
-styleNodes = "data/javascript/style_network_cellimage.js"
-
-#organize data to display FriendlyName
-friendly <- feather::read_feather("data/network/network_node_label_friendly.feather") %>% as.data.frame()
-rownames(friendly) <- friendly$Obj
   
 cellimage_UI <-function(id){
   
@@ -64,7 +60,9 @@ cellimage_UI <-function(id){
             uiOutput(ns("plot2")) %>% shinycssloaders::withSpinner()
           )
         ),
-      actionButton(ns("methodButton"), "Click to view method.")
+      img(src = "images/cell-image-legend.png", width = 1480),
+      br(),
+      actionButton(ns("methodButton"), "Click to view method")
     ) # closes sectionBox
   ) # closes tagList
 }
@@ -94,15 +92,23 @@ cellimage <- function(
     if(group_internal_choice() == "Subtype_Curated_Malta_Noushmehr_et_al"){
       req(study_subset_choice())
     }
-
-    sample_group_vector <-  panimmune_data$sample_group_df %>%
-      dplyr::filter(sample_group ==  group_internal_choice()) %>%
-      `if`(
-        group_internal_choice() == "Subtype_Curated_Malta_Noushmehr_et_al",
-        dplyr::filter(., `TCGA Studies`== study_subset_choice()),
-        .
-      ) %>% dplyr::pull(FeatureValue)
-
+    
+    if(group_internal_choice() %in% c("Study", "Subtype_Curated_Malta_Noushmehr_et_al", "Subtype_Immune_Model_Based")){
+      sample_group_vector <-  panimmune_data$sample_group_df %>%
+        dplyr::filter(sample_group ==  group_internal_choice()) %>%
+        `if`(
+          group_internal_choice() == "Subtype_Curated_Malta_Noushmehr_et_al",
+          dplyr::filter(., `TCGA Studies`== study_subset_choice()),
+          .
+        ) %>% dplyr::pull(FeatureValue) %>% 
+        sort()
+    }else{
+      
+      sample_group_vector <- sample_group_df() %>%
+        dplyr::select_(group_internal_choice()) %>%
+        unique()
+    }
+    
     sample_group_vector
   })
   
@@ -155,7 +161,7 @@ cellimage <- function(
       output$imageNetwork1 <- cyjShiny::renderCyjShiny({
         shiny::validate(need((input$groupselect_method1 %in% nodes_ratio$Group), "Please select another subtype - this one has limited data."))
         graph.json <- get_network_object(input$groupselect_method1, nodes = nodes_ratio)
-        cyjShiny::cyjShiny(graph.json, layoutName = "preset", styleFile = styleNodes)
+        cyjShiny::cyjShiny(graph.json, layoutName = "preset", styleFile = "data/javascript/style_network_cellimage.js")
       })
       cyjShiny::cyjShinyOutput(ns("imageNetwork1"), height = 600)
     }
@@ -179,7 +185,7 @@ cellimage <- function(
       output$imageNetwork2 <- cyjShiny::renderCyjShiny({
         shiny::validate(need((input$groupselect_method2 %in% nodes_ratio$Group), "Please select another subtype - this one has limited data."))
         graph.json <- get_network_object(input$groupselect_method2, nodes = nodes_ratio)
-        cyjShiny::cyjShiny(graph.json, layoutName = "preset", styleFile = styleNodes)
+        cyjShiny::cyjShiny(graph.json, layoutName = "preset", styleFile = "data/javascript/style_network_cellimage.js")
       })
       cyjShiny::cyjShinyOutput(ns("imageNetwork2"), height = 600) 
     }
