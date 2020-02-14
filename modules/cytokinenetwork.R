@@ -199,7 +199,7 @@ cytokinenetwork <- function(
       
       selectInput(
         ns("group_selected"),
-        "Choose subtype subset",
+        "Select or Search for Subtype Subset",
         choices = sample_group_vector)
       
 
@@ -208,7 +208,7 @@ cytokinenetwork <- function(
 
       tagList(
         selectInput(ns("group_selected"),
-                    "Choose subset",
+                    "Select or Search for Subset",
                     choices = sample_group_vector,
                     selected = sample_group_vector[1]),
 
@@ -242,7 +242,7 @@ cytokinenetwork <- function(
   })
   
   output$selectCell <- renderUI({
-    selectizeInput(ns("cellInterest"), "Search and select cells of interest (optional)", choices = (panimmune_data$ext_net_labels %>% dplyr::filter(Type == "Cell") %>% dplyr::select("Cells"="Gene")), 
+    selectizeInput(ns("cellInterest"), "Select or Search for cells of interest (optional)", choices = (panimmune_data$ext_net_labels %>% dplyr::filter(Type == "Cell") %>% dplyr::select("Cells"="Gene")), 
                    multiple = TRUE, options = list(placeholder = "Default: all cells"))
   })
   
@@ -250,12 +250,12 @@ cytokinenetwork <- function(
     #getting all nodes in the main_scaffold, and displaying it as FriendlyName
     scanodes <- (union(main_scaffold$From, main_scaffold$To) %>% as.data.frame() %>% 
                    unique() %>% merge(panimmune_data$ext_net_labels, by.x = ".", by.y = "Obj") %>% select(Genes = Gene) %>% filter(!is.na(Genes)))
-    selectizeInput(ns("geneInterest"), "Search and select genes of interest (optional)", choices = scanodes,
+    selectizeInput(ns("geneInterest"), "Select or Search for genes of interest (optional)", choices = scanodes,
                    multiple = TRUE, options = list(placeholder = "Default: immunomodulator genes"))
   })
   
   output$selectNode <- renderUI({
-    selectInput(ns("selectName"), "Search and select Node", choices = c("", tbl_nodes() %>% dplyr::select(Node = Gene) %>%
+    selectInput(ns("selectName"), "Select or Search for Node", choices = c("", tbl_nodes() %>% dplyr::select(Node = Gene) %>%
                                                                dplyr::filter(!is.na(Node))))
   })
   

@@ -135,7 +135,7 @@ get_ab_nodes <- function(ab_nodes, conc_edges, nodes_annot, byImmune = FALSE){
   
   #including the annotation of Friendly Names and types
   all_nodes <- merge(all_nodes, nodes_annot, by.x = "Node", by.y = "Obj") %>% 
-                  dplyr::select("Node (HGNC Symbol)" = "Node", "Friendly Name" = "FriendlyName", Type, Group, "Abundance" = "UpBinRatio")
+                  dplyr::select("Node" = "Node", "Friendly Name" = "FriendlyName", Type, Group, "Abundance" = "UpBinRatio")
   all_nodes
 }
 
@@ -395,7 +395,7 @@ compute_abundance <- function(subset_df, subset_col, cell_data, expr_data, cois,
   group_participant <- get_participants(subset_df, subset_col, byImmune)
   
   dfclong.generic <- get_cell_long(cell_data, group_participant, cois, subset_df, byImmune)
-  dfelong.generic <- get_gene_long(dfe_in, group_participant, gois, subset_df, byImmune)
+  dfelong.generic <- get_gene_long(expr_data, group_participant, gois, subset_df, byImmune)
   
   dfn <- dplyr::bind_rows(dfelong.generic, dfclong.generic) 
   
