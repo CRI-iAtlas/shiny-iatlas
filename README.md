@@ -106,29 +106,19 @@ rsconnect::setAccountInfo(
 rsconnect::deployApp()
 ```
 
-
 ## Data
 
-Input data for the Shiny-iAtlas portal were accessed from multiple remote sources, including **Synapse**, the **ISB Cancer Genomics Cloud**, and **Google Drive**. For convenience, we have created locally cached versions of dataframe objects as **`feather`** files in the `data2` folder:
+Input data for the Shiny-iAtlas portal were accessed from multiple remote sources, including **Synapse**, the **ISB Cancer Genomics Cloud**, and **Google Drive**. For convenience, we have created locally cached versions of dataframe objects as **`feather`** files in the `data` folder:
 
-- `driver_mutations1.feather`
-- `driver_mutations2.feather`
-- `driver_mutations3.feather`
-- `driver_mutations4.feather`
-- `driver_mutations5.feather`
-- `driver_results1.feather`
-- `driver_results2.feather`
-- `feature_values_long.feather`
-- `features.feather`
-- `groups.feather`
-- `immunomodulator_expr.feather`
-- `immunomodulators.feather`
-- `io_target_expr1.feather`
-- `io_target_expr2.feather`
-- `io_target_expr3.feather`
-- `io_target_expr4.feather`
-- `io_targets.feather`
-- `til_image_links.feather`
+- `feature_df.feather`
+- `feature_method_df.feather`
+- `fmx_df.feather`
+- `im_direct_relationships.feather`
+- `im_expr_df.feather`
+- `im_potential_factors.feather`
+- `im_target_annotations.feather`
+- `im_target_expr_df.feather`
+- `sample_group_df.feather`
 
 ## Methods
 
