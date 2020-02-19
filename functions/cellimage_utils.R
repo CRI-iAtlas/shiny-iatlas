@@ -227,7 +227,11 @@ get_cell_image_object <- function(cellimage_base = panimmune_data$cellimage_base
   cois <- get_cells_from_image(cellimage_base) ## Cells  in the image 
   gois <- get_genes_from_image(cellimage_base) ## Proteins in the image
   
-  vals_for_cellplot$Variable <- gsub("Macrophage.Aggregate1", "Macrophage.Aggregate2",  vals_for_cellplot$Variable)
+  colnames(vals_for_cellplot) <- c("Variable", "Group", "Value")
+  vals_for_cellplot$Variable <- gsub("Macrophage", "Macrophage.Aggregate2",  vals_for_cellplot$Variable)
+  vals_for_cellplot$Variable <- gsub("T_cells_CD8", "T_cells_CD8.Aggregate2",  vals_for_cellplot$Variable)
+  vals_for_cellplot$Variable <- gsub("Dendritic_cells", "Dendritic_cells.Aggregate1",  vals_for_cellplot$Variable)
+  
   ### Before proceeding with plot, obtain vals_for_cellplot and ranges_for_cellplot
   
   ## vals_for_cellplot

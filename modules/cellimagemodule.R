@@ -5,9 +5,9 @@ friendly <- feather::read_feather("data/network/network_node_label_friendly.feat
 rownames(friendly) <- friendly$Obj
 
 net_data = list(
-  "immune"= feather::read_feather("data/network/node_cellimage_immune.feather"),
-  "subtype"= feather::read_feather("data/network/node_cellimage_subtype.feather"),
-  "study"= feather::read_feather("data/network/node_cellimage_study.feather")
+  "immune"= feather::read_feather("data/network/nodes_TCGAImmune.feather"),
+  "subtype"= feather::read_feather("data/network/nodes_TCGASubtype.feather"),
+  "study"= feather::read_feather("data/network/nodes_TCGAStudy.feather")
 )
   
 cellimage_UI <-function(id){
@@ -60,7 +60,7 @@ cellimage_UI <-function(id){
             uiOutput(ns("plot2")) %>% shinycssloaders::withSpinner()
           )
         ),
-      img(src = "images/cell-image-legend.png", width = 1480),
+      img(src = "images/cell-image-legend.png", width = "100%"),
       br(),
       actionButton(ns("methodButton"), "Click to view method")
     ) # closes sectionBox
@@ -217,22 +217,22 @@ cellimage <- function(
     
     ##Nodes data
     
-    nodes$Variable <- gsub("T_cells_CD8.Aggregate2", "T_cells_CD8", nodes$Variable)
-    nodes$Variable <- gsub("Dendritic_cells.Aggregate1", "Dendritic_cells",  nodes$Variable)
-    nodes$Variable <- gsub("Macrophage.Aggregate1", "Macrophage", nodes$Variable)
+    # nodes$Variable <- gsub("T_cells_CD8.Aggregate2", "T_cells_CD8", nodes$Variable)
+    # nodes$Variable <- gsub("Dendritic_cells.Aggregate1", "Dendritic_cells",  nodes$Variable)
+    # nodes$Variable <- gsub("Macrophage.Aggregate1", "Macrophage", nodes$Variable)
     
     nodes <- nodes %>% 
       dplyr::mutate(FriendlyName = dplyr::case_when(
-        Variable %in% friendly_df$Obj ~ friendly_df[Variable, 3],
-        !(Variable %in% friendly_df$Obj) ~ Variable
+        Node %in% friendly_df$Obj ~ friendly_df[Node, 3],
+        !(Node %in% friendly_df$Obj) ~ Node
       ))
     
     #include nodes position 
-    nodes <- merge(nodes, positions_df, by = "Variable") #%>% dplyr::select(id, UpBinRatio, FriendlyName)
+    nodes <- merge(nodes, positions_df, by.x = "Node", by.y = "Variable") 
     
     tbl_nodes <- nodes %>%
       dplyr::filter(Group == subtype_selected) %>% 
-      dplyr::rename(id = Variable, UpBinRatio = Value) %>% 
+      dplyr::rename(id = Node) %>% 
       dplyr::select(id, UpBinRatio, x, y, FriendlyName) %>% 
       dplyr::arrange(id)
     
