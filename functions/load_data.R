@@ -106,7 +106,9 @@ load_extracellular_network <- function(){
         "studyImmune" = list("upbin_ratio" = feather::read_feather("data/network/nodes_TCGAStudy_Immune.feather"), "edges_score" = feather::read_feather("data/network/edges_TCGAStudy_Immune.feather"))
       ),
       dfe_in = feather::read_feather("data/network/expr_data_merged.feather"),
-      node_type = feather::read_feather("data/network/network_node_label_friendly.feather")
+      node_type = feather::read_feather("data/network/network_node_label_friendly.feather"),
+      cell_scaffold = feather::read_feather("data/network/scaffold_network_cellimage.feather"),
+      cell_coordinate = feather::read_feather("data/network/nodes_position_cell_image.feather")
     )
   } #else {
   #   fetch_driver_mutation() %>%
@@ -147,8 +149,10 @@ load_data <- function() {
         io_target_annotations = io_target_annotations_data$io_target_annotations,
         io_target_expr_df = io_target_expression_data$io_target_expr_df,
         driver_mutation_df = driver_mutation_data$driver_mutation_df,
-        ext_net_df = extracellular_network_data$all_net_info,
-        ext_net_labels = extracellular_network_data$node_type,
-        ext_net_expr = extracellular_network_data$dfe_in
+        ecn_df = extracellular_network_data$all_net_info,
+        ecn_labels = extracellular_network_data$node_type,
+        ecn_expr = extracellular_network_data$dfe_in,
+        ci_scaffold = extracellular_network_data$cell_scaffold,
+        ci_coord = extracellular_network_data$cell_coordinate
     )
 }
