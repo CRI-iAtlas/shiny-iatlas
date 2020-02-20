@@ -203,7 +203,7 @@ explorepage <- dashboardPage(
               title = "Driver Associations",
               linkId = "link_to_module8",
               imgSrc = "images/drivers.png",
-              boxText = "Explore Associations of Microenvironment with Driver Mutations.",
+              boxText = "Explore associations of microenvironment with driver mutations.",
               linkText = "Open Module"
             ),
             imgLinkBox(
@@ -219,7 +219,7 @@ explorepage <- dashboardPage(
               title = "Cell Image",
               linkId = "link_to_module12",
               imgSrc = "images/cell-image.png",
-              boxText = "Explore the Cell Image.",
+              boxText = "Explore cell and protein abundance on an illustration.",
               linkText = "Open Module"
             )
           )
