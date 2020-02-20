@@ -170,7 +170,7 @@ shinyServer(function(input, output, session) {
     # group selection ui --------------------------------------------------------
 
     group_options <- reactive({
-        groups <-  c("Immune Subtype", "TCGA Subtype", "TCGA Study")
+        groups <-  c("Immune Subtype", "TCGA Study", "TCGA Subtype")
         user_groups <- try(colnames(user_group_df()))
         if(is.vector(user_groups)) groups <- c(groups, user_groups[-1])
         return(groups)
