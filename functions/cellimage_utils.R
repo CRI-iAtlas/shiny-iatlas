@@ -1,3 +1,22 @@
+get.data.variables <- function(
+  image.variables, # variable IDs used in the image
+  variable.annotations, # variable annotation file df
+  source){ # 'im_expr_df' for expression data or 'fmx_df' for cell data
+  variable.annotations %>% 
+    dplyr::filter(ImageVariableID %in% image.variables & Source==source) %>%
+    purrr::pluck("FeatureLabel") %>% unique()
+}
+
+get_cells_from_image <- function(cellimage_base){
+  unique_image_variable_ids <- cellimage_base$unique_image_variable_ids
+  variable_annotations <- cellimage_base$variable_annotations
+  get.data.variables(unique_image_variable_ids,variable_annotations,'fmx_df')
+}
+get_genes_from_image <- function(cellimage_base){
+  unique_image_variable_ids <- cellimage_base$unique_image_variable_ids
+  variable_annotations <- cellimage_base$variable_annotations
+  get.data.variables(unique_image_variable_ids,variable_annotations,'im_expr_df')
+}
 
 #########################################################################
 ##
@@ -70,10 +89,7 @@ get_cell_image_object <- function(cellimage_base = panimmune_data$cellimage_base
   gois <- get_genes_from_image(cellimage_base) ## Proteins in the image
   
   colnames(vals_for_cellplot) <- c("Variable", "Group", "Value")
-  vals_for_cellplot$Variable <- gsub("Macrophage", "Macrophage.Aggregate2",  vals_for_cellplot$Variable)
-  vals_for_cellplot$Variable <- gsub("T_cells_CD8", "T_cells_CD8.Aggregate2",  vals_for_cellplot$Variable)
-  vals_for_cellplot$Variable <- gsub("Dendritic_cells", "Dendritic_cells.Aggregate1",  vals_for_cellplot$Variable)
-  
+ 
   ### Before proceeding with plot, obtain vals_for_cellplot and ranges_for_cellplot
   
   ## vals_for_cellplot
@@ -92,3 +108,33 @@ get_cell_image_object <- function(cellimage_base = panimmune_data$cellimage_base
   image_grob <- get_colored_image(subtype_selected,cellimage_base,vals_for_cellplot,ranges_for_cellplot)
   image_grob
 }
+
+
+##Network visualization
+
+get_network_object <- function(subtype_selected, nodes, friendly_df = friendly, positions_df = positions, scaffold = cell_scaffold){
+  
+  ##Edges data
+  colnames(scaffold) <- c("source", "target", "interaction") #names required by cyjShiny package
+  
+  ##Nodes data
+  
+  #Including FriendlyName annotation
+  nodes <- nodes %>% 
+    dplyr::mutate(FriendlyName = dplyr::case_when(
+      Node %in% friendly_df$Obj ~ friendly_df[Node, 3],
+      !(Node %in% friendly_df$Obj) ~ Node
+    ))
+  
+  #include nodes coordinates 
+  nodes <- merge(nodes, positions_df, by.x = "Node", by.y = "Variable") 
+  
+  tbl_nodes <- nodes %>%
+    dplyr::filter(Group == subtype_selected) %>% 
+    dplyr::rename(id = Node) %>% 
+    dplyr::select(id, UpBinRatio, x, y, FriendlyName) %>% 
+    dplyr::arrange(id)
+  
+  cyjShiny::dataFramesToJSON(scaffold, tbl_nodes)
+}
+

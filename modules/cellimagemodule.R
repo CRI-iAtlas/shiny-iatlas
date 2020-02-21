@@ -201,44 +201,6 @@ cellimage <- function(
         footer = NULL
       ))
     })
-  
-  
-  #Functions to build the plots
-  
-  ##Network visualization
-  
-  get_network_object <- function(subtype_selected, nodes, friendly_df = friendly, positions_df = positions, scaffold = cell_scaffold){
-    
-    ##Edges data
-    tbl_edges <- scaffold %>%
-      dplyr::mutate(interaction = "interacts with")
-    
-    colnames(tbl_edges) <- c("source", "target", "interaction") #names required by cyjShiny package
-    
-    ##Nodes data
-    
-    # nodes$Variable <- gsub("T_cells_CD8.Aggregate2", "T_cells_CD8", nodes$Variable)
-    # nodes$Variable <- gsub("Dendritic_cells.Aggregate1", "Dendritic_cells",  nodes$Variable)
-    # nodes$Variable <- gsub("Macrophage.Aggregate1", "Macrophage", nodes$Variable)
-    
-    nodes <- nodes %>% 
-      dplyr::mutate(FriendlyName = dplyr::case_when(
-        Node %in% friendly_df$Obj ~ friendly_df[Node, 3],
-        !(Node %in% friendly_df$Obj) ~ Node
-      ))
-    
-    #include nodes position 
-    nodes <- merge(nodes, positions_df, by.x = "Node", by.y = "Variable") 
-    
-    tbl_nodes <- nodes %>%
-      dplyr::filter(Group == subtype_selected) %>% 
-      dplyr::rename(id = Node) %>% 
-      dplyr::select(id, UpBinRatio, x, y, FriendlyName) %>% 
-      dplyr::arrange(id)
-    
-    cyjShiny::dataFramesToJSON(tbl_edges, tbl_nodes)
-  }
-  
 }
 
 

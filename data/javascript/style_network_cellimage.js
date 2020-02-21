@@ -403,7 +403,14 @@
         "curve-style": "bezier"
     }
   }, {
-    "selector" : "edge[interaction = 'NA']",
+    "selector" : "edge[interaction = 'peptide']",
+    "css" : {
+      "line-color" : "rgb(0,0,0)",
+      "line-style" : "dashed",
+      "target-arrow-shape": "none"
+    }
+  }, {
+    "selector" : "edge[interaction = 'interacts']",
     "css" : {
       "line-color" : "rgb(0,0,0)",
       "target-arrow-color" : "rgb(0,0,0)",
