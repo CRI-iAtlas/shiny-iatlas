@@ -90,8 +90,7 @@ cellimage <- function(
           .
         ) %>% dplyr::pull(FeatureValue) %>% 
         sort()
-    }else{
-      
+    }else{ #Custom group
       sample_group_vector <- sample_group_df() %>%
         dplyr::select_(group_internal_choice()) %>%
         unique()
@@ -125,8 +124,16 @@ cellimage <- function(
   
   nodes_ratio <- function(selected_group){
     if(selected_group == "Subtype_Immune_Model_Based") panimmune_data$ecn_df$immune$upbin_ratio
-    else if(selected_group == "Subtype_Curated_Malta_Noushmehr_et_al") panimmune_data$ecn_df$subtype$upbin_ratio
-    else panimmune_data$ecn_df$study$upbin_ratio
+    else if(selected_group == "Study") panimmune_data$ecn_df$subtype$upbin_ratio
+    else if(selected_group == "Subtype_Curated_Malta_Noushmehr_et_al") panimmune_data$ecn_df$study$upbin_ratio
+    else compute_abundance(sample_group_df(),
+                           subset_col = group_internal_choice(),
+                           panimmune_data$fmx_df,
+                           panimmune_data$ecn_expr,
+                           cois = get_cells_from_image(panimmune_data$cellimage_base),
+                           gois = get_genes_from_image(panimmune_data$cellimage_base)) %>% 
+      dplyr::select(Node, IncludeFeature) %>% 
+      tidyr::unnest(c(IncludeFeature))
   }
   
   #Output depending on the option selected by the user

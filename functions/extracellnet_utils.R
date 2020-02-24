@@ -336,7 +336,9 @@ get_cell_long <- function(dfc_in,
   
   participants <- names(group_of_participant)
 
-  dfc <- dfc_in %>% filter(ParticipantBarcode %in% participants) %>%
+  dfc <- dfc_in %>% 
+    filter(ParticipantBarcode %in% participants) %>%
+    mutate(Tumor_cell.Aggregate2 = 1 - Stromal_Fraction) %>% 
     select(ParticipantBarcode,paste(cells,".Aggregate2",sep=""))
   colnames(dfc) <- gsub(".Aggregate2","",colnames(dfc))
   dfc <- dfc %>% dplyr::mutate(Group=group_of_participant[ParticipantBarcode])
@@ -384,7 +386,6 @@ get_gene_long <- function(dfe_in,
       dplyr::mutate(Immune = immune_group[ParticipantBarcode]) %>% 
       dplyr::select(ParticipantBarcode,Group, Immune,Gene,Expression) 
   }
-  
   dfelong.generic <- dfelong %>% rename(Node=Gene,Value=Expression)
   dfelong.generic
 }
@@ -400,7 +401,6 @@ compute_abundance <- function(subset_df, subset_col, cell_data, expr_data, cois,
   dfn <- dplyr::bind_rows(dfelong.generic, dfclong.generic) 
   
   tertiles <- getNodeTertiles(dfn)
-  
   df_ternary_full_info <- dfn %>% dplyr::group_by(Node) %>% tidyr::nest() %>% ## split by nodes
     dplyr::mutate(Bins=purrr::map2(.x = Node,.y = data, tertiles = tertiles, byImmune = byImmune, .f = multiBin)) %>% ## add Bins
     dplyr::mutate(IncludeFeature=purrr::map(.x = Bins, byImmune = byImmune, .f = addPerGroupIncludes))
