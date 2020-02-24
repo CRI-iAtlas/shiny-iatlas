@@ -475,6 +475,18 @@
       "Repository": "CRAN",
       "Hash": "ec0bde6776afca14b9ec1e3e0735a846"
     },
+    "cyjShiny": {
+      "Package": "cyjShiny",
+      "Version": "1.0.8",
+      "Source": "GitHub",
+      "RemoteType": "github",
+      "RemoteHost": "api.github.com",
+      "RemoteUsername": "cytoscape",
+      "RemoteRepo": "cyjShiny",
+      "RemoteRef": "master",
+      "RemoteSha": "956a3cb5a8f709f4134f9774e6a767ce2b141764",
+      "Hash": "53ef28c7c9683859e9c4de113d3e6968"
+    },
     "data.table": {
       "Package": "data.table",
       "Version": "1.12.8",
@@ -740,6 +752,19 @@
       "Repository": "CRAN",
       "Hash": "270597dd84ec5ef7f59b27b4d28782ee"
     },
+    "grImport2": {
+      "Package": "grImport2",
+      "Version": "0.2-0",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "e348e793cde95a4e94f5337f88039c7e"
+    },
+    "graph": {
+      "Package": "graph",
+      "Version": "1.64.0",
+      "Source": "Bioconductor",
+      "Hash": "b133290bd94320ed101d32cf556f78d8"
+    },
     "gridExtra": {
       "Package": "gridExtra",
       "Version": "2.3",
@@ -830,6 +855,13 @@
       "Source": "Repository",
       "Repository": "CRAN",
       "Hash": "6154ec2223172bce8162d4153cda21f7"
+    },
+    "jpeg": {
+      "Package": "jpeg",
+      "Version": "0.1-8.1",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "bc316c003aba520fc73d70ad53b5fc36"
     },
     "jsonlite": {
       "Package": "jsonlite",
@@ -1095,6 +1127,13 @@
       "Source": "Repository",
       "Repository": "CRAN",
       "Hash": "3f1b0dbcc503320e6e7aae6c3ff87eaa"
+    },
+    "png": {
+      "Package": "png",
+      "Version": "0.1-7",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "03b7076c234cb3331288919983326c55"
     },
     "polynom": {
       "Package": "polynom",
