@@ -129,6 +129,16 @@ shinyServer(function(input, output, session) {
         datainfo,
         "moduleX")
     
+    # Cell Image
+    callModule(
+      cellimage,
+      "module12",
+      reactive(input$ss_choice),
+      reactive(group_internal_choice()),
+      reactive(input$study_subset_selection),
+      reactive(subset_df()),
+      reactive(plot_colors()))
+    
     output$ss_choice <- renderText({
         input$ss_choice
     })
@@ -162,6 +172,9 @@ shinyServer(function(input, output, session) {
     })
     observeEvent(input$link_to_module11, {
       shinydashboard::updateTabItems(session, "explorertabs", "cytokine_network")
+    })
+    observeEvent(input$link_to_module12, {
+      shinydashboard::updateTabItems(session, "explorertabs", "cell_image")
     })
     observeEvent(input$link_to_module_subtypeclassifier, {
         updateNavlistPanel(session, "toolstabs", "Immune Subtype Classifier")

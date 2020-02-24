@@ -126,6 +126,40 @@ create_cell_fraction_options <- function() {
     }
 }
 
+#########################################################################
+##
+## Get cell image grid object and associated annotations
+##
+#########################################################################
+
+load_cellimage_base <- function(){
+  pic <- grImport2::readPicture("data/tcell-cairo.svg")
+  image_grob <- grImport2::pictureGrob(pic)
+  gTree_name <- grid::childNames(image_grob) ## label of overall gTree object
+  pathlabels <- image_grob$children[[gTree_name]]$childrenOrder ## labels and order of children 
+
+  ## Variable annotations are ImageVariableID, FeatureLabel, Source, ColorScale
+  variable_annotations <- readr::read_tsv('data/cell_image_id_annotations.tsv') 
+  ## Image obects, in order, labeled in terms of ImageVariableID
+  image_object_labels <- read.table('data/cell_image_object_ids.txt',as.is=T)$V1
+  missing_annotations <- setdiff(image_object_labels,variable_annotations$ImageVariableID)
+  if (length(missing_annotations) > 0 ){
+    stop("Image objects ",paste(missing_annotations,collapse=" ")," do not have an annotation.")
+  }
+  unique_image_variable_ids <- unique(image_object_labels)
+  
+  cellimage_parts <- list()
+  cellimage_parts$image_grob <- image_grob
+  cellimage_parts$pathlabels <- pathlabels
+  cellimage_parts$gTree_name <- gTree_name
+  cellimage_parts$variable_annotations <- variable_annotations
+  cellimage_parts$image_object_labels <- image_object_labels
+  cellimage_parts$unique_image_variable_ids <- unique_image_variable_ids
+  list(cellimage_base=cellimage_parts)
+}
+  
+  
+
 # Load global data ----
 
 load_data <- function() {
@@ -138,6 +172,8 @@ load_data <- function() {
     io_target_expression_data <- load_io_target_expression()
     driver_mutation_data <- load_driver_mutation()
     extracellular_network_data <- load_extracellular_network()
+    cellimage_base_data <- load_cellimage_base()
+
     list(
         feature_df = manifest_data$feature_df,
         feature_method_df = manifest_data$feature_method_df,
@@ -153,6 +189,7 @@ load_data <- function() {
         ecn_labels = extracellular_network_data$node_type,
         ecn_expr = extracellular_network_data$dfe_in,
         ci_scaffold = extracellular_network_data$cell_scaffold,
-        ci_coord = extracellular_network_data$cell_coordinate
+        ci_coord = extracellular_network_data$cell_coordinate,
+        cellimage_base =  cellimage_base_data$cellimage_base
     )
 }

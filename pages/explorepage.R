@@ -59,6 +59,11 @@ explorepage <- dashboardPage(
                menuSubItem(
                  "Extracellular Networks",
                  tabName = "cytokine_network",
+		 icon = icon("cog")
+		),
+	       menuSubItem(
+                 "Cellular Image",
+                 tabName = "cell_image",
                  icon = icon("cog")
                )
       ),
@@ -203,7 +208,7 @@ explorepage <- dashboardPage(
               title = "Driver Associations",
               linkId = "link_to_module8",
               imgSrc = "images/drivers.png",
-              boxText = "Explore Associations of Microenvironment with Driver Mutations.",
+              boxText = "Explore associations of microenvironment with driver mutations.",
               linkText = "Open Module"
             ),
             imgLinkBox(
@@ -212,6 +217,14 @@ explorepage <- dashboardPage(
               linkId = "link_to_module9",
               imgSrc = "images/iotargets.png",
               boxText = "Explore the expression of genes that code for immuno-oncological (IO) targets .",
+              linkText = "Open Module"
+            ),
+            imgLinkBox(
+              width = 6,
+              title = "Cell Image",
+              linkId = "link_to_module12",
+              imgSrc = "images/cell-image.png",
+              boxText = "Explore cell and protein abundance on an illustration.",
               linkText = "Open Module"
             )
           ),
@@ -267,6 +280,10 @@ explorepage <- dashboardPage(
       tabItem(
         tabName = "cytokine_network",
         cytokinenetwork_UI("module11")
+      ),
+      tabItem(
+        tabName = "cell_image",
+        cellimage_UI("module12")
       ),
       tabItem(
         tabName = "datainfo",
