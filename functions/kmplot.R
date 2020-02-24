@@ -1,17 +1,13 @@
-create_kmplot <- function(fit, df, confint, risktable, title, group_colors) {
-
-  print(group_colors)
-  print("confint")
-  print(confint)
-  print("risktable")
-  print(risktable)
+create_kmplot <- function(fit, df, confint, risktable, title, subtitle, group_colors) {
   
-    survminer::ggsurvplot(
+  long_title <- paste0(title, '\n', subtitle)
+  
+  survminer::ggsurvplot(
         fit,
         data = df,
         conf.int = confint,
         risk.table = risktable,
-        title = title,
+        title = long_title,
         palette = group_colors
     )
 }

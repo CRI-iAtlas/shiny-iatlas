@@ -50,7 +50,7 @@ immunefeatures_UI <- function(id) {
                         width = 8,
                         selectInput(
                             ns("heatmap_y"),
-                            "Select Variable Class",
+                            "Select or Search for Variable Class",
                             get_numeric_classes_from_feature_df(),
                             selected = "Immune Cell Proportion - Original"
                         )
@@ -59,7 +59,7 @@ immunefeatures_UI <- function(id) {
                         width = 4,
                         selectInput(
                             ns("heatmap_values"),
-                            "Select Response Variable",
+                            "Select or Search for Response Variable",
                             choices = get_feature_df_nested_list(),
                             selected = "Leukocyte Fraction"
                         )
@@ -68,7 +68,7 @@ immunefeatures_UI <- function(id) {
                         width = 4,
                         selectInput(
                             ns("correlation_method"),
-                            "Select Correlation Method",
+                            "Select or Search for Correlation Method",
                             choices = unlist(config_yaml$correlation_methods),
                             selected = "Spearman"
                         )

@@ -1,8 +1,7 @@
-.Rhistory
-*.Rproj
-.Rproj.user
-.httr-oauth
-*~
 .DS_Store
-rsconnect
+.httr-oauth
+.Rhistory
+.Rproj.user
+*~
 data/io*
+rsconnect/
