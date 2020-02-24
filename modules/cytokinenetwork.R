@@ -1,10 +1,3 @@
-if(!require(cyjShiny)){
-  devtools::install_github("cytoscape/cyjShiny")
-}
-
-library(cyjShiny)
-
-
 cytokinenetwork_UI <- function(id) {
   
   ns <- NS(id)
@@ -176,14 +169,12 @@ cytokinenetwork <- function(
         dplyr::filter(!(FeatureValue %in% c("LAML", "THYM", "DLBC"))) %>%
         dplyr::arrange(FeatureValue) %>% 
         dplyr::pull(FeatureValue)
-      
 
     }else{
       sample_group_vector <- subset_df() %>%
         dplyr::select_(group_internal_choice()) %>%
         unique()
     }
-    
     
     #Generating UI depending on the sample group
     if(group_internal_choice() == "Subtype_Immune_Model_Based"){
@@ -297,7 +288,6 @@ cytokinenetwork <- function(
       sca <- sca %>% 
         dplyr::filter(From %in% cois() | To %in% cois())
     }
-    
     return(sca)
   }) 
     
@@ -309,8 +299,6 @@ cytokinenetwork <- function(
   genes <- reactive({
     unique(c(scaffold()$From, scaffold()$To)) %>% setdiff(cells()) #getting all the genes in the edges selected
   })
-  
-  
   
 #------Computing scores for a custom grouping
 
@@ -324,7 +312,6 @@ cytokinenetwork <- function(
                        cells(),
                        genes(),
                        stratify$byImmune)
-            
 })
 
   scaffold_scores <- reactive({
@@ -334,7 +321,6 @@ cytokinenetwork <- function(
                         ternary_info(), 
                         stratify$byImmune) %>%
       as.data.frame()
- 
   })
   
 #------ Subsetting nodes and edges list based on the Sample Group Selection and cells of interest
@@ -455,9 +441,6 @@ cytokinenetwork <- function(
    
     DT::datatable(get_edge_table(tbl_edges(), panimmune_data$ecn_labels),
                   caption = "Edges Table", width = "100%", rownames = FALSE)
-                      
-                      # DT::datatable(tbl_edges(), colnames= c("From" = "source", "To" = "target", "Concordance" = "score"),
-                      #               caption = "Edges Table", width = "100%", rownames = FALSE)
                       )
   
 
@@ -486,7 +469,6 @@ cytokinenetwork <- function(
         msg <- sprintf("ERROR in stylesheet file '%s': %s", input$loadStyleFile, e$message)
         showNotification(msg, duration=NULL, type="error")
       })
-      #later::later(function() {updateSelectInput(session, "loadStyleFile", selected=character(0))}, 0.5)
     }
   })
   
@@ -507,19 +489,6 @@ cytokinenetwork <- function(
     cyjShiny::fitSelected(session, 100)
   })
   
-  # observeEvent(input$getSelectedNodes, ignoreInit=TRUE, {
-  #   output$selectedNodesDisplay <- renderText({" "})
-  #   cyjShiny::getSelectedNodes(session)
-  #   
-  # })
-  
-  # observeEvent(input$selectedNodes, {
-  #   newNodes <- input$selectedNodes;
-  #   output$selectedNodesDisplay <- renderText({
-  #     paste(newNodes)
-  #   })
-  # })
-  # 
   observeEvent(input$hideSelection,  ignoreInit=TRUE, {
     session$sendCustomMessage(type="hideSelection", message=list())
   })
@@ -541,20 +510,4 @@ cytokinenetwork <- function(
     savePNGtoFile(session, file.name)
 
   })
-
- #  observeEvent(input$pngData, ignoreInit=TRUE, {
- #    
- #    R.utils::printf("received pngData")
- #    png.parsed <- jsonlite::fromJSON(input$pngData)
- #    substr(png.parsed, 1, 30) # [1] "data:image/png;base64,iVBORw0K"
- #    nchar(png.parsed)  # [1] 768714
- #    png.parsed.headless <- substr(png.parsed, 23, nchar(png.parsed))  # chop off the uri header
- #    png.parsed.binary <- base64::base64decode(png.parsed.headless)
- #    R.utils::printf("writing png to foo.png")
- #    conn <- file("savedNetwork.png", "wb")
- #    writeBin(png.parsed.binary, conn)
- #    close(conn)
- # })
-
-
 }  

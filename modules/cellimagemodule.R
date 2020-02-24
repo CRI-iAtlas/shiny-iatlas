@@ -124,8 +124,8 @@ cellimage <- function(
   
   nodes_ratio <- function(selected_group){
     if(selected_group == "Subtype_Immune_Model_Based") panimmune_data$ecn_df$immune$upbin_ratio
-    else if(selected_group == "Study") panimmune_data$ecn_df$subtype$upbin_ratio
-    else if(selected_group == "Subtype_Curated_Malta_Noushmehr_et_al") panimmune_data$ecn_df$study$upbin_ratio
+    else if(selected_group == "Study") panimmune_data$ecn_df$study$upbin_ratio
+    else if(selected_group == "Subtype_Curated_Malta_Noushmehr_et_al") panimmune_data$ecn_df$subtype$upbin_ratio
     else compute_abundance(sample_group_df(),
                            subset_col = group_internal_choice(),
                            panimmune_data$fmx_df,
