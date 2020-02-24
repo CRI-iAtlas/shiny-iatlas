@@ -1,15 +1,3 @@
-#Loading data for the network visualization
-cell_scaffold <- feather::read_feather("data/network/scaffold_network_cellimage.feather") %>% as.data.frame()
-positions <- feather::read_feather("data/network/nodes_position_cell_image.feather") %>% as.data.frame()
-friendly <- feather::read_feather("data/network/network_node_label_friendly.feather") %>% as.data.frame()
-rownames(friendly) <- friendly$Obj
-
-net_data = list(
-  "immune"= feather::read_feather("data/network/nodes_TCGAImmune.feather"),
-  "subtype"= feather::read_feather("data/network/nodes_TCGASubtype.feather"),
-  "study"= feather::read_feather("data/network/nodes_TCGAStudy.feather")
-)
-  
 cellimage_UI <-function(id){
   
   ns <- NS(id)
@@ -136,9 +124,9 @@ cellimage <- function(
   #organizing abundance data for easier referencing
   
   nodes_ratio <- function(selected_group){
-    if(selected_group == "Subtype_Immune_Model_Based") net_data$immune 
-    else if(selected_group == "Subtype_Curated_Malta_Noushmehr_et_al") net_data$subtype
-    else net_data$study
+    if(selected_group == "Subtype_Immune_Model_Based") panimmune_data$ecn_df$immune$upbin_ratio
+    else if(selected_group == "Subtype_Curated_Malta_Noushmehr_et_al") panimmune_data$ecn_df$subtype$upbin_ratio
+    else panimmune_data$ecn_df$study$upbin_ratio
   }
   
   #Output depending on the option selected by the user
@@ -160,7 +148,7 @@ cellimage <- function(
       
       output$imageNetwork1 <- cyjShiny::renderCyjShiny({
         shiny::validate(need((input$groupselect_method1 %in% nodes_ratio$Group), "Please select another subtype - this one has limited data."))
-        graph.json <- get_network_object(input$groupselect_method1, nodes = nodes_ratio)
+        graph.json <- get_network_object(input$groupselect_method1, nodes = nodes_ratio, friendly_df = panimmune_data$ecn_labels, positions_df = panimmune_data$ci_coord, scaffold = panimmune_data$ci_scaffold)
         cyjShiny::cyjShiny(graph.json, layoutName = "preset", styleFile = "data/javascript/style_network_cellimage.js")
       })
       cyjShiny::cyjShinyOutput(ns("imageNetwork1"), height = 600)
@@ -184,7 +172,7 @@ cellimage <- function(
       
       output$imageNetwork2 <- cyjShiny::renderCyjShiny({
         shiny::validate(need((input$groupselect_method2 %in% nodes_ratio$Group), "Please select another subtype - this one has limited data."))
-        graph.json <- get_network_object(input$groupselect_method2, nodes = nodes_ratio)
+        graph.json <- get_network_object(input$groupselect_method2, nodes = nodes_ratio, friendly_df = panimmune_data$ecn_labels, positions_df = panimmune_data$ci_coord, scaffold = panimmune_data$ci_scaffold)
         cyjShiny::cyjShiny(graph.json, layoutName = "preset", styleFile = "data/javascript/style_network_cellimage.js")
       })
       cyjShiny::cyjShinyOutput(ns("imageNetwork2"), height = 600) 

@@ -110,11 +110,7 @@ load_extracellular_network <- function(){
       cell_scaffold = feather::read_feather("data/network/scaffold_network_cellimage.feather"),
       cell_coordinate = feather::read_feather("data/network/nodes_position_cell_image.feather")
     )
-  } #else {
-  #   fetch_driver_mutation() %>%
-  #     format_driver_mutation()
-  # }
-  
+  } 
 }
 
 ## selection choices for the cell fractions.  Lots of other choices possible.

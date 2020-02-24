@@ -112,14 +112,18 @@ get_cell_image_object <- function(cellimage_base = panimmune_data$cellimage_base
 
 ##Network visualization
 
-get_network_object <- function(subtype_selected, nodes, friendly_df = friendly, positions_df = positions, scaffold = cell_scaffold){
+get_network_object <- function(subtype_selected, nodes, friendly_df, positions_df = positions, scaffold){
   
   ##Edges data
+  scaffold <- as.data.frame(scaffold)
   colnames(scaffold) <- c("source", "target", "interaction") #names required by cyjShiny package
   
   ##Nodes data
   
   #Including FriendlyName annotation
+  friendly_df <- as.data.frame(friendly_df)
+  rownames(friendly_df) <- friendly_df$Obj
+  
   nodes <- nodes %>% 
     dplyr::mutate(FriendlyName = dplyr::case_when(
       Node %in% friendly_df$Obj ~ friendly_df[Node, 3],
