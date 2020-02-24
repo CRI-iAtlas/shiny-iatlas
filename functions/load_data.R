@@ -135,7 +135,7 @@ load_cellimage_base <- function(){
   pathlabels <- image_grob$children[[gTree_name]]$childrenOrder ## labels and order of children 
 
   ## Variable annotations are ImageVariableID, FeatureLabel, Source, ColorScale
-  variable_annotations <- readr::read_tsv('data/cell_image_id_annotations.tsv') 
+  variable_annotations <- feather::read_feather('data/cell_image_id_annotations.feather') 
   ## Image obects, in order, labeled in terms of ImageVariableID
   image_object_labels <- read.table('data/cell_image_object_ids.txt',as.is=T)$V1
   missing_annotations <- setdiff(image_object_labels,variable_annotations$ImageVariableID)
