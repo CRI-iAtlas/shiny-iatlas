@@ -475,6 +475,18 @@
       "Repository": "CRAN",
       "Hash": "ec0bde6776afca14b9ec1e3e0735a846"
     },
+    "cyjShiny": {
+      "Package": "cyjShiny",
+      "Version": "1.0.8",
+      "Source": "GitHub",
+      "RemoteType": "github",
+      "RemoteHost": "api.github.com",
+      "RemoteUsername": "cytoscape",
+      "RemoteRepo": "cyjShiny",
+      "RemoteRef": "master",
+      "RemoteSha": "956a3cb5a8f709f4134f9774e6a767ce2b141764",
+      "Hash": "53ef28c7c9683859e9c4de113d3e6968"
+    },
     "data.table": {
       "Package": "data.table",
       "Version": "1.12.8",
@@ -739,6 +751,12 @@
       "Source": "Repository",
       "Repository": "CRAN",
       "Hash": "270597dd84ec5ef7f59b27b4d28782ee"
+    },
+    "graph": {
+      "Package": "graph",
+      "Version": "1.64.0",
+      "Source": "Bioconductor",
+      "Hash": "b133290bd94320ed101d32cf556f78d8"
     },
     "gridExtra": {
       "Package": "gridExtra",
