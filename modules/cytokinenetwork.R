@@ -223,7 +223,7 @@ cytokinenetwork <- function(
   
   output$selectStyle <- renderUI({
     
-    styles <- c("Edges by Immune Type" = 'data/javascript/extracellular_network_stylesEdges.js',
+    styles <- c("Edges by Immune Type" = "data/javascript/extracellular_network_stylesEdges.js",
                   "Black Edges" = "data/javascript/extracellular_network_styles.js")
       
     selectInput(
@@ -464,7 +464,7 @@ cytokinenetwork <- function(
   observeEvent(input$loadStyleFile,  ignoreInit=TRUE, {
     if(input$loadStyleFile != ""){
       tryCatch({
-        loadStyleFile(input$loadStyleFile)
+        cyjShiny::loadStyleFile(input$loadStyleFile)
       }, error=function(e) {
         msg <- sprintf("ERROR in stylesheet file '%s': %s", input$loadStyleFile, e$message)
         showNotification(msg, duration=NULL, type="error")

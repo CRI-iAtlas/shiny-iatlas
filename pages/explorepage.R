@@ -218,14 +218,6 @@ explorepage <- dashboardPage(
               imgSrc = "images/iotargets.png",
               boxText = "Explore the expression of genes that code for immuno-oncological (IO) targets .",
               linkText = "Open Module"
-            ),
-            imgLinkBox(
-              width = 6,
-              title = "Cell Image",
-              linkId = "link_to_module12",
-              imgSrc = "images/cell-image.png",
-              boxText = "Explore cell and protein abundance on an illustration.",
-              linkText = "Open Module"
             )
           ),
           fluidRow(
@@ -236,8 +228,15 @@ explorepage <- dashboardPage(
               imgSrc = "images/cytokinenet.png",
               boxText = "Explore the extracellular networks modulating tumoral immune response.",
               linkText = "Open Module"
+            ),
+            imgLinkBox(
+              width = 6,
+              title = "Cell Image",
+              linkId = "link_to_module12",
+              imgSrc = "images/cell-image.png",
+              boxText = "Explore cell and protein abundance on an illustration.",
+              linkText = "Open Module"
             )
-            
           )
         )
       ),
