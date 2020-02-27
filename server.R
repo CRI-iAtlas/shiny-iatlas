@@ -4,6 +4,7 @@
 # By default, the file size limit is 5MB. It can be changed by
 # setting this option. Here we'll raise limit to 9MB.
 options(shiny.maxRequestSize = 100 * 1024^2)
+library(Cairo)
 options(shiny.usecairo = T)
 
 ################################################################################
