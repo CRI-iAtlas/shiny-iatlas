@@ -13,6 +13,8 @@ module_files:
   - "modules/subtypeclassifiermodule.R"
   - "modules/submodules.R"
   - "modules/distribution_plot_module.R"
+  - "modules/cytokinenetwork.R"
+  - "modules/cellimagemodule.R"
   
 function_files:
   - "functions/load_data.R"
@@ -32,6 +34,8 @@ function_files:
   - "functions/tablef_fun.R"
   - "functions/imageplot.R"
   - "functions/event_data_utils.R"
+  - "functions/extracellnet_utils.R"
+  - "functions/cellimage_utils.R"
 
 page_files:
   - "pages/aboutpage.R"

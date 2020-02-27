@@ -14,4 +14,4 @@
 
 + **Cancer Research Institute:** http://cancerresearch.org/
 + **Sage Bionetworks:** http://www.sagebionetworks.org
-+ **Institute for Systems Biology:** http://www.systemsbiology.org 
++ **Institute for Systems Biology:** http://www.isbscience.org 
