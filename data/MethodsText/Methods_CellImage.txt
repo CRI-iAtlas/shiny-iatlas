@@ -8,4 +8,4 @@ Some details of the value estimation prior to binning are as follows. Immune cel
 
 **Acknowledgment:** The iAtlas team is grateful to Allison Kudla of the Institute for Systems Biology for producing the cell image file and for being patient with multiple requests for modifications.  The figure was adapted from *CTLA-4 and PD-1/PD-L1 blockade: new immunotherapeutic modalities with durable clinical benefit in melanoma patients* PA Ott, FS Hodi, and C Robert;  Clin Cancer Res. 2013 Oct 1;19(19):5300-9; doi: 10.1158/1078-0432.CCR-13-0143.
 
-**Contributors:** Vesteinn Thorsson,  Carolina Heimann, Allison Kudla, David L. Gibbs,  Ilya Shmulevich  
+**Contributors:** Vesteinn Thorsson, Carolina Heimann, Allison Kudla, David L. Gibbs, Ilya Shmulevich  

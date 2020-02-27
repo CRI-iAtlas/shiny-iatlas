@@ -22,7 +22,6 @@ cytokinenetwork_UI <- function(id) {
         width = 24,
         includeMarkdown("data/markdown/cytokine_network.markdown")
       ),
-        
         optionsBox(
           width=2,
             verticalLayout(
@@ -126,7 +125,8 @@ cytokinenetwork_UI <- function(id) {
                 shinycssloaders::withSpinner(),
               downloadButton(ns('download_data'), 'Download')
             )
-        )
+        ),
+        actionButton(ns("methodButton"), "Click to view method")
       )
   )#taglist
 }
@@ -304,7 +304,7 @@ cytokinenetwork <- function(
 
   ternary_info <- reactive({
     req(!group_internal_choice() %in% default_groups)
-    print("calculando nodes scores")
+    print("Computing nodes scores.")
     compute_abundance(subset_df(),
                        subset_col = group_internal_choice(),
                        panimmune_data$fmx_df,
@@ -316,7 +316,7 @@ cytokinenetwork <- function(
 
   scaffold_scores <- reactive({
     req(!group_internal_choice() %in% default_groups, ternary_info())
-    print("calculando edges scores")
+    print("Computing edges scores.")
     compute_concordance(scaffold(), 
                         ternary_info(), 
                         stratify$byImmune) %>%
@@ -458,6 +458,17 @@ cytokinenetwork <- function(
     filename = function() stringr::str_c("nodes-", Sys.Date(), ".csv"),
     content = function(con) readr::write_csv(get_ab_nodes(abundant_nodes(), tbl_edges(), panimmune_data$ecn_labels, stratify$byImmune), con)
   )
+  
+  #Button with method information
+  
+  observeEvent(input$methodButton, {
+    showModal(modalDialog(
+      title = "Method",
+      includeMarkdown("data/MethodsText/Methods_AbundantConcordantNetwork.txt"),
+      easyClose = TRUE,
+      footer = NULL
+    ))
+  })
 
 #----- Network visualization-related (from the cyjShiny examples)  
   
@@ -502,7 +513,7 @@ cytokinenetwork <- function(
   })
   
   observeEvent(input$removeGraphButton, ignoreInit=TRUE, {
-    removeGraph(session)
+    cyjShiny::removeGraph(session)
   })
   
   observeEvent(input$savePNGbutton, ignoreInit=TRUE, {
