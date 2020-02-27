@@ -53,12 +53,20 @@ ioresponsemultivariate <- function(input,
     
     output$heatmap_op <- renderUI({
         #group_choice <- magrittr::set_names(list(group_internal_choice()), ss_choice())
-        var_choices <- colnames(fmx_io)
+        # var_choices <- colnames(fmx_io)
+        
+        var_choices <- create_filtered_nested_list_by_class(feature_df = feature_io_df,
+                                                            filter_value = "Numeric",
+                                                            class_column = "Variable Class",
+                                                            internal_column = "FeatureMatrixLabelTSV",
+                                                            display_column = "FriendlyLabel",
+                                                            filter_column = "VariableType")
+        print(var_choices)
         selectizeInput(
             ns("var2_cox"),
             "Select features",
             var_choices,
-            selected = c("CTLA4Th1"),
+            selected = var_choices$`Predictor - Immune Checkpoint Treatment`,
             multiple = TRUE
         )
     })
@@ -115,20 +123,25 @@ ioresponsemultivariate <- function(input,
     
     output$mult_forest <- renderPlotly({
             
+        ph_labels<- convert_value_between_columns(input_value =mult_ph_df()$feature,
+                                                  df = feature_io_df,
+                                                  from_column = "FeatureMatrixLabelTSV",
+                                                  to_column = "FriendlyLabel",
+                                                  many_matches = "return_result")
+        
             create_forestplot(mult_ph_df(),
                               x=mult_ph_df()$logHR, 
-                              y=mult_ph_df()$feature, 
+                              y=rep(ph_labels, times = length(input$datasets_mult)), 
                               xmin=mult_ph_df()$loglower, 
                               xmax=mult_ph_df()$logupper, 
                               xintercept = 0, 
                               title = "",
                               xlab = 'Hazard Ratio (log10)', 
-                              ylab = "Feature",
+                              #ylab = "Feature",
                               facet = ".id")
     })
     
     output$mult_heatmap <- renderPlotly({
-        print(head(mult_ph_df()))
 
         heatmap_df <- mult_ph_df() %>%
             dplyr::select(.id, feature, logHR) %>%
@@ -141,6 +154,6 @@ ioresponsemultivariate <- function(input,
 
         p <- create_heatmap(t(as.matrix(heatmap_df)), "heatmap", scale_colors = T)
         
-        p + geom_tile(size = 1, colour = "black")
+        p #+ geom_tile(size = 1, colour = "black")
     })
 }

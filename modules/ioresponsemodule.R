@@ -23,14 +23,14 @@ ioresponse_UI <- function(id){
           # fluidRow(
           #   column(
           #     width = 5,
-              checkboxGroupInput(ns("datasets"), "Select Datasets", choices = list("Gide, 2019 - SKCM, Anti-PD1 +/- Anti-CTLA4" =  "Gide 2019", 
+              checkboxGroupInput(ns("datasets"), "Select Datasets", choices = list("Auslander, 2018 - SKCM" =  "Auslander 2018", 
+                                                                                   "Gide, 2019 - SKCM, Anti-PD1 +/- Anti-CTLA4" =  "Gide 2019", 
                                                                                    "Hugo, 2016 - SKCM, Anti-PD1" = "Hugo 2016", 
                                                                                    "Riaz, 2017 - SKCM, Anti-PD1" = "Riaz 2017", 
                                                                                    "Van Allen, 2015 - SKCM, Anti-CTLA4" = "Van Allen 2015",
                                                                                    "IMVigor210 - BLCA, Anti-PDL1" = "IMVigor210", 
                                                                                    "Prins, 2019 - GBM, Anti-PD1" = "Prins 2019"),
                                  selected = c("Gide 2019", "Hugo 2016")),
-              #the Auslander dataset does not have annotation for OS  
           #  ),
           #   column(
           #     width = 7,
@@ -52,16 +52,32 @@ ioresponse_UI <- function(id){
       #  )
         
       ),#optionsBox
-      column(
-        width = 9,
+      fluidRow(
+        width = 12,
         plotBox(
           width = 12,
-          plotlyOutput(ns("dist_plots"), height = "700px") %>%
+          plotlyOutput(ns("dist_plots"), height = "auto") %>%
+            shinycssloaders::withSpinner()
+        )
+      )
+      ),
+    optionsBox(
+      width = 12,
+   
+        uiOutput(ns("extra_features"))
+      
+    ),
+      fluidRow(
+        width = 12,
+        plotBox(
+          width = 12,
+          plotlyOutput(ns("dist_plots2"), height = "auto") %>%
             shinycssloaders::withSpinner()
         )
         
       )
-    ) #sectionBox
+      
+   # ) #sectionBox
   )
 }
 
@@ -92,6 +108,27 @@ ioresponse <- function(input,
     )
   })
   
+  output$extra_features <- renderUI({
+      sel2 <- lapply(input$datasets, function(id){
+        clin_data <- feature_io_df %>% 
+          dplyr::filter(`Variable Class` == paste("Clinical data for", id) | `Variable Class` == "Immune Checkpoint Treatment")
+        
+        var_choices <- create_filtered_nested_list_by_class(feature_df = clin_data,
+                                                            filter_value = "Categorical",
+                                                            class_column = "Variable Class",
+                                                            internal_column = "FeatureMatrixLabelTSV",
+                                                            display_column = "FriendlyLabel",
+                                                            filter_column = "VariableType")
+        selectInput(
+          ns(paste0("dist", id)),
+          label = paste("Select extra group for", as.character(id)),
+          choices = var_choices #list(split(clin_data$FeatureMatrixLabelTSV, clin_data$FriendlyLabel), "Drug" = "Drug", "Treatment" = "treatment_when_collected")
+        )
+      })
+      do.call(flowLayout, sel2)
+  })
+  
+  
   output$dist_plots <- renderPlotly({
     
     all_plots <- purrr::map(.x = input$datasets, function(dataset){
@@ -100,14 +137,20 @@ ioresponse <- function(input,
         filter(Dataset == dataset) %>% 
         select(Sample_ID, Dataset, input$var1_surv, input$groupvar)
       
+      ylabel <-  convert_value_between_columns(input_value =input$var1_surv,
+                                               df = feature_io_df,
+                                               from_column = "FeatureMatrixLabelTSV",
+                                               to_column = "FriendlyLabel")
+  
       create_violinplot(dataset_data, 
                         x_col = input$groupvar, 
                         y_col = input$var1_surv, 
-                        xlab = as.character(input$groupvar),
-                        ylab = as.character(input$var1_surv),
+                        xlab = (input$groupvar),
+                        ylab = ylabel,
                         #yrange = c(0, 9000),
                         fill_colors = c("#0000FF", "#00FF00", "#FF00FF", "#FF0000"),
                         showlegend = F) %>% 
+        
         add_annotations(
           text = dataset,
           x = 0.5,
@@ -122,13 +165,67 @@ ioresponse <- function(input,
                           
     })
     
-    plotly::subplot(all_plots, shareY = TRUE, nrows = 2, margin = c(0.02, 0.02, 0.15,0.1))
+    plotly::subplot(all_plots, shareX = TRUE, shareY = TRUE, nrows = 1, margin = c(0.01, 0.01, 0.01,0.01))
     
+    #titleX = TRUE, 
    # dataset_data %>% 
    #      ggplot(aes_string(y = input$var1_surv, x =input$groupvar))+
    #        geom_violin()+
    #        theme_bw()+
    #        facet_wrap( ~ Dataset)
   })
+  
+  output$dist_plots2 <- renderPlotly({
     
+    all_plots <- purrr::map(.x = input$datasets, function(dataset){
+      
+      id <- paste0("dist", dataset)
+      dataset_data <- fmx_io %>% 
+        filter(Dataset == dataset) %>% 
+        select(Sample_ID, Dataset, input$var1_surv, input$groupvar, input[[id]], )
+      
+      
+      dataset_data$Comb_feat <- paste(dataset_data[[input$groupvar]], dataset_data[[input[[id]]]], sep = "_" )
+     
+      ylabel <-  convert_value_between_columns(input_value =input$var1_surv,
+                                               df = feature_io_df,
+                                               from_column = "FeatureMatrixLabelTSV",
+                                               to_column = "FriendlyLabel")
+      # from: https://community.plot.ly/t/how-to-plot-multiple-x-axis-in-plotly-in-r/3014/3
+      # ax2 <- list(
+      #   title = " ",
+      #   overlaying = "x",
+      #   anchor = "y",
+      #   side = "top",
+      #   titlefont = f1,
+      #   showticklabels = TRUE,
+      #   tickangle = 0,
+      #   tickfont = f2
+      #   
+      # )
+      create_violinplot(dataset_data, 
+                        x_col = "Comb_feat", 
+                        y_col = input$var1_surv, 
+                        xlab = as.factor(dataset_data$Comb_feat),
+                        ylab = ylabel,
+                        #yrange = c(0, 9000),
+                        fill_colors = c("#0000FF", "#00FF00", "#FF00FF", "#FF0000"),
+                        showlegend = F) %>% 
+        add_annotations(
+          text = dataset,
+          x = 0.5,
+          y = 1.2,
+          yref = "paper",
+          xref = "paper",
+          xanchor = "center",
+          yanchor = "top",
+          showarrow = FALSE,
+          font = list(size = 15)
+        )
+      
+    })
+    plotly::subplot(all_plots, shareX = TRUE, shareY = TRUE, nrows = 1, margin = c(0.01, 0.01, 0.01,0.01))  
+  })
+    
+  
 }
