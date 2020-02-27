@@ -45,6 +45,7 @@ page_files:
   - "pages/resourcespage.R"
 
 libraries:
+  - "Cairo"
   - "shinydashboard"
   - "plotly"
 
