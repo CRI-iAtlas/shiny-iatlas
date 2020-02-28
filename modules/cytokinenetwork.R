@@ -451,7 +451,7 @@ cytokinenetwork <- function(
   
   output$download_data <- downloadHandler(
     filename = function() stringr::str_c("edges-", Sys.Date(), ".csv"),
-    content = function(con) readr::write_csv(get_node_table(tbl_edges(), panimmune_data$ecn_labels), con)
+    content = function(con) readr::write_csv(get_edge_table(tbl_edges(), panimmune_data$ecn_labels), con)
   )
   
   output$download_data_nodes <- downloadHandler(
