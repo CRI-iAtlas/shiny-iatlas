@@ -11,7 +11,7 @@
       "text-valign" : "center",
       "text-halign" : "center",
       "color" : "rgb(0,0,0)",
-      "font-family" : "SansSerif",
+      "font-family" : "Helvetica",
       "font-weight" : "normal",
       "border-opacity" : 1.0,
       "border-color" : "rgb(204,204,204)",
@@ -27,7 +27,7 @@
     "selector" : "node[UpBinRatio >= 0.875][UpBinRatio <= 1]",
     "css" : {
       "background-color" : "mapData(UpBinRatio,0.875,1,rgb(0,109,44),rgb(0,68,27))",
-      "color" : "rgb(230,230,230)"
+      "color" : "rgb(217,217,217)"
     }
   }, {
     "selector" : "node[UpBinRatio >= 0.75][UpBinRatio < 0.875]",
@@ -68,7 +68,7 @@
     "selector" : "node[id = 'T_cells_CD8'][UpBinRatio >= 0.875][UpBinRatio <= 1]",
     "css" : {
       "background-color" : "mapData(UpBinRatio,0.875,1,rgb(153,52,4),rgb(102,37,6))",
-      "color" : "rgb(230,230,230)",
+      "color" : "rgb(217,217,217)",
       "shape" : "ellipse",
       "text-max-width" : 90.0,
       "text-wrap" : "wrap",
@@ -149,7 +149,7 @@
     "selector" : "node[id = 'Macrophage'][UpBinRatio >= 0.875][UpBinRatio <= 1]",
     "css" : {
       "background-color" : "mapData(UpBinRatio,0.875,1,rgb(8,81,156),rgb(8,48,107))",
-      "color" : "rgb(230,230,230)",
+      "color" : "rgb(217,217,217)",
       "shape" : "ellipse",
       "text-max-width" : 90.0,
       "text-wrap" : "wrap",
@@ -230,7 +230,7 @@
     "selector" : "node[id = 'Dendritic_cells'][UpBinRatio >= 0.875][UpBinRatio <= 1]",
     "css" : {
       "background-color" : "mapData(UpBinRatio,0.875,1,rgb(84,39,143),rgb(63,0,125))",
-      "color" : "rgb(230,230,230)",
+      "color" : "rgb(217,217,217)",
       "shape" : "ellipse",
       "text-max-width" : 90.0,
       "text-wrap" : "wrap",
@@ -311,7 +311,7 @@
     "selector" : "node[id = 'Tumor_cell'][UpBinRatio >= 0.875][UpBinRatio <= 1]",
     "css" : {
       "background-color" : "mapData(UpBinRatio,0.875,1,rgb(189,0,38),rgb(128,0,38))",
-      "color" : "rgb(230,230,230)",
+      "color" : "rgb(217,217,217)",
       "shape" : "ellipse",
       "text-max-width" : 90.0,
       "text-wrap" : "wrap",

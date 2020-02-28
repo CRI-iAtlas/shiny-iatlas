@@ -10,7 +10,7 @@
       "border-color" : "rgb(204,204,204)",
       "height" : 35.0,
       "text-opacity" : 1.0,
-      "font-family" : "SansSerif",
+      "font-family" : "Helvetica",
       "font-weight" : "normal",
       "text-valign" : "center",
       "text-halign" : "center",
