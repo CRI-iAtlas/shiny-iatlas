@@ -97,19 +97,6 @@ load_driver_mutation <- function() {
 }
 
 
-load_cnvs <- function() {
-  if (!USE_REMOTE_BQ) {
-    list( cnvs_df =
-      # cn_table
-      cnvs_df <- readr::read_csv('data/cn_table_v2.csv')
-    )
-  } else {
-    fetch_cnvs() %>% 
-      format_cnvs()
-  }
-}
-
-
 ## selection choices for the cell fractions.  Lots of other choices possible.
 create_cell_fraction_options <- function() {
     if (!USE_REMOTE_BQ) {
@@ -130,7 +117,6 @@ load_data <- function() {
     io_target_annotations_data <- load_io_target_annotations()
     io_target_expression_data <- load_io_target_expression()
     driver_mutation_data <- load_driver_mutation()
-    cnvs_data <- load_cnvs()
 
     list(
         feature_df = manifest_data$feature_df,
@@ -142,7 +128,6 @@ load_data <- function() {
         im_expr_df = im_expression_data$im_expr_df,
         io_target_annotations = io_target_annotations_data$io_target_annotations,
         io_target_expr_df = io_target_expression_data$io_target_expr_df,
-        driver_mutation_df = driver_mutation_data$driver_mutation_df,
-        cnvs_df = cnvs_data$cnvs_df
+        driver_mutation_df = driver_mutation_data$driver_mutation_df
     )
 }
