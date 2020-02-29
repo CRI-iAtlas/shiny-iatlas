@@ -5,29 +5,34 @@ cnvs_UI <- function(id) {
         titleBox("iAtlas Explorer: Association with Copy Number Variations"),
         textBox(
             width = 12,
-            p("This module can be used to explore statistical associations between immune readouts and copy number variations.")
+            p("Explore statistical associations between immune readouts and copy number variations.")
         ),
         sectionBox(
             title = "Immune Response Association With Copy Number Variants",
             messageBox(
                 width = 12,
-                p("This module allows exploration of CNV association with immune readouts. Initially, all genes and all groups are shown, use
-                  the filter controls to limit the number of points shown. This limits the plot and table.\n\n"),
+                p("This module contains a large table of associations (>3 Million) between copy number variants (by gene) and immune readouts. Initially, all genes and all groups are shown. 
+                Use the filter controls to limit results to your interests.\n\n"),
                 
-                p("Within each group, a T-test was performed between samples with no copy number variation, and samples with either amplified 
-                  or deleted regions (two separate tests for amplified genes (Amp) and deleted genes (Del).\n\n"),
+                p("Within each group (TCGA study, subtype, or immune subtype), a T-test was performed on immune readouts 
+                  between samples with no copy number variation for a given gene,  
+                  and samples with either amplified or deleted regions (two separate tests).\n\n"),
                 
-                p("There are three components to the module: a volcano plot, a table of results, and a violin plot.\n"),
+                p("There are three components to the module: filter controls, a summary plot, and a table of results.\n"),
                 
-                p("The  plot displays the distribution of T statistics."),
+                p("The filter controls remove statistics from the table and plot. It's possible to select multiple groups and genes."),
+                
+                p("The ridge plot shows the distribution of T statistics, given the filter settings."),
+                
                 tags$ul(
-                  tags$li("The x-axis shows the T statistic, positive if the CNV-altered group has a lower score."),
+                  tags$li("The x-axis shows the T statistic value, positive if the normal group has higher immune readout scores."),
                   tags$li("The y-axis represents the number of genes with that statistic.")
                 ),
-                p("\n\nImmune landscape manuscript context: This allows you to display distributions such as those shown in Figure S4A.","\n"),
+                p("\n\nImmune landscape manuscript context: The results are comparible to those shown in Figure S4A.","\n"),
                 p(""),
-                p("A statistical test is performed in a group only when the number of altered samples exceeds a minimum required count (currently 3). 
-                  In rare instances all (or all but one) samples within a group contain the alteration and a test cannot be performed."),
+                p("Notes: A statistical test is performed only when the number of samples exceeds a minimum required group count (currently 3). 
+                  In rare instances all (or all but one) samples within a group contain the alteration and a test cannot be performed.
+                  Only statistics with p-values less than 0.001 are retained"),
                 p(""),
                 p("")
             ),
@@ -87,7 +92,7 @@ cnvs_UI <- function(id) {
             fluidRow(
                 plotBox(
                     width = 12,
-                    shiny::plotOutput(ns("cnvPlot")) %>%
+                    plotlyOutput(ns("cnvPlot")) %>%
                         shinycssloaders::withSpinner()
                 )
             ),
@@ -122,8 +127,6 @@ cnvs <- function(
     plot_colors) {
 
     ns <- session$ns
-
-    library(ggridges)
 
     cnvs_df <- reactive({
         req(!is.null(subset_df()), cancelOutput = T)
@@ -183,8 +186,8 @@ cnvs <- function(
                                 dplyr::pull(gene)))
           
             string <- stringr::str_c(
-                "total number of rows: ", as.character(  dim(cnvs_df())[1]  ), 
-                ",  number of genes:  ", as.character(length(res1))  
+                "Total number of rows: ", as.character(  dim(cnvs_df())[1]  ), 
+                ",  Number of genes:  ", as.character(length(res1))  
                 )
             return(string)
         }
@@ -210,14 +213,18 @@ cnvs <- function(
         return(res0)
     })
     
-    
     #### PLOT ####
-    output$cnvPlot <- shiny::renderPlot(
-      # uses ggridges package
-      ggplot(filter_df(), aes(x = t, y = direction)) + 
-        geom_density_ridges(scale = 1) + facet_wrap(~group)
+    output$cnvPlot <- renderPlotly({
       
-    )
+      plot_ly(x = filter_df()$t_stat, type = "histogram", name = "Histogram")
+      
+      #plot_ly(x = ~rnorm(50), type = "histogram")
+      
+      #p <- ggplot::ggplot(filter_df(), aes(x = t, y = direction)) + geom_point(shape=1),
+           #ggridges::geom_density_ridges(scale = 1) + facet_wrap(~group) + 
+           #xlab('T statistics') + ylab('number of genes'),
+
+    })
     
     # Filter data based on selections
     output$cnvtable <- DT::renderDataTable(
@@ -226,8 +233,8 @@ cnvs <- function(
         
         filter_df() %>% 
           dplyr::select(-group_label, -label, -group_label, -pvalue) %>%
-          dplyr::mutate_at(vars(Mean_Norm, Mean_CNV, t, neg_log10_pvalue , Mean_Diff), dplyr::funs(round(., 3))) %>%
-          dplyr::select(metric, group, gene, direction, Mean_Norm, Mean_CNV, Mean_Diff, t, neg_log10_pvalue),
+          dplyr::mutate_at(vars(Mean_Norm, Mean_CNV, t_stat, neg_log10_pvalue , Mean_Diff), dplyr::funs(round(., 3))) %>%
+          dplyr::select(metric, group, gene, direction, Mean_Norm, Mean_CNV, Mean_Diff, t_stat, neg_log10_pvalue),
         
         extensions = 'Buttons', options = list(
           scrollY = '300px', 
