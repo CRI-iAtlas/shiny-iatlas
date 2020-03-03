@@ -149,11 +149,12 @@ cnvs <- function(
                             dplyr::filter(group_label == group_internal_choice())  %>%
                             dplyr::pull(gene)))
       
+      # table of genes
+      gdf <- panimmune_data$im_potential_factors
       res2 <- gdf %>% dplyr::pull(`Gene Family`) %>% unique() %>% na.omit() 
       res2 <- ifelse(res2 == "Nectin and Nectin-like ligand/receptor co-signalling molecules", "Nectin / Nectin-like", res2)
       res2 <- as.character(sapply(res2, function(a) paste0('<geneset> ', a)))
-      print(res2)
-      
+
       selectInput(
         ns("cn_gene_point_filter"),
         "Select Gene Filter",
@@ -190,8 +191,8 @@ cnvs <- function(
       
       # gene families
       gcats <- gdf %>% dplyr::pull(`Gene Family`) %>% unique() %>% na.omit() 
-      gcats <- ifelse(res2 == "Nectin and Nectin-like ligand/receptor co-signalling molecules", 
-                      "Nectin / Nectin-like", res2)
+      gcats <- ifelse(gcats == "Nectin and Nectin-like ligand/receptor co-signalling molecules", 
+                              "Nectin / Nectin-like", gcats)
 
       # the gene filter selection
       gene_input <- input$cn_gene_point_filter
