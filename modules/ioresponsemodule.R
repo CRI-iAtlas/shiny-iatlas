@@ -197,20 +197,20 @@ ioresponse <- function(input,
       #   overlaying = "x",
       #   anchor = "y",
       #   side = "top",
-      #   titlefont = f1,
       #   showticklabels = TRUE,
-      #   tickangle = 0,
-      #   tickfont = f2
-      #   
+      #   tickangle = 0
       # )
+      
       create_violinplot(dataset_data, 
-                        x_col = "Comb_feat", 
+                        x_col = input$groupvar, 
                         y_col = input$var1_surv, 
-                        xlab = as.factor(dataset_data$Comb_feat),
+                        xlab = as.factor(input$groupvar),
                         ylab = ylabel,
+                        color = (as.character(input[[id]])),
                         #yrange = c(0, 9000),
                         fill_colors = c("#0000FF", "#00FF00", "#FF00FF", "#FF0000"),
-                        showlegend = F) %>% 
+                        #legendgroup = as.character(input[[id]]),
+                        showlegend = T) %>% 
         add_annotations(
           text = dataset,
           x = 0.5,
@@ -220,10 +220,15 @@ ioresponse <- function(input,
           xanchor = "center",
           yanchor = "top",
           showarrow = FALSE,
-          font = list(size = 15)
-        )
-      
+          font = list(size = 15)) %>%
+        layout(violingap = 0,
+               violingroupgap = 0.1,
+               violinmode = "group",
+               legend = list(orientation = 'h'))
+        
     })
+    #TODO: legend for each plot, see: https://stackoverflow.com/questions/51287107/legend-near-each-plot-in-subplot-plot-ly-in-r
+    
     plotly::subplot(all_plots, shareX = TRUE, shareY = TRUE, nrows = 1, margin = c(0.01, 0.01, 0.01,0.01))  
   })
     

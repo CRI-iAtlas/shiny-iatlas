@@ -13,6 +13,7 @@ create_violinplot <- function(
     source_name = NULL, 
     fill_colors = NA, 
     points = NULL,
+    legendgroup = NULL,
     showlegend = T) {
     
     
@@ -42,6 +43,7 @@ create_violinplot <- function(
             colors = fill_colors,
             type = 'violin',
             hoverinfo = 'text',
+            legendgroup = legendgroup,
             showlegend = showlegend,
             box = list(
                 visible = TRUE
