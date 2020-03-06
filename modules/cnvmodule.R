@@ -233,30 +233,39 @@ cnvs <- function(
     
     #### PLOT ####
     output$cnvPlot <- renderPlotly({
+      df <- dplyr::select(filter_df(), x = t_stat)
+
+      create_histogram(
+        df,
+        x_lab = 'T statistics, Positive if normal value higher',
+        y_lab = 'Number of tests',
+        title = 'Distribution of T statistics',
+        source_name = "cnv_histogram"
+      )
       
-      plot_ly(x = filter_df()$t_stat, type = "histogram", source = 'cnv_hist') %>%
-        layout(
-          title = 'Distribution of T statistics',
-          xaxis = list(title = 'T statistics, Positive if normal value higher'),
-          yaxis = list(title = 'Number of tests')
-        ) %>%
-        format_plotly() %>%
-        event_register("plotly_selected")
-      
+      # plot_ly(x = filter_df()$t_stat, type = "histogram", source = 'cnv_hist') %>%
+      #   layout(
+      #     title = 'Distribution of T statistics',
+      #     xaxis = list(title = 'T statistics, Positive if normal value higher'),
+      #     yaxis = list(title = 'Number of tests')
+      #   ) %>%
+      #   format_plotly() %>%
+      #   event_register("plotly_selected")
+      # 
     })
     
     
     
-    create_data_table <- function(filter_df) {
+    create_data_table <- function(eventdat, filter_df) {
       
       
-      eventdata <- event_data("plotly_selected", source = "cnv_hist")
-      
-      print('EVENTDATA')
-      print(eventdata)
+      # eventdata <- event_data("plotly_selected", source = "cnv_hist")
+      # 
+      # print('EVENTDATA')
+      # print(eventdata)
       DT::datatable(
         
-        filter_df() %>% 
+        filter_df %>% 
           dplyr::select(-group_label, -label, -group_label, -pvalue) %>%
           dplyr::mutate_at(vars(Mean_Norm, Mean_CNV, t_stat, neg_log10_pvalue , Mean_Diff), dplyr::funs(round(., 3))) %>%
           dplyr::select(metric, group, gene, direction, Mean_Norm, Mean_CNV, Mean_Diff, t_stat, neg_log10_pvalue),
@@ -278,8 +287,14 @@ cnvs <- function(
     }
     
     # Create the Data Table given the filter settings
-    output$cnvtable <- DT::renderDataTable(
-      create_data_table(filter_df)
-    )
+    output$cnvtable <- DT::renderDataTable({
+      eventdata <- event_data("plotly_selected", source = "cnv_histogram")
+      eventdata2 <- plotly::event_data("plotly_click", "cnv_histogram")
+      print('EVENTDATA')
+      print(eventdata)
+      print(eventdata2)
+      
+      create_data_table(eventdata, filter_df())
+    })
     
 } # end Server
