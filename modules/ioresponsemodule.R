@@ -57,7 +57,8 @@ ioresponse_UI <- function(id){
         plotBox(
           width = 12,
           plotlyOutput(ns("dist_plots"), height = "auto") %>%
-            shinycssloaders::withSpinner()
+            shinycssloaders::withSpinner(),
+          DT::dataTableOutput(ns("stats1"))
         )
       )
       ),
@@ -142,7 +143,7 @@ ioresponse <- function(input,
                                                from_column = "FeatureMatrixLabelTSV",
                                                to_column = "FriendlyLabel")
   
-      create_violinplot(dataset_data, 
+       create_violinplot(dataset_data, 
                         x_col = input$groupvar, 
                         y_col = input$var1_surv, 
                         xlab = (input$groupvar),
@@ -162,18 +163,46 @@ ioresponse <- function(input,
           showarrow = FALSE,
           font = list(size = 15)
         )
+      
+      #p + ggpubr::stat_compare_means()
                           
     })
     
     plotly::subplot(all_plots, shareX = TRUE, shareY = TRUE, nrows = 1, margin = c(0.01, 0.01, 0.01,0.01))
-    
-    #titleX = TRUE, 
-   # dataset_data %>% 
-   #      ggplot(aes_string(y = input$var1_surv, x =input$groupvar))+
-   #        geom_violin()+
-   #        theme_bw()+
-   #        facet_wrap( ~ Dataset)
   })
+  
+  
+  output$stats1 <- DT::renderDataTable({
+    
+    fmx_io %>% 
+      filter(Dataset %in% input$datasets)
+    
+    purrr::map_dfr(.x = input$datasets, function(dataset){
+
+      data_set <- fmx_io %>%
+        filter(Dataset == dataset)
+      
+      split_data <- split(data_set, data_set[[input$groupvar]])
+      
+      comb_groups <- combn(1:length(split_data), 2)
+      
+      purrr::map2_dfr(.x = comb_groups[1,], .y = comb_groups[2,], function(x,y){
+        
+        test_data <- broom::tidy(t.test(split_data[[x]][[input$var1_surv]], 
+                                        split_data[[y]][[input$var1_surv]], 
+                                        paired = FALSE)) %>% 
+          dplyr::select(statistic, p.value)
+        
+        test_data$Dataset <- as.character(dataset)
+        test_data$Test <- paste0(input$groupvar, ": ", names(split_data)[x], " vs. ", names(split_data)[y])
+        
+        test_data %>% 
+          dplyr::select(Dataset, Test, statistic, p.value)  
+      })
+
+       })
+  })
+  
   
   output$dist_plots2 <- renderPlotly({
     
@@ -182,7 +211,7 @@ ioresponse <- function(input,
       id <- paste0("dist", dataset)
       dataset_data <- fmx_io %>% 
         filter(Dataset == dataset) %>% 
-        select(Sample_ID, Dataset, input$var1_surv, input$groupvar, input[[id]], )
+        select(Sample_ID, Dataset, input$var1_surv, input$groupvar, input[[id]])
       
       
       dataset_data$Comb_feat <- paste(dataset_data[[input$groupvar]], dataset_data[[input[[id]]]], sep = "_" )
@@ -191,15 +220,7 @@ ioresponse <- function(input,
                                                df = feature_io_df,
                                                from_column = "FeatureMatrixLabelTSV",
                                                to_column = "FriendlyLabel")
-      # from: https://community.plot.ly/t/how-to-plot-multiple-x-axis-in-plotly-in-r/3014/3
-      # ax2 <- list(
-      #   title = " ",
-      #   overlaying = "x",
-      #   anchor = "y",
-      #   side = "top",
-      #   showticklabels = TRUE,
-      #   tickangle = 0
-      # )
+  
       
       create_violinplot(dataset_data, 
                         x_col = input$groupvar, 
@@ -220,11 +241,11 @@ ioresponse <- function(input,
           xanchor = "center",
           yanchor = "top",
           showarrow = FALSE,
-          font = list(size = 15)) %>%
-        layout(violingap = 0,
-               violingroupgap = 0.1,
-               violinmode = "group",
-               legend = list(orientation = 'h'))
+          font = list(size = 15)) #%>%
+        # layout(violingap = 0,
+        #        violingroupgap = 0.1,
+        #        violinmode = "group",
+        #        legend = list(orientation = 'h'))
         
     })
     #TODO: legend for each plot, see: https://stackoverflow.com/questions/51287107/legend-near-each-plot-in-subplot-plot-ly-in-r
