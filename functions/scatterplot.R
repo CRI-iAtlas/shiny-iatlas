@@ -1,3 +1,4 @@
+
 create_scatterplot <- function(
     df, 
     x_col = "x",
@@ -11,7 +12,6 @@ create_scatterplot <- function(
     identity_line = FALSE,
     source_name = NULL,
     fill_colors = NA,
-    fill_color = NA,
     horizontal_line = FALSE,
     horizontal_line_y = NULL) {
     
@@ -31,7 +31,6 @@ create_scatterplot <- function(
                 df,
                 x = ~X,
                 y = ~Y,
-                color = fill_color,
                 colors = fill_colors,
                 key = ~LABEL,
                 source = source_name) %>% 
@@ -41,7 +40,7 @@ create_scatterplot <- function(
                     text = ~LABEL,
                     textposition = 'top left'
                 ))
-            
+    
     p <- p %>% 
         layout(
             title = title,
