@@ -240,29 +240,15 @@ cnvs <- function(
         x_lab = 'T statistics, Positive if normal value higher',
         y_lab = 'Number of tests',
         title = 'Distribution of T statistics',
-        source_name = "cnv_histogram"
+        source_name = "cnv_hist"
       )
-      
-      # plot_ly(x = filter_df()$t_stat, type = "histogram", source = 'cnv_hist') %>%
-      #   layout(
-      #     title = 'Distribution of T statistics',
-      #     xaxis = list(title = 'T statistics, Positive if normal value higher'),
-      #     yaxis = list(title = 'Number of tests')
-      #   ) %>%
-      #   format_plotly() %>%
-      #   event_register("plotly_selected")
-      # 
     })
-    
-    
-    
-    create_data_table <- function(eventdat, filter_df) {
+  
+    create_data_table <- function(eventdata, filter_df) {
       
+      t_stats <- eventdata$x
+      print(t_stats)
       
-      # eventdata <- event_data("plotly_selected", source = "cnv_hist")
-      # 
-      # print('EVENTDATA')
-      # print(eventdata)
       DT::datatable(
         
         filter_df %>% 
@@ -285,15 +271,11 @@ cnvs <- function(
         )
       )
     }
+
     
     # Create the Data Table given the filter settings
     output$cnvtable <- DT::renderDataTable({
-      eventdata <- event_data("plotly_selected", source = "cnv_histogram")
-      eventdata2 <- plotly::event_data("plotly_click", "cnv_histogram")
-      print('EVENTDATA')
-      print(eventdata)
-      print(eventdata2)
-      
+      eventdata <- event_data("plotly_selected", source = "cnv_hist")
       create_data_table(eventdata, filter_df())
     })
     
