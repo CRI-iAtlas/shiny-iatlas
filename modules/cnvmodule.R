@@ -22,7 +22,7 @@ cnvs_UI <- function(id) {
                 
                 p("The filter controls remove statistics from the table and plot. It's possible to select multiple groups and genes."),
                 
-                p("The ridge plot shows the distribution of T statistics, given the filter settings."),
+                p("The histogram shows the distribution of T statistics, given the filter settings."),
                 
                 tags$ul(
                   tags$li("The x-axis shows the T statistic value, positive if the normal group has higher immune readout scores."),
@@ -104,6 +104,7 @@ cnvs <- function(
     session, 
     group_display_choice, 
     group_internal_choice,
+    study_subset_selection,
     subset_df, 
     plot_colors) {
 
@@ -125,10 +126,16 @@ cnvs <- function(
     # for the group selection
     output$select_cn_group_ui <- renderUI({
 
-        res0 <- sort(unique(cnvs_df() %>%  # df_for_regression(),
-            dplyr::filter(metric == input$response_variable) %>%
-            dplyr::filter(group_label == group_internal_choice())  %>%
-            dplyr::pull(group)))
+       if (group_internal_choice() == 'Subtype_Immune_Model_Based') {
+         res0 <- sort(unique(subset_df() %>%  dplyr::pull(Subtype_Immune_Model_Based)))
+       }
+       else if (group_internal_choice() == 'Study') {
+         res0 <- sort(unique(subset_df() %>%  dplyr::pull(Study)))
+       }
+       else if (group_internal_choice() == 'Subtype_Curated_Malta_Noushmehr_et_al') {
+         res0 <- sort(unique(subset_df() %>%  dplyr::pull(Subtype_Curated_Malta_Noushmehr_et_al)))
+       }
+       else { res0 <- NULL }
 
         selectInput(
             ns("cn_group_point_filter"),
@@ -145,9 +152,9 @@ cnvs <- function(
     output$select_cn_gene_ui <- renderUI({
       
       res1 <- sort(unique(cnvs_df() %>%  # df_for_regression(),
-                            dplyr::filter(metric == input$response_variable) %>%
-                            dplyr::filter(group_label == group_internal_choice())  %>%
-                            dplyr::pull(gene)))
+                            dplyr::filter(Metric == input$response_variable) %>%
+                            dplyr::filter(Group_label == group_internal_choice())  %>%
+                            dplyr::pull(Gene)))
       
       # table of genes
       gdf <- panimmune_data$im_potential_factors
@@ -170,9 +177,9 @@ cnvs <- function(
             return("Members in current selected groupings do not have driver CNV results")
         } else {
             res1 <- sort(unique(cnvs_df() %>% 
-                                dplyr::filter(metric == input$response_variable) %>%
-                                dplyr::filter(group_label == group_internal_choice())  %>%
-                                dplyr::pull(gene)))
+                                dplyr::filter(Metric == input$response_variable) %>%
+                                dplyr::filter(Group_label == group_internal_choice())  %>%
+                                dplyr::pull(Gene)))
           
             string <- stringr::str_c(
                 "Total number of rows: ", as.character(  dim(cnvs_df())[1]  ), 
@@ -207,25 +214,25 @@ cnvs <- function(
       genes <- c(gene_input, gdf %>% dplyr::filter(`Gene Family` %in% gene_input) %>% dplyr::pull(Gene))
       
       # fiter those genes!
-      res0 %>% dplyr::filter(gene %in% genes)
+      res0 %>% dplyr::filter(Gene %in% genes)
     }
 
     
     # applying the filter controls.
     filter_df <- reactive({
 
-        res0 <- cnvs_df() %>% dplyr::filter(metric == input$response_variable)
+        res0 <- cnvs_df() %>% dplyr::filter(Metric == input$response_variable)
 
         if (! 'All' %in% input$cn_gene_point_filter) {
           res0 <- gene_filters(res0)
         } 
         
         if (! 'All' %in% input$cn_dir_point_filter ) {
-            res0 <- res0 %>% dplyr::filter(direction == input$cn_dir_point_filter)
+            res0 <- res0 %>% dplyr::filter(Direction == input$cn_dir_point_filter)
         }
         
         if (! 'All' %in% input$cn_group_point_filter ) {
-            res0 <- res0 %>% dplyr::filter(group %in% input$cn_group_point_filter)
+            res0 <- res0 %>% dplyr::filter(Group %in% input$cn_group_point_filter)
         }
 
         return(res0)
@@ -233,7 +240,7 @@ cnvs <- function(
     
     #### PLOT ####
     output$cnvPlot <- renderPlotly({
-      df <- dplyr::select(filter_df(), x = t_stat)
+      df <- dplyr::select(filter_df(), x = T_stat)
 
       create_histogram(
         df,
@@ -244,17 +251,17 @@ cnvs <- function(
       )
     })
   
+    ### Table ###
     create_data_table <- function(eventdata, filter_df) {
       
       t_stats <- eventdata$x
-      print(t_stats)
-      
+
       DT::datatable(
         
         filter_df %>% 
-          dplyr::select(-group_label, -label, -group_label, -pvalue) %>%
-          dplyr::mutate_at(vars(Mean_Norm, Mean_CNV, t_stat, neg_log10_pvalue , Mean_Diff), dplyr::funs(round(., 3))) %>%
-          dplyr::select(metric, group, gene, direction, Mean_Norm, Mean_CNV, Mean_Diff, t_stat, neg_log10_pvalue),
+          dplyr::select(-Group_label, -Label, -Pvalue) %>%
+          dplyr::mutate_at(vars(Mean_Normal, Mean_CNV, T_stat, Neg_log10_pvalue , Mean_Diff), dplyr::funs(round(., 3))) %>%
+          dplyr::select(Metric, Group, Gene, Direction, Mean_Normal, Mean_CNV, Mean_Diff, T_stat, Neg_log10_pvalue),
         
         extensions = 'Buttons', options = list(
           scrollY = '300px', 
@@ -276,6 +283,7 @@ cnvs <- function(
     # Create the Data Table given the filter settings
     output$cnvtable <- DT::renderDataTable({
       eventdata <- event_data("plotly_selected", source = "cnv_hist")
+      
       create_data_table(eventdata, filter_df())
     })
     

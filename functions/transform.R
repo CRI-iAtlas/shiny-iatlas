@@ -533,23 +533,26 @@ build_mutation_df <- function(df, response_var, group_column, group_options){
 build_cnvs_df <- function(df, response_var, group_column, group_options){
   
   if (group_column == 'Subtype_Immune_Model_Based') {
+    res0 <- (unique(df %>%  dplyr::pull(Subtype_Immune_Model_Based)))
     load('data/cnv_results_immune_subtype.rda')
-    cnvs_df <- immunetable
+    cnvs_df <- immunetable %>% dplyr::filter(Group %in% res0)
     rm(immunetable) 
     gc()
   } else if (group_column == 'Study') {
+    res0 <- (unique(df %>%  dplyr::pull(Study)))
     load('data/cnv_results_study.rda')
-    cnvs_df <- studytable
+    cnvs_df <- studytable %>% dplyr::filter(Group %in% res0)
     rm(studytable)
     gc()
   } else if (group_column == 'Subtype_Curated_Malta_Noushmehr_et_al') {
-    load('data/cnv_results_study.rda')
-    cnvs_df <- subtypetable
+    res0 <- (unique(df %>%  dplyr::pull(Subtype_Curated_Malta_Noushmehr_et_al)))
+    load('data/cnv_results_tcga_subtype.rda')
+    cnvs_df <- subtypetable %>% dplyr::filter(Group %in% res0)
     rm(subtypetable)
     gc()
   }
   
-  cnvs_df$Mean_Diff <- cnvs_df$Mean_Norm - cnvs_df$Mean_CNV
+  cnvs_df$Mean_Diff <- cnvs_df$Mean_Normal - cnvs_df$Mean_CNV
   
   if(nrow(cnvs_df) == 0){
     cnvs_df <- NULL

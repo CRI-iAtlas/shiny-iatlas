@@ -104,6 +104,7 @@ shinyServer(function(input, output, session) {
       "module10",
       reactive(input$ss_choice),
       reactive(group_internal_choice()),
+      reactive(input$study_subset_selection),
       reactive(subset_df()),
       reactive(plot_colors()))
 
