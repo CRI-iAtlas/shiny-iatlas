@@ -14,6 +14,8 @@ module_files:
   - "modules/subtypeclassifiermodule.R"
   - "modules/submodules.R"
   - "modules/distribution_plot_module.R"
+  - "modules/cytokinenetwork.R"
+  - "modules/cellimagemodule.R"
 
 function_files:
   - "functions/load_data.R"
@@ -33,6 +35,8 @@ function_files:
   - "functions/tablef_fun.R"
   - "functions/imageplot.R"
   - "functions/event_data_utils.R"
+  - "functions/extracellnet_utils.R"
+  - "functions/cellimage_utils.R"
 
 page_files:
   - "pages/aboutpage.R"
@@ -82,9 +86,9 @@ immunotarget_groups:
 
 immune_groups:
   - "Subtype_Immune_Model_Based"
-  - "Subtype_Curated_Malta_Noushmehr_et_al"
   - "Study"
-
+  - "Subtype_Curated_Malta_Noushmehr_et_al"
+  
 cell_type_aggregates:
   - "Immune Cell Proportion - Original"
   - "Immune Cell Proportion - Multipotent Progenitor Cell Derivative Class"

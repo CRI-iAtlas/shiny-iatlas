@@ -1,0 +1,11 @@
+**Title:** Cell, ligand and receptor abundance
+
+**Description:** To generate the cellular image for display, the figure was drawn in Adobe Illustrator, exported to SVG and transformed into “Cairo” graphic SVG format for import into R as a grid object (using the R package grImport2).  The proteins and cells shown in the image were then made available for display as a node-edge network.  In the node-edge network directionality of network edges follows that of the related iAtlas module devoted to showing extracellular networks of the tumor microenvironment.
+ 
+To yield values for display, the gene expression values for each protein shown were first binned into  tertiles (low, medium, high). The binning was performed over all TCGA samples.  The ‘abundance’ was computed as the fraction of samples within a the selected subtype that map to the mid and high value bins.  The abundance can thus range from 0 to 1.  Identical binning was performed to yield cell abundance within the subtype.
+
+Some details of the value estimation prior to binning are as follows. Immune cell abundance was estimated with CIBERSORT. The T Cell estimate corresponds to the CD8  T Cell estimate from CIBERSORT; Macrophage level is given by the sum of M0, M1, M2 macrophages according to CIBERSORT;  Dendritic cells are a combination of CIBERSORT resting and activated Dendritic cells.   The Tumor Cells estimate are estimated by TCGA tumor purity.  The  T cell receptor (TCR) value was approximated by the T Cell estimate.  MHC Class I values (MHC) were set to the expression of the single HLA gene HLA-A, and MHC Class II (MHC-II) approximated by the expression of HLA-DPA1. In the network diagram, the TCR and peptide-mediated binding interactions are not shown. ICOSLG codes for the protein ICOSL.
+
+**Acknowledgment:** The iAtlas team is grateful to Allison Kudla of the Institute for Systems Biology for producing the cell image file and for being patient with multiple requests for modifications.  The figure was adapted from *CTLA-4 and PD-1/PD-L1 blockade: new immunotherapeutic modalities with durable clinical benefit in melanoma patients* PA Ott, FS Hodi, and C Robert;  Clin Cancer Res. 2013 Oct 1;19(19):5300-9; doi: 10.1158/1078-0432.CCR-13-0143.
+
+**Contributors:** Vesteinn Thorsson, Carolina Heimann, Allison Kudla, David L. Gibbs, Ilya Shmulevich  

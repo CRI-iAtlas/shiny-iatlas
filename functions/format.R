@@ -152,7 +152,7 @@ get_margins <- function(p, font_size = 12) {
   if (!("xaxis" %in% names(p$x$layout))) {
     return(get_margins_plotly(p, font_size))
   }
-  if (stringr::str_length(p$x$layout$xaxis$title) > 0) {
+  if (stringr::str_length(p$x$layout$xaxis$title$text) > 0) {
     xlabbuffer <- (p$x$layout$xaxis$titlefont$size - 6) * 3  %>% 
       ceiling()
   } else {
@@ -171,8 +171,7 @@ get_margins <- function(p, font_size = 12) {
   ) %>% 
     ceiling()
   xmultiplier <- abs(sin(xlabangle * pi/180))
-  
-  if (stringr::str_length(p$x$layout$yaxis$title) > 0) {
+  if (stringr::str_length(p$x$layout$yaxis$title$text) > 0) {
     ylabbuffer <- (p$x$layout$yaxis$titlefont$size - 6) * 3  %>% 
       ceiling()
   } else {

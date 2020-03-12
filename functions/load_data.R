@@ -97,6 +97,24 @@ load_driver_mutation <- function() {
 }
 
 
+load_extracellular_network <- function(){
+  if (!USE_REMOTE_BQ) {
+    list(
+      all_net_info = list(
+        "immune"= list("upbin_ratio" = feather::read_feather("data/network/nodes_TCGAImmune.feather"), "edges_score" = feather::read_feather("data/network/edges_TCGAImmune.feather")),
+        "subtype"= list("upbin_ratio" = feather::read_feather("data/network/nodes_TCGASubtype.feather"), "edges_score" = feather::read_feather("data/network/edges_TCGASubtype.feather")),
+        "study"= list("upbin_ratio" = feather::read_feather("data/network/nodes_TCGAStudy.feather"), "edges_score" = feather::read_feather("data/network/edges_TCGAStudy.feather")),
+        "studyImmune" = list("upbin_ratio" = feather::read_feather("data/network/nodes_TCGAStudy_Immune.feather"), "edges_score" = feather::read_feather("data/network/edges_TCGAStudy_Immune.feather"))
+      ),
+      dfe_in = feather::read_feather("data/network/expr_data_merged.feather"),
+      node_type = feather::read_feather("data/network/network_node_label_friendly.feather"),
+      cell_scaffold = feather::read_feather("data/network/scaffold_network_cellimage.feather"),
+      cell_coordinate = feather::read_feather("data/network/nodes_position_cell_image.feather")
+    )
+  } 
+}
+
+
 ## selection choices for the cell fractions.  Lots of other choices possible.
 create_cell_fraction_options <- function() {
     if (!USE_REMOTE_BQ) {
@@ -105,6 +123,40 @@ create_cell_fraction_options <- function() {
         config_yaml$cell_fractions_bq
     }
 }
+
+#########################################################################
+##
+## Get cell image grid object and associated annotations
+##
+#########################################################################
+
+load_cellimage_base <- function(){
+  pic <- grImport2::readPicture("data/tcell-cairo.svg")
+  image_grob <- grImport2::pictureGrob(pic)
+  gTree_name <- grid::childNames(image_grob) ## label of overall gTree object
+  pathlabels <- image_grob$children[[gTree_name]]$childrenOrder ## labels and order of children 
+
+  ## Variable annotations are ImageVariableID, FeatureLabel, Source, ColorScale
+  variable_annotations <- feather::read_feather('data/cell_image_id_annotations.feather') 
+  ## Image obects, in order, labeled in terms of ImageVariableID
+  image_object_labels <- read.table('data/cell_image_object_ids.txt',as.is=T)$V1
+  missing_annotations <- setdiff(image_object_labels,variable_annotations$ImageVariableID)
+  if (length(missing_annotations) > 0 ){
+    stop("Image objects ",paste(missing_annotations,collapse=" ")," do not have an annotation.")
+  }
+  unique_image_variable_ids <- unique(image_object_labels)
+  
+  cellimage_parts <- list()
+  cellimage_parts$image_grob <- image_grob
+  cellimage_parts$pathlabels <- pathlabels
+  cellimage_parts$gTree_name <- gTree_name
+  cellimage_parts$variable_annotations <- variable_annotations
+  cellimage_parts$image_object_labels <- image_object_labels
+  cellimage_parts$unique_image_variable_ids <- unique_image_variable_ids
+  list(cellimage_base=cellimage_parts)
+}
+  
+  
 
 # Load global data ----
 
@@ -117,6 +169,8 @@ load_data <- function() {
     io_target_annotations_data <- load_io_target_annotations()
     io_target_expression_data <- load_io_target_expression()
     driver_mutation_data <- load_driver_mutation()
+    extracellular_network_data <- load_extracellular_network()
+    cellimage_base_data <- load_cellimage_base()
 
     list(
         feature_df = manifest_data$feature_df,
@@ -128,6 +182,12 @@ load_data <- function() {
         im_expr_df = im_expression_data$im_expr_df,
         io_target_annotations = io_target_annotations_data$io_target_annotations,
         io_target_expr_df = io_target_expression_data$io_target_expr_df,
-        driver_mutation_df = driver_mutation_data$driver_mutation_df
+        driver_mutation_df = driver_mutation_data$driver_mutation_df,
+        ecn_df = extracellular_network_data$all_net_info,
+        ecn_labels = extracellular_network_data$node_type,
+        ecn_expr = extracellular_network_data$dfe_in,
+        ci_scaffold = extracellular_network_data$cell_scaffold,
+        ci_coord = extracellular_network_data$cell_coordinate,
+        cellimage_base =  cellimage_base_data$cellimage_base
     )
 }

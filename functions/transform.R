@@ -59,7 +59,6 @@ build_immunefeatures_df <- function(
             value2_columns) %>%
         dplyr::filter(GROUP %in% group_options) %>%
         dplyr::filter(!is.na(VALUE1))
-    assert_df_has_columns(result_df, c("ID", "GROUP", "VALUE1", value2_columns))
     return(result_df)
 }
 
@@ -82,9 +81,17 @@ build_immunefeatures_correlation_matrix <- function(df, method = "spearman") {
             method = method,
             use = "pairwise.complete.obs")) %>%
         tidyr::spread(key = "GROUP", value = "COR", fill = NA) %>%
-        dplyr::mutate(VARIABLE = purrr::map(VARIABLE, get_variable_display_name)) %>%
+        dplyr::left_join(
+            dplyr::select(
+              panimmune_data$feature_df, 
+              FeatureMatrixLabelTSV, 
+              `Variable Class Order`, 
+              FriendlyLabel),
+            by = c("VARIABLE" = "FeatureMatrixLabelTSV")) %>% 
+        dplyr::arrange(dplyr::desc(`Variable Class Order`)) %>% 
+        dplyr::select(- c(`Variable Class Order`, VARIABLE)) %>% 
         as.data.frame() %>%
-        tibble::column_to_rownames("VARIABLE") %>%
+        tibble::column_to_rownames("FriendlyLabel") %>%
         as.matrix()
 }
 
@@ -422,15 +429,44 @@ build_intermediate_corr_df <- function(
 
 # ** Clinical outcomes module ----
 
-build_survival_df <- function(df, group_column, group_options, time_column, k) {
+build_survival_df <- function(df, group_column, group_options, time_column, div_range, k, group_choice, group_subset) {
+  
+    # subset to a smaller group of samples #
+    if (group_choice == 'Study' & group_subset != 'All') {
+
+      df <- df  %>% dplyr::filter(Study == UQ(group_subset))
+
+    } else if (group_choice == 'Subtype_Immune_Model_Based' & group_subset != 'All') {
+      
+      df <- df %>% dplyr::filter(Subtype_Immune_Model_Based == UQ(group_subset))
+    
+    } else if (group_choice == 'Subtype_Curated_Malta_Noushmehr_et_al' & group_subset != 'All') {
+      
+      df <- df %>% dplyr::filter(Subtype_Curated_Malta_Noushmehr_et_al == UQ(group_subset))
+      
+    }
+  
+  
     get_groups <- function(df, group_column, k) {
-        if (group_column %in% group_options) {
-            # then we don't need to produce catagories.
+      
+        if (group_column %in% group_options) { # then we don't need to produce catagories.
+            
             as.character(df[[group_column]])
         }
         else {
+          
+          if (div_range == 'median') {
+            
+            as.character( ifelse (df[[group_column]] < median(df[[group_column]], na.rm=T), 
+                                  yes='lower half', no='upper half') )
+            
+          } else {
+          
             as.character(cut(df[[group_column]], k, ordered_result = T))
+          }
+          
         }
+      
     }
     
     # get the vectors associated with each term
@@ -447,6 +483,7 @@ build_survival_df <- function(df, group_column, group_options, time_column, k) {
     data.frame(
         status = purrr::pluck(df, status_column), 
         time = purrr::pluck(df, time_column),
+        group = groups,
         variable = groups, 
         measure = purrr::pluck(df, group_column)
     ) %>% 
