@@ -1,0 +1,136 @@
+# IO Response utils functions
+#"Auslander, 2018 - SKCM" =  "Auslander 2018",
+datasets_options <-  list( 
+                         "Gide, 2019 - SKCM, Anti-PD1 +/- Anti-CTLA4" =  "Gide 2019", 
+                         "Hugo, 2016 - SKCM, Anti-PD1" = "Hugo 2016", 
+                         "Riaz, 2017 - SKCM, Anti-PD1" = "Riaz 2017", 
+                         "Van Allen, 2015 - SKCM, Anti-CTLA4" = "Van Allen 2015",
+                         "IMVigor210 - BLCA, Anti-PDL1" = "IMVigor210", 
+                         "Prins, 2019 - GBM, Anti-PD1" = "Prins 2019")
+
+
+
+filter_dataset <- function(df, dataset,feature, var1, var2 = NULL){
+  df %>% 
+    filter(Dataset == dataset) %>% 
+    select(Sample_ID, Dataset, feature, var1, var2) %>% 
+    tidyr::drop_na()
+}
+
+get_responder_annot <- function(df){
+  df %>%
+  mutate(Responder = dplyr::case_when(
+    df$Progression == TRUE ~ "Non-Responder",
+    df$Progression == FALSE ~ "Responder"))
+}
+
+
+get_lines_pos <- function(samples, y){
+  
+  n_int <- nrow(samples)
+  
+  divs <-seq(0, 1, len=n_int+1)
+  
+  #getting the intervals with the same variable
+  int_pos <- divs[1]
+  for(i in 1:n_int){
+    try(if(samples$var1[i] != samples$var1[i+1]) int_pos <- c(int_pos, divs[i+1]), silent = TRUE)
+  }
+  int_pos <- c(int_pos, divs[n_int+1])
+  
+  lines_pos <- "list("
+  for (i in 1:(length(int_pos)-1)) {
+    
+    lines_pos <- paste(lines_pos,
+                       "list(line = list(color = 'rgba(68, 68, 68, 0.5)', width = 1), type = 'line', x0 =", 
+                       #  (divs[i]+0.01),
+                       #  ", x1 =", 
+                       #  (divs[i+1]),
+                       #  ", xref = 'paper', y0 =", 
+                       # y ,
+                       # ", y1 =", 
+                       # y, 
+                       # ", yref = 'paper'),
+                       # list(line = list(color = 'rgba(68, 68, 68, 0.5)', width = 1), type = 'line', x0 =", 
+                       (int_pos[i]+0.01),
+                       ", x1 =", 
+                       (int_pos[i]+0.01),
+                       ", xref = 'paper', y0 =", 
+                       0.2,
+                       ", y1 =", 
+                       - 0.1, 
+                       ", yref = 'paper'),
+                       list(line = list(color = 'rgba(68, 68, 68, 0.5)', width = 1), type = 'line', x0 =", 
+                       (int_pos[i+1]),
+                       ", x1 =", 
+                       (int_pos[i+1]),
+                       ", xref = 'paper', y0 =", 
+                       0.2,
+                       ", y1 =", 
+                       - 0.1, 
+                       ", yref = 'paper')
+                       "
+                       )
+    if(i != (length(int_pos)-1)) lines_pos <- paste(lines_pos, ",")
+  }
+  paste(lines_pos, ")")
+}
+
+get_text_pos <- function(df, col_div, y){
+  
+  n_int <- dplyr::n_distinct(df[[col_div]])
+  
+  divs <-seq(0, 1, len=n_int+1)
+  
+  df_levels <- unique(df[[col_div]]) %>% sort()
+  
+  df_levels <- gsub(" ", "<br>", df_levels)
+  lines_pos <- "list("
+  
+  for (i in 1:n_int) {
+    label_text <- df
+    lines_pos <- paste(lines_pos,
+                       "list(x =", 
+                       ((divs[i]+divs[i+1])/2),
+                       ", y =", 
+                       y,
+                       ", showarrow = FALSE, text = '", 
+                       (df_levels[i]),
+                       "', xref = 'paper', yref = 'paper')"
+    )
+    if(i != n_int) lines_pos <- paste(lines_pos, ",")
+  }
+  paste(lines_pos, ")")
+}
+
+
+get_t_test <- function(df, group_to_split, sel_feature, dataset){
+  
+  data_set <- df %>%
+    filter(Dataset == dataset)
+  
+  if(dplyr::n_distinct(data_set[[group_to_split]])>1){
+    split_data <- split(data_set, data_set[[group_to_split]])
+    
+    comb_groups <- combn(1:length(split_data), 2)
+    
+    purrr::map2_dfr(.x = comb_groups[1,], .y = comb_groups[2,], function(x,y){
+      
+      test_data <- broom::tidy(t.test(split_data[[x]][[sel_feature]], 
+                                      split_data[[y]][[sel_feature]], 
+                                      paired = FALSE)) %>% 
+        dplyr::select(statistic, p.value)
+      
+      test_data$Dataset <- as.character(dataset)
+      test_data$Test <- paste0(group_to_split, ": ", names(split_data)[x], " vs. ", names(split_data)[y])
+      
+      test_data %>% 
+        dplyr::select(Dataset, Test, statistic, p.value)  
+    })
+  }else{
+    test_data <- data.frame(Dataset = dataset, 
+                            Test = "First sample group has only one level for this dataset.", 
+                            statistic = NA, 
+                            p.value = NA)
+  }
+}

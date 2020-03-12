@@ -43,8 +43,9 @@ ioresponseoverview <- function(input,
     
     output$io_datasets_df <- DT::renderDT({
         DT::datatable((fmx_io %>% 
-                           group_by(Dataset, Study, Drug, Antibody) %>% 
-                           summarise(Samples = n())),
+                         dplyr::group_by(Dataset,Response) %>% 
+                           #dplyr::group_by(Dataset, Study, Drug, Antibody) %>% 
+                           summarise(Samples = dplyr::n_distinct(Sample_ID))),
                       options = list(pageLength = 20))
         
     })
