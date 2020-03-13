@@ -57,6 +57,11 @@ explorepage <- dashboardPage(
                  icon = icon("cog")
                ),
                menuSubItem(
+                 "CNV Associations",
+                 tabName = "cnvs",
+                 icon = icon("cog")
+               ),
+               menuSubItem(
                  "Extracellular Networks",
                  tabName = "cytokine_network",
 		 icon = icon("cog")
@@ -237,6 +242,16 @@ explorepage <- dashboardPage(
               boxText = "Explore cell and protein abundance on an illustration.",
               linkText = "Open Module"
             )
+          ),
+          fluidRow(
+            imgLinkBox(
+              width = 6,
+              title = "CNV Associations",
+              linkId = "link_to_module10",
+              imgSrc = "images/cnvs.png",
+              boxText = "Explore Associations of Microenvironment with Copy Number Variants.",
+              linkText = "Open Module"
+            )
           )
         )
       ),
@@ -275,6 +290,10 @@ explorepage <- dashboardPage(
       tabItem(
         tabName = "iotargets",
         iotarget_UI("module9")
+      ),
+      tabItem(
+        tabName = "cnvs",
+        cnvs_UI("module10")
       ),
       tabItem(
         tabName = "cytokine_network",

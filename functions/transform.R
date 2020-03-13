@@ -650,10 +650,6 @@ build_filtered_mutation_df_pancan <- function(df,count_threshold=80){   # select
 }
 
 
-
-
-
-
 ##
 ## Compute p values for each 'combo' of driver mutation and cohort
 ##
@@ -704,6 +700,40 @@ compute_driver_associations <- function(df_for_regression,response_var,group_col
     res2 <- compute_effect_size_per_combo(df_for_regression,response_var, group_column)
     dplyr::inner_join(res1,res2,by="mutation_group") ## returns df with combo,neglog_pval,effect_size
 }
+
+
+
+build_cnvs_df <- function(df, response_var, group_column, group_options){
+  
+  if (group_column == 'Subtype_Immune_Model_Based') {
+    res0 <- (unique(df %>%  dplyr::pull(Subtype_Immune_Model_Based)))
+    load('data/cnv_results_immune_subtype.rda')
+    cnvs_df <- immunetable %>% dplyr::filter(Group %in% res0)
+    rm(immunetable) 
+    gc()
+  } else if (group_column == 'Study') {
+    res0 <- (unique(df %>%  dplyr::pull(Study)))
+    load('data/cnv_results_study.rda')
+    cnvs_df <- studytable %>% dplyr::filter(Group %in% res0)
+    rm(studytable)
+    gc()
+  } else if (group_column == 'Subtype_Curated_Malta_Noushmehr_et_al') {
+    res0 <- (unique(df %>%  dplyr::pull(Subtype_Curated_Malta_Noushmehr_et_al)))
+    load('data/cnv_results_tcga_subtype.rda')
+    cnvs_df <- subtypetable %>% dplyr::filter(Group %in% res0)
+    rm(subtypetable)
+    gc()
+  }
+  
+  cnvs_df$Mean_Diff <- cnvs_df$Mean_Normal - cnvs_df$Mean_CNV
+  
+  if(nrow(cnvs_df) == 0){
+    cnvs_df <- NULL
+  } 
+  
+  return(cnvs_df)
+}
+
 
 ###############################################################################
 # Functions below this line do not have tests yet, newly written functions 
