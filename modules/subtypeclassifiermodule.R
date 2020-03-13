@@ -93,7 +93,12 @@ subtypeclassifier_UI <- function(id) {
           )
         )
       ),
-
+      fluidRow(
+        plotBox(
+          width=12,
+          textOutput(ns('geneMatchCnt'))
+        )
+      ),
       fluidRow(
         plotBox(
           width = 12,
@@ -125,25 +130,82 @@ subtypeclassifier_UI <- function(id) {
 
 
 subtypeclassifier <- function(
-    input, output, session, group_display_choice, group_internal_choice,
-    subset_df, plot_colors) {
+    input, 
+    output, 
+    session, 
+    group_display_choice, 
+    group_internal_choice,
+    subset_df, 
+    plot_colors) {
 
     ns <- session$ns
 
-    # in src files ... have same path as app.R
-    # reportedClusters <- getSubtypeTable()
-
-    # get new calls
-    getCalls <- eventReactive(input$subtypeGObutton, {
-
-      newdat <- input$expr_file_pred
-
-      print(head(newdat))
-
-      classifySubtype(newdat, input$sepa)
+    newData <- eventReactive(input$subtypeGObutton, {
+      readNewDataTable(input$expr_file_pred, input$sepa)
     })
+    
+    
+    #' geneMatchErrorReport
+    #' Check whether the incoming data matches the 485 model gene IDs
+    #' @export
+    #' @param X gene expression matrix, genes in rows, samples in columns
+    #' @return list with percent missing genes and a vector of missing genes
+    #' @examples
+    #' missingGenes <- geneMatchErrorReport(X)
+    #'
+    geneMatchErrorReport <- function(X, geneid='symbol') {
+      data(ebpp_gene)
+      
+      if (geneid == 'symbol') {
+        idx <- match(table = rownames(X), x = ebpp_genes_sig$Symbol)  ### this is just for the EBPP genes ###
+        
+      } else if (geneid == 'entrez') {
+        idx <- match(table = rownames(X), x = ebpp_genes_sig$Entrez)
+        
+      } else if (geneid == 'ensembl') {
+        ensemble <- str_split(rownames(X), pattern = '\\.')
+        ensemble <- unlist(lapply(ensemble, function(a) a[1]))
+        idx <- match(table = ensemble, x = ebpp_genes_sig$Ensembl)
+        
+      } else if (geneid == 'pairs') {
+        return(X)
+        
+      } else {
+        print("For geneids, please use:  symbol, entrez, ensembl")
+        return(NA)
+      }
+      
+      # idx will be 485 elements long... non matched ebpp_sig_genes
+      # will show as NAs in the list.
+      
+      # SO... we calculate sum of NAs over size of ebpp_genes_sig
+      
+      matchError <- sum(is.na(idx)) / nrow(ebpp_genes_sig)
+      
+      # NAs in idx will enter NA rows in X2 
+      
+      g <- ebpp_genes_sig[is.na(idx),]  ### Adds NA rows in missing genes
+      
+      return(list(matchError=matchError, missingGenes=g, numGenesInClassifier=nrow(ebpp_genes_sig)))
+    }
 
+    
+    # get new calls
+    getCalls <- reactive({
+      
+      output$geneMatchCnt <- renderText({
+        matchInfo <- geneMatchErrorReport(X=newData())
 
+        n <- matchInfo$matchError
+        m <- matchInfo$numGenesInClassifier
+          
+        paste0('Match error: ', n, '% from total of ', m, ' genes in the classifier.')
+      })
+      
+      classifySubtype(newData())
+    })
+    
+  
     output$barPlot <- renderPlot({
       counts <- table(getCalls()$Calls$BestCall)
       barplot(counts, main="New Cluster Label Calls",
