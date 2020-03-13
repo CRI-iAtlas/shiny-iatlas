@@ -56,6 +56,7 @@ subtypeclassifier_UI <- function(id) {
         p(""),
         p("Outputs:"),
         tags$ul(
+          tags$li("Any missing genes required by the classifier are reported."),
           tags$li("Table shows TCGA reported subtypes with new aligned subtype calls."),
           tags$li("Barplot shows subtypes given to the new data."),
           tags$li("Table gives aligned subtypes, signature scores, and cluster probabilities.")
@@ -96,7 +97,7 @@ subtypeclassifier_UI <- function(id) {
       fluidRow(
         plotBox(
           width=12,
-          textOutput(ns('geneMatchCnt'))
+          htmlOutput(ns('geneMatchCnt'))
         )
       ),
       fluidRow(
@@ -108,7 +109,7 @@ subtypeclassifier_UI <- function(id) {
       )
     ),
 
-    # Immunomodulator annotations section ----
+    # Main results
     sectionBox(
       title = "Subtype Classification Table",
       messageBox(
@@ -120,6 +121,24 @@ subtypeclassifier_UI <- function(id) {
           width = 12,
           div(style = "overflow-x: scroll",
               DT::dataTableOutput(ns("subtypetable")) %>%
+                shinycssloaders::withSpinner()
+          )
+        )
+      )
+    ),
+    
+    # Any missing genes table
+    sectionBox(
+      title = "Missing genes from upload",
+      messageBox(
+        width = 12,
+        p("The table shows any missing genes.")
+      ),
+      fluidRow(
+        tableBox(
+          width = 12,
+          div(style = "overflow-x: scroll",
+              DT::dataTableOutput(ns("missinggenetable")) %>%
                 shinycssloaders::withSpinner()
           )
         )
@@ -159,25 +178,13 @@ subtypeclassifier <- function(
       if (geneid == 'symbol') {
         idx <- match(table = rownames(X), x = ebpp_genes_sig$Symbol)  ### this is just for the EBPP genes ###
         
-      } else if (geneid == 'entrez') {
-        idx <- match(table = rownames(X), x = ebpp_genes_sig$Entrez)
-        
-      } else if (geneid == 'ensembl') {
-        ensemble <- str_split(rownames(X), pattern = '\\.')
-        ensemble <- unlist(lapply(ensemble, function(a) a[1]))
-        idx <- match(table = ensemble, x = ebpp_genes_sig$Ensembl)
-        
-      } else if (geneid == 'pairs') {
-        return(X)
-        
       } else {
-        print("For geneids, please use:  symbol, entrez, ensembl")
+        print("For geneids, please use gene symbols.")
         return(NA)
       }
       
       # idx will be 485 elements long... non matched ebpp_sig_genes
       # will show as NAs in the list.
-      
       # SO... we calculate sum of NAs over size of ebpp_genes_sig
       
       matchError <- sum(is.na(idx)) / nrow(ebpp_genes_sig)
@@ -196,10 +203,10 @@ subtypeclassifier <- function(
       output$geneMatchCnt <- renderText({
         matchInfo <- geneMatchErrorReport(X=newData())
 
-        n <- matchInfo$matchError
+        n <- round(matchInfo$matchError, digits = 3)
         m <- matchInfo$numGenesInClassifier
           
-        paste0('Match error: ', n, '% from total of ', m, ' genes in the classifier.')
+        paste0('<b> Match error: ', n, '% from a total of ', m, ' genes required by the classifier.  Missing genes shown below. </b>')
       })
       
       classifySubtype(newData())
@@ -228,6 +235,24 @@ subtypeclassifier <- function(
             )
         )
 
+      )
+    )
+    
+    # Missing Genes Table
+    output$missinggenetable <- DT::renderDataTable(
+      DT::datatable(
+        as.data.frame(geneMatchErrorReport(X=newData())$missingGenes),
+        extensions = 'Buttons', options = list(
+          dom = 'Bfrtip',
+          buttons =
+            list('copy', 'print',
+                 list(
+                   extend = 'collection',
+                   buttons = c('csv', 'excel', 'pdf'),
+                   text = 'Download')
+            )
+        )
+        
       )
     )
 
