@@ -158,6 +158,8 @@ subtypeclassifier <- function(
     plot_colors) {
 
     ns <- session$ns
+    
+    library(ImmuneSubtypeClassifier)
 
     newData <- eventReactive(input$subtypeGObutton, {
       readNewDataTable(input$expr_file_pred, input$sepa)

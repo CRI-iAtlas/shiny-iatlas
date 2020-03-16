@@ -1,6 +1,6 @@
 {
   "R": {
-    "Version": "3.6.2",
+    "Version": "3.6.0",
     "Repositories": [
       {
         "Name": "CRAN",
@@ -116,11 +116,11 @@
       "Source": "GitHub",
       "RemoteType": "github",
       "RemoteHost": "api.github.com",
+      "RemoteUsername": "CRI-iAtlas",
       "RemoteRepo": "ImmuneSubtypeClassifier",
-      "RemoteUsername": "Gibbsdavidl",
       "RemoteRef": "master",
-      "RemoteSha": "59e9aa1d377706819da69771dc0cb2cd13bb23d1",
-      "Hash": "143380067bd6b9f075c681950181fba7"
+      "RemoteSha": "2257fee0db18cfcc79356e567801e062fff67124",
+      "Hash": "a47ebf36879302c80a0e4b001a12db8c"
     },
     "KMsurv": {
       "Package": "KMsurv",
@@ -481,8 +481,8 @@
       "Source": "GitHub",
       "RemoteType": "github",
       "RemoteHost": "api.github.com",
-      "RemoteUsername": "cytoscape",
       "RemoteRepo": "cyjShiny",
+      "RemoteUsername": "cytoscape",
       "RemoteRef": "master",
       "RemoteSha": "956a3cb5a8f709f4134f9774e6a767ce2b141764",
       "Hash": "53ef28c7c9683859e9c4de113d3e6968"
@@ -702,6 +702,13 @@
       "Source": "Repository",
       "Repository": "CRAN",
       "Hash": "d2d969d2ca127dbb2da60b5a20ee7234"
+    },
+    "ggridges": {
+      "Package": "ggridges",
+      "Version": "0.5.2",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "b5c4e55a3856dff3c05595630a40edfc"
     },
     "ggsci": {
       "Package": "ggsci",
