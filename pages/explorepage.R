@@ -200,24 +200,6 @@ explorepage <- dashboardPage(
             ),
             imgLinkBox(
               width = 6,
-              title = "TIL Maps",
-              linkId = "link_to_module7",
-              imgSrc = "images/TILmap.png",
-              boxText = "Explore the characteristics of maps of tumor infiltrating lymphocytes obtained from analysis of H&E images.",
-              linkText = "Open Module"
-            )
-          ),
-          fluidRow(
-            imgLinkBox(
-              width = 6,
-              title = "Driver Associations",
-              linkId = "link_to_module8",
-              imgSrc = "images/drivers.png",
-              boxText = "Explore associations of microenvironment with driver mutations.",
-              linkText = "Open Module"
-            ),
-            imgLinkBox(
-              width = 6,
               title = "IO Targets",
               linkId = "link_to_module9",
               imgSrc = "images/iotargets.png",
@@ -228,18 +210,18 @@ explorepage <- dashboardPage(
           fluidRow(
             imgLinkBox(
               width = 6,
-              title = "Extracellular Networks",
-              linkId = "link_to_module11",
-              imgSrc = "images/cytokinenet.png",
-              boxText = "Explore the extracellular networks modulating tumoral immune response.",
+              title = "TIL Maps",
+              linkId = "link_to_module7",
+              imgSrc = "images/TILmap.png",
+              boxText = "Explore the characteristics of maps of tumor infiltrating lymphocytes obtained from analysis of H&E images.",
               linkText = "Open Module"
             ),
             imgLinkBox(
               width = 6,
-              title = "Cell Image",
-              linkId = "link_to_module12",
-              imgSrc = "images/cell-image.png",
-              boxText = "Explore cell and protein abundance on an illustration.",
+              title = "Driver Associations",
+              linkId = "link_to_module8",
+              imgSrc = "images/drivers.png",
+              boxText = "Explore associations of microenvironment with driver mutations.",
               linkText = "Open Module"
             )
           ),
@@ -250,6 +232,24 @@ explorepage <- dashboardPage(
               linkId = "link_to_module10",
               imgSrc = "images/cnvs.png",
               boxText = "Explore Associations of Microenvironment with Copy Number Variants.",
+              linkText = "Open Module"
+            ),
+            imgLinkBox(
+              width = 6,
+              title = "Extracellular Networks",
+              linkId = "link_to_module11",
+              imgSrc = "images/cytokinenet.png",
+              boxText = "Explore the extracellular networks modulating tumoral immune response.",
+              linkText = "Open Module"
+            )
+          ),
+          fluidRow(
+            imgLinkBox(
+              width = 6,
+              title = "Cell Image",
+              linkId = "link_to_module12",
+              imgSrc = "images/cell-image.png",
+              boxText = "Explore cell and protein abundance on an illustration.",
               linkText = "Open Module"
             )
           )
