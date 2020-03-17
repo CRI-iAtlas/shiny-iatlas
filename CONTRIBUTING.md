@@ -18,7 +18,7 @@ Procedures to include a new module in the initial page of the Explore Section of
 This procedure lists the files that need to be updated or started, as well as the functions to call, when applicable. There is no reference to a specific line to update, as this can change over time. It is recommended to look for the section of the code with the settings of current modules - for example, in step 4.1., at the `server.R` file, look for `callModule` code for the existing modules, and include new code in this section.
 
 ### Steps
-(Can be carried out in another order but pieces need to be in place for full functionality. As true in general, begin with a new branch) 
+Can be carried out in another order but all pieces need to be in place for full functionality.
 
 #### 1. Create file with new module and save it in the modules folder : `modules/myshinynewmodule.R`.
 
