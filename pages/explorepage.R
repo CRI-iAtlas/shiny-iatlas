@@ -57,6 +57,11 @@ explorepage <- dashboardPage(
                  icon = icon("cog")
                ),
                menuSubItem(
+                 "CNV Associations",
+                 tabName = "cnvs",
+                 icon = icon("cog")
+               ),
+               menuSubItem(
                  "Extracellular Networks",
                  tabName = "cytokine_network",
 		 icon = icon("cog")
@@ -195,24 +200,6 @@ explorepage <- dashboardPage(
             ),
             imgLinkBox(
               width = 6,
-              title = "TIL Maps",
-              linkId = "link_to_module7",
-              imgSrc = "images/TILmap.png",
-              boxText = "Explore the characteristics of maps of tumor infiltrating lymphocytes obtained from analysis of H&E images.",
-              linkText = "Open Module"
-            )
-          ),
-          fluidRow(
-            imgLinkBox(
-              width = 6,
-              title = "Driver Associations",
-              linkId = "link_to_module8",
-              imgSrc = "images/drivers.png",
-              boxText = "Explore associations of microenvironment with driver mutations.",
-              linkText = "Open Module"
-            ),
-            imgLinkBox(
-              width = 6,
               title = "IO Targets",
               linkId = "link_to_module9",
               imgSrc = "images/iotargets.png",
@@ -223,12 +210,40 @@ explorepage <- dashboardPage(
           fluidRow(
             imgLinkBox(
               width = 6,
+              title = "TIL Maps",
+              linkId = "link_to_module7",
+              imgSrc = "images/TILmap.png",
+              boxText = "Explore the characteristics of maps of tumor infiltrating lymphocytes obtained from analysis of H&E images.",
+              linkText = "Open Module"
+            ),
+            imgLinkBox(
+              width = 6,
+              title = "Driver Associations",
+              linkId = "link_to_module8",
+              imgSrc = "images/drivers.png",
+              boxText = "Explore associations of microenvironment with driver mutations.",
+              linkText = "Open Module"
+            )
+          ),
+          fluidRow(
+            imgLinkBox(
+              width = 6,
+              title = "CNV Associations",
+              linkId = "link_to_module10",
+              imgSrc = "images/cnvs.png",
+              boxText = "Explore Associations of Microenvironment with Copy Number Variants.",
+              linkText = "Open Module"
+            ),
+            imgLinkBox(
+              width = 6,
               title = "Extracellular Networks",
               linkId = "link_to_module11",
               imgSrc = "images/cytokinenet.png",
               boxText = "Explore the extracellular networks modulating tumoral immune response.",
               linkText = "Open Module"
-            ),
+            )
+          ),
+          fluidRow(
             imgLinkBox(
               width = 6,
               title = "Cell Image",
@@ -275,6 +290,10 @@ explorepage <- dashboardPage(
       tabItem(
         tabName = "iotargets",
         iotarget_UI("module9")
+      ),
+      tabItem(
+        tabName = "cnvs",
+        cnvs_UI("module10")
       ),
       tabItem(
         tabName = "cytokine_network",

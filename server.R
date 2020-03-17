@@ -110,6 +110,16 @@ shinyServer(function(input, output, session) {
         reactive(subset_df()),
         reactive(plot_colors()))
     
+    # CNV associations
+    callModule(
+      cnvs,
+      "module10",
+      reactive(input$ss_choice),
+      reactive(group_internal_choice()),
+      reactive(input$study_subset_selection),
+      reactive(subset_df()),
+      reactive(plot_colors()))
+    
     # Cytokine Network
     callModule(
       cytokinenetwork,
@@ -171,6 +181,9 @@ shinyServer(function(input, output, session) {
     })
     observeEvent(input$link_to_module9, {
       shinydashboard::updateTabItems(session, "explorertabs", "iotargets")
+    })
+    observeEvent(input$link_to_module10, {
+      shinydashboard::updateTabItems(session, "explorertabs", "cnvs")
     })
     observeEvent(input$link_to_module11, {
       shinydashboard::updateTabItems(session, "explorertabs", "cytokine_network")

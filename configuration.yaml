@@ -15,6 +15,7 @@ module_files:
   - "modules/distribution_plot_module.R"
   - "modules/cytokinenetwork.R"
   - "modules/cellimagemodule.R"
+  - "modules/cnvmodule.R"
   
 function_files:
   - "functions/load_data.R"
