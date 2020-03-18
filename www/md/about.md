@@ -27,7 +27,10 @@ The main feature of the iAtlas web tool is the **iAtlas Explorer**, which provid
 + **Immunomodulators:** Explore the expression of genes that code for immunomodulating proteins, including checkpoint proteins.
 + **IO Targets:** Explore the expression of genes that code for immuno-oncological (IO) targets.
 + **TIL Maps:** Explore the characteristics of maps of tumor infiltrating lymphocytes obtained from analysis of H&E images.
-+ **Driver Associations:** Explore Associations of Microenvironment with Driver Mutations.
++ **Driver Associations:** Explore asociations of microenvironment with driver mutations.
++ **Copy Number Variation:** Explore associations of microenvironment with gene copy number variations.
++ **Extracellular Networks:** Explore the extracellular networks modulating tumoral immune response.
++ **Cell Image:** Explore cell and protein abundance on an illustration.
 
 ---
 
