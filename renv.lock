@@ -78,7 +78,7 @@
     },
     "Cairo": {
       "Package": "Cairo",
-      "Version": "1.5-10",
+      "Version": "1.5-11",
       "Source": "Repository",
       "Repository": "CRAN",
       "Hash": "3cf79cef0ec215d7cfdf9f7edc26bbae"

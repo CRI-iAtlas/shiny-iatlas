@@ -20,6 +20,8 @@ The portal is built entirely in **R** and **Shiny** using the **RStudio** develo
 
 - gfortran (libgfortran): usually installed with gcc
 
+- X11: on MacOS, installation via https://www.xquartz.org/ is suggested.
+
 ### MacOS Install instructions
 
 Install brew: https://brew.sh/
@@ -44,7 +46,7 @@ To run the app locally:
    renv::restore()
    ```
 
-   This may take some time to complete - get something nice to drink :)
+   This may take some time to complete
 
 1. Start the app by running:
 
