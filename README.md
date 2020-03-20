@@ -22,13 +22,13 @@ The portal is built entirely in **R** and **Shiny** using the **RStudio** develo
 
 ### MacOS Install instructions
 
-Install brew: https://brew.sh/
+- Download and install R-3.6.2.pkg from https://cran.r-project.org/bin/macosx/
 
-Then:
+- Download and install X11 via XQuartz https://www.xquartz.org/
 
-- brew install R
-- brew install cairo
-- download and install RStudio: https://rstudio.com/products/rstudio/download
+- Install cairo via Homebrew (https://formulae.brew.sh/formula/cairo ; requires brew: https://brew.sh/ )
+
+- Download and install RStudio: https://rstudio.com/products/rstudio/download
 
 ### Initialize R Packages, Database and run App
 
