@@ -22,6 +22,9 @@ The portal is built entirely in **R** and **Shiny** using the **RStudio** develo
 
 ### MacOS Install instructions
 
+- Download and install gfortran from https://github.com/fxcoudert/gfortran-for-macOS/releases
+or https://cran.r-project.org/bin/macosx/tools/
+
 - Download and install R-3.6.2.pkg from https://cran.r-project.org/bin/macosx/
 
 - Download and install X11 via XQuartz https://www.xquartz.org/
