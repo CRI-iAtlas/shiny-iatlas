@@ -21,20 +21,49 @@ ioresponse_UI <- function(id){
         width=12,
         shinyjs::useShinyjs(),
         column(
-          width = 4,
+          width = 3,
           checkboxGroupInput(ns("datasets"), "Select Datasets", choices = datasets_options,
                              selected = NULL)#c("Gide 2019", "Hugo 2016"))
          ),
         column(
-          width = 4,
+          width = 3,
           uiOutput(ns("feature_op")),
-          uiOutput(ns("group1"))
+          
+          selectInput(
+            ns("plot_type"),
+            "Select Plot Type",
+            choices = c("Violin", "Box")
+            ),
+            
+            selectInput(
+              ns("scale_method"), 
+              "Select variable scaling",
+              choices = c(
+                "None", 
+                "Log2", 
+                "Log2 + 1",
+                "Log10",
+                "Log10 + 1"
+              ),
+              selected = "None"
+            )
+          ),
+          column(
+            width = 3,
+            uiOutput(ns("group1")),
+            checkboxInput(
+              ns("see_drilldown"), 
+              "Plot clicked group?", 
+              FALSE
+            )
+           
+          
           #,
           #checkboxInput(ns("group2"), "Select Second Group?", FALSE)
           #div(class = "form-group shiny-input-container", actionButton(ns("go_button"), tags$b("GO"), width = "100%")) 
         ),
         column(
-          width = 4,
+          width = 3,
           p("Select extra Sample Groups (optional)"),
           uiOutput(ns("group2"))
         )
@@ -49,6 +78,17 @@ ioresponse_UI <- function(id){
         plotBox(
           width = 12,
           DT::dataTableOutput(ns("stats1"))
+        ),
+        conditionalPanel(
+          condition =  "input.see_drilldown",
+          ns = ns,
+          #fluidRow(
+            plotBox(
+              width = 12,
+              plotlyOutput(ns("drilldown_plot")) %>% 
+                shinycssloaders::withSpinner()
+            )
+          #)
         )
        )#fluidRow
       )#, #sectionBox
@@ -66,6 +106,7 @@ ioresponse <- function(input,
                        plot_colors){
   
   ns <- session$ns
+  
   
   output$feature_op <- renderUI({
     
@@ -85,7 +126,7 @@ ioresponse <- function(input,
   output$group1 <- renderUI({
     
     clin_data <- feature_io_df %>% 
-      dplyr::filter(`Variable Class` == "Immune Checkpoint Treatment")
+      dplyr::filter(`Variable Class` %in% c("Immune Checkpoint Treatment - Response", "Immune Checkpoint Treatment - Study Condition"))
     
     var_choices <- create_filtered_nested_list_by_class(feature_df = clin_data,
                                                         filter_value = "Categorical",
@@ -105,7 +146,7 @@ ioresponse <- function(input,
     lapply(unlist(datasets_options), function(x){
       
       clin_data <- feature_io_df %>% 
-        dplyr::filter(`Variable Class` == paste("Clinical data for", x) | `Variable Class` == "Immune Checkpoint Treatment")
+        dplyr::filter(`Variable Class` == paste("Clinical data for", x) | `Variable Class` %in% c("Immune Checkpoint Treatment - Response", "Immune Checkpoint Treatment - Study Condition"))
       
       var_choices <- create_filtered_nested_list_by_class(feature_df = clin_data,
                                                           filter_value = "Categorical",
@@ -119,7 +160,7 @@ ioresponse <- function(input,
                             ns(paste0("dist", x)),
                             label = paste("Select extra group for", as.character(x)),
                             choices = var_choices, #list(split(clin_data$FeatureMatrixLabelTSV, clin_data$FriendlyLabel), "Drug" = "Drug", "Treatment" = "treatment_when_collected")
-                            selected = "Progression"
+                            selected = ""
                           )
       ))})
   })
@@ -139,6 +180,14 @@ ioresponse <- function(input,
                  }
                })
   
+  plot_function <- reactive({
+    switch(
+      input$plot_type,
+      "Violin" = create_violinplot,
+      "Box" = create_boxplot
+    )
+  })
+  
   output$dist_plots <- renderPlotly({
     shiny::validate(need(!is.null(input$datasets), "Select at least one dataset."))
     
@@ -152,91 +201,93 @@ ioresponse <- function(input,
       group1 <- input$groupvar
       group2 <- paste0("dist", dataset)
       
-      if(input$groupvar == input[[group2]]){
-        dataset_data <- filter_dataset(fmx_io, 
-                                       dataset, 
-                                       input$var1_surv, 
-                                       input$groupvar)
+      ylabel <-  convert_value_between_columns(input_value =input$var1_surv,
+                                               df = feature_io_df,
+                                               from_column = "FeatureMatrixLabelTSV",
+                                               to_column = "FriendlyLabel")
+      
+      #Filtering only samples collected pre treatment
+      if(input$groupvar != "treatment_when_collected" & input[[group2]] != "treatment_when_collected"){
+        dataset_data <- fmx_io %>% 
+          dplyr::filter(treatment_when_collected == "Pre")
+      }else{
+        dataset_data <- fmx_io
+      }
+      
+      
+     if(input$groupvar == input[[group2]]){
+       
+       create_violinplot_onegroup(plot_function(), dataset_data, dataset, input$var1_surv, group1, ylabel)
+       
+        # dataset_data %>% 
+        #   filter_dataset(., 
+        #                  dataset, 
+        #                  input$var1_surv, 
+        #                  group1,
+        #                  group2) %>% 
+          # `if`(
+          #   group1 == "Progression",
+          #   get_responder_annot(dataset_data),
+          #   .
+          # ) %>%
+          # `if`(
+          #   input$groupvar != input[[group2]],
+          #   merge_twogroup(., dataset, 
+          #                  input$var1_surv, 
+          #                  group1,
+          #                  group2,
+          #                  ylabel),
+          #   .
+          # ) %>%
+          # plot_function()(., 
+          #                   x_col = "Comb_feat", #as.character(group1),
+          #                   y_col =  input$var1_surv, 
+          #                   xlab = dataset_data[[group1]],
+          #                   ylab = ylabel,
+          #                   custom_data = as.character(dataset),
+          #                   fill_colors = c("#0000FF", "#00FF00", "#FF00FF", "#FF0000"),
+          #                   showlegend = F)  %>%
+          # add_annotations(
+          #   text = dataset,
+          #   x = 0.5,
+          #   y = 1.1,
+          #   yref = "paper",
+          #   xref = "paper",
+          #   xanchor = "center",
+          #   yanchor = "top",
+          #   showarrow = FALSE,
+          #   font = list(size = 15)
+          # ) %>% 
+          # `if`(
+          #   input$groupvar != input[[group2]],
+          #   add_lines_pergroup(., 
+          #                  group1,
+          #                  group2),
+          #   .
+          # ) 
+            
+        # plot_function()(., 
+        #                dataset,
+        #                input$var1_surv,
+        #                input$groupvar,
+        #                ylabel)
         
-        if(input$groupvar == "Progression"){
-          dataset_data <- get_responder_annot(dataset_data)
-          group1 <- "Responder"
-          }
-        
-        create_violinplot(dataset_data, 
-                          x_col = as.character(group1),
-                          y_col = input$var1_surv, 
-                          xlab = dataset_data[[group1]],
-                          ylab = ylabel,
-                          fill_colors = c("#0000FF", "#00FF00", "#FF00FF", "#FF0000"),
-                          showlegend = F)  %>%
-          add_annotations(
-            text = dataset,
-            x = 0.5,
-            y = 1.1,
-            yref = "paper",
-            xref = "paper",
-            xanchor = "center",
-            yanchor = "top",
-            showarrow = FALSE,
-            font = list(size = 15)
-          )
       }else{ #when two grouping levels are selected
-        dataset_data <- filter_dataset(fmx_io, dataset,
-                                       input$var1_surv,
-                                       input$groupvar,
-                                       input[[group2]])
-        
-        if(input$groupvar == "Progression"){
-          dataset_data <- get_responder_annot(dataset_data) 
-          group1 <- "Responder"
-        }
-          
-        dataset_data$Comb_feat <- paste(dataset_data[[group1]], "&",
-                                        convert_value_between_columns(input_value =input[[group2]],
-                                                                      df = feature_io_df,
-                                                                      from_column = "FeatureMatrixLabelTSV",
-                                                                      to_column = "FriendlyLabel"),
-                                        ":", dataset_data[[input[[group2]]]], sep = " " )
-        
-        #get number of groups to draw lines
-        samples <- (dataset_data %>% group_by(dataset_data[[group1]], dataset_data[[input[[group2]]]]) %>% 
-                      summarise(samples = n()))
-        colnames(samples) <- c("var1", "var2", "samples")
-        
-        ylabel <-  convert_value_between_columns(input_value =input$var1_surv,
-                                                 df = feature_io_df,
-                                                 from_column = "FeatureMatrixLabelTSV",
-                                                 to_column = "FriendlyLabel")
-        
-        create_violinplot(dataset_data,
-                          x_col = "Comb_feat",
-                          y_col = input$var1_surv,
-                          xlab = (dataset_data[[input[[group2]]]]),
-                          ylab = ylabel,
-                          fill_colors = c("#0000FF", "#00FF00", "#FF00FF", "#FF0000"),
-                          showlegend = F) %>%
-          add_annotations(
-            text = dataset,
-            x = 0.5,
-            y = 1.1,
-            yref = "paper",
-            xref = "paper",
-            xanchor = "center",
-            yanchor = "top",
-            showarrow = FALSE,
-            font = list(size = 15)) %>% 
-          layout(
-            xaxis = list(tickangle = 80),
-            shapes = lazyeval::lazy_eval(get_lines_pos(samples, -0.38)),
-            margin = list(b = 10)
-            #annotations = lazyeval::lazy_eval(get_text_pos(dataset_data, input$groupvar, -0.50))
-          )
+        create_violinplot_twogroup(plot_function(),
+                                   dataset_data,
+                                   dataset,
+                                   input$var1_surv,
+                                   input$groupvar,
+                                   input[[group2]],
+                                   ylabel)
       }
      
     })
     
-    plotly::subplot(all_plots, shareX = TRUE, shareY = TRUE, nrows = 1, margin = c(0.01, 0.01, 0.01,0.01))
+    s <- plotly::subplot(all_plots, shareX = TRUE, shareY = TRUE, nrows = 1, margin = c(0.01, 0.01, 0.01,0.01))
+    
+    s$x$source <- "distPlots"
+    s
   })
   
   
@@ -247,5 +298,74 @@ ioresponse <- function(input,
                    group_to_split = input$groupvar, 
                    sel_feature = input$var1_surv,
                    .f = get_t_test) 
+  })
+  
+  output$drilldown_plot <- renderPlotly({
+    
+    eventdata <- event_data("plotly_click", source = "distPlots")
+    validate(need(!is.null(eventdata), "Click plot above"))
+    clicked_group <- eventdata$x[[1]]
+    clicked_dataset <- eventdata$customdata[[1]]
+   
+    group2 <- paste0("dist", clicked_dataset)
+    
+    if(input$groupvar != "treatment_when_collected" & input[[group2]] != "treatment_when_collected"){
+      dataset_data <- fmx_io %>% 
+        dplyr::filter(treatment_when_collected == "Pre")
+    }else{
+      dataset_data <- fmx_io
+    }
+    
+    if(input$groupvar == input[[group2]]){
+      dataset_data <- filter_dataset(dataset_data, clicked_dataset,
+                                     input$var1_surv,
+                                     input$groupvar)
+      
+      if(input$groupvar == "Progression"){
+        dataset_data <- get_responder_annot(dataset_data) 
+        selected_feature <- "Responder"
+      }else{
+        selected_feature <- as.character(input$groupvar)
+      }
+      
+      dataset_data <- dataset_data %>% 
+        dplyr::filter(.[[selected_feature]] == clicked_group)
+        
+    }else{
+      
+      dataset_data <- filter_dataset(dataset_data, clicked_dataset,
+                                     input$var1_surv,
+                                     input$groupvar,
+                                     input[[group2]])
+      
+      
+      if(input$groupvar == "Progression"){
+        dataset_data <- get_responder_annot(dataset_data) 
+        selected_feature <- "Responder"
+      }else{
+        selected_feature <- input$groupvar
+      }
+      
+      dataset_data$Comb_feat <- paste(dataset_data[[selected_feature]], "&",
+                                      convert_value_between_columns(input_value =input[[group2]],
+                                                                    df = feature_io_df,
+                                                                    from_column = "FeatureMatrixLabelTSV",
+                                                                    to_column = "FriendlyLabel"),
+                                      ":", dataset_data[[input[[group2]]]], sep = " " )
+      selected_feature <- "Comb_feat"
+      
+      dataset_data <- dataset_data %>% 
+        dplyr::filter(Comb_feat == clicked_group)
+    }
+    
+    dataset_data %>% 
+      create_histogram(
+        x_col = input$var1_surv,
+        title = paste(clicked_dataset, clicked_group, sep = ", "), 
+        x_lab = convert_value_between_columns(input_value =input$var1_surv,
+                                             df = feature_io_df,
+                                             from_column = "FeatureMatrixLabelTSV",
+                                             to_column = "FriendlyLabel")
+      )
   })
 }  

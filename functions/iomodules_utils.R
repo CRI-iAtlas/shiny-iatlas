@@ -1,6 +1,6 @@
 # IO Response utils functions
-#"Auslander, 2018 - SKCM" =  "Auslander 2018",
-datasets_options <-  list( 
+# "Auslander, 2018 - SKCM" =  "Auslander 2018",
+datasets_options <-  list(
                          "Gide, 2019 - SKCM, Anti-PD1 +/- Anti-CTLA4" =  "Gide 2019", 
                          "Hugo, 2016 - SKCM, Anti-PD1" = "Hugo 2016", 
                          "Riaz, 2017 - SKCM, Anti-PD1" = "Riaz 2017", 
@@ -103,34 +103,120 @@ get_text_pos <- function(df, col_div, y){
   paste(lines_pos, ")")
 }
 
+create_violinplot_onegroup <- function(plot_type, df, dataset, feature, group1, ylabel){
+  dataset_data <- filter_dataset(df,
+                                 dataset,
+                                 feature,
+                                 group1)
 
-get_t_test <- function(df, group_to_split, sel_feature, dataset){
+  if(group1 == "Progression"){
+    dataset_data <- get_responder_annot(dataset_data)
+    group1 <- "Responder"
+  }
+
+  plot_type(dataset_data, 
+                    x_col = as.character(group1),
+                    y_col = feature, 
+                    xlab = dataset_data[[group1]],
+                    ylab = ylabel,
+                    custom_data = as.character(dataset),
+                    fill_colors = c("#0000FF", "#00FF00", "#FF00FF", "#FF0000"),
+                    showlegend = F)  %>%
+    add_annotations(
+      text = dataset,
+      x = 0.5,
+      y = 1.1,
+      yref = "paper",
+      xref = "paper",
+      xanchor = "center",
+      yanchor = "top",
+      showarrow = FALSE,
+      font = list(size = 15)
+    )
+}
+
+create_violinplot_twogroup <- function(plot_type, dataset_data, dataset, feature, group1, group2, ylabel){
+ 
+  dataset_data <- filter_dataset(dataset_data, dataset,
+                                 feature,
+                                 group1,
+                                 group2)
+
+  if(group1 == "Progression"){
+    dataset_data <- get_responder_annot(dataset_data)
+    group1 <- "Responder"
+  }
   
+  dataset_data$Comb_feat <- paste(dataset_data[[group1]], "&",
+                                  convert_value_between_columns(input_value =group2,
+                                                                df = feature_io_df,
+                                                                from_column = "FeatureMatrixLabelTSV",
+                                                                to_column = "FriendlyLabel"),
+                                  ":", dataset_data[[group2]], sep = " " )
+  
+  
+  samples <- (dataset_data %>% group_by(dataset_data[[group1]], dataset_data[[group2]]) %>% 
+                                summarise(samples = n()))
+                  colnames(samples) <- c("var1", "var2", "samples")
+
+  #get number of groups to draw lines
+  samples <- (dataset_data %>% group_by(dataset_data[[group1]], dataset_data[[group2]]) %>%
+                summarise(samples = n()))
+  colnames(samples) <- c("var1", "var2", "samples")
+
+  plot_type(dataset_data,
+                    x_col = "Comb_feat",
+                    y_col = feature,
+                    xlab = (dataset_data[[group2]]),
+                    ylab = ylabel,
+                    custom_data = as.character(dataset),
+                    fill_colors = c("#0000FF", "#00FF00", "#FF00FF", "#FF0000"),
+                    showlegend = F) %>%
+    add_annotations(
+      text = dataset,
+      x = 0.5,
+      y = 1.1,
+      yref = "paper",
+      xref = "paper",
+      xanchor = "center",
+      yanchor = "top",
+      showarrow = FALSE,
+      font = list(size = 15)) %>%
+    layout(
+      xaxis = list(tickangle = 80),
+      shapes = lazyeval::lazy_eval(get_lines_pos(samples, -0.38)),
+      margin = list(b = 10)
+      #annotations = lazyeval::lazy_eval(get_text_pos(dataset_data, input$groupvar, -0.50))
+    )
+}
+# 
+get_t_test <- function(df, group_to_split, sel_feature, dataset){
+
   data_set <- df %>%
     filter(Dataset == dataset)
-  
+
   if(dplyr::n_distinct(data_set[[group_to_split]])>1){
     split_data <- split(data_set, data_set[[group_to_split]])
-    
+
     comb_groups <- combn(1:length(split_data), 2)
-    
+
     purrr::map2_dfr(.x = comb_groups[1,], .y = comb_groups[2,], function(x,y){
-      
-      test_data <- broom::tidy(t.test(split_data[[x]][[sel_feature]], 
-                                      split_data[[y]][[sel_feature]], 
-                                      paired = FALSE)) %>% 
+
+      test_data <- broom::tidy(t.test(split_data[[x]][[sel_feature]],
+                                      split_data[[y]][[sel_feature]],
+                                      paired = FALSE)) %>%
         dplyr::select(statistic, p.value)
-      
+
       test_data$Dataset <- as.character(dataset)
       test_data$Test <- paste0(group_to_split, ": ", names(split_data)[x], " vs. ", names(split_data)[y])
-      
-      test_data %>% 
-        dplyr::select(Dataset, Test, statistic, p.value)  
+
+      test_data %>%
+        dplyr::select(Dataset, Test, statistic, p.value)
     })
   }else{
-    test_data <- data.frame(Dataset = dataset, 
-                            Test = "First sample group has only one level for this dataset.", 
-                            statistic = NA, 
+    test_data <- data.frame(Dataset = dataset,
+                            Test = "First sample group has only one level for this dataset.",
+                            statistic = NA,
                             p.value = NA)
   }
 }

@@ -6,7 +6,8 @@ ioresponseoverview_UI <- function(id){
         titleBox("iAtlas Explorer — Datasets of Treatment with Immune Checkpoint Inhibitors"),
         textBox(
             width = 12,
-            p("Explore the ‘omics’ data sets on response to checkpoint inhibitors treatments")
+            includeMarkdown("data/markdown/io_response_description.markdown")
+            #p("Explore the ‘omics’ data sets on response to checkpoint inhibitors treatments")
         ),
         
         sectionBox(
@@ -14,14 +15,17 @@ ioresponseoverview_UI <- function(id){
             
             messageBox(
                 width = 24,
-                includeMarkdown("data/markdown/io_response_description.markdown")
-#                p("Check the attributes about the available datasets.")
+                #includeMarkdown("data/markdown/io_response_description.markdown")
+               p("All the modules in the Molecular Response to ICI section of CRI-iAtlas provide visualization of immunogenomics features of the datasets described in the table below. 
+                 You can also download the data for further analysis. Details of the methods to compute the features are provided in the Data Description section.")
             ),
             plotBox(
                 width = 12,
                 DT::DTOutput(
                     ns("io_datasets_df")
-                )
+                ),
+                downloadButton(ns('download_metadata'), 'Download Dataset Metadata'),
+                downloadButton(ns('download_data'), 'Download Data')
                 
             )#plotBox
         )
@@ -42,12 +46,36 @@ ioresponseoverview <- function(input,
     ns <- session$ns
     
     output$io_datasets_df <- DT::renderDT({
-        DT::datatable((fmx_io %>% 
-                         dplyr::group_by(Dataset,Response) %>% 
-                           #dplyr::group_by(Dataset, Study, Drug, Antibody) %>% 
-                           summarise(Samples = dplyr::n_distinct(Sample_ID))),
-                      options = list(pageLength = 20))
+       DT::datatable((dataset_io %>% 
+                       dplyr::mutate(
+                         Reference = paste(
+                           "<a href=\"",
+                           Paper,"\">",
+                           Citation,"</a>", 
+                           sep=""
+                         )
+                       )%>% 
+                      select(Dataset, Study, Antibody, `Primary Sample` = `PrimarySample(s)`, Samples, Patients, Reference)),
+                     escape= FALSE)
+        # DT::datatable((fmx_io %>% 
+        #                  #dplyr::group_by(Dataset,Response) %>% 
+        #                    dplyr::group_by(Dataset, Study, Drug, Antibody) %>% 
+        #                    summarise(Samples = dplyr::n_distinct(Sample_ID))),
+        #               options = list(pageLength = 20))
         
     })
+    
+    output$download_metadata <- downloadHandler(
+      filename = function() stringr::str_c("iatlas-io-metadata-", Sys.Date(), ".csv"),
+      content = function(con) readr::write_csv(dataset_io, con)
+    )
+    
+    output$download_data <- downloadHandler(
+      filename = function() stringr::str_c("iatlas-io-data-", Sys.Date(), ".csv"),
+      content = function(con) readr::write_csv(fmx_io, con)
+    )
 }
+
+
+
    
