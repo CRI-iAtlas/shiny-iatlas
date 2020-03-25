@@ -30,7 +30,7 @@ The main feature of the iAtlas web tool is the **iAtlas Explorer**, which provid
 + **Driver Associations:** Explore asociations of microenvironment with driver mutations.
 + **Copy Number Variation:** Explore associations of microenvironment with gene copy number variations.
 + **Extracellular Networks:** Explore the extracellular networks modulating tumoral immune response.
-+ **Cell Image:** Explore cell and protein abundance on an illustration.
++ **Cell-Interaction Diagram:** Explore cell and protein abundance on an illustration.
 
 ---
 
