@@ -3,17 +3,18 @@ cellimage_UI <-function(id){
   ns <- NS(id)
   
   tagList(
-    titleBox("iAtlas Explorer — Cell Image"),
+    titleBox("iAtlas Explorer — Cell-Interaction Diagram"),
     textBox(
       width = 12,
       p("This module allows you to depict the estimated abundance of tumor cells and representative innate and adaptive cells in the microenvironment, along with the abundance of receptor and ligands mediating interactions between those cells.")
     ),
     
     sectionBox(
-      title = "Cell Image Module",
+      title = "Cell-Interaction Diagram Module",
       messageBox(
         width = 12,
-        includeMarkdown("data/markdown/cell_image.markdown")
+        includeMarkdown("data/markdown/cell_image.markdown"),
+        actionLink(ns("method_link"), "Click to view method.")
       ),
       fluidRow(
 
@@ -189,6 +190,15 @@ cellimage <- function(
   #Button with method information
   
     observeEvent(input$methodButton, {
+      showModal(modalDialog(
+        title = "Method",
+        includeMarkdown("data/MethodsText/Methods_CellImage.txt"),
+        easyClose = TRUE,
+        footer = NULL
+      ))
+    })
+    
+    observeEvent(input$method_link,{
       showModal(modalDialog(
         title = "Method",
         includeMarkdown("data/MethodsText/Methods_CellImage.txt"),

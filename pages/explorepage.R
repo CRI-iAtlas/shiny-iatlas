@@ -67,7 +67,7 @@ explorepage <- dashboardPage(
 		 icon = icon("cog")
 		),
 	       menuSubItem(
-                 "Cellular Image",
+                 "Cell-Interaction Diagram",
                  tabName = "cell_image",
                  icon = icon("cog")
                )
@@ -246,7 +246,7 @@ explorepage <- dashboardPage(
           fluidRow(
             imgLinkBox(
               width = 6,
-              title = "Cell Image",
+              title = "Cell-Interaction Diagram",
               linkId = "link_to_module12",
               imgSrc = "images/cell-image.png",
               boxText = "Explore cell and protein abundance on an illustration.",
