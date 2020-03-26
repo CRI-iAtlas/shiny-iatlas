@@ -2,7 +2,7 @@ cnvs_UI <- function(id) {
   ns <- NS(id)
   
   tagList(
-    titleBox("iAtlas Explorer: Association with Copy Number Variations"),
+    titleBox("iAtlas Explorer — Association with Copy Number Variations"),
     textBox(
       width = 12,
       p("Explore statistical associations between immune readouts and copy number variations.")
