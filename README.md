@@ -131,7 +131,7 @@ Some of the key input data can be found as dataframe objects in **`feather`** fi
 
 ## Methods
 
-Methods employed by the app are described in [Immune Landscape of Cancer](https://www.cell.com/immunity/abstract/S1074-7613(18)30121-3) study and can also be found Methods descriptions displayed in the app (for example as seen in Data Description module).
+Methods employed by the app are described in [Immune Landscape of Cancer](https://www.cell.com/immunity/abstract/S1074-7613(18)30121-3) study and can also be found in Methods descriptions displayed in the app (for example as seen in Data Description module).
 
 ### Concordance Index (CI)
 
