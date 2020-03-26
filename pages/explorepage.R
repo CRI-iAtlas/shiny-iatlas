@@ -231,7 +231,7 @@ explorepage <- dashboardPage(
               title = "CNV Associations",
               linkId = "link_to_module10",
               imgSrc = "images/cnvs.png",
-              boxText = "Explore Associations of Microenvironment with Copy Number Variants.",
+              boxText = "Explore associations of microenvironment with gene copy number.",
               linkText = "Open Module"
             ),
             imgLinkBox(

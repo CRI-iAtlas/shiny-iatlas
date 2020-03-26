@@ -8,31 +8,30 @@ cnvs_UI <- function(id) {
       p("Explore statistical associations between immune readouts and copy number variations.")
     ),
     sectionBox(
-      title = "Immune Response Association With Copy Number Variants",
+      title = "Immune Response Association With Copy Number Variation",
       messageBox(
         width = 12,
-        p("This module contains a large table of associations (>3 Million) between copy number variants (by gene) and immune readouts. Initially, all genes and all groups are shown. 
+        p("This module allows you to identify associations between specific somatic gene copy number alterations (SCNAs) and immune readouts. Gene SCNAs are specified as either amplified or deleted.\n\n"),
+
+        p("The module begins with a large table of SCNA statistical associations (>3 Million) based on the t-test. Initially, statistics from all genes and all sample groups are shown. 
                 Use the filter controls to limit results to your interests.\n\n"),
-        
-        p("Within each group (TCGA study, subtype, or immune subtype), a T-test was performed on immune readouts 
-                  between samples with no copy number variation for a given gene,  
-                  and samples with either amplified or deleted regions (two separate tests).\n\n"),
         
         p("There are three components to the module: filter controls, a summary plot, and a table of results.\n"),
         
-        p("The filter controls remove statistics from the table and plot. It's possible to select multiple groups and genes."),
+        p("The filter controls allow you to specify which subset of values are shown in the table and plot. It's possible to select multiple groups and genes."),
         
-        p("The histogram shows the distribution of T statistics, given the filter settings."),
+        p("The histogram shows the distribution of t-statistic values, given the filter settings."),
         
         tags$ul(
-          tags$li("The x-axis shows the T statistic value, positive if the normal group has higher immune readout scores."),
+          tags$li("The x-axis shows the t-statistic value, positive if the group of normal (un-altered) samples has higher immune readout scores, and negative if the opposite is true."),
           tags$li("The y-axis represents the number of genes with that statistic.")
         ),
-        p("\n\nImmune landscape manuscript context: The results are comparible to those shown in Figure S4A.","\n"),
+        p("\n\nImmune landscape manuscript context: The results are comparable to those shown in Figure S4A.","\n"),
         p(""),
         p("Notes: A statistical test is performed only when the number of samples exceeds a minimum required group count (currently 3). 
                   In rare instances all (or all but one) samples within a group contain the alteration and a test cannot be performed.
-                  Only statistics with p-values less than 0.001 are retained"),
+                  Only statistics with p-values less than 0.001 are retained. As this module relies heavily on pre-computation, it is 
+                  not currently compatible with loading of user-defined custom sample groups."),
         p(""),
         p("")
       ),
