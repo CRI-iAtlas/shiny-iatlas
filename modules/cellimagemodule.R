@@ -10,7 +10,7 @@ cellimage_UI <-function(id){
     ),
     
     sectionBox(
-      title = "Cell-Interaction Diagram Module",
+      title = "Cell-Interaction Diagram",
       messageBox(
         width = 12,
         includeMarkdown("data/markdown/cell_image.markdown"),
@@ -21,7 +21,7 @@ cellimage_UI <-function(id){
         optionsBox(
           column(
             width = 6,
-            radioButtons(ns("ui1"), "Select type of visualization:", choices = c("Image", "Network"), selected = "Image")
+            radioButtons(ns("ui1"), "Select type of visualization:", choices = c("Diagram", "Network"), selected = "Diagram")
           ),
           column(
             width = 6,
@@ -31,7 +31,7 @@ cellimage_UI <-function(id){
         optionsBox(
           column(
             width = 6,
-            radioButtons(ns("ui2"), "Select type of visualization:", choices = c("Image", "Network"), selected = "Network")
+            radioButtons(ns("ui2"), "Select type of visualization:", choices = c("Diagram", "Network"), selected = "Network")
           ),
           column(
             width = 6,
@@ -144,7 +144,7 @@ cellimage <- function(
     
     nodes_ratio <- isolate(nodes_ratio(selected_group = group_internal_choice()))
     
-    if(input$ui1 == "Image"){
+    if(input$ui1 == "Diagram"){
       output$cellPlot1 <- renderPlot({
         shiny::validate(need((input$groupselect_method1 %in% nodes_ratio$Group), "Please select another subtype - this one has limited data."))
         image_grob <- get_cell_image_object(cellimage_base = panimmune_data$cellimage_base, subtype_selected = input$groupselect_method1, vals_for_cellplot = nodes_ratio)
@@ -168,7 +168,7 @@ cellimage <- function(
     
     nodes_ratio <- isolate(nodes_ratio(selected_group = group_internal_choice()))
     
-    if(input$ui2 == "Image"){
+    if(input$ui2 == "Diagram"){
       output$cellPlot2 <- renderPlot({
         shiny::validate(need((input$groupselect_method2 %in% nodes_ratio$Group), "Please select another subtype - this one has limited data."))  
         image_grob <- get_cell_image_object(cellimage_base = panimmune_data$cellimage_base, subtype_selected = input$groupselect_method2, vals_for_cellplot = nodes_ratio)
