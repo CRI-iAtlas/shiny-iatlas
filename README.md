@@ -22,12 +22,12 @@ The portal is built entirely in **R** and **Shiny** using the **RStudio** develo
 
 ### MacOS Install instructions
 
-- Download and install gfortran from https://github.com/fxcoudert/gfortran-for-macOS/releases
+- Download and install gfortran: https://github.com/fxcoudert/gfortran-for-macOS/releases
 or https://cran.r-project.org/bin/macosx/tools/
 
-- Download and install R-3.6.2.pkg from https://cran.r-project.org/bin/macosx/
+- Download and install R-3.6.2.pkg: https://cran.r-project.org/bin/macosx/
 
-- Download and install X11 via XQuartz https://www.xquartz.org/
+- Download and install X11 via XQuartz: https://www.xquartz.org/
 
 - Install cairo via Homebrew (https://formulae.brew.sh/formula/cairo ; requires brew: https://brew.sh/ )
 
@@ -47,7 +47,7 @@ To run the app locally:
    renv::restore()
    ```
 
-   This may take some time to complete - walk away from your computer, rest your eyes, and catch up on those stretching excercises you are meant to be doing :)
+   This may take some time to complete - walk away from your computer, rest your eyes, and catch up on those stretching exercises you are meant to be doing :)
 
 1. Start the app by running:
 
@@ -143,3 +143,6 @@ concordanceIndex::concordanceIndex(predictions, observations)
 
 where `predictions` and `observations` are numerical vectors of identical length.
 
+### Immune Subtype Classifier
+
+The iAtlas Immune Subtype Classifier tool uses the **[ImmuneSubtypeClassifier](https://github.com/CRI-iAtlas/ImmuneSubtypeClassifier)** R package, developed by David L. Gibbs, for classification of immune subtypes, in cancer, using gene expression data.
