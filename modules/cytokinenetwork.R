@@ -22,27 +22,29 @@ cytokinenetwork_UI <- function(id) {
         width = 24,
         includeMarkdown("data/markdown/cytokine_network.markdown")
       ),
-        optionsBox(
-          width=2,
-            verticalLayout(
+      fluidRow(
+        column(
+          width = 3,
+          optionsBox(
+            width=24,
               #this tags$head makes sure that the checkboxes are formatted appropriately
               tags$head(
                 tags$style(
                   HTML(
-                          ".checkbox-inline { 
-                          margin-left: 0px;
-                          margin-right: 10px;
-                          }
-                         .checkbox-inline+.checkbox-inline {
-                                    margin-left: 0px;
-                                    margin-right: 10px;
-                          }
-                        "
+                    ".checkbox-inline { 
+                    margin-left: 0px;
+                    margin-right: 10px;
+                    }
+                    .checkbox-inline+.checkbox-inline {
+                    margin-left: 0px;
+                    margin-right: 10px;
+                    }
+                    "
                   )
-                ) 
-              ),
+                  ) 
+                  ),
               uiOutput(ns("select_ui")),
-               
+              
               numericInput(ns("abundance"), "Set Abundance Threshold (%)", value = 66, min = 0, max = 100),
               numericInput(ns("concordance"), "Set Concordance Threshold", value = 2.94, step = 0.01),
               
@@ -53,56 +55,46 @@ cytokinenetwork_UI <- function(id) {
               
               hr(),
               
-              fluidRow(
-                column(
-                  width = 12,
-                  selectInput(
-                    ns("doLayout"), 
-                    "Select Layout",
-                    choices=c("",
-                              "cose",
-                              "cola",
-                              "circle",
-                              "concentric",
-                              "breadthfirst",
-                              "grid",
-                              "random",
-                              "dagre",
-                              "cose-bilkent"),
-                    selected = "cose"),
-                    
-                    uiOutput(ns("selectStyle")),
-                  
-                    uiOutput(ns("selectNode")),
-                    actionButton(ns("fitSelected"), "Fit Selected", width = "100%", style = 'white-space: pre-line'),
-                    actionButton(ns("fit"), "Fit Graph", width = "100%", style = 'white-space: pre-line'),
-                    actionButton(ns("sfn"), "Select First Neighbor", width = "100%", style = 'white-space: pre-line'),
-                    actionButton(ns("clearSelection"), "Unselect Nodes", width = "100%", style = 'white-space: pre-line'),
-                    actionButton(ns("hideSelection"), "Hide Selected Nodes", width = "100%", style = 'white-space: pre-line'),
-                    actionButton(ns("showAll"), "Show All Nodes", width = "100%", style = 'white-space: pre-line'),
-                    #actionButton(ns("savePNGbutton"), "Save PNG"),
-                    actionButton(ns("removeGraphButton"), "Remove Graph", width = "100%", style = 'white-space: pre-line') 
-                )
-              )
-          ) #verticalLayout
-        ), #optionsBox
-        plotBox(
-          width = 10,
-          column(
-            width = 11,
-            mainPanel(
-              width = 11,
-              fluidRow(
-                cyjShiny::cyjShinyOutput(ns("cyjShiny"), height =1000)%>% 
-                  shinycssloaders::withSpinner()
-              )
+              selectInput(
+                ns("doLayout"), 
+                "Select Layout",
+                choices=c("",
+                          "cose",
+                          "cola",
+                          "circle",
+                          "concentric",
+                          "breadthfirst",
+                          "grid",
+                          "random",
+                          "dagre",
+                          "cose-bilkent"),
+                selected = "cose"),
+              
+              uiOutput(ns("selectStyle")),
+              
+              uiOutput(ns("selectNode")),
+              actionButton(ns("fitSelected"), "Fit Selected", width = "100%", style = 'white-space: pre-line'),
+              actionButton(ns("fit"), "Fit Graph", width = "100%", style = 'white-space: pre-line'),
+              actionButton(ns("sfn"), "Select First Neighbor", width = "100%", style = 'white-space: pre-line'),
+              actionButton(ns("clearSelection"), "Unselect Nodes", width = "100%", style = 'white-space: pre-line'),
+              actionButton(ns("hideSelection"), "Hide Selected Nodes", width = "100%", style = 'white-space: pre-line'),
+              actionButton(ns("showAll"), "Show All Nodes", width = "100%", style = 'white-space: pre-line'),
+              #actionButton(ns("savePNGbutton"), "Save PNG"),
+              actionButton(ns("removeGraphButton"), "Remove Graph", width = "100%", style = 'white-space: pre-line') 
+            ) #
+        ),
+        column(
+          width = 9,
+          verticalLayout(
+            plotBox(
+              width = 24,
+              cyjShiny::cyjShinyOutput(ns("cyjShiny"), height =800)%>% 
+                shinycssloaders::withSpinner()
             ),
-            column(
-              width = 1,
-              img(src = "images/network_legend.png", width = 720)
-            )
+            img(src = "images/network_legend.png", width = "100%")
           )
-        )#plotBox
+        )
+      )
       ),#sectionBox
       
       sectionBox(
@@ -223,7 +215,7 @@ cytokinenetwork <- function(
   
   output$selectStyle <- renderUI({
     
-    styles <- c("Edges by Immune Type" = "data/javascript/extracellular_network_stylesEdges.js",
+    styles <- c("Edges - Immune Subtype" = "data/javascript/extracellular_network_stylesEdges.js",
                   "Black Edges" = "data/javascript/extracellular_network_styles.js")
       
     selectInput(
@@ -233,7 +225,7 @@ cytokinenetwork <- function(
   })
   
   output$selectCell <- renderUI({
-    selectizeInput(ns("cellInterest"), "Select or Search for cells of interest (optional)", choices = (panimmune_data$ecn_labels %>% dplyr::filter(Type == "Cell" & Obj != "Tumor_cell") %>% dplyr::select("Cells"="Gene")), 
+    selectizeInput(ns("cellInterest"), "Select cells of interest (optional)", choices = (panimmune_data$ecn_labels %>% dplyr::filter(Type == "Cell" & Obj != "Tumor_cell") %>% dplyr::select("Cells"="Gene")), 
                    multiple = TRUE, options = list(placeholder = "Default: all cells"))
   })
   
@@ -241,7 +233,7 @@ cytokinenetwork <- function(
     #getting all nodes in the main_scaffold, and displaying it as FriendlyName
     scanodes <- (union(main_scaffold$From, main_scaffold$To) %>% as.data.frame() %>% 
                    unique() %>% merge(panimmune_data$ecn_labels, by.x = ".", by.y = "Obj") %>% select(Genes = Gene) %>% filter(!is.na(Genes)))
-    selectizeInput(ns("geneInterest"), "Select or Search for genes of interest (optional)", choices = scanodes,
+    selectizeInput(ns("geneInterest"), "Select genes of interest (optional)", choices = scanodes,
                    multiple = TRUE, options = list(placeholder = "Default: immunomodulator genes"))
   })
   
