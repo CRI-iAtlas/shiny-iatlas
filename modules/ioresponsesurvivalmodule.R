@@ -36,16 +36,15 @@ iosurvival_UI <- function(id){
                         fluidRow(
                             column(
                                 width = 5,
-                                checkboxGroupInput(ns("datasets"), "Select Datasets", choices = c("Gide 2019", "Hugo 2016", 
-                                                                                                  "IMVigor210", "Prins 2019", "Riaz 2017", "Van Allen 2015"),
-                                                   selected = "Gide 2019")
+                                checkboxGroupInput(ns("datasets"), "Select Datasets", choices = datasets_options,
+                                                   selected = NULL)
                                 #the Auslander dataset does not have annotation for OS  
-                            ),
-                            column(
-                                width = 7,
-                                selectizeInput(ns("types"), "Select tumor(s) type(s)", choices = c("All", unique(dataset_io_df$Study)), selected = NULL),
-                                selectizeInput(ns("therapy"), "Select therapy(ies) type(s)", choices = c("All", unique(dataset_io_df$Antibody)), selected = NULL),
-                                selectizeInput(ns("drugs"), "Select drug(s) of treatment", choices = c("All", unique(dataset_io_df$Drug)), selected = NULL)
+                            # ),
+                            # column(
+                            #     width = 7,
+                            #     selectizeInput(ns("types"), "Select tumor(s) type(s)", choices = c("All", unique(dataset_io_df$Study)), selected = NULL),
+                            #     selectizeInput(ns("therapy"), "Select therapy(ies) type(s)", choices = c("All", unique(dataset_io_df$Antibody)), selected = NULL),
+                            #     selectizeInput(ns("drugs"), "Select drug(s) of treatment", choices = c("All", unique(dataset_io_df$Drug)), selected = NULL)
                             )
                         ),    
                         uiOutput(ns("survplot_op")),
@@ -119,57 +118,57 @@ iosurvival <- function(input,
     
     #Update dataset selection based on choice of study design
     
-    dataset_select <- reactive({
-      
-      if(input$types == "All"){
-        subset_dataset <- dataset_io_df %>%
-          filter(Dataset != "Auslander 2018") %>% 
-          select(Dataset, Study, Antibody, Drug) %>% unique() 
-      }else{
-        subset_dataset <- dataset_io_df %>%
-          filter(Dataset != "Auslander 2018" & Study == input$types) %>%
-          select(Dataset, Study, Antibody, Drug) %>% unique() 
-      }
-      
-      if(input$therapy != "All"){
-        subset_dataset <- subset_dataset %>% 
-          filter(Antibody == input$therapy)
-      }else{
-        subset_dataset
-      }
-      
-      if(input$drugs != "All"){
-        subset_dataset <- subset_dataset %>% 
-          filter(Drug == input$drugs)
-      }else{
-        subset_dataset
-      }
-      
-      return(subset_dataset)
-    })
-    
-    observeEvent(dataset_select(),{
-      #browser()
-      updateCheckboxGroupInput(
-        session,
-        "datasets",
-        choices = c("Gide 2019", "Hugo 2016", "IMVigor210", "Prins 2019", "Riaz 2017", "Van Allen 2015"),
-        selected = dataset_select() %>% dplyr::select(Dataset) %>% unique() %>% .[[1]]
-      )
-      #updateSelectInput(session = session, inputId = "therapy", choices = c("All", dataset_select() %>% dplyr::select(Antibody) %>%.[[1]]),  selected = "All")
-      #updateSelectInput(session, "drugs", choices = c("All", dataset_select() %>% dplyr::select(Drug) %>%.[[1]]))
-    })
-    
-    observeEvent(input$types,{
-     # browser()
-#      updateSelectInput(session, "therapy", choices = c("All", dataset_select() %>% dplyr::select(Antibody) %>%.[[1]]), selected = "All")
-      updateSelectInput(session, "therapy", selected = "All")
-    })
-    
-    observeEvent(input$therapy,{
-      #updateSelectInput(session, "types", choices = c("All", dataset_select() %>% dplyr::select(Study) %>%.[[1]]), selected = current_type())
-      updateSelectInput(session, "drugs", choices = c("All", dataset_select() %>% dplyr::select(Drug) %>%.[[1]]), selected = "All")
-    })
+#     dataset_select <- reactive({
+#       
+#       if(input$types == "All"){
+#         subset_dataset <- dataset_io_df %>%
+#           filter(Dataset != "Auslander 2018") %>% 
+#           select(Dataset, Study, Antibody, Drug) %>% unique() 
+#       }else{
+#         subset_dataset <- dataset_io_df %>%
+#           filter(Dataset != "Auslander 2018" & Study == input$types) %>%
+#           select(Dataset, Study, Antibody, Drug) %>% unique() 
+#       }
+#       
+#       if(input$therapy != "All"){
+#         subset_dataset <- subset_dataset %>% 
+#           filter(Antibody == input$therapy)
+#       }else{
+#         subset_dataset
+#       }
+#       
+#       if(input$drugs != "All"){
+#         subset_dataset <- subset_dataset %>% 
+#           filter(Drug == input$drugs)
+#       }else{
+#         subset_dataset
+#       }
+#       
+#       return(subset_dataset)
+#     })
+#     
+#     observeEvent(dataset_select(),{
+#       #browser()
+#       updateCheckboxGroupInput(
+#         session,
+#         "datasets",
+#         choices = c("Gide 2019", "Hugo 2016", "IMVigor210", "Prins 2019", "Riaz 2017", "Van Allen 2015"),
+#         selected = dataset_select() %>% dplyr::select(Dataset) %>% unique() %>% .[[1]]
+#       )
+#       #updateSelectInput(session = session, inputId = "therapy", choices = c("All", dataset_select() %>% dplyr::select(Antibody) %>%.[[1]]),  selected = "All")
+#       #updateSelectInput(session, "drugs", choices = c("All", dataset_select() %>% dplyr::select(Drug) %>%.[[1]]))
+#     })
+#     
+#     observeEvent(input$types,{
+#      # browser()
+# #      updateSelectInput(session, "therapy", choices = c("All", dataset_select() %>% dplyr::select(Antibody) %>%.[[1]]), selected = "All")
+#       updateSelectInput(session, "therapy", selected = "All")
+#     })
+#     
+#     observeEvent(input$therapy,{
+#       #updateSelectInput(session, "types", choices = c("All", dataset_select() %>% dplyr::select(Study) %>%.[[1]]), selected = current_type())
+#       updateSelectInput(session, "drugs", choices = c("All", dataset_select() %>% dplyr::select(Drug) %>%.[[1]]), selected = "All")
+#     })
     
                  
     feature_df <- eventReactive(input$go_button,{

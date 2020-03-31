@@ -46,7 +46,7 @@ ioresponseoverview <- function(input,
     ns <- session$ns
     
     output$io_datasets_df <- DT::renderDT({
-       DT::datatable((dataset_io %>% 
+       DT::datatable((dataset_io_df %>% 
                        dplyr::mutate(
                          Reference = paste(
                            "<a href=\"",

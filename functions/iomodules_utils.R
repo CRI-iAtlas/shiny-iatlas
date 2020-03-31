@@ -24,6 +24,27 @@ get_responder_annot <- function(df){
     df$Progression == FALSE ~ "Responder"))
 }
 
+build_distribution_io_df <- function(
+  df, 
+  feature, 
+  scale_func_choice = "None"
+){
+  
+  scale_function <- switch(
+    scale_func_choice,
+    "None" = identity, 
+    "Log2" = log2,
+    "Log2 + 1" = function(x) log2(x + 1),
+    "Log10" = log10,
+    "Log10 + 1" = function(x) log10(x + 1)
+  )
+ 
+  df %>% 
+    tidyr::drop_na() %>% 
+    dplyr::mutate(y = scale_function(feature)) %>% 
+    tidyr::drop_na() %>% 
+    dplyr::filter(!is.infinite(y))
+}
 
 get_lines_pos <- function(samples, y){
   
@@ -103,12 +124,8 @@ get_text_pos <- function(df, col_div, y){
   paste(lines_pos, ")")
 }
 
-create_violinplot_onegroup <- function(plot_type, df, dataset, feature, group1, ylabel){
-  dataset_data <- filter_dataset(df,
-                                 dataset,
-                                 feature,
-                                 group1)
-
+create_violinplot_onegroup <- function(dataset_data, plot_type, dataset, feature, group1, ylabel){
+  
   if(group1 == "Progression"){
     dataset_data <- get_responder_annot(dataset_data)
     group1 <- "Responder"
@@ -135,13 +152,8 @@ create_violinplot_onegroup <- function(plot_type, df, dataset, feature, group1, 
     )
 }
 
-create_violinplot_twogroup <- function(plot_type, dataset_data, dataset, feature, group1, group2, ylabel){
+create_violinplot_twogroup <- function(dataset_data, plot_type, dataset, feature, group1, group2, ylabel){
  
-  dataset_data <- filter_dataset(dataset_data, dataset,
-                                 feature,
-                                 group1,
-                                 group2)
-
   if(group1 == "Progression"){
     dataset_data <- get_responder_annot(dataset_data)
     group1 <- "Responder"

@@ -188,23 +188,49 @@ ioresponse <- function(input,
     )
   })
   
+  varible_display_name <- reactive({
+    convert_value_between_columns(input_value =input$var1_surv,
+                                  df = feature_io_df,
+                                  from_column = "FeatureMatrixLabelTSV",
+                                  to_column = "FriendlyLabel")
+  })
+  
+  varible_plot_label <- reactive({
+    switch(
+      input$scale_method,
+      "None" = varible_display_name(),
+      
+      "Log2" = stringr::str_c(
+        "Log2( ", 
+        varible_display_name(),
+        " )"),
+      
+      "Log2 + 1" = stringr::str_c(
+        "Log2( ", 
+        varible_display_name(),
+        " + 1 )"),
+      
+      "Log10" = stringr::str_c(
+        "Log10( ", 
+        varible_display_name(), 
+        " )"),
+      
+      "Log10 + 1" = stringr::str_c(
+        "Log10( ", 
+        varible_display_name(), 
+        " + 1 )")
+    )
+  })
+  
   output$dist_plots <- renderPlotly({
     shiny::validate(need(!is.null(input$datasets), "Select at least one dataset."))
     
-    ylabel <-  convert_value_between_columns(input_value =input$var1_surv,
-                                             df = feature_io_df,
-                                             from_column = "FeatureMatrixLabelTSV",
-                                             to_column = "FriendlyLabel")
     
     all_plots <- purrr::map(.x = input$datasets, function(dataset){
       
       group1 <- input$groupvar
       group2 <- paste0("dist", dataset)
       
-      ylabel <-  convert_value_between_columns(input_value =input$var1_surv,
-                                               df = feature_io_df,
-                                               from_column = "FeatureMatrixLabelTSV",
-                                               to_column = "FriendlyLabel")
       
       #Filtering only samples collected pre treatment
       if(input$groupvar != "treatment_when_collected" & input[[group2]] != "treatment_when_collected"){
@@ -214,72 +240,37 @@ ioresponse <- function(input,
         dataset_data <- fmx_io
       }
       
-      
      if(input$groupvar == input[[group2]]){
-       
-       create_violinplot_onegroup(plot_function(), dataset_data, dataset, input$var1_surv, group1, ylabel)
-       
-        # dataset_data %>% 
-        #   filter_dataset(., 
-        #                  dataset, 
-        #                  input$var1_surv, 
-        #                  group1,
-        #                  group2) %>% 
-          # `if`(
-          #   group1 == "Progression",
-          #   get_responder_annot(dataset_data),
-          #   .
-          # ) %>%
-          # `if`(
-          #   input$groupvar != input[[group2]],
-          #   merge_twogroup(., dataset, 
-          #                  input$var1_surv, 
-          #                  group1,
-          #                  group2,
-          #                  ylabel),
-          #   .
-          # ) %>%
-          # plot_function()(., 
-          #                   x_col = "Comb_feat", #as.character(group1),
-          #                   y_col =  input$var1_surv, 
-          #                   xlab = dataset_data[[group1]],
-          #                   ylab = ylabel,
-          #                   custom_data = as.character(dataset),
-          #                   fill_colors = c("#0000FF", "#00FF00", "#FF00FF", "#FF0000"),
-          #                   showlegend = F)  %>%
-          # add_annotations(
-          #   text = dataset,
-          #   x = 0.5,
-          #   y = 1.1,
-          #   yref = "paper",
-          #   xref = "paper",
-          #   xanchor = "center",
-          #   yanchor = "top",
-          #   showarrow = FALSE,
-          #   font = list(size = 15)
-          # ) %>% 
-          # `if`(
-          #   input$groupvar != input[[group2]],
-          #   add_lines_pergroup(., 
-          #                  group1,
-          #                  group2),
-          #   .
-          # ) 
-            
-        # plot_function()(., 
-        #                dataset,
-        #                input$var1_surv,
-        #                input$groupvar,
-        #                ylabel)
+       filter_dataset(dataset_data,
+                      dataset,
+                      input$var1_surv,
+                      group1) %>% 
+       build_distribution_io_df(.,
+                                feature = .[[input$var1_surv]],
+                                scale_func_choice = input$scale_method) %>% 
+       create_violinplot_onegroup(., 
+                                  plot_function(), 
+                                  dataset, 
+                                  "y", 
+                                  group1, 
+                                  varible_plot_label())
         
       }else{ #when two grouping levels are selected
-        create_violinplot_twogroup(plot_function(),
-                                   dataset_data,
+        filter_dataset(dataset_data,
+                       dataset,
+                       input$var1_surv,
+                       group1,
+                       input[[group2]]) %>% 
+        build_distribution_io_df(.,
+                                 feature = .[[input$var1_surv]],
+                                 scale_func_choice = input$scale_method) %>% 
+        create_violinplot_twogroup(.,
+                                   plot_function(),
                                    dataset,
-                                   input$var1_surv,
+                                   "y", #input$var1_surv,
                                    input$groupvar,
                                    input[[group2]],
-                                   ylabel)
+                                   varible_plot_label())
       }
      
     })
