@@ -124,7 +124,19 @@ get_text_pos <- function(df, col_div, y){
   paste(lines_pos, ")")
 }
 
-create_violinplot_onegroup <- function(dataset_data, plot_type, dataset, feature, group1, ylabel){
+combine_groups <- function(df, group1, group2){
+  
+  df$Comb_feat <-  paste(df[[group1]], "&",
+                                  convert_value_between_columns(input_value =group2,
+                                                                df = feature_io_df,
+                                                                from_column = "FeatureMatrixLabelTSV",
+                                                                to_column = "FriendlyLabel"),
+                                  ":", df[[group2]], sep = " " )
+  
+  df
+}
+
+create_plot_onegroup <- function(dataset_data, plot_type, dataset, feature, group1, ylabel){
   
   if(group1 == "Progression"){
     dataset_data <- get_responder_annot(dataset_data)
@@ -152,19 +164,12 @@ create_violinplot_onegroup <- function(dataset_data, plot_type, dataset, feature
     )
 }
 
-create_violinplot_twogroup <- function(dataset_data, plot_type, dataset, feature, group1, group2, ylabel){
+create_plot_twogroup <- function(dataset_data, plot_type, dataset, feature, group1, group2, ylabel){
  
   if(group1 == "Progression"){
     dataset_data <- get_responder_annot(dataset_data)
     group1 <- "Responder"
   }
-  
-  dataset_data$Comb_feat <- paste(dataset_data[[group1]], "&",
-                                  convert_value_between_columns(input_value =group2,
-                                                                df = feature_io_df,
-                                                                from_column = "FeatureMatrixLabelTSV",
-                                                                to_column = "FriendlyLabel"),
-                                  ":", dataset_data[[group2]], sep = " " )
   
   
   samples <- (dataset_data %>% group_by(dataset_data[[group1]], dataset_data[[group2]]) %>% 
@@ -175,15 +180,16 @@ create_violinplot_twogroup <- function(dataset_data, plot_type, dataset, feature
   samples <- (dataset_data %>% group_by(dataset_data[[group1]], dataset_data[[group2]]) %>%
                 summarise(samples = n()))
   colnames(samples) <- c("var1", "var2", "samples")
-
-  plot_type(dataset_data,
-                    x_col = "Comb_feat",
-                    y_col = feature,
-                    xlab = (dataset_data[[group2]]),
-                    ylab = ylabel,
-                    custom_data = as.character(dataset),
-                    fill_colors = c("#0000FF", "#00FF00", "#FF00FF", "#FF0000"),
-                    showlegend = F) %>%
+  
+  combine_groups(dataset_data, group1, group2) %>% 
+    plot_type(.,
+              x_col = "Comb_feat",
+              y_col = feature,
+              xlab = (dataset_data[[group2]]),
+              ylab = ylabel,
+              custom_data = as.character(dataset),
+              fill_colors = c("#0000FF", "#00FF00", "#FF00FF", "#FF0000"),
+              showlegend = F) %>%
     add_annotations(
       text = dataset,
       x = 0.5,
@@ -198,14 +204,25 @@ create_violinplot_twogroup <- function(dataset_data, plot_type, dataset, feature
       xaxis = list(tickangle = 80),
       shapes = lazyeval::lazy_eval(get_lines_pos(samples, -0.38)),
       margin = list(b = 10)
-      #annotations = lazyeval::lazy_eval(get_text_pos(dataset_data, input$groupvar, -0.50))
     )
 }
-# 
-get_t_test <- function(df, group_to_split, sel_feature, dataset){
+ 
+get_t_test <- function(df, group_to_split, sel_feature, dataset, paired = FALSE, test = t.test, label = group_to_split){
 
   data_set <- df %>%
     filter(Dataset == dataset)
+  
+  if(paired == TRUE){
+    #validate(need(group_to_split == "treatment_when_collected"), "The selected sample group has only one sample per patient. Please, select 'Independent'.")
+    patients <- data_set %>% 
+      dplyr::group_by(Patient_ID) %>% 
+      summarise(samples = dplyr::n_distinct(Sample_ID)) %>% 
+      filter(samples > 1) %>% 
+      select(Patient_ID)
+    
+    data_set <- data_set %>% 
+      dplyr::filter(Patient_ID %in% patients$Patient_ID)
+  }
 
   if(dplyr::n_distinct(data_set[[group_to_split]])>1){
     split_data <- split(data_set, data_set[[group_to_split]])
@@ -214,16 +231,18 @@ get_t_test <- function(df, group_to_split, sel_feature, dataset){
 
     purrr::map2_dfr(.x = comb_groups[1,], .y = comb_groups[2,], function(x,y){
 
-      test_data <- broom::tidy(t.test(split_data[[x]][[sel_feature]],
+      test_data <- broom::tidy(test(split_data[[x]][[sel_feature]],
                                       split_data[[y]][[sel_feature]],
-                                      paired = FALSE)) %>%
+                                      paired = paired)) %>%
         dplyr::select(statistic, p.value)
 
       test_data$Dataset <- as.character(dataset)
-      test_data$Test <- paste0(group_to_split, ": ", names(split_data)[x], " vs. ", names(split_data)[y])
+      test_data$Test <- paste0(label, ": ", names(split_data)[x], " vs. ", names(split_data)[y])
 
       test_data %>%
-        dplyr::select(Dataset, Test, statistic, p.value)
+        mutate("-log10(pvalue)" = -log10(p.value)) %>% 
+        dplyr::mutate_if(is.numeric, round, digits = 3) %>% 
+        dplyr::select(Dataset, Test, statistic, p.value, "-log10(pvalue)")
     })
   }else{
     test_data <- data.frame(Dataset = dataset,

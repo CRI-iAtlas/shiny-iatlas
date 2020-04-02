@@ -67,7 +67,7 @@ ioresponseoverview <- function(input,
     
     output$download_metadata <- downloadHandler(
       filename = function() stringr::str_c("iatlas-io-metadata-", Sys.Date(), ".csv"),
-      content = function(con) readr::write_csv(dataset_io, con)
+      content = function(con) readr::write_csv(dataset_io_df, con)
     )
     
     output$download_data <- downloadHandler(
