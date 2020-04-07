@@ -56,6 +56,7 @@ subtypeclassifier_UI <- function(id) {
         p(""),
         p("Outputs:"),
         tags$ul(
+          tags$li("Any missing genes required by the classifier are reported."),
           tags$li("Table shows TCGA reported subtypes with new aligned subtype calls."),
           tags$li("Barplot shows subtypes given to the new data."),
           tags$li("Table gives aligned subtypes, signature scores, and cluster probabilities.")
@@ -93,7 +94,12 @@ subtypeclassifier_UI <- function(id) {
           )
         )
       ),
-
+      fluidRow(
+        plotBox(
+          width=12,
+          htmlOutput(ns('geneMatchCnt'))
+        )
+      ),
       fluidRow(
         plotBox(
           width = 12,
@@ -103,7 +109,7 @@ subtypeclassifier_UI <- function(id) {
       )
     ),
 
-    # Immunomodulator annotations section ----
+    # Main results
     sectionBox(
       title = "Subtype Classification Table",
       messageBox(
@@ -119,31 +125,96 @@ subtypeclassifier_UI <- function(id) {
           )
         )
       )
+    ),
+    
+    # Any missing genes table
+    sectionBox(
+      title = "Missing genes from upload",
+      messageBox(
+        width = 12,
+        p("The table shows any missing genes.")
+      ),
+      fluidRow(
+        tableBox(
+          width = 12,
+          div(style = "overflow-x: scroll",
+              DT::dataTableOutput(ns("missinggenetable")) %>%
+                shinycssloaders::withSpinner()
+          )
+        )
+      )
     )
   ) # taglist
 }
 
 
 subtypeclassifier <- function(
-    input, output, session, group_display_choice, group_internal_choice,
-    subset_df, plot_colors) {
+    input, 
+    output, 
+    session, 
+    group_display_choice, 
+    group_internal_choice,
+    subset_df, 
+    plot_colors) {
 
     ns <- session$ns
+    
+    library(ImmuneSubtypeClassifier)
 
-    # in src files ... have same path as app.R
-    # reportedClusters <- getSubtypeTable()
-
-    # get new calls
-    getCalls <- eventReactive(input$subtypeGObutton, {
-
-      newdat <- input$expr_file_pred
-
-      print(head(newdat))
-
-      classifySubtype(newdat, input$sepa)
+    newData <- eventReactive(input$subtypeGObutton, {
+      readNewDataTable(input$expr_file_pred, input$sepa)
     })
+    
+    
+    #' geneMatchErrorReport
+    #' Check whether the incoming data matches the 485 model gene IDs
+    #' @export
+    #' @param X gene expression matrix, genes in rows, samples in columns
+    #' @return list with percent missing genes and a vector of missing genes
+    #' @examples
+    #' missingGenes <- geneMatchErrorReport(X)
+    #'
+    geneMatchErrorReport <- function(X, geneid='symbol') {
+      data(ebpp_gene)
+      
+      if (geneid == 'symbol') {
+        idx <- match(table = rownames(X), x = ebpp_genes_sig$Symbol)  ### this is just for the EBPP genes ###
+        
+      } else {
+        print("For geneids, please use gene symbols.")
+        return(NA)
+      }
+      
+      # idx will be 485 elements long... non matched ebpp_sig_genes
+      # will show as NAs in the list.
+      # SO... we calculate sum of NAs over size of ebpp_genes_sig
+      
+      matchError <- sum(is.na(idx)) / nrow(ebpp_genes_sig)
+      
+      # NAs in idx will enter NA rows in X2 
+      
+      g <- ebpp_genes_sig[is.na(idx),]  ### Adds NA rows in missing genes
+      
+      return(list(matchError=matchError, missingGenes=g, numGenesInClassifier=nrow(ebpp_genes_sig)))
+    }
 
+    
+    # get new calls
+    getCalls <- reactive({
+      
+      output$geneMatchCnt <- renderText({
+        matchInfo <- geneMatchErrorReport(X=newData())
 
+        n <- round(matchInfo$matchError, digits = 3)
+        m <- matchInfo$numGenesInClassifier
+          
+        paste0('<b> Match error: ', n, '% from a total of ', m, ' genes required by the classifier.  Missing genes shown below. </b>')
+      })
+      
+      classifySubtype(newData())
+    })
+    
+  
     output$barPlot <- renderPlot({
       counts <- table(getCalls()$Calls$BestCall)
       barplot(counts, main="New Cluster Label Calls",
@@ -166,6 +237,24 @@ subtypeclassifier <- function(
             )
         )
 
+      )
+    )
+    
+    # Missing Genes Table
+    output$missinggenetable <- DT::renderDataTable(
+      DT::datatable(
+        as.data.frame(geneMatchErrorReport(X=newData())$missingGenes),
+        extensions = 'Buttons', options = list(
+          dom = 'Bfrtip',
+          buttons =
+            list('copy', 'print',
+                 list(
+                   extend = 'collection',
+                   buttons = c('csv', 'excel', 'pdf'),
+                   text = 'Download')
+            )
+        )
+        
       )
     )
 

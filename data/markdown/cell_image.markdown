@@ -1,0 +1,3 @@
+For each panel, select the desired type of visualization and group of interest. The "Illustration" option generates a figure depicting the interaction of  tumor cells and representative innate and adaptive cells in the microenvironment. The "Network" option displays these relationships in a network layout (similar to that of the related module "Extracellular Networks").
+
+Abundance estimates are in the range 0 to 1. In both visualization options, the figure displays the estimated abundance of cells, receptors and ligands using intensities of color, where lighter colors correspond to lower values of abundance.  Check the legend for the color ranges of each type.

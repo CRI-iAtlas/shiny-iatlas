@@ -1,20 +1,19 @@
-create_kmplot <- function(fit, df, confint, risktable, title, group_colors, facet = FALSE) {
-
-  print(group_colors)
-  print("confint")
-  print(confint)
-  print("risktable")
-  print(risktable)
+create_kmplot <- function(fit, df, confint, risktable, title, subtitle = NULL, group_colors, facet = FALSE) {
+  
+  if(!is.null(subtitle)){
+    long_title <- paste0(title, '\n', subtitle)
+  }else{
+    long_title <- title
+  }
   
   if(facet == FALSE){
     survminer::ggsurvplot(
-      fit,
-      data = df,
-      pval=TRUE,
-      conf.int = confint,
-      risk.table = risktable,
-      title = title,
-      palette = group_colors
+          fit,
+          data = df,
+          conf.int = confint,
+          risk.table = risktable,
+          title = long_title,
+          palette = group_colors
     )
   }else{
     survminer::ggsurvplot_list(
@@ -24,7 +23,7 @@ create_kmplot <- function(fit, df, confint, risktable, title, group_colors, face
       pval.method = TRUE,
       conf.int = confint,
       risk.table = risktable,
-      title = title,
+      title = long_title,
       palette = group_colors
     )
       

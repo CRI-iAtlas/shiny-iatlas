@@ -13,6 +13,9 @@ module_files:
   - "modules/subtypeclassifiermodule.R"
   - "modules/submodules.R"
   - "modules/distribution_plot_module.R"
+  - "modules/cytokinenetwork.R"
+  - "modules/cellimagemodule.R"
+  - "modules/cnvmodule.R"
   - "modules/ioresponseoverviewmodule.R"
   - "modules/ioresponsesurvivalmodule.R"
   - "modules/ioresponsemodule.R"
@@ -32,11 +35,13 @@ function_files:
   - "functions/violinplot.R"
   - "functions/mosaicplot.R"
   - "functions/barplot.R"
+  - "functions/forestplot.R"
   - "functions/subtype_classifier.R"
   - "functions/tablef_fun.R"
   - "functions/imageplot.R"
   - "functions/event_data_utils.R"
-  - "functions/forestplot.R"
+  - "functions/extracellnet_utils.R"
+  - "functions/cellimage_utils.R"
   - "functions/iomodules_utils.R"
 
 page_files:
@@ -87,8 +92,8 @@ immunotarget_groups:
 
 immune_groups:
   - "Subtype_Immune_Model_Based"
-  - "Subtype_Curated_Malta_Noushmehr_et_al"
   - "Study"
+  - "Subtype_Curated_Malta_Noushmehr_et_al"
   
 cell_type_aggregates:
   - "Immune Cell Proportion - Original"

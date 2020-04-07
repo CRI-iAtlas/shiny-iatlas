@@ -205,7 +205,7 @@ iosurvival <- function(input,
                 group_options = sample_groups$FeatureMatrixLabelTSV,
                 time_column = "OS_time",
                 k = breaks,
-                by.median = break_median
+                div_range = break_median
             )
         })
     })
