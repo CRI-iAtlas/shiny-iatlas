@@ -19,8 +19,7 @@ ioresponsemultivariate_UI <- function(id){
             
             optionsBox(
                 width = 2, 
-                checkboxGroupInput(ns("datasets_mult"), "Select Datasets", choices = c("Gide 2019", "Hugo 2016", 
-                                                                                  "IMVigor210", "Prins 2019", "Riaz 2017", "Van Allen 2015"),
+                checkboxGroupInput(ns("datasets_mult"), "Select Datasets", choices = datasets_options,
                                    selected =  "Gide 2019"), 
                 uiOutput(ns("heatmap_op"))
                 ),

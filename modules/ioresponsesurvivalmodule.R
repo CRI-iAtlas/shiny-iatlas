@@ -35,7 +35,7 @@ iosurvival_UI <- function(id){
                 verticalLayout(
                         fluidRow(
                             column(
-                                width = 5,
+                                width = 12,
                                 checkboxGroupInput(ns("datasets"), "Select Datasets", choices = datasets_options,
                                                    selected = NULL)
                                 #the Auslander dataset does not have annotation for OS  
@@ -67,8 +67,8 @@ iosurvival_UI <- function(id){
                                            min = 2,
                                            max = 10,
                                            value = 2
-                                         )),
-                        div(class = "form-group shiny-input-container", actionButton(ns("go_button"), tags$b("GO"), width = "100%"))
+                                         ))#,
+#                        div(class = "form-group shiny-input-container", actionButton(ns("go_button"), tags$b("GO"), width = "100%"))
                 )
                 
             ),#optionsBox
@@ -76,12 +76,12 @@ iosurvival_UI <- function(id){
                 width = 9,
                 plotBox(
                     width = 12,
-                    plotlyOutput(ns("forest"), height = "450px") %>% 
+                    uiOutput(ns("plots")) %>% 
                         shinycssloaders::withSpinner()
                 ),
                 plotBox(
                     width = 12,
-                    uiOutput(ns("plots")) %>%
+                    plotlyOutput(ns("forest"), height = "450px") %>%
                         shinycssloaders::withSpinner()
                 )
             )
@@ -171,14 +171,14 @@ iosurvival <- function(input,
 #     })
     
                  
-    feature_df <- eventReactive(input$go_button,{
-      
+    feature_df <- reactive({ #eventReactive(input$go_button,{
+      shiny::validate(need(!is.null(input$datasets), "Select at least one dataset."))
         fmx_io %>% 
             filter(Dataset %in% input$datasets & treatment_when_collected == "Pre") %>%
             select(Sample_ID, Dataset, treatment_when_collected, OS, OS_time, input$var1_surv)
     })
     
-    all_survival <- eventReactive(input$go_button,{
+    all_survival <- reactive({ #eventReactive(input$go_button,{
         
         req(!is.null(feature_df()), cancelOutput = T)
         sample_groups <- feature_io_df %>% filter(VariableType == "Categorical") %>% select(FeatureMatrixLabelTSV) %>% as.vector()
@@ -210,11 +210,11 @@ iosurvival <- function(input,
         })
     })
     
-    all_fit <- eventReactive(input$go_button,{
+    all_fit <- reactive({ #eventReactive(input$go_button,{
         purrr::map(all_survival(), function(df) survival::survfit(survival::Surv(time, status) ~ variable, data = df))
     })
     
-    all_kmplot <- eventReactive(input$go_button,{
+    all_kmplot <- reactive({ # eventReactive(input$go_button,{
         
         sample_groups <- feature_io_df %>% filter(VariableType == "Categorical") %>% select(FeatureMatrixLabelTSV)
         
@@ -261,7 +261,9 @@ iosurvival <- function(input,
    
 #forest plot     
     output$forest <- renderPlotly({
-      req(!is.null(feature_df()), input$var1_surv %in% colnames(feature_df()))
+#      shiny::validate(need(!is.null(input$datasets), "Select at least one dataset."))
+#      req(!is.null(feature_df()), input$var1_surv %in% colnames(feature_df()))
+      shiny::req(!is.null(feature_df()), cancelOutput = T)
 
         all_hr <- purrr::map(.x = input$datasets, data = feature_df(), variable = input$var1_surv, .f= function(dataset, data, variable){
             data_cox <- data %>%
@@ -287,8 +289,6 @@ iosurvival <- function(input,
                    logupper = log10(`upper .95`),
                    loglower = log10(`lower .95`))
         
-        print(log_meta_stats)
-        
         title <- convert_value_between_columns(input_value = input$var1_surv,
                                                df = feature_io_df,
                                                from_column = "FeatureMatrixLabelTSV",
@@ -304,7 +304,7 @@ iosurvival <- function(input,
                               xmax=log_meta_stats$logupper,
                               xintercept = 0,
                               xlab = 'Hazard Ratio (log10)',
-                              ylab = "Reference",
+                              #ylab = "Reference",
                               title = title)
         }else{
           #when feature is a categorical feature, such as response

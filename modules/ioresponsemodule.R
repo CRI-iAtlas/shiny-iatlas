@@ -332,14 +332,15 @@ ioresponse <- function(input,
                                   from_column = "FeatureMatrixLabelTSV",
                                   to_column = "FriendlyLabel")
     
-    purrr::map_dfr(.x = input$datasets, 
+    DT::datatable(purrr::map_dfr(.x = input$datasets, 
                    df = df_selected(), 
                    group_to_split = input$groupvar, 
                    sel_feature = input$var1_surv,
                    paired = paired_test(),
                    test = test_function(),
                    label = group_label,
-                   .f = get_t_test) 
+                   .f = get_t_test),
+                  caption = input$groupvar)
   })
   
   output$drilldown_plot <- renderPlotly({

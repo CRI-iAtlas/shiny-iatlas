@@ -237,12 +237,18 @@ get_t_test <- function(df, group_to_split, sel_feature, dataset, paired = FALSE,
         dplyr::select(statistic, p.value)
 
       test_data$Dataset <- as.character(dataset)
-      test_data$Test <- paste0(label, ": ", names(split_data)[x], " vs. ", names(split_data)[y])
+      #test_data$Group <- label
+      # test_data$Group1 <- names(split_data)[x]
+      # test_data$n_samples1 <- nrow(split_data[[x]])
+      # test_data$Group2 <- names(split_data)[y]
+      # test_data$n_samples2 <- nrow(split_data[[y]])
+      test_data$Test <- paste0(label, ": ", names(split_data)[x], " (", nrow(split_data[[x]]),") vs. ", names(split_data)[y], " (", nrow(split_data[[y]]), ")")
 
       test_data %>%
         mutate("-log10(pvalue)" = -log10(p.value)) %>% 
         dplyr::mutate_if(is.numeric, round, digits = 3) %>% 
         dplyr::select(Dataset, Test, statistic, p.value, "-log10(pvalue)")
+        #dplyr::select(Dataset, Group1, "Group 1 Size" =  n_samples1, Group2,  "Group 2 Size" = n_samples2, statistic, p.value, "-log10(pvalue)")
     })
   }else{
     test_data <- data.frame(Dataset = dataset,
