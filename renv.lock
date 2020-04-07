@@ -1270,15 +1270,14 @@
     },
     "renv": {
       "Package": "renv",
-      "Version": "0.9.2-37",
+      "Version": "0.9.3-3",
       "Source": "GitHub",
       "RemoteType": "github",
       "RemoteHost": "api.github.com",
-      "RemoteRepo": "renv",
       "RemoteUsername": "rstudio",
-      "RemoteRef": "master",
-      "RemoteSha": "46778d6c7314ba0a4273f1c312b39fdd9611e75f",
-      "Hash": "6f8d30dbf9cdaa3d2f8624286f2ae3de"
+      "RemoteRepo": "renv",
+      "RemoteRef": "0.9.3-3",
+      "RemoteSha": "4fd2ea4975f9946afae7691315b9a8c6bfabd8b3"
     },
     "reprex": {
       "Package": "reprex",
