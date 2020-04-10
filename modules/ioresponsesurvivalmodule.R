@@ -7,6 +7,7 @@ IO_PATH = Sys.getenv("IO_PATH")
 
 fmx_io <- feather::read_feather(paste(IO_PATH, "fmx_io.feather", sep = ""))
 feature_io_df <- feather::read_feather(paste(IO_PATH, "feature_io_df.feather", sep = ""))
+im_expr_io_df <- feather::read_feather(paste(IO_PATH, "im_expr_io.feather", sep = ""))
 dataset_io_df <- feather::read_feather(paste(IO_PATH, "datasets_io_df.feather", sep = ""))
 
 iosurvival_UI <- function(id){
@@ -17,7 +18,7 @@ iosurvival_UI <- function(id){
         titleBox("iAtlas Explorer — Clinical Outcomes to Immune Checkpoint Inhibitors"),
         textBox(
             width = 12,
-            p("Explore the ‘omics’ data sets on response to checkpoint inhibitors treatments")
+            p("Plot survival curves based on immune characteristics and identify variables associated with outcome.")
         ),
         
         sectionBox(
@@ -25,9 +26,11 @@ iosurvival_UI <- function(id){
             
             messageBox(
                 width = 24,
-                p("This module generates different analysis of response of immune checkpoint inhibitors (ICI) treatment. You can select the datasets of interest and the immuno features for analysis.
-                  A Kaplan Meyer plot will be generated for each selected dataset. In addition, it will be generated a forest plot with the log10 of Cox Proportional Hazard ratio with 95% confidence interval for the selected feature for each dataset.")
-               
+                p("Select the datasets of interest, variable, and outcome in terms of either overall survival (OS) or progression free interval (PFI) endpoints to generate a Kaplan-Meier plot. 
+For a continuous (numeric) variable, the range can be split in the median of the interval, or into equal intervals of the value range. For the latter,  the slider can be used to specify how the range of values of that variable is split. Selecting 2 splits the values by the middle of the range, 
+3 splits the range into three even intervals and so on."),
+                p("In addition, the selection of datasets, variable and outcome of interest generate a Forest Plot with the log10 of the 
+                  Cox Proportional Hazard Ratio with 95th confidence intervals for each selected dataset.")
             ),
             
             optionsBox(

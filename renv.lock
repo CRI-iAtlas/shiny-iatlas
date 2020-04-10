@@ -1,6 +1,6 @@
 {
   "R": {
-    "Version": "3.6.0",
+    "Version": "3.6.2",
     "Repositories": [
       {
         "Name": "CRAN",
@@ -78,10 +78,10 @@
     },
     "Cairo": {
       "Package": "Cairo",
-      "Version": "1.5-10",
+      "Version": "1.5-11",
       "Source": "Repository",
       "Repository": "CRAN",
-      "Hash": "3cf79cef0ec215d7cfdf9f7edc26bbae"
+      "Hash": "8a35dbb4d461e52c0696d14a8604565c"
     },
     "DBI": {
       "Package": "DBI",
@@ -481,8 +481,8 @@
       "Source": "GitHub",
       "RemoteType": "github",
       "RemoteHost": "api.github.com",
-      "RemoteRepo": "cyjShiny",
       "RemoteUsername": "cytoscape",
+      "RemoteRepo": "cyjShiny",
       "RemoteRef": "master",
       "RemoteSha": "956a3cb5a8f709f4134f9774e6a767ce2b141764",
       "Hash": "53ef28c7c9683859e9c4de113d3e6968"
@@ -1417,6 +1417,13 @@
       "Source": "Repository",
       "Repository": "CRAN",
       "Hash": "133639dc106955eee4ffb8ec73edac37"
+    },
+    "shinyjs": {
+      "Package": "shinyjs",
+      "Version": "1.1",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "b40a5207b6624f6e2b8cdb50689cdb69"
     },
     "snow": {
       "Package": "snow",

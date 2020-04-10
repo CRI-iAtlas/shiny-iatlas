@@ -25,8 +25,8 @@ create_forestplot <- function(
         plot <- plot + facet_wrap(facet)
     }
     p <- plotly_build(plot) %>%
-        layout(title = title) %>% 
-        format_plotly()
+        layout(title = title) #%>% 
+        # format_plotly()
     
     p
 }

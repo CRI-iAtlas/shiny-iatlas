@@ -6,8 +6,8 @@ ioresponseoverview_UI <- function(id){
         titleBox("iAtlas Explorer — Datasets of Treatment with Immune Checkpoint Inhibitors"),
         textBox(
             width = 12,
-            includeMarkdown("data/markdown/io_response_description.markdown")
-            #p("Explore the ‘omics’ data sets on response to checkpoint inhibitors treatments")
+            #includeMarkdown("data/markdown/io_response_description.markdown")
+            p("This module describes the datasets that are available for the analyses of molecular response to Immune Checkpoint Inhibitor Inhibitors (ICI). Immune signatures and CIBERSORT cell estimates were computed by Dante, Sarah, Ben")
         ),
         
         sectionBox(
@@ -15,9 +15,9 @@ ioresponseoverview_UI <- function(id){
             
             messageBox(
                 width = 24,
-                #includeMarkdown("data/markdown/io_response_description.markdown")
-               p("All the modules in the Molecular Response to ICI section of CRI-iAtlas provide visualization of immunogenomics features of the datasets described in the table below. 
-                 You can also download the data for further analysis. Details of the methods to compute the features are provided in the Data Description section.")
+                includeMarkdown("data/markdown/io_response_description.markdown")
+               # p("All the modules in the Molecular Response to ICI section of CRI-iAtlas provide visualization of immunogenomics features of the datasets described in the table below. 
+               #   You can also download the data for further analysis. Details of the methods to compute the features are provided in the Data Description section.")
             ),
             plotBox(
                 width = 12,
@@ -25,7 +25,8 @@ ioresponseoverview_UI <- function(id){
                     ns("io_datasets_df")
                 ),
                 downloadButton(ns('download_metadata'), 'Download Dataset Metadata'),
-                downloadButton(ns('download_data'), 'Download Data')
+                downloadButton(ns('download_data'), 'Download Immune Features and Clinical data'),
+                downloadButton(ns('download_expr'), 'Download Gene Expression data')
                 
             )#plotBox
         )
@@ -74,6 +75,12 @@ ioresponseoverview <- function(input,
       filename = function() stringr::str_c("iatlas-io-data-", Sys.Date(), ".csv"),
       content = function(con) readr::write_csv(fmx_io, con)
     )
+    
+    output$download_expr <- downloadHandler(
+      filename = function() stringr::str_c("iatlas-io-im-expr", Sys.Date(), ".csv"),
+      content = function(con) readr::write_csv(im_expr_io_df, con)
+    )
+    
 }
 
 

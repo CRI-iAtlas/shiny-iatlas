@@ -6,7 +6,8 @@ ioresponse_UI <- function(id){
     titleBox("iAtlas Explorer — Molecular Response to Immune Checkpoint Inhibitors"),
     textBox(
       width = 12,
-      p("Explore the ‘omics’ data sets on response to checkpoint inhibitors treatments")
+      # p("Explore the ‘omics’ data sets on response to checkpoint inhibitors treatments")
+      p("This module allows you to see how immune readouts vary across your groups, and how they relate to one another.")
     ),
     
     sectionBox(
@@ -14,7 +15,8 @@ ioresponse_UI <- function(id){
       
       messageBox(
         width = 24,
-        p("This module generates different analysis of response of immune checkpoint inhibitors (ICI) treatment.")
+        p("This displays the value of immune readouts by sample group. Select the datasets of interest, a criteria to group samples and a variable class to see the distribution of variables within that class displayed as a violin plot. Samples can be further divided in extra groups, for each dataset independently.
+          A table with statistical tests comparing all pairwise comparison of groups, for each dataset, is provided at the bottom of the page.")
       ),
       
       optionsBox(
@@ -235,8 +237,8 @@ ioresponse <- function(input,
       unlist() %>% 
       unique()
     
-    group_df <- fmx_io %>% 
-      dplyr::select(Sample_ID, Patient_ID, Dataset, treatment_when_collected, input$groupvar, dplyr::one_of(all_groups)) 
+    group_df <- suppressWarnings(fmx_io %>% 
+      dplyr::select(Sample_ID, Patient_ID, Dataset, treatment_when_collected, input$groupvar, dplyr::one_of(all_groups))) 
     
     # group_df <- purrr::map_dfr(unlist(datasets_options), df = group_df, function(x, df){
     #   g2 <- paste0("dist", x)

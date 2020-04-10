@@ -6,7 +6,7 @@ ioresponsemultivariate_UI <- function(id){
         titleBox("iAtlas Explorer —  Immune Checkpoint Inhibitors"),
         textBox(
             width = 12,
-            p("Explore the ‘omics’ data sets on response to checkpoint inhibitors treatments")
+            p("Create multivariable survival analysis and visualize Hazard Ratio in a forest plot and a heatmap.")
         ),
         
         sectionBox(
@@ -14,7 +14,7 @@ ioresponsemultivariate_UI <- function(id){
 
             messageBox(
                 width = 24,
-                p("Multivariate models with different immunogenomics features, in each dataset.")
+                p("Select the datasets of interest, variables, and outcome in terms of either overall survival (OS) or progression free interval (PFI) endpoints to generate a forest plot with the log10 of the Cox Proportional Hazard Ratio with 95th confidence intervals for each variable. A heatmap with the log10 of Hazard Ratio for all the datasets and variables selected is also displayed.")
             ),
             
             optionsBox(
@@ -60,7 +60,6 @@ ioresponsemultivariate <- function(input,
                                                             internal_column = "FeatureMatrixLabelTSV",
                                                             display_column = "FriendlyLabel",
                                                             filter_column = "VariableType")
-        print(var_choices)
         selectizeInput(
             ns("var2_cox"),
             "Select features",
@@ -135,8 +134,7 @@ ioresponsemultivariate <- function(input,
                               xmax=mult_ph_df()$logupper, 
                               xintercept = 0, 
                               title = "",
-                              xlab = 'Hazard Ratio (log10)', 
-                              #ylab = "Feature",
+                              xlab = 'Hazard Ratio (log10)',
                               facet = ".id")
     })
     
