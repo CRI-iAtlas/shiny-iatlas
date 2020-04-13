@@ -57,7 +57,8 @@ For a continuous (numeric) variable, the range can be split in the median of the
                         selectInput(
                             ns("timevar"),
                             "Survival Endpoint",
-                            c("Overall Survival" = "OS_time"),
+                            c("Overall Survival" = "OS_time",
+                              "Progression Free Interval" = "PFI_time_1"),
                             selected = "OS_time"
                         ),
                         radioButtons(ns("div_range"), "Divide value range", 
@@ -77,6 +78,8 @@ For a continuous (numeric) variable, the range can be split in the median of the
             ),#optionsBox
             column(
                 width = 9,
+                conditionalPanel(condition = paste0("input['", ns("timevar"), "'] == 'PFI_time_1'"),
+                                 helpText("There is no PFI annotation for Hugo 2016, Riaz 2017, and IMVigor210.")),
                 plotBox(
                     width = 12,
                     uiOutput(ns("plots")) %>% 
@@ -119,66 +122,20 @@ iosurvival <- function(input,
       )
     })
     
-    #Update dataset selection based on choice of study design
-    
-#     dataset_select <- reactive({
-#       
-#       if(input$types == "All"){
-#         subset_dataset <- dataset_io_df %>%
-#           filter(Dataset != "Auslander 2018") %>% 
-#           select(Dataset, Study, Antibody, Drug) %>% unique() 
-#       }else{
-#         subset_dataset <- dataset_io_df %>%
-#           filter(Dataset != "Auslander 2018" & Study == input$types) %>%
-#           select(Dataset, Study, Antibody, Drug) %>% unique() 
-#       }
-#       
-#       if(input$therapy != "All"){
-#         subset_dataset <- subset_dataset %>% 
-#           filter(Antibody == input$therapy)
-#       }else{
-#         subset_dataset
-#       }
-#       
-#       if(input$drugs != "All"){
-#         subset_dataset <- subset_dataset %>% 
-#           filter(Drug == input$drugs)
-#       }else{
-#         subset_dataset
-#       }
-#       
-#       return(subset_dataset)
-#     })
-#     
-#     observeEvent(dataset_select(),{
-#       #browser()
-#       updateCheckboxGroupInput(
-#         session,
-#         "datasets",
-#         choices = c("Gide 2019", "Hugo 2016", "IMVigor210", "Prins 2019", "Riaz 2017", "Van Allen 2015"),
-#         selected = dataset_select() %>% dplyr::select(Dataset) %>% unique() %>% .[[1]]
-#       )
-#       #updateSelectInput(session = session, inputId = "therapy", choices = c("All", dataset_select() %>% dplyr::select(Antibody) %>%.[[1]]),  selected = "All")
-#       #updateSelectInput(session, "drugs", choices = c("All", dataset_select() %>% dplyr::select(Drug) %>%.[[1]]))
-#     })
-#     
-#     observeEvent(input$types,{
-#      # browser()
-# #      updateSelectInput(session, "therapy", choices = c("All", dataset_select() %>% dplyr::select(Antibody) %>%.[[1]]), selected = "All")
-#       updateSelectInput(session, "therapy", selected = "All")
-#     })
-#     
-#     observeEvent(input$therapy,{
-#       #updateSelectInput(session, "types", choices = c("All", dataset_select() %>% dplyr::select(Study) %>%.[[1]]), selected = current_type())
-#       updateSelectInput(session, "drugs", choices = c("All", dataset_select() %>% dplyr::select(Drug) %>%.[[1]]), selected = "All")
-#     })
-    
+    datasets <- reactive({
+      switch(
+       input$timevar,
+       "OS_time" = input$datasets,
+       "PFI_time_1"= input$datasets[input$datasets %in% c("Gide 2019", "Van Allen 2015", "Prins 2019")]
+      )
+    })
+
                  
     feature_df <- reactive({ #eventReactive(input$go_button,{
       shiny::validate(need(!is.null(input$datasets), "Select at least one dataset."))
         fmx_io %>% 
-            filter(Dataset %in% input$datasets & treatment_when_collected == "Pre") %>%
-            select(Sample_ID, Dataset, treatment_when_collected, OS, OS_time, input$var1_surv)
+            filter(Dataset %in% datasets() & treatment_when_collected == "Pre") %>%
+            select(Sample_ID, Dataset, treatment_when_collected, OS, OS_time, PFI_1, PFI_time_1, input$var1_surv)
     })
     
     all_survival <- reactive({ #eventReactive(input$go_button,{
@@ -186,29 +143,18 @@ iosurvival <- function(input,
         req(!is.null(feature_df()), cancelOutput = T)
         sample_groups <- feature_io_df %>% filter(VariableType == "Categorical") %>% select(FeatureMatrixLabelTSV) %>% as.vector()
         n_groups <- dplyr::n_distinct(sample_groups)
-        
-        #validate(need(input$var1_surv, "Waiting for input."))
-        
-        
-        if(input$div_range == "median"){
-          breaks <- 2
-          break_median <- TRUE
-        }else{
-          breaks <- input$divk
-          break_median <- FALSE
-        }
 
-        purrr::map(.x = input$datasets, df = feature_df(), .f= function(dataset, df){
+        purrr::map(.x = datasets(), df = feature_df(), .f= function(dataset, df){
             dataset_df <- df %>% 
                 dplyr::filter(Dataset == dataset)
             
             build_survival_df(
-                df = dataset_df,
-                group_column = input$var1_surv,
-                group_options = sample_groups$FeatureMatrixLabelTSV,
-                time_column = "OS_time",
-                k = breaks,
-                div_range = break_median
+              df = dataset_df,
+              group_column = input$var1_surv,
+              group_options = sample_groups$FeatureMatrixLabelTSV,
+              time_column = input$timevar,
+              k = input$divk,
+              div_range = input$div_range
             )
         })
     })
@@ -234,7 +180,7 @@ iosurvival <- function(input,
             df = all_survival(),
             confint = input$confint,
             risktable = input$risktable,
-            title = input$datasets,
+            title = datasets(),
             group_colors = group_colors,
             facet = TRUE)
     })
@@ -244,8 +190,8 @@ iosurvival <- function(input,
         output$plots <- renderUI({
 
             plot_output_list <-
-                lapply(1:length(input$datasets), function(i) {
-                         plotname <- input$datasets[i]
+                lapply(1:length(datasets()), function(i) {
+                         plotname <- datasets()[i]
                          plotOutput(ns(plotname), height = 400, width = 750)
             })
             do.call(tagList, plot_output_list)
@@ -253,8 +199,8 @@ iosurvival <- function(input,
     })
 
     observe({
-        lapply(1:length(input$datasets), function(i){
-            my_dataset <- input$datasets[i]
+        lapply(1:length(datasets()), function(i){
+            my_dataset <- datasets()[i]
             output[[my_dataset]] <- renderPlot({
                 all_kmplot()[i]
                 })
@@ -268,14 +214,14 @@ iosurvival <- function(input,
 #      req(!is.null(feature_df()), input$var1_surv %in% colnames(feature_df()))
       shiny::req(!is.null(feature_df()), cancelOutput = T)
 
-        all_hr <- purrr::map(.x = input$datasets, data = feature_df(), variable = input$var1_surv, .f= function(dataset, data, variable){
+        all_hr <- purrr::map(.x = datasets(), data = feature_df(), variable = input$var1_surv, .f= function(dataset, data, variable){
             data_cox <- data %>%
                 filter(Dataset == dataset)
             
             survival::coxph(as.formula(paste("survival::Surv(OS_time, OS) ~ ", variable)), data_cox)
         })
 
-        names(all_hr) <- input$datasets
+        names(all_hr) <- datasets()
       
         create_ph_df <- function(coxphList){
             
@@ -299,7 +245,7 @@ iosurvival <- function(input,
         
        title <- paste(title, " - Forest Plot")
         
-        if(nrow(log_meta_stats)== base::length(input$datasets)){
+        if(nrow(log_meta_stats)== base::length(datasets())){
             create_forestplot(log_meta_stats,
                               x=log_meta_stats$logHR,
                               y=log_meta_stats$.id,
