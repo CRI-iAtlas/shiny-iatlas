@@ -1,23 +1,17 @@
-ioresponse_UI <- function(id){
+ioresponse_UI <- function(id,
+                          title_text = "Distributions",
+                          message_html){
   
   ns <- NS(id)
-  
-  tagList(
-    titleBox("iAtlas Explorer — Molecular Response to Immune Checkpoint Inhibitors"),
-    textBox(
-      width = 12,
-      # p("Explore the ‘omics’ data sets on response to checkpoint inhibitors treatments")
-      p("This module allows you to see how immune readouts vary across your groups, and how they relate to one another.")
-    ),
-    
+
     sectionBox(
-      title = "Molecular Response",
-      
-      messageBox(
-        width = 24,
-        p("This displays the value of immune readouts by sample group. Select the datasets of interest, a criteria to group samples and a variable class to see the distribution of variables within that class displayed as a violin plot. Samples can be further divided in extra groups, for each dataset independently.
-          A table with statistical tests comparing all pairwise comparison of groups, for each dataset, is provided at the bottom of the page.")
-      ),
+      title = title_text,
+      messageBox(width = 12, message_html),
+      # messageBox(
+      #   width = 24,
+        # p("This displays the value of immune readouts by sample group. Select the datasets of interest, a criteria to group samples and a variable class to see the distribution of variables within that class displayed as a violin plot. Samples can be further divided in extra groups, for each dataset independently.
+        #   A table with statistical tests comparing all pairwise comparison of groups, for each dataset, is provided at the bottom of the page.")
+      #),
       
       optionsBox(
         width=12,
@@ -96,40 +90,39 @@ ioresponse_UI <- function(id){
           )
       )
      )#, #sectionBox
-  )
+#  )
 }
 
 ioresponse <- function(input, 
                        output, 
-                       session, 
-                       group_display_choice,
-                       group_internal_choice,
-                       study_subset_choice,
-                       sample_group_df,
-                       subset_df,
+                       session,
+                       variable_options,
+                       metadata_feature_df,
+                       feature_values,
                        plot_colors){
   
   ns <- session$ns
   
-  
   output$feature_op <- renderUI({
     
-    var_choices <- create_filtered_nested_list_by_class(feature_df = feature_io_df,
-                                                        filter_value = "Numeric",
-                                                        class_column = "Variable Class",
-                                                        internal_column = "FeatureMatrixLabelTSV",
-                                                        display_column = "FriendlyLabel",
-                                                        filter_column = "VariableType")
+    # var_choices <- create_filtered_nested_list_by_class(feature_df = feature_io_df,
+    #                                                     filter_value = "Numeric",
+    #                                                     class_column = "Variable Class",
+    #                                                     internal_column = "FeatureMatrixLabelTSV",
+    #                                                     display_column = "FriendlyLabel",
+    #                                                     filter_column = "VariableType")
+    
+    
     selectInput(
       ns("var1_surv"),
       "Variable",
-      var_choices
+      variable_options %>% create_nested_list_by_class()
     )
   })
   
   output$group1 <- renderUI({
     
-    clin_data <- feature_io_df %>% 
+    clin_data <- metadata_feature_df %>% 
       dplyr::filter(`Variable Class` %in% c("Immune Checkpoint Treatment - Response", 
                                             "Immune Checkpoint Treatment - Study Condition"))
     
@@ -150,7 +143,7 @@ ioresponse <- function(input,
   output$group2 <- renderUI({ #Second level group option include dataset-specific classes
     lapply(unlist(datasets_options), function(x){
       
-      clin_data <- feature_io_df %>% 
+      clin_data <- metadata_feature_df %>% 
         dplyr::filter(`Variable Class` == paste("Clinical data for", x) | `Variable Class` %in% c("Immune Checkpoint Treatment - Response", "Immune Checkpoint Treatment - Study Condition"))
       
       var_choices <- create_filtered_nested_list_by_class(feature_df = clin_data,
@@ -197,11 +190,11 @@ ioresponse <- function(input,
   })
   
   varible_display_name <- reactive({
-    
-    convert_value_between_columns(input_value =input$var1_surv,
-                                  df = feature_io_df,
-                                  from_column = "FeatureMatrixLabelTSV",
-                                  to_column = "FriendlyLabel")
+
+      convert_value_between_columns(input_value =input$var1_surv,
+                                    df = variable_options,
+                                    from_column = "INTERNAL",
+                                    to_column = "DISPLAY")
   })
   
   varible_plot_label <- reactive({
@@ -237,24 +230,28 @@ ioresponse <- function(input,
       unlist() %>% 
       unique()
     
-    group_df <- suppressWarnings(fmx_io %>% 
+    group_df <- suppressWarnings(feature_values %>% 
       dplyr::select(Sample_ID, Patient_ID, Dataset, treatment_when_collected, input$groupvar, dplyr::one_of(all_groups))) 
     
     # group_df <- purrr::map_dfr(unlist(datasets_options), df = group_df, function(x, df){
     #   g2 <- paste0("dist", x)
     #   
-    #   print(input[[g2]])
-    #   print(input$groupvar)
-    #   df %>% 
-    #     filter(Dataset == x) %>% 
+    #   if(input[[g2]] != "None"){
+    #     labelg2 <- convert_value_between_columns(input_value =input[[g2]],
+    #                                             df = feature_io_df,
+    #                                             from_column = "FeatureMatrixLabelTSV",
+    #                                             to_column = "FriendlyLabel")
+    #   }
+    #   
+    #   df %>%
+    #     filter(Dataset == x) %>%
     #     dplyr::mutate(group = dplyr::case_when(
-    #       input[[g2]] != "None"  ~ combine_groups(., input$groupvar, input[[g2]]),
-    #       input[[g2]] == "None" | input$groupvar == input[[g2]] ~ .[[input$groupvar]]
+    #       input[[g2]] != "None"  & input$groupvar == input[[g2]]  ~ combine_groups(., input$groupvar, input[[g2]], label2 = labelg2),
+    #       input[[g2]] == "None" | input$groupvar == input[[g2]] ~ as.character(.[[input$groupvar]])
     #     ))
     # })
-    
-    
-    new_df <- fmx_io %>% 
+
+    new_df <- feature_values %>% 
       dplyr::select(Sample_ID, input$var1_surv) %>%
       tidyr::drop_na() %>% 
       build_distribution_io_df(.,
@@ -266,7 +263,7 @@ ioresponse <- function(input,
   
   output$dist_plots <- renderPlotly({
     shiny::validate(need(!is.null(input$datasets), "Select at least one dataset."))
-    
+   
     all_plots <- purrr::map(.x = input$datasets, function(dataset){
       
       group1 <- input$groupvar
@@ -330,7 +327,7 @@ ioresponse <- function(input,
   output$stats1 <- DT::renderDataTable({
     req(input$groupvar)
     group_label <- convert_value_between_columns(input_value = input$groupvar,
-                                  df = feature_io_df,
+                                  df = metadata_feature_df,
                                   from_column = "FeatureMatrixLabelTSV",
                                   to_column = "FriendlyLabel")
     
@@ -341,8 +338,7 @@ ioresponse <- function(input,
                    paired = paired_test(),
                    test = test_function(),
                    label = group_label,
-                   .f = get_t_test),
-                  caption = input$groupvar)
+                   .f = get_t_test))
   })
   
   output$drilldown_plot <- renderPlotly({
@@ -351,7 +347,7 @@ ioresponse <- function(input,
     validate(need(!is.null(eventdata), "Click plot above"))
     clicked_group <- eventdata$x[[1]]
     clicked_dataset <- eventdata$customdata[[1]]
-   
+    
     group2 <- paste0("dist", clicked_dataset)
     
     dataset_data <-  df_selected() %>% 

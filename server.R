@@ -154,14 +154,14 @@ shinyServer(function(input, output, session) {
     
     #IO Molecular Response EDA
     callModule(
-      ioresponse,
+      ioresponsefeatures,
       "io_response_eda",
       reactive(input$ss_choice),
       reactive(group_internal_choice()),
       reactive(input$study_subset_selection),
       reactive(sample_group_df()),
-      reactive(subset_df()),
-      reactive(plot_colors()))
+      reactive(subset_df())
+      )
     
     #IO Molecular Response Clinical Outcomes
     callModule(
@@ -183,6 +183,16 @@ shinyServer(function(input, output, session) {
       reactive(sample_group_df()),
       reactive(subset_df()),
       reactive(plot_colors()))
+    
+    #IO Response Immunomodulators
+    callModule(
+      ioresponseimmunomodulators,
+      "io_response_immunomodulator",
+      reactive(input$ss_choice),
+      reactive(group_internal_choice()),
+      reactive(input$study_subset_selection),
+      reactive(sample_group_df()),
+      reactive(subset_df()))
 
     # subtype predictor
     callModule(
@@ -245,6 +255,9 @@ shinyServer(function(input, output, session) {
     })
     observeEvent(input$link_to_io_response2, {
       shinydashboard::updateTabItems(session, "explorertabs", "ioresponse_mult")
+    })
+    observeEvent(input$link_to_io_response_immunomodulator, {
+      shinydashboard::updateTabItems(session, "explorertabs", "io_immunomodulator")
     })
     observeEvent(input$link_to_module_subtypeclassifier, {
         updateNavlistPanel(session, "toolstabs", "Immune Subtype Classifier")

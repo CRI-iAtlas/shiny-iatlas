@@ -18,7 +18,9 @@ module_files:
   - "modules/cnvmodule.R"
   - "modules/ioresponseoverviewmodule.R"
   - "modules/ioresponsesurvivalmodule.R"
-  - "modules/ioresponsemodule.R"
+  - "modules/ioresponse_distribution_module.R"
+  - "modules/ioresponseimmunomodulatormodule.R"
+  - "modules/ioresponsefeaturesmodule.R"
   - "modules/ioresponsemultivariate.R"
   
 function_files:

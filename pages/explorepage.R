@@ -93,6 +93,11 @@ explorepage <- dashboardPage(
                  "IO Multivariate",
                  tabName = "ioresponse_mult",
                  icon = icon("cog")
+               ), 
+               menuSubItem(
+                 "IO Immunomodulators",
+                 tabName = "io_immunomodulator",
+                 icon = icon("cog")
                )
       ),
       menuItem("Data Description",
@@ -332,7 +337,7 @@ explorepage <- dashboardPage(
     ),
     tabItem(
       tabName = "io_response",
-      ioresponse_UI("io_response_eda")
+      ioresponsefeatures_UI("io_response_eda")
     ),
     tabItem(
       tabName = "io_survival",
@@ -341,6 +346,10 @@ explorepage <- dashboardPage(
     tabItem(
       tabName = "ioresponse_mult",
       ioresponsemultivariate_UI("io_response2")
+    ),
+    tabItem(
+      tabName = "io_immunomodulator",
+      ioresponseimmunomodulators_UI("io_response_immunomodulator")
     ),
     tabItem(
       tabName = "datainfo",
