@@ -124,16 +124,17 @@ get_text_pos <- function(df, col_div, y){
   paste(lines_pos, ")")
 }
 
-combine_groups <- function(df, group1, group2){
+combine_groups <- function(df, group1, group2, label2){
   
-  df$Comb_feat <-  paste(df[[group1]], "&",
-                                  convert_value_between_columns(input_value =group2,
-                                                                df = feature_io_df,
-                                                                from_column = "FeatureMatrixLabelTSV",
-                                                                to_column = "FriendlyLabel"),
-                                  ":", df[[group2]], sep = " " )
+  # df$Comb_feat <- 
+    paste(df[[group1]], "&", label2,
+        # convert_value_between_columns(input_value =group2,
+        #                               df = feature_io_df,
+        #                               from_column = "FeatureMatrixLabelTSV",
+        #                               to_column = "FriendlyLabel"),
+        ":", df[[group2]], sep = " " )
   
-  df
+  # df
 }
 
 create_plot_onegroup <- function(dataset_data, plot_type, dataset, feature, group1, ylabel){
@@ -164,7 +165,7 @@ create_plot_onegroup <- function(dataset_data, plot_type, dataset, feature, grou
     )
 }
 
-create_plot_twogroup <- function(dataset_data, plot_type, dataset, feature, group1, group2, ylabel){
+create_plot_twogroup <- function(dataset_data, plot_type, dataset, feature, group, group1, group2, ylabel){
  
   if(group1 == "Progression"){
     dataset_data <- get_responder_annot(dataset_data)
@@ -181,9 +182,10 @@ create_plot_twogroup <- function(dataset_data, plot_type, dataset, feature, grou
                 summarise(samples = n()))
   colnames(samples) <- c("var1", "var2", "samples")
   
-  combine_groups(dataset_data, group1, group2) %>% 
+  #combine_groups(dataset_data, group1, group2) %>% 
+  dataset_data %>% 
     plot_type(.,
-              x_col = "Comb_feat",
+              x_col = group,
               y_col = feature,
               xlab = (dataset_data[[group2]]),
               ylab = ylabel,
@@ -208,7 +210,7 @@ create_plot_twogroup <- function(dataset_data, plot_type, dataset, feature, grou
 }
  
 get_t_test <- function(df, group_to_split, sel_feature, dataset, paired = FALSE, test = t.test, label = group_to_split){
-
+ 
   data_set <- df %>%
     filter(Dataset == dataset)
   
@@ -219,31 +221,43 @@ get_t_test <- function(df, group_to_split, sel_feature, dataset, paired = FALSE,
       summarise(samples = dplyr::n_distinct(Sample_ID)) %>% 
       filter(samples > 1) %>% 
       select(Patient_ID)
-    
+
     data_set <- data_set %>% 
       dplyr::filter(Patient_ID %in% patients$Patient_ID)
+  
   }
 
   if(dplyr::n_distinct(data_set[[group_to_split]])>1){
     split_data <- split(data_set, data_set[[group_to_split]])
-
     comb_groups <- combn(1:length(split_data), 2)
 
     purrr::map2_dfr(.x = comb_groups[1,], .y = comb_groups[2,], function(x,y){
-
-      test_data <- broom::tidy(test(split_data[[x]][[sel_feature]],
+      
+      if(paired == TRUE & nrow(split_data[[x]]) != nrow(split_data[[y]])){
+        test_data <- data.frame(Dataset = dataset,
+                                Test = paste0("Not available for paired test. ", names(split_data)[x], " (", nrow(split_data[[x]]),") vs. ", names(split_data)[y], " (", nrow(split_data[[y]]), ")"),
+                                statistic = NA,
+                                p.value = NA)
+      }else if(nrow(split_data[[x]]) <=1 | nrow(split_data[[y]]) <=1){
+        test_data <- data.frame(Dataset = dataset,
+                                Test = paste0("Few samples to perform test.", names(split_data)[x], " (", nrow(split_data[[x]]),") vs. ", names(split_data)[y], " (", nrow(split_data[[y]]), ")"),
+                                statistic = NA,
+                                p.value = NA)
+      }else{
+        test_data <- broom::tidy(test(split_data[[x]][[sel_feature]],
                                       split_data[[y]][[sel_feature]],
                                       paired = paired)) %>%
-        dplyr::select(statistic, p.value)
-
-      test_data$Dataset <- as.character(dataset)
-      test_data$Test <- paste0(label, ": ", names(split_data)[x], " (", nrow(split_data[[x]]),") vs. ", names(split_data)[y], " (", nrow(split_data[[y]]), ")")
-
-      test_data %>%
-        mutate("-log10(pvalue)" = -log10(p.value)) %>% 
-        dplyr::mutate_if(is.numeric, round, digits = 3) %>% 
-        dplyr::select(Dataset, Test, statistic, p.value, "-log10(pvalue)")
+          dplyr::select(statistic, p.value)
+        
+        test_data$Dataset <- as.character(dataset)
+        test_data$Test <- paste0(names(split_data)[x], " (", nrow(split_data[[x]]),") vs. ", names(split_data)[y], " (", nrow(split_data[[y]]), ")")
+        
+        test_data %>%
+          mutate("-log10(pvalue)" = -log10(p.value)) %>% 
+          dplyr::mutate_if(is.numeric, round, digits = 3) %>% 
+          dplyr::select(Dataset, Test, statistic, p.value, "-log10(pvalue)")
         #dplyr::select(Dataset, Group1, "Group 1 Size" =  n_samples1, Group2,  "Group 2 Size" = n_samples2, statistic, p.value, "-log10(pvalue)")
+      }
     })
   }else{
     test_data <- data.frame(Dataset = dataset,

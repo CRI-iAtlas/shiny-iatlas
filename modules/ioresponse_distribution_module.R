@@ -67,12 +67,8 @@ ioresponse_UI <- function(id,
       fluidRow(
         optionsBox(
           width = 3,
-          conditionalPanel(
-            condition = paste0("input['", ns("groupvar"), "'] == 'treatment_when_collected'"),
-            radioButtons(ns("paired"), "Sample type", choices = c("Independent", "Paired"), inline = TRUE, selected = "Paired")),
-          conditionalPanel(
-            condition = paste0("input['", ns("groupvar"), "'] != 'treatment_when_collected'"),
-            radioButtons(ns("paired"), "Sample type", choices = ("Independent"), inline = TRUE, selected = "Independent")),
+          #radioButtons(ns("compare_group"), "Sample type", choices = c("Independent", "Paired"), inline = TRUE, selected = "Paired")),
+          uiOutput(ns("ui_stat")),
           radioButtons(ns("stattest"), "Test type", choices = c("t-test", "Wilcox"), inline = TRUE, selected = "t-test")
         ),
         plotBox(
@@ -104,15 +100,6 @@ ioresponse <- function(input,
   ns <- session$ns
   
   output$feature_op <- renderUI({
-    
-    # var_choices <- create_filtered_nested_list_by_class(feature_df = feature_io_df,
-    #                                                     filter_value = "Numeric",
-    #                                                     class_column = "Variable Class",
-    #                                                     internal_column = "FeatureMatrixLabelTSV",
-    #                                                     display_column = "FriendlyLabel",
-    #                                                     filter_column = "VariableType")
-    
-    
     selectInput(
       ns("var1_surv"),
       "Variable",
@@ -180,6 +167,20 @@ ioresponse <- function(input,
                  }
                })
   
+  all_groups <-  reactive({
+    lapply(unlist(datasets_options), function(x) input[[paste0("dist", x)]]) %>% 
+      unlist() %>% 
+      unique()
+  })
+  
+  output$ui_stat <- renderUI({
+    req(input$groupvar)
+    if(input$groupvar == "treatment_when_collected" | "treatment_when_collected" %in% all_groups()){
+      radioButtons(ns("paired"), "Sample type", choices = c("Independent", "Paired"), inline = TRUE, selected = "Paired")
+    }else{
+      radioButtons(ns("paired"), "Sample type", choices = ("Independent"), inline = TRUE, selected = "Independent")
+    }
+  })
   
   plot_function <- reactive({
     switch(
@@ -226,31 +227,35 @@ ioresponse <- function(input,
   
   df_selected <- reactive({
     
-    all_groups <- lapply(unlist(datasets_options), function(x) input[[paste0("dist", x)]]) %>% 
-      unlist() %>% 
-      unique()
-    
     group_df <- suppressWarnings(feature_values %>% 
-      dplyr::select(Sample_ID, Patient_ID, Dataset, treatment_when_collected, input$groupvar, dplyr::one_of(all_groups))) 
+      dplyr::select(Sample_ID, Patient_ID, Dataset, treatment_when_collected, input$groupvar, dplyr::one_of(all_groups()))) 
     
-    # group_df <- purrr::map_dfr(unlist(datasets_options), df = group_df, function(x, df){
-    #   g2 <- paste0("dist", x)
-    #   
-    #   if(input[[g2]] != "None"){
-    #     labelg2 <- convert_value_between_columns(input_value =input[[g2]],
-    #                                             df = feature_io_df,
-    #                                             from_column = "FeatureMatrixLabelTSV",
-    #                                             to_column = "FriendlyLabel")
-    #   }
-    #   
-    #   df %>%
-    #     filter(Dataset == x) %>%
-    #     dplyr::mutate(group = dplyr::case_when(
-    #       input[[g2]] != "None"  & input$groupvar == input[[g2]]  ~ combine_groups(., input$groupvar, input[[g2]], label2 = labelg2),
-    #       input[[g2]] == "None" | input$groupvar == input[[g2]] ~ as.character(.[[input$groupvar]])
-    #     ))
-    # })
+    group_df <- purrr::map_dfr(unlist(datasets_options), df = group_df, function(x, df){
+      g2 <- paste0("dist", x)
+      
+      labelg2 <- ""
+      if(input[[g2]] != "None"){
+        labelg2 <- convert_value_between_columns(input_value =input[[g2]],
+                                                df = feature_io_df,
+                                                from_column = "FeatureMatrixLabelTSV",
+                                                to_column = "FriendlyLabel")
+      }
 
+      df %>%
+        filter(Dataset == x) %>%
+        tidyr::drop_na(input$groupvar) %>%
+        `if`(
+          input[[g2]] != "None",
+          tidyr::drop_na(., input[[g2]]),
+          .
+        ) %>%
+        dplyr::mutate(group = dplyr::case_when(
+          input[[g2]] != "None"  & input$groupvar != input[[g2]]  ~ combine_groups(., input$groupvar, input[[g2]], labelg2),
+          input[[g2]] == "None" | input$groupvar == input[[g2]] ~ as.character(.[[input$groupvar]])
+        ))
+    })
+    
+    
     new_df <- feature_values %>% 
       dplyr::select(Sample_ID, input$var1_surv) %>%
       tidyr::drop_na() %>% 
@@ -263,7 +268,7 @@ ioresponse <- function(input,
   
   output$dist_plots <- renderPlotly({
     shiny::validate(need(!is.null(input$datasets), "Select at least one dataset."))
-   
+    
     all_plots <- purrr::map(.x = input$datasets, function(dataset){
       
       group1 <- input$groupvar
@@ -274,8 +279,14 @@ ioresponse <- function(input,
       if(input$groupvar != "treatment_when_collected" & input[[group2]] != "treatment_when_collected"){
         dataset_data <- df_selected() %>% 
           dplyr::filter(treatment_when_collected == "Pre")
+        
+        xform <- list(title =  NA)
       }else{
-        dataset_data <- df_selected()
+        dataset_data <- df_selected() %>%
+          dplyr::filter(Dataset == dataset)
+       
+        xform <- list(categoryorder = "array",
+                      categoryarray =  sort(dataset_data$treatment_when_collected, decreasing = TRUE))
       }
     
      if(input[[group2]] == "None" | input$groupvar == input[[group2]]){#only one group selected
@@ -285,8 +296,9 @@ ioresponse <- function(input,
                               plot_function(), 
                               dataset, 
                               "y", 
-                              group1, 
-                              varible_plot_label())
+                              "group", 
+                              varible_plot_label()) %>% 
+         layout(xaxis = xform)
         
       }else{ #when two grouping levels are selected
         
@@ -296,9 +308,11 @@ ioresponse <- function(input,
                                plot_function(),
                                dataset,
                                "y",
+                               "group",
                                input$groupvar,
                                input[[group2]],
-                               varible_plot_label())
+                               varible_plot_label()) %>% 
+          layout(xaxis = xform)
       }
     })
     
@@ -326,14 +340,15 @@ ioresponse <- function(input,
   
   output$stats1 <- DT::renderDataTable({
     req(input$groupvar)
+    
     group_label <- convert_value_between_columns(input_value = input$groupvar,
                                   df = metadata_feature_df,
                                   from_column = "FeatureMatrixLabelTSV",
                                   to_column = "FriendlyLabel")
-    
+  
     DT::datatable(purrr::map_dfr(.x = input$datasets, 
                    df = df_selected(), 
-                   group_to_split = input$groupvar, 
+                   group_to_split = "group",
                    sel_feature = input$var1_surv,
                    paired = paired_test(),
                    test = test_function(),
@@ -344,9 +359,17 @@ ioresponse <- function(input,
   output$drilldown_plot <- renderPlotly({
     
     eventdata <- event_data("plotly_click", source = "distPlots")
-    validate(need(!is.null(eventdata), "Click plot above"))
     clicked_group <- eventdata$x[[1]]
     clicked_dataset <- eventdata$customdata[[1]]
+    
+    validate(need(!is.null(eventdata), "Click plot above"))
+    
+    current_groups <- df_selected() %>% 
+      filter(Dataset == clicked_dataset) %>% 
+      select(group) %>% 
+      unique
+    
+    validate(need(clicked_group %in% current_groups$group, "Click plot above"))
     
     group2 <- paste0("dist", clicked_dataset)
     
@@ -358,26 +381,15 @@ ioresponse <- function(input,
         dplyr::filter(treatment_when_collected == "Pre")
     }
 
-    if(input$groupvar == "Progression"){
-      dataset_data <- get_responder_annot(dataset_data) 
-      selected_group <- "Responder"
-    }else{
-      selected_group <- as.character(input$groupvar)
-    }
-    
-    
-    if(input[[group2]] == "None" | input$groupvar == input[[group2]]){
-      
-      dataset_data <- dataset_data %>% 
-        dplyr::filter(.[[selected_group]] == clicked_group)
-        
-    }else{#two groups selected
-      
-      dataset_data <- combine_groups(dataset_data, selected_group, input[[group2]]) %>% 
-        dplyr::filter(Comb_feat == clicked_group)
-     }
-    
+    # if(input$groupvar == "Progression"){
+    #   dataset_data <- get_responder_annot(dataset_data) 
+    #   selected_group <- "Responder"
+    # }else{
+      # selected_group <- as.character(input$groupvar)
+    # }
+   
     dataset_data %>% 
+      dplyr::filter(group == clicked_group) %>% 
       create_histogram(
         x_col = "y",
         title = paste(clicked_dataset, clicked_group, sep = ", "), 

@@ -7,13 +7,13 @@ ioresponseimmunomodulators_UI <- function(id){
     textBox(
       width = 12,
       # p("Explore the ‘omics’ data sets on response to checkpoint inhibitors treatments")
-      p("This module allows you to see how immune readouts vary across your groups, and how they relate to one another.")
+      p("Explore the expression of genes that code for immunomodulating proteins, including checkpoint proteins.")
     ),
     ioresponse_UI(
       ns("dist"),
-      message_html = "This displays the value of immune readouts by sample group. 
-          Select the datasets of interest, a criteria to group samples and a variable class to see the distribution of variables within that class displayed as a violin plot. Samples can be further divided in extra groups, for each dataset independently.
-          A table with statistical tests comparing all pairwise comparison of groups, for each dataset, is provided at the bottom of the page." #includeMarkdown("data/markdown/immune_features_dist.markdown")
+      message_html = "Select the datasets of interest, an Immumodulator Gene, and a criteria to group samples to see the distribution of gene expression within sample groups displayed as a violin plot. 
+      Samples can be further divided in extra groups, for each dataset independently.
+      A table with statistical tests comparing all pairwise combinations of groups, for each dataset, is provided at the bottom of the page. You can view a histogram for any individual distributions by clicking on its violin plot." #includeMarkdown("data/markdown/immune_features_dist.markdown")
     )
   )
 }
