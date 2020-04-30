@@ -124,25 +124,55 @@ get_text_pos <- function(df, col_div, y){
   paste(lines_pos, ")")
 }
 
-combine_groups <- function(df, group1, group2, label2){
+get_group_labels <-  function(df, group){
+  ioresponse_data$sample_group_df %>% 
+    dplyr::filter(sample_group == group) %>% 
+    select(FeatureValue, FeatureName, FeatureHex, order_within_sample_group)
+}
+
+combine_colors <- function(color1, color2){
+
+  purrr::map2_chr(.x = color1, .y = color2, function(c1, c2){
+    colorRampPalette(c(c1, c2))(3)[2]
+  }) 
   
-  # df$Comb_feat <- 
-    paste(df[[group1]], "&", label2,
-        # convert_value_between_columns(input_value =group2,
-        #                               df = feature_io_df,
-        #                               from_column = "FeatureMatrixLabelTSV",
-        #                               to_column = "FriendlyLabel"),
-        ":", df[[group2]], sep = " " )
+}
+
+combine_groups <- function(df, group1, group2, label1, label2){
   
-  # df
+  label1 <- get_group_labels(df, group1)
+  label2 <- get_group_labels(df, group2)
+  
+  df <- merge(df, label1, by.x = group1, by.y = "FeatureValue")
+ 
+  if(group2 == "None" | group1 == group2){
+    df <- df %>% 
+      dplyr::mutate(group = df$FeatureName,
+                    color = df$FeatureHex)
+  }else if(group2 != "None"  & group1 != group2){
+    df <- merge(df, label2, by.x = group2, by.y = "FeatureValue")
+    df <- df %>% 
+      dplyr::mutate(group = (paste(df$"FeatureName.x", "&",df$"FeatureName.y")),
+                    color = combine_colors(FeatureHex.x, FeatureHex.y))
+  }
+  df
 }
 
 create_plot_onegroup <- function(dataset_data, plot_type, dataset, feature, group1, ylabel){
   
-  if(group1 == "Progression"){
-    dataset_data <- get_responder_annot(dataset_data)
-    group1 <- "Responder"
-  }
+  xform <- list(automargin = TRUE,
+                categoryorder = "array",
+                categoryarray = (dataset_data %>%
+                                   dplyr::select(group, order_within_sample_group) %>% 
+                                   dplyr::group_by(group) %>% 
+                                   dplyr::summarise(m = min(order_within_sample_group)) %>% 
+                                   dplyr::arrange(m) %>% 
+                                   dplyr::pull(group))
+  )
+  
+  group_colors <- unique((dataset_data %>% 
+                       dplyr::arrange(order_within_sample_group))$color) 
+  names(group_colors) <- xform$categoryarray
 
   plot_type(dataset_data, 
                     x_col = as.character(group1),
@@ -150,7 +180,7 @@ create_plot_onegroup <- function(dataset_data, plot_type, dataset, feature, grou
                     xlab = dataset_data[[group1]],
                     ylab = ylabel,
                     custom_data = as.character(dataset),
-                    fill_colors = c("#0000FF", "#00FF00", "#FF00FF", "#FF0000"),
+                    fill_colors = group_colors, 
                     showlegend = F)  %>%
     add_annotations(
       text = dataset,
@@ -162,17 +192,16 @@ create_plot_onegroup <- function(dataset_data, plot_type, dataset, feature, grou
       yanchor = "top",
       showarrow = FALSE,
       font = list(size = 15)
+    )%>%
+    layout(
+      xaxis = xform,
+      margin = list(b = 10),
+      plot_bgcolor  = "rgb(250, 250, 250)"
     )
 }
 
 create_plot_twogroup <- function(dataset_data, plot_type, dataset, feature, group, group1, group2, ylabel){
- 
-  if(group1 == "Progression"){
-    dataset_data <- get_responder_annot(dataset_data)
-    group1 <- "Responder"
-  }
-  
-  
+   
   samples <- (dataset_data %>% group_by(dataset_data[[group1]], dataset_data[[group2]]) %>% 
                                 summarise(samples = n()))
                   colnames(samples) <- c("var1", "var2", "samples")
@@ -182,6 +211,22 @@ create_plot_twogroup <- function(dataset_data, plot_type, dataset, feature, grou
                 summarise(samples = n()))
   colnames(samples) <- c("var1", "var2", "samples")
   
+  xform <- list(autosize = TRUE,
+                automargin = TRUE,
+                tickangle = 80,
+                categoryorder = "array",
+                categoryarray = (dataset_data %>%
+                                   dplyr::select(group, order_within_sample_group.x, order_within_sample_group.y) %>% 
+                                   dplyr::group_by(group) %>% 
+                                   dplyr::summarise(m = min(order_within_sample_group.x),
+                                                    n = min(order_within_sample_group.y)) %>% 
+                                   dplyr::arrange(m, n) %>% 
+                                   dplyr::pull(group))
+  )
+  group_colors <- unique((dataset_data %>% 
+                            arrange(order_within_sample_group.x, order_within_sample_group.y))$color) 
+  names(group_colors) <- xform$categoryarray
+  
   #combine_groups(dataset_data, group1, group2) %>% 
   dataset_data %>% 
     plot_type(.,
@@ -190,7 +235,7 @@ create_plot_twogroup <- function(dataset_data, plot_type, dataset, feature, grou
               xlab = (dataset_data[[group2]]),
               ylab = ylabel,
               custom_data = as.character(dataset),
-              fill_colors = c("#0000FF", "#00FF00", "#FF00FF", "#FF0000"),
+              fill_colors = group_colors,
               showlegend = F) %>%
     add_annotations(
       text = dataset,
@@ -203,9 +248,11 @@ create_plot_twogroup <- function(dataset_data, plot_type, dataset, feature, grou
       showarrow = FALSE,
       font = list(size = 15)) %>%
     layout(
-      xaxis = list(tickangle = 80),
+      #xaxis = list(tickangle = 80),
+      xaxis = xform,
       shapes = lazyeval::lazy_eval(get_lines_pos(samples, -0.38)),
-      margin = list(b = 10)
+      margin = list(b = 10),
+      plot_bgcolor  = "rgb(250, 250, 250)"
     )
 }
  
@@ -235,12 +282,16 @@ get_t_test <- function(df, group_to_split, sel_feature, dataset, paired = FALSE,
       
       if(paired == TRUE & nrow(split_data[[x]]) != nrow(split_data[[y]])){
         test_data <- data.frame(Dataset = dataset,
-                                Test = paste0("Not available for paired test. ", names(split_data)[x], " (", nrow(split_data[[x]]),") vs. ", names(split_data)[y], " (", nrow(split_data[[y]]), ")"),
+                                Group1 = paste0("Not available for paired test. ", names(split_data)[x], " (", nrow(split_data[[x]]),")"),
+                                Group2 = paste0(names(split_data)[y], " (", nrow(split_data[[y]]), ")"),
+                                #Test = paste0("Not available for paired test. ", names(split_data)[x], " (", nrow(split_data[[x]]),") vs. ", names(split_data)[y], " (", nrow(split_data[[y]]), ")"),
                                 statistic = NA,
                                 p.value = NA)
       }else if(nrow(split_data[[x]]) <=1 | nrow(split_data[[y]]) <=1){
         test_data <- data.frame(Dataset = dataset,
-                                Test = paste0("Few samples to perform test.", names(split_data)[x], " (", nrow(split_data[[x]]),") vs. ", names(split_data)[y], " (", nrow(split_data[[y]]), ")"),
+                                Group1 = paste0("Few samples to perform test. ", names(split_data)[x], " (", nrow(split_data[[x]]),")"),
+                                Group2 = paste0(names(split_data)[y], " (", nrow(split_data[[y]]), ")"),
+                                #Test = paste0("Few samples to perform test.", names(split_data)[x], " (", nrow(split_data[[x]]),") vs. ", names(split_data)[y], " (", nrow(split_data[[y]]), ")"),
                                 statistic = NA,
                                 p.value = NA)
       }else{
@@ -250,19 +301,61 @@ get_t_test <- function(df, group_to_split, sel_feature, dataset, paired = FALSE,
           dplyr::select(statistic, p.value)
         
         test_data$Dataset <- as.character(dataset)
-        test_data$Test <- paste0(names(split_data)[x], " (", nrow(split_data[[x]]),") vs. ", names(split_data)[y], " (", nrow(split_data[[y]]), ")")
+        test_data$Group1 <- paste0(names(split_data)[x], " (", nrow(split_data[[x]]),")")
+        test_data$Group2 <- paste0(names(split_data)[y], " (", nrow(split_data[[y]]), ")")
         
         test_data %>%
           mutate("-log10(pvalue)" = -log10(p.value)) %>% 
           dplyr::mutate_if(is.numeric, round, digits = 3) %>% 
-          dplyr::select(Dataset, Test, statistic, p.value, "-log10(pvalue)")
+          dplyr::select(Dataset, Group1, Group2, statistic, p.value, "-log10(pvalue)")
         #dplyr::select(Dataset, Group1, "Group 1 Size" =  n_samples1, Group2,  "Group 2 Size" = n_samples2, statistic, p.value, "-log10(pvalue)")
       }
     })
   }else{
     test_data <- data.frame(Dataset = dataset,
-                            Test = "First sample group has only one level for this dataset.",
+                            Group1 = "Sample group has only one level for this dataset.",
+                            Group2 = NA,
                             statistic = NA,
                             p.value = NA)
   }
 }
+
+#IO Overview
+
+
+get_io_overview_table <- function(group){
+  
+  ioresponse_data$fmx_df %>%
+    dplyr::mutate("Sample Group" = dplyr::case_when(
+      is.na(.[[group]]) ~ "Not annotated",
+      !is.na(.[[group]]) ~ as.character(.[[group]])
+    )) %>% 
+    dplyr::group_by(Dataset, `Sample Group`) %>% 
+    dplyr::summarise(n = n_distinct(Sample_ID)) %>% 
+    tidyr::pivot_wider(
+      names_from = Dataset, 
+      values_from = n) %>%
+    dplyr::mutate("Group Name" = purrr::map_chr(.[["Sample Group"]], function(x){
+      if(x == "Not annotated") return("")
+      convert_value_between_columns(input_value = x,
+                                    df = ioresponse_data$sample_group_df %>% filter(sample_group == group),
+                                    from_column = "FeatureValue",
+                                    to_column = "FeatureName")}),
+      "Plot Color" = purrr::map_chr(.[["Sample Group"]], function(x){
+        if(x == "Not annotated")return("")
+        convert_value_between_columns(input_value = x,
+                                      df = ioresponse_data$sample_group_df %>% filter(sample_group == group),
+                                      from_column = "FeatureValue",
+                                      to_column = "FeatureHex")}),
+      "Order" = purrr::map_chr(.[["Sample Group"]], function(x){
+        if(x == "Not annotated")return("0")
+        convert_value_between_columns(input_value = x,
+                                      df = ioresponse_data$sample_group_df %>% filter(sample_group == group),
+                                      from_column = "FeatureValue",
+                                      to_column = "order_within_sample_group") %>% as.integer()
+      })
+    )
+}
+
+  
+  

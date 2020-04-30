@@ -155,44 +155,22 @@ shinyServer(function(input, output, session) {
     #IO Molecular Response EDA
     callModule(
       ioresponsefeatures,
-      "io_response_eda",
-      reactive(input$ss_choice),
-      reactive(group_internal_choice()),
-      reactive(input$study_subset_selection),
-      reactive(sample_group_df()),
-      reactive(subset_df())
+      "io_response_eda"
       )
     
     #IO Molecular Response Clinical Outcomes
     callModule(
       iosurvival,
-      "io_response1",
-      reactive(input$ss_choice),
-      reactive(group_internal_choice()),
-      reactive(input$study_subset_selection),
-      reactive(sample_group_df()),
-      reactive(subset_df()),
-      reactive(plot_colors()))
+      "io_response1")
     
     callModule(
       ioresponsemultivariate,
-      "io_response2",
-      reactive(input$ss_choice),
-      reactive(group_internal_choice()),
-      reactive(input$study_subset_selection),
-      reactive(sample_group_df()),
-      reactive(subset_df()),
-      reactive(plot_colors()))
+      "io_response2")
     
     #IO Response Immunomodulators
     callModule(
       ioresponseimmunomodulators,
-      "io_response_immunomodulator",
-      reactive(input$ss_choice),
-      reactive(group_internal_choice()),
-      reactive(input$study_subset_selection),
-      reactive(sample_group_df()),
-      reactive(subset_df()))
+      "io_response_immunomodulator")
 
     # subtype predictor
     callModule(

@@ -113,6 +113,22 @@ load_extracellular_network <- function(){
   } 
 }
 
+load_io_response <- function(){
+  if (!USE_REMOTE_BQ) {
+    
+    IO_PATH = Sys.getenv("IO_PATH")
+    list(
+      fmx_io = feather::read_feather(paste(IO_PATH, "fmx_io.feather", sep = "")),
+      dataset_io_df = feather::read_feather(paste(IO_PATH, "datasets_io_df.feather", sep = "")),
+      groups_io_df = readr::read_csv(paste(IO_PATH, "groups_df.csv", sep = "")),
+      sample_group_io_df = readr::read_csv(paste(IO_PATH, "io_sample_group_df.csv", sep = "")),
+      feature_io_df = feather::read_feather(paste(IO_PATH, "feature_io_df.feather", sep = "")),
+      im_expr_io_df = feather::read_feather(paste(IO_PATH, "im_expr_io.feather", sep = ""))  
+    )
+  } 
+}
+
+
 ## selection choices for the cell fractions.  Lots of other choices possible.
 create_cell_fraction_options <- function() {
     if (!USE_REMOTE_BQ) {
@@ -188,4 +204,18 @@ load_data <- function() {
         ci_coord = extracellular_network_data$cell_coordinate,
         cellimage_base =  cellimage_base_data$cellimage_base
     )
+}
+
+load_io_data <- function(){
+  
+  io_data <- load_io_response()
+  
+  list(
+    dataset_df = io_data$dataset_io_df,
+    feature_df = io_data$feature_io_df,
+    group_df = io_data$groups_io_df,
+    sample_group_df = io_data$sample_group_io_df,
+    fmx_df = io_data$fmx_io,
+    im_expr = io_data$im_expr_io_df
+  )
 }

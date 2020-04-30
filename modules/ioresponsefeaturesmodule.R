@@ -6,14 +6,18 @@ ioresponsefeatures_UI <- function(id){
     titleBox("iAtlas Explorer — Molecular Response to Immune Checkpoint Inhibitors"),
     textBox(
       width = 12,
-      # p("Explore the ‘omics’ data sets on response to checkpoint inhibitors treatments")
-      p("This module allows you to see how immune readouts vary across your groups, and how they relate to one another.")
+      p("This module allows you to see how immune readouts vary across your groups.")
     ),
     ioresponse_UI(
       ns("dist"),
       message_html = "This displays the value of immune readouts by sample group. 
-          Select the datasets of interest, a criteria to group samples and a variable class to see the distribution of variables within that class displayed as a violin plot. Samples can be further divided in extra groups, for each dataset independently.
-          A table with statistical tests comparing all pairwise comparison of groups, for each dataset, is provided at the bottom of the page." #includeMarkdown("data/markdown/immune_features_dist.markdown")
+      Select the datasets of interest, a variable of interest, and how you want to split your samples into groups. 
+      Samples can be further divided into additional sub-group based on the availability of those groups for each dataset.  
+      Use the plot parameters to adjust the type of plot and choice of scale.
+      
+      A table with the result of statistical tests comparing all pairwise combinations of groups is provided at the bottom of 
+      the page. For an A vs B comparison, a positive t-statistics corresponds to an elevated value in the A group over group B 
+      (Mean value in A greater than mean in B)." 
     )
   )
 }
@@ -21,16 +25,10 @@ ioresponsefeatures_UI <- function(id){
 ioresponsefeatures <- function(
   input, 
   output, 
-  session, 
-  group_display_choice,
-  group_internal_choice,
-  study_subset_choice,
-  sample_group_df,
-  subset_df,
-  plot_colors){
+  session){
   
   var_choices <- reactive({
-    feature_io_df %>% 
+    ioresponse_data$feature_df %>% 
         dplyr::filter(VariableType == "Numeric") %>% 
         dplyr::select(
           INTERNAL = FeatureMatrixLabelTSV, 
@@ -44,7 +42,7 @@ ioresponsefeatures <- function(
     "dist",
     "iofeatures_dist_plot",
     variable_options = var_choices(),
-    metadata_feature_df = feature_io_df,
-    feature_values = fmx_io
+    metadata_feature_df = ioresponse_data$feature_df,
+    feature_values = ioresponse_data$fmx_df
   )
 }

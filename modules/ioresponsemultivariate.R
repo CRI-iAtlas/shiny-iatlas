@@ -10,17 +10,19 @@ ioresponsemultivariate_UI <- function(id){
         ),
         
         sectionBox(
-            title = "Multivariate analysis",
+            title = "Multivariable analysis",
 
             messageBox(
                 width = 24,
-                p("Select the datasets of interest, variables, and outcome in terms of either overall survival (OS) or progression free interval (PFI) endpoints to generate a forest plot with the log10 of the Cox Proportional Hazard Ratio with 95th confidence intervals for each variable. A heatmap with the log10 of Hazard Ratio for all the datasets and variables selected is also displayed.")
+                p("Select the datasets of interest, variables, and outcome in terms of either overall survival (OS) or progression free interval (PFI) 
+                  endpoints to generate a forest plot with the log10 of the Cox Proportional Hazard Ratio with 95th confidence intervals for each variable. 
+                  A heatmap with the log10 of Hazard Ratio for all the datasets and variables selected is also displayed. ")
             ),
             
             optionsBox(
                 width = 2, 
                 checkboxGroupInput(ns("datasets_mult"), "Select Datasets", choices = datasets_options,
-                                   selected =  "Gide 2019"), 
+                                   selected =  c("Gide 2019", "Hugo 2016", "Riaz 2017", "Van Allen 2015")), 
                 uiOutput(ns("heatmap_op"))
                 ),
             
@@ -40,19 +42,11 @@ ioresponsemultivariate_UI <- function(id){
 
 ioresponsemultivariate <- function(input, 
                        output, 
-                       session, 
-                       group_display_choice, 
-                       group_internal_choice,
-                       study_subset_choice,
-                       sample_group_df,
-                       subset_df, 
-                       plot_colors){
+                       session){
     
     ns <- session$ns
     
     output$heatmap_op <- renderUI({
-        #group_choice <- magrittr::set_names(list(group_internal_choice()), ss_choice())
-        # var_choices <- colnames(fmx_io)
         
         var_choices <- create_filtered_nested_list_by_class(feature_df = feature_io_df,
                                                             filter_value = "Numeric",
@@ -73,7 +67,7 @@ ioresponsemultivariate <- function(input,
         
         req(input$datasets_mult, input$var2_cox)
         
-        fmx_io %>% 
+      ioresponse_data$fmx_df %>% 
             filter(Dataset %in% input$datasets_mult & treatment_when_collected == "Pre") %>%
             select(Sample_ID, Dataset, OS, OS_time, treatment_when_collected, dplyr::one_of(input$var2_cox))
     })
@@ -122,7 +116,7 @@ ioresponsemultivariate <- function(input,
     output$mult_forest <- renderPlotly({
             
         ph_labels<- convert_value_between_columns(input_value =mult_ph_df()$feature,
-                                                  df = feature_io_df,
+                                                  df = ioresponse_data$feature_df,
                                                   from_column = "FeatureMatrixLabelTSV",
                                                   to_column = "FriendlyLabel",
                                                   many_matches = "return_result")
@@ -143,13 +137,16 @@ ioresponsemultivariate <- function(input,
         heatmap_df <- mult_ph_df() %>%
             dplyr::select(.id, feature, logHR) %>%
             tidyr::spread(key = feature, value = logHR)
-
+      
         row.names(heatmap_df) <- heatmap_df$.id
         heatmap_df$.id <- NULL
+        colnames(heatmap_df) <- convert_value_between_columns(input_value =colnames(heatmap_df),
+                                                              df = ioresponse_data$feature_df,
+                                                              from_column = "FeatureMatrixLabelTSV",
+                                                              to_column = "FriendlyLabel",
+                                                              many_matches = "return_result")
 
-        print(head(heatmap_df))
-
-        p <- create_heatmap(t(as.matrix(heatmap_df)), "heatmap", scale_colors = T)
+        p <- create_heatmap(t(as.matrix(heatmap_df)), "heatmap", scale_colors = T, legend_title = "Hazard Ratio (log10)")
         
         p #+ geom_tile(size = 1, colour = "black")
     })

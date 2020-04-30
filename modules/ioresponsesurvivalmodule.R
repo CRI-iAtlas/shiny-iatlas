@@ -1,15 +1,3 @@
-#loading data 
-#The path for the feature matrix needs to be informed. 
-#In unix bash shell, this can be set by running: export IO_PATH=path/to/files/
-#In a R Session, this can be set with the command in the console: Sys.setenv(IO_PATH="path/to/files/")
-
-IO_PATH = Sys.getenv("IO_PATH")
-
-fmx_io <- feather::read_feather(paste(IO_PATH, "fmx_io.feather", sep = ""))
-feature_io_df <- feather::read_feather(paste(IO_PATH, "feature_io_df.feather", sep = ""))
-im_expr_io_df <- feather::read_feather(paste(IO_PATH, "im_expr_io.feather", sep = ""))
-dataset_io_df <- feather::read_feather(paste(IO_PATH, "datasets_io_df.feather", sep = ""))
-
 iosurvival_UI <- function(id){
     
     ns <- NS(id)
@@ -27,10 +15,10 @@ iosurvival_UI <- function(id){
             messageBox(
                 width = 24,
                 p("Select the datasets of interest, variable, and outcome in terms of either overall survival (OS) or progression free interval (PFI) endpoints to generate a Kaplan-Meier plot. 
-For a continuous (numeric) variable, the range can be split in the median of the interval, or into equal intervals of the value range. For the latter,  the slider can be used to specify how the range of values of that variable is split. Selecting 2 splits the values by the middle of the range, 
-3 splits the range into three even intervals and so on."),
-                p("In addition, the selection of datasets, variable and outcome of interest generate a Forest Plot with the log10 of the 
-                  Cox Proportional Hazard Ratio with 95th confidence intervals for each selected dataset.")
+                  For a continuous (numeric) variable, the range can be split in the median of the interval, or into equal intervals of the value range. 
+                  For the latter, the slider can be used to specify how the range of values of that variable is split. Selecting 2 splits the values by the middle of the range, 3 splits the range into three even intervals and so on."),
+                p("In addition, the selection of datasets, variable and outcome of interest generate a Forest Plot with the log10 of the Cox Proportional Hazard Ratio 
+                  with 95th confidence intervals for each selected dataset.")
             ),
             
             optionsBox(
@@ -41,13 +29,6 @@ For a continuous (numeric) variable, the range can be split in the median of the
                                 width = 12,
                                 checkboxGroupInput(ns("datasets"), "Select Datasets", choices = datasets_options,
                                                    selected = NULL)
-                                #the Auslander dataset does not have annotation for OS  
-                            # ),
-                            # column(
-                            #     width = 7,
-                            #     selectizeInput(ns("types"), "Select tumor(s) type(s)", choices = c("All", unique(dataset_io_df$Study)), selected = NULL),
-                            #     selectizeInput(ns("therapy"), "Select therapy(ies) type(s)", choices = c("All", unique(dataset_io_df$Antibody)), selected = NULL),
-                            #     selectizeInput(ns("drugs"), "Select drug(s) of treatment", choices = c("All", unique(dataset_io_df$Drug)), selected = NULL)
                             )
                         ),    
                         uiOutput(ns("survplot_op")),
@@ -97,19 +78,13 @@ For a continuous (numeric) variable, the range can be split in the median of the
 
 iosurvival <- function(input, 
                        output, 
-                       session, 
-                       group_display_choice,
-                       group_internal_choice,
-                       study_subset_choice,
-                       sample_group_df,
-                       subset_df,
-                       plot_colors){
+                       session){
     
     ns <- session$ns
     
     output$survplot_op <- renderUI({
       
-      var_choices <- create_filtered_nested_list_by_class(feature_df = feature_io_df,
+      var_choices <- create_filtered_nested_list_by_class(feature_df = ioresponse_data$feature_df,
                                                           filter_value = "Numeric",
                                                           class_column = "Variable Class",
                                                           internal_column = "FeatureMatrixLabelTSV",
@@ -133,7 +108,7 @@ iosurvival <- function(input,
                  
     feature_df <- reactive({ #eventReactive(input$go_button,{
       shiny::validate(need(!is.null(input$datasets), "Select at least one dataset."))
-        fmx_io %>% 
+      ioresponse_data$fmx_df %>% 
             filter(Dataset %in% datasets() & treatment_when_collected == "Pre") %>%
             select(Sample_ID, Dataset, treatment_when_collected, OS, OS_time, PFI_1, PFI_time_1, input$var1_surv)
     })
@@ -141,7 +116,9 @@ iosurvival <- function(input,
     all_survival <- reactive({ #eventReactive(input$go_button,{
         
         req(!is.null(feature_df()), cancelOutput = T)
-        sample_groups <- feature_io_df %>% filter(VariableType == "Categorical") %>% select(FeatureMatrixLabelTSV) %>% as.vector()
+        sample_groups <- ioresponse_data$feature_df %>% 
+          dplyr::filter(VariableType == "Categorical") %>% 
+          dplyr::select(FeatureMatrixLabelTSV) %>% as.vector()
         n_groups <- dplyr::n_distinct(sample_groups)
 
         purrr::map(.x = datasets(), df = feature_df(), .f= function(dataset, df){
@@ -159,11 +136,11 @@ iosurvival <- function(input,
         })
     })
     
-    all_fit <- reactive({ #eventReactive(input$go_button,{
+    all_fit <- reactive({ 
         purrr::map(all_survival(), function(df) survival::survfit(survival::Surv(time, status) ~ variable, data = df))
     })
     
-    all_kmplot <- reactive({ # eventReactive(input$go_button,{
+    all_kmplot <- reactive({ 
         
         sample_groups <- feature_io_df %>% filter(VariableType == "Categorical") %>% select(FeatureMatrixLabelTSV)
         
