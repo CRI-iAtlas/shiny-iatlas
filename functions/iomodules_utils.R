@@ -203,12 +203,12 @@ create_plot_onegroup <- function(dataset_data, plot_type, dataset, feature, grou
 create_plot_twogroup <- function(dataset_data, plot_type, dataset, feature, group, group1, group2, ylabel){
    
   samples <- (dataset_data %>% group_by(dataset_data[[group1]], dataset_data[[group2]]) %>% 
-                                summarise(samples = n()))
+                                summarise(samples = dplyr::n()))
                   colnames(samples) <- c("var1", "var2", "samples")
 
   #get number of groups to draw lines
   samples <- (dataset_data %>% group_by(dataset_data[[group1]], dataset_data[[group2]]) %>%
-                summarise(samples = n()))
+                summarise(samples = dplyr::n()))
   colnames(samples) <- c("var1", "var2", "samples")
   
   xform <- list(autosize = TRUE,

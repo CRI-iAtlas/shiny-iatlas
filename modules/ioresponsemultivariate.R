@@ -3,14 +3,14 @@ ioresponsemultivariate_UI <- function(id){
     ns <- NS(id)
     
     tagList(
-        titleBox("iAtlas Explorer —  Immune Checkpoint Inhibitors"),
+        titleBox("iAtlas Explorer —  Multivariate survival analysis to Immune Checkpoint Inhibitors"),
         textBox(
             width = 12,
-            p("Create multivariable survival analysis and visualize Hazard Ratio in a forest plot and a heatmap.")
+            p("Create multivariate survival analysis and visualize Hazard Ratio in a forest plot and a heatmap.")
         ),
         
         sectionBox(
-            title = "Multivariable analysis",
+            title = "Multivariate analysis",
 
             messageBox(
                 width = 24,
@@ -48,7 +48,7 @@ ioresponsemultivariate <- function(input,
     
     output$heatmap_op <- renderUI({
         
-        var_choices <- create_filtered_nested_list_by_class(feature_df = feature_io_df,
+        var_choices <- create_filtered_nested_list_by_class(feature_df = ioresponse_data$feature_df,
                                                             filter_value = "Numeric",
                                                             class_column = "Variable Class",
                                                             internal_column = "FeatureMatrixLabelTSV",

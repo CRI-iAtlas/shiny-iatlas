@@ -3,7 +3,7 @@ ioresponseimmunomodulators_UI <- function(id){
   ns <- NS(id)
   
   tagList(
-    titleBox("iAtlas Explorer — Molecular Response to Immune Checkpoint Inhibitors"),
+    titleBox("iAtlas Explorer — Immunomodulators"),
     textBox(
       width = 12,
       # p("Explore the ‘omics’ data sets on response to checkpoint inhibitors treatments")

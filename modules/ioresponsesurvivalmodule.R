@@ -142,7 +142,7 @@ iosurvival <- function(input,
     
     all_kmplot <- reactive({ 
         
-        sample_groups <- feature_io_df %>% filter(VariableType == "Categorical") %>% select(FeatureMatrixLabelTSV)
+        sample_groups <- ioresponse_data$feature_df %>% filter(VariableType == "Categorical") %>% select(FeatureMatrixLabelTSV)
         
         if (input$var1_surv %in% sample_groups$FeatureMatrixLabelTSV) { 
           group_colors <- viridisLite::viridis(dplyr::n_distinct(fmx_io[[input$var1_surv]]))
@@ -216,7 +216,7 @@ iosurvival <- function(input,
                    loglower = log10(`lower .95`))
         
         title <- convert_value_between_columns(input_value = input$var1_surv,
-                                               df = feature_io_df,
+                                               df = ioresponse_data$feature_df,
                                                from_column = "FeatureMatrixLabelTSV",
                                                to_column = "FriendlyLabel")
         
