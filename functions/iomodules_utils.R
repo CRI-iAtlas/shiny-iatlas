@@ -1,12 +1,12 @@
 # IO Response utils functions
 # "Auslander, 2018 - SKCM" =  "Auslander 2018",
 datasets_options <-  list(
-                         "Gide, 2019 - SKCM, Anti-PD1 +/- Anti-CTLA4" =  "Gide 2019", 
-                         "Hugo, 2016 - SKCM, Anti-PD1" = "Hugo 2016", 
-                         "Riaz, 2017 - SKCM, Anti-PD1" = "Riaz 2017", 
-                         "Van Allen, 2015 - SKCM, Anti-CTLA4" = "Van Allen 2015",
-                         "IMVigor210 - BLCA, Anti-PDL1" = "IMVigor210", 
-                         "Prins, 2019 - GBM, Anti-PD1" = "Prins 2019")
+                         "Gide, 2019 - SKCM, Anti-PD-1 +/- Anti-CTLA-4" =  "Gide 2019", 
+                         "Hugo, 2016 - SKCM, Anti-PD-1" = "Hugo 2016", 
+                         "Riaz, 2017 - SKCM, Anti-PD-1" = "Riaz 2017", 
+                         "Van Allen, 2015 - SKCM, Anti-CTLA-4" = "Van Allen 2015",
+                         "IMVigor210 - BLCA, Anti-PD-L1" = "IMVigor210", 
+                         "Prins, 2019 - GBM, Anti-PD-1" = "Prins 2019")
 
 
 
@@ -64,15 +64,6 @@ get_lines_pos <- function(samples, y){
     
     lines_pos <- paste(lines_pos,
                        "list(line = list(color = 'rgba(68, 68, 68, 0.5)', width = 1), type = 'line', x0 =", 
-                       #  (divs[i]+0.01),
-                       #  ", x1 =", 
-                       #  (divs[i+1]),
-                       #  ", xref = 'paper', y0 =", 
-                       # y ,
-                       # ", y1 =", 
-                       # y, 
-                       # ", yref = 'paper'),
-                       # list(line = list(color = 'rgba(68, 68, 68, 0.5)', width = 1), type = 'line', x0 =", 
                        (int_pos[i]+0.01),
                        ", x1 =", 
                        (int_pos[i]+0.01),
@@ -207,32 +198,35 @@ create_plot_twogroup <- function(dataset_data, plot_type, dataset, feature, grou
                   colnames(samples) <- c("var1", "var2", "samples")
 
   #get number of groups to draw lines
-  samples <- (dataset_data %>% group_by(dataset_data[[group1]], dataset_data[[group2]]) %>%
-                summarise(samples = dplyr::n()))
+  samples <- (dataset_data %>% 
+                group_by(dataset_data[[group1]], dataset_data[[group2]]) %>%
+                summarise(m = min(order_within_sample_group.x),
+                          n = min(order_within_sample_group.y),
+                          samples = dplyr::n()) %>% 
+                dplyr::arrange(m,n))
+  
   colnames(samples) <- c("var1", "var2", "samples")
   
-  xform <- list(autosize = TRUE,
-                automargin = TRUE,
+  xform <- list(automargin = TRUE,
                 tickangle = 80,
                 categoryorder = "array",
                 categoryarray = (dataset_data %>%
-                                   dplyr::select(group, order_within_sample_group.x, order_within_sample_group.y) %>% 
-                                   dplyr::group_by(group) %>% 
+                                   dplyr::select(group, order_within_sample_group.x, order_within_sample_group.y) %>%
+                                   dplyr::group_by(group) %>%
                                    dplyr::summarise(m = min(order_within_sample_group.x),
-                                                    n = min(order_within_sample_group.y)) %>% 
-                                   dplyr::arrange(m, n) %>% 
+                                                    n = min(order_within_sample_group.y)) %>%
+                                   dplyr::arrange(m, n) %>%
                                    dplyr::pull(group))
   )
   group_colors <- unique((dataset_data %>% 
                             arrange(order_within_sample_group.x, order_within_sample_group.y))$color) 
   names(group_colors) <- xform$categoryarray
   
-  #combine_groups(dataset_data, group1, group2) %>% 
   dataset_data %>% 
     plot_type(.,
               x_col = group,
               y_col = feature,
-              xlab = (dataset_data[[group2]]),
+              xlab = (dataset_data[[group]]),
               ylab = ylabel,
               custom_data = as.character(dataset),
               fill_colors = group_colors,
@@ -248,10 +242,9 @@ create_plot_twogroup <- function(dataset_data, plot_type, dataset, feature, grou
       showarrow = FALSE,
       font = list(size = 15)) %>%
     layout(
-      #xaxis = list(tickangle = 80),
-      xaxis = xform,
+      autosize = TRUE,
       shapes = lazyeval::lazy_eval(get_lines_pos(samples, -0.38)),
-      margin = list(b = 10),
+      xaxis = xform,
       plot_bgcolor  = "rgb(250, 250, 250)"
     )
 }
