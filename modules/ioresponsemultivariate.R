@@ -47,18 +47,30 @@ ioresponsemultivariate <- function(input,
     ns <- session$ns
     
     output$heatmap_op <- renderUI({
+      # 
+      # clin_data <- ioresponse_data$feature_df %>% 
+      #   dplyr::filter(`Variable Class` %in% c("Immune Checkpoint Treatment - Study Condition"))
+      # 
+      # var_choices_clin <- create_filtered_nested_list_by_class(feature_df = clin_data,
+      #                                                     filter_value = "Categorical",
+      #                                                     class_column = "Variable Class",
+      #                                                     internal_column = "FeatureMatrixLabelTSV",
+      #                                                     display_column = "FriendlyLabel",
+                                                          # filter_column = "VariableType")
         
-        var_choices <- create_filtered_nested_list_by_class(feature_df = ioresponse_data$feature_df,
+      var_choices <- create_filtered_nested_list_by_class(feature_df = ioresponse_data$feature_df,
                                                             filter_value = "Numeric",
                                                             class_column = "Variable Class",
                                                             internal_column = "FeatureMatrixLabelTSV",
                                                             display_column = "FriendlyLabel",
                                                             filter_column = "VariableType")
+      #var_choices <- c(var_choices_clin, var_choices_feat)
+      
         selectizeInput(
             ns("var2_cox"),
             "Select features",
             var_choices,
-            selected = var_choices$`Predictor - Immune Checkpoint Treatment`,
+            #selected = var_choices$`Predictor - Immune Checkpoint Treatment`,
             multiple = TRUE
         )
     })
@@ -120,10 +132,10 @@ ioresponsemultivariate <- function(input,
                                                   from_column = "FeatureMatrixLabelTSV",
                                                   to_column = "FriendlyLabel",
                                                   many_matches = "return_result")
-        
+        print(mult_ph_df())
             create_forestplot(mult_ph_df(),
                               x=mult_ph_df()$logHR, 
-                              y=rep(ph_labels, times = length(input$datasets_mult)), 
+                              y=rep(ph_labels, times = length(input$datasets_mult)),#rep(mult_ph_df()$feature, times = length(input$datasets_mult)), 
                               xmin=mult_ph_df()$loglower, 
                               xmax=mult_ph_df()$logupper, 
                               xintercept = 0, 

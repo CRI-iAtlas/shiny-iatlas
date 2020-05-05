@@ -25,34 +25,53 @@ ioresponseoverview_UI <- function(id){
                 DT::DTOutput(
                     ns("io_datasets_df")
                 ),
-                downloadButton(ns('download_metadata'), 'Download Dataset Metadata'),
-                downloadButton(ns('download_data'), 'Download Immune Features and Clinical data'),
-                downloadButton(ns('download_expr'), 'Download Gene Expression data'),
-                br(),
-                tags$a(href="https://www.synapse.org/#!Synapse:syn21123500", "Download the complete gene expression data from Synapse")
+                downloadButton(ns('download_metadata'), 'Download Dataset Metadata')
+                # downloadButton(ns('download_data'), 'Download Immune Features and Clinical data'),
+                # downloadButton(ns('download_expr'), 'Download Gene Expression data'),
+                # br(),
+                # tags$a(href="https://www.synapse.org/", "Download the complete gene expression data from Synapse")
             )#plotBox
         ),
         sectionBox(
-          title = "Groups Information",
+          title = "Group Key",
           
           messageBox(
             width = 24,
             #includeMarkdown("data/markdown/io_response_description.markdown")
-             p("Samples in each dataset can be grouped based on study characteristics. Here you can obtain details of these groups, and when you click in a row, you will be able to see the number of samples in each group per dataset.")
+             p("Samples in each dataset can be grouped based on study characteristics. 
+               Here you can obtain details of these groups and the number of samples in each group per dataset.")
+          ),
+          optionsBox(
+            width = 12,
+            selectInput(ns("group"), "Select Group", choices = ioresponse_data$group_df$Group)
           ),
           plotBox(
             width = 12,
             DT::DTOutput(
               ns("io_groups_df")
-            )
-          ),
-          plotBox(
-            width = 12,
+            ),
+            br(),
             DT::DTOutput(
               ns("io_per_ds_df")
-            ),
-            br()
-          )#plotBox
+            )
+          )
+
+        ),
+        sectionBox(
+          title = "Group Overlap",
+          messageBox(
+            width = 24,
+            p("See a mosaic plot for two sample groups")
+          ),
+          optionsBox(
+            width = 12,
+            uiOutput(ns("select_group2"))
+          ),
+          plotBox(
+            width = 12, 
+            plotlyOutput(ns("io_mosaic"), height = "600px") %>% 
+              shinycssloaders::withSpinner()
+          )
         )
     )
         
@@ -70,6 +89,12 @@ ioresponseoverview <- function(input,
     
     ns <- session$ns
     
+    output$select_group2 <- renderUI(
+      selectInput(ns("group2"), "Select second sample group to see overlap", 
+                  choices = (ioresponse_data$group_df %>% 
+                               dplyr::filter(Group != input$group))$Group)
+    )
+    
     output$io_datasets_df <- DT::renderDT({
        DT::datatable((ioresponse_data$dataset_df %>% 
                        dplyr::mutate(
@@ -84,41 +109,50 @@ ioresponseoverview <- function(input,
                      escape= FALSE)
     })
     
-    output$download_metadata <- downloadHandler(
-      filename = function() stringr::str_c("iatlas-io-metadata-", Sys.Date(), ".csv"),
-      content = function(con) readr::write_csv(ioresponse_data$dataset_df, con)
-    )
+    # output$download_metadata <- downloadHandler(
+    #   filename = function() stringr::str_c("iatlas-io-metadata-", Sys.Date(), ".csv"),
+    #   content = function(con) readr::write_csv( con)
+    # )
+    # 
+    # output$download_data <- downloadHandler(
+    #   filename = function() stringr::str_c("iatlas-io-data-", Sys.Date(), ".csv"),
+    #   content = function(con) readr::write_csv(con)
+    # )
+    # 
+    # output$download_expr <- downloadHandler(
+    #   filename = function() stringr::str_c("iatlas-io-im-expr", Sys.Date(), ".csv"),
+    #   content = function(con) readr::write_csv( con)
+    # )
+    group1 <- reactive({
+      convert_value_between_columns(input_value = input$group,
+                                    df = ioresponse_data$feature_df,
+                                    from_column = "FriendlyLabel",
+                                    to_column = "FeatureMatrixLabelTSV")
+    }) 
     
-    output$download_data <- downloadHandler(
-      filename = function() stringr::str_c("iatlas-io-data-", Sys.Date(), ".csv"),
-      content = function(con) readr::write_csv(ioresponse_data$fmx_df, con)
-    )
+    group2 <- reactive({
+      convert_value_between_columns(input_value = input$group2,
+                                    df = ioresponse_data$feature_df,
+                                    from_column = "FriendlyLabel",
+                                    to_column = "FeatureMatrixLabelTSV")
+    }) 
     
-    output$download_expr <- downloadHandler(
-      filename = function() stringr::str_c("iatlas-io-im-expr", Sys.Date(), ".csv"),
-      content = function(con) readr::write_csv(ioresponse_data$im_expr, con)
-    )
+    
     
     output$io_groups_df <- DT::renderDT({
-      DT::datatable(ioresponse_data$group_df, 
-                    selection = 'single',
-                    options = list(pageLength = 15))
+      DT::datatable(ioresponse_data$group_df %>% 
+                      dplyr::filter(Group == input$group),
+                    rownames = FALSE,
+                    options = list(dom = 't'))
     })
     
     output$io_per_ds_df <- DT::renderDT({
-  
-      clicked_group <- ioresponse_data$group_df[input$io_groups_df_rows_selected, ]$Group
-      validate(need(length(clicked_group)>0, "Click table above"))
+      req(input$group)
       
-      group <- convert_value_between_columns(input_value = clicked_group,
-                                             df = ioresponse_data$feature_df,
-                                             from_column = "FriendlyLabel",
-                                             to_column = "FeatureMatrixLabelTSV")
-      
-      DT::datatable(get_io_overview_table(group) %>% 
+      DT::datatable(get_io_overview_table(group1()) %>% 
                     data.table::setcolorder(c("Order", "Sample Group", "Group Name", "Plot Color")),
                     rownames = FALSE,
-                    caption = paste("Group Size per dataset for", clicked_group),
+                    caption = paste("Group Size per dataset for", input$group),
                     options = list(dom = 't',
                                    order = list(list(0, 'asc')))) %>%
         DT::formatStyle(
@@ -126,7 +160,30 @@ ioresponseoverview <- function(input,
           backgroundColor = DT::styleEqual(unique("Plot Color"), "Plot Color"))
 
     })
+    
+    output$io_mosaic <- renderPlotly({
+      req(input$group, input$group2)
+      
+      df_mosaic <- get_io_mosaic_df(ioresponse_data$fmx_df, group1(), group2())
+      
+      df_colors <- df_mosaic %>% 
+                    dplyr::select(y, plot_color) %>% 
+                    distinct() 
+      
+      plot_colors <- c("#C9C9C9", df_colors$plot_color)
+      names(plot_colors) <- c("Not annotated", as.character(df_colors$y))
+     
+      create_mosaicplot(df_mosaic %>% dplyr::select(x,y),
+                        title = stringr::str_c(input$group2, "by", input$group, sep = " "),
+                        fill_colors = plot_colors) %>% 
+        layout(
+          autosize = TRUE,
+          margin = list(b=0)
+        )
+    })
+    
 }
+
 
 
 

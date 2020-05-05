@@ -1,12 +1,12 @@
 # IO Response utils functions
 # "Auslander, 2018 - SKCM" =  "Auslander 2018",
 datasets_options <-  list(
-                         "Gide, 2019 - SKCM, Anti-PD1 +/- Anti-CTLA4" =  "Gide 2019", 
-                         "Hugo, 2016 - SKCM, Anti-PD1" = "Hugo 2016", 
-                         "Riaz, 2017 - SKCM, Anti-PD1" = "Riaz 2017", 
-                         "Van Allen, 2015 - SKCM, Anti-CTLA4" = "Van Allen 2015",
-                         "IMVigor210 - BLCA, Anti-PDL1" = "IMVigor210", 
-                         "Prins, 2019 - GBM, Anti-PD1" = "Prins 2019")
+                         "Gide, 2019 - SKCM, Anti-PD-1 +/- Anti-CTLA-4" =  "Gide 2019", 
+                         "Hugo, 2016 - SKCM, Anti-PD-1" = "Hugo 2016", 
+                         "Riaz, 2017 - SKCM, Anti-PD-1" = "Riaz 2017", 
+                         "Van Allen, 2015 - SKCM, Anti-CTLA-4" = "Van Allen 2015",
+                         "IMVigor210 - BLCA, Anti-PD-L1" = "IMVigor210", 
+                         "Prins, 2019 - GBM, Anti-PD-1" = "Prins 2019")
 
 
 
@@ -64,15 +64,6 @@ get_lines_pos <- function(samples, y){
     
     lines_pos <- paste(lines_pos,
                        "list(line = list(color = 'rgba(68, 68, 68, 0.5)', width = 1), type = 'line', x0 =", 
-                       #  (divs[i]+0.01),
-                       #  ", x1 =", 
-                       #  (divs[i+1]),
-                       #  ", xref = 'paper', y0 =", 
-                       # y ,
-                       # ", y1 =", 
-                       # y, 
-                       # ", yref = 'paper'),
-                       # list(line = list(color = 'rgba(68, 68, 68, 0.5)', width = 1), type = 'line', x0 =", 
                        (int_pos[i]+0.01),
                        ", x1 =", 
                        (int_pos[i]+0.01),
@@ -207,32 +198,35 @@ create_plot_twogroup <- function(dataset_data, plot_type, dataset, feature, grou
                   colnames(samples) <- c("var1", "var2", "samples")
 
   #get number of groups to draw lines
-  samples <- (dataset_data %>% group_by(dataset_data[[group1]], dataset_data[[group2]]) %>%
-                summarise(samples = dplyr::n()))
+  samples <- (dataset_data %>% 
+                group_by(dataset_data[[group1]], dataset_data[[group2]]) %>%
+                summarise(m = min(order_within_sample_group.x),
+                          n = min(order_within_sample_group.y),
+                          samples = dplyr::n()) %>% 
+                dplyr::arrange(m,n))
+  
   colnames(samples) <- c("var1", "var2", "samples")
   
-  xform <- list(autosize = TRUE,
-                automargin = TRUE,
+  xform <- list(automargin = TRUE,
                 tickangle = 80,
                 categoryorder = "array",
                 categoryarray = (dataset_data %>%
-                                   dplyr::select(group, order_within_sample_group.x, order_within_sample_group.y) %>% 
-                                   dplyr::group_by(group) %>% 
+                                   dplyr::select(group, order_within_sample_group.x, order_within_sample_group.y) %>%
+                                   dplyr::group_by(group) %>%
                                    dplyr::summarise(m = min(order_within_sample_group.x),
-                                                    n = min(order_within_sample_group.y)) %>% 
-                                   dplyr::arrange(m, n) %>% 
+                                                    n = min(order_within_sample_group.y)) %>%
+                                   dplyr::arrange(m, n) %>%
                                    dplyr::pull(group))
   )
   group_colors <- unique((dataset_data %>% 
                             arrange(order_within_sample_group.x, order_within_sample_group.y))$color) 
   names(group_colors) <- xform$categoryarray
   
-  #combine_groups(dataset_data, group1, group2) %>% 
   dataset_data %>% 
     plot_type(.,
               x_col = group,
               y_col = feature,
-              xlab = (dataset_data[[group2]]),
+              xlab = (dataset_data[[group]]),
               ylab = ylabel,
               custom_data = as.character(dataset),
               fill_colors = group_colors,
@@ -248,10 +242,9 @@ create_plot_twogroup <- function(dataset_data, plot_type, dataset, feature, grou
       showarrow = FALSE,
       font = list(size = 15)) %>%
     layout(
-      #xaxis = list(tickangle = 80),
-      xaxis = xform,
+      autosize = TRUE,
       shapes = lazyeval::lazy_eval(get_lines_pos(samples, -0.38)),
-      margin = list(b = 10),
+      xaxis = xform,
       plot_bgcolor  = "rgb(250, 250, 250)"
     )
 }
@@ -331,7 +324,7 @@ get_io_overview_table <- function(group){
       !is.na(.[[group]]) ~ as.character(.[[group]])
     )) %>% 
     dplyr::group_by(Dataset, `Sample Group`) %>% 
-    dplyr::summarise(n = n_distinct(Sample_ID)) %>% 
+    dplyr::summarise(n = dplyr::n_distinct(Sample_ID)) %>% 
     tidyr::pivot_wider(
       names_from = Dataset, 
       values_from = n) %>%
@@ -342,7 +335,7 @@ get_io_overview_table <- function(group){
                                     from_column = "FeatureValue",
                                     to_column = "FeatureName")}),
       "Plot Color" = purrr::map_chr(.[["Sample Group"]], function(x){
-        if(x == "Not annotated")return("")
+        if(x == "Not annotated")return("#C9C9C9")
         convert_value_between_columns(input_value = x,
                                       df = ioresponse_data$sample_group_df %>% filter(sample_group == group),
                                       from_column = "FeatureValue",
@@ -355,6 +348,44 @@ get_io_overview_table <- function(group){
                                       to_column = "order_within_sample_group") %>% as.integer()
       })
     )
+}
+
+get_io_mosaic_df <- function(fdf, group1, group2){
+  
+  #getting the labels
+  label1 <- get_group_labels(ioresponse_data$fmx_df, group1)
+  label2 <- get_group_labels(ioresponse_data$fmx_df, group2)
+  
+  if(group1 == "Subtype_Immune_Model_Based"){
+    label1$FeatureName <- label1$FeatureValue
+  }else if(group2 == "Subtype_Immune_Model_Based"){
+    label2$FeatureName <- label2$FeatureValue
+  }
+  
+  not_annot <- data.frame("FeatureValue" = NA_character_, 
+                          "FeatureName" = "Not annotated", 
+                          "FeatureHex"="#C9C9C9", 
+                          "order_within_sample_group" = 0)
+  label1 <- rbind(label1, not_annot)
+  label2 <- rbind(label2, not_annot)
+
+  df_mosaic <- merge(fdf %>% 
+                      dplyr::select(Sample_ID, Dataset, group1, group2), 
+                    label1, by.x = group1, by.y = "FeatureValue") 
+  
+  df_mosaic <- merge(df_mosaic, 
+              label2, by.x = group2, by.y = "FeatureValue") 
+  
+  df_mosaic <- df_mosaic %>% 
+                mutate(x= paste(Dataset, FeatureName.y)) %>% 
+                arrange(order_within_sample_group.y) %>% 
+                select(x, y = FeatureName.x, plot_color = FeatureHex.x) 
+  
+   df_mosaic$x <-  as.factor(df_mosaic$x)
+   df_mosaic$y <-  factor(df_mosaic$y, levels = (label1 %>% 
+                                                    dplyr::arrange(order_within_sample_group))$FeatureName)
+  
+   df_mosaic
 }
 
   

@@ -88,7 +88,7 @@ ioresponse <- function(input,
                        session,
                        variable_options,
                        metadata_feature_df,
-                       feature_values,
+                       feature_values, 
                        plot_colors){
   
   ns <- session$ns
@@ -337,6 +337,15 @@ ioresponse <- function(input,
     data <- event_data("plotly_click", source = "distPlots")
     
     if (is.null(data)) return(" ")
+    
+    clicked_dataset <- data$customdata[[1]]
+    
+    current_groups <- df_selected() %>% 
+      filter(Dataset == clicked_dataset) %>% 
+      select(group) %>% 
+      unique
+    
+    validate(need(data$x[[1]] %in% current_groups$group, " "))
     
     key_value <- data %>%
       dplyr::slice(1) %>% 
