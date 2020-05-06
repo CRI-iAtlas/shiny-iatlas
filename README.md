@@ -29,7 +29,7 @@ or https://cran.r-project.org/bin/macosx/tools/
 
 - Download and install X11 via XQuartz: https://www.xquartz.org/
 
-- Install cairo via Homebrew (https://formulae.brew.sh/formula/cairo ; requires brew: https://brew.sh/ )
+- Install cairo via Homebrew: `brew install cairo` (https://formulae.brew.sh/formula/cairo ; requires brew: https://brew.sh/ )
 
 - Download and install RStudio: https://rstudio.com/products/rstudio/download
 
@@ -54,6 +54,47 @@ To run the app locally:
    ```R
    shiny::runApp()
    ```
+
+### Common Installation Errors (MacOS)
+
+When running `renv::restore()`, you may run into the following errors:
+
+#### Error when installing `Cairo`:
+```R
+checking for pkg-config... no
+configure: CAIRO_LIBS is unset, attempting to guess it.
+configure: CAIRO_CFLAGS=-I/usr/local/include/cairo
+checking if R was compiled with the RConn patch... no
+checking cairo.h usability... yes
+checking cairo.h presence... yes
+checking for cairo.h... yes
+checking for PNG support in Cairo... yes
+checking for ATS font support in Cairo... no
+configure: CAIRO_LIBS=-L/usr/local/lib -lcairo
+checking for library containing deflate... -lz
+checking whether Cairo programs can be compiled... yes
+checking whether cairo_image_surface_get_format is declared... no
+checking for FreeType support in cairo... yes
+checking whether FreeType needs additional flags... yes
+checking whether fontconfig/freetype2 location can be guessed... possibly
+checking whether additional flags work... no
+configure: error: Cannot use cairo-ft backend, although cairo claims it is working. Please check your caito installation and/or update cairo if necessary or set CAIRO_CFLAGS/CAIRO_LIBS accordingly.
+ERROR: configuration failed for package ‘Cairo’
+* removing ‘/Users/ychae/Documents/iAtlas/shiny-iatlas/renv/staging/1/Cairo’
+Error: install of package 'Cairo' failed
+```
+ There are several possible reasons for this:
+- Make sure that you have XQuartz installed. If you've recently updated your MacOS, you will need to reinstall XQuartz.
+- You might be missing `pkg-config`. You can install this by opening a Terminal window and running `brew install pkg-config`.
+
+#### Error when installing `RPostgres [1.1.1]:
+```R
+Installing RPostgres [1.1.1] ...
+	FAILED
+Error installing package 'RPostgres':
+```
+Can be resolved by opening a Terminal window and running `brew install libpq`. You may also need to set `PKG_CONFIG_PATH="/usr/local/opt/libpq/lib/pkgconfig"`.
+
 
 ## Development
 
