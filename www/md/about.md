@@ -27,7 +27,10 @@ The main feature of the iAtlas web tool is the **iAtlas Explorer**, which provid
 + **Immunomodulators:** Explore the expression of genes that code for immunomodulating proteins, including checkpoint proteins.
 + **IO Targets:** Explore the expression of genes that code for immuno-oncological (IO) targets.
 + **TIL Maps:** Explore the characteristics of maps of tumor infiltrating lymphocytes obtained from analysis of H&E images.
-+ **Driver Associations:** Explore Associations of Microenvironment with Driver Mutations.
++ **Driver Associations:** Explore asociations of microenvironment with driver mutations.
++ **Copy Number Variation:** Explore associations of microenvironment with gene copy number variations.
++ **Extracellular Networks:** Explore the extracellular networks modulating tumoral immune response.
++ **Cell-Interaction Diagram:** Explore cell and protein abundance on an illustration.
 
 ---
 
@@ -42,4 +45,4 @@ Sage Bionetworks is a nonprofit biomedical research organization, founded in 200
 
 ## About Institute for Systems Biology
 
-The Institute for Systems Biology is a nonprofit biomedical research organization based in Seattle, Washington. It was founded in 2000 by systems biologist Leroy Hood, immunologist Alan Aderem, and protein chemist Ruedi Aebersold. ISB was established on the belief that the conventional models for exploring and funding breakthrough science have not caught up with the real potential of what is possible today. ISB serves as the ultimate environment where scientific collaboration stretches across disciplines and across academic and industrial organizations, where our researchers have the intellectual freedom to challenge the status quo, and where grand visions for breakthroughs in human health inspire a collective drive to achieve the seemingly impossible. Our core values ensure that we always keep our focus on the big ideas that eventually will have the largest impact on human health. ISB is an affiliate of Providence Health & Services. Learn more at www.systemsbiology.org.
+The Institute for Systems Biology is a nonprofit biomedical research organization based in Seattle, Washington. It was founded in 2000 by systems biologist Leroy Hood, immunologist Alan Aderem, and protein chemist Ruedi Aebersold. ISB was established on the belief that the conventional models for exploring and funding breakthrough science have not caught up with the real potential of what is possible today. ISB serves as the ultimate environment where scientific collaboration stretches across disciplines and across academic and industrial organizations, where our researchers have the intellectual freedom to challenge the status quo, and where grand visions for breakthroughs in human health inspire a collective drive to achieve the seemingly impossible. Our core values ensure that we always keep our focus on the big ideas that eventually will have the largest impact on human health. ISB is an affiliate of Providence Health & Services. Learn more at www.isbscience.org.

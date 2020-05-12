@@ -55,6 +55,21 @@ explorepage <- dashboardPage(
                  "Driver Associations",
                  tabName = "drivers",
                  icon = icon("cog")
+               ),
+               menuSubItem(
+                 "CNV Associations",
+                 tabName = "cnvs",
+                 icon = icon("cog")
+               ),
+               menuSubItem(
+                 "Extracellular Networks",
+                 tabName = "cytokine_network",
+		 icon = icon("cog")
+		),
+	       menuSubItem(
+                 "Cell-Interaction Diagram",
+                 tabName = "cell_image",
+                 icon = icon("cog")
                )
       ),
       menuItem("Data Description",
@@ -185,28 +200,56 @@ explorepage <- dashboardPage(
             ),
             imgLinkBox(
               width = 6,
-              title = "TIL Maps",
-              linkId = "link_to_module7",
-              imgSrc = "images/TILmap.png",
-              boxText = "Explore the characteristics of maps of tumor infiltrating lymphocytes obtained from analysis of H&E images.",
+              title = "IO Targets",
+              linkId = "link_to_module9",
+              imgSrc = "images/iotargets.png",
+              boxText = "Explore the expression of genes that code for immuno-oncological (IO) targets .",
               linkText = "Open Module"
             )
           ),
           fluidRow(
             imgLinkBox(
               width = 6,
-              title = "Driver Associations",
-              linkId = "link_to_module8",
-              imgSrc = "images/drivers.png",
-              boxText = "Explore Associations of Microenvironment with Driver Mutations.",
+              title = "TIL Maps",
+              linkId = "link_to_module7",
+              imgSrc = "images/TILmap.png",
+              boxText = "Explore the characteristics of maps of tumor infiltrating lymphocytes obtained from analysis of H&E images.",
               linkText = "Open Module"
             ),
             imgLinkBox(
               width = 6,
-              title = "IO Targets",
-              linkId = "link_to_module9",
-              imgSrc = "images/iotargets.png",
-              boxText = "Explore the expression of genes that code for immuno-oncological (IO) targets .",
+              title = "Driver Associations",
+              linkId = "link_to_module8",
+              imgSrc = "images/drivers.png",
+              boxText = "Explore associations of microenvironment with driver mutations.",
+              linkText = "Open Module"
+            )
+          ),
+          fluidRow(
+            imgLinkBox(
+              width = 6,
+              title = "CNV Associations",
+              linkId = "link_to_module10",
+              imgSrc = "images/cnvs.png",
+              boxText = "Explore associations of microenvironment with gene copy number.",
+              linkText = "Open Module"
+            ),
+            imgLinkBox(
+              width = 6,
+              title = "Extracellular Networks",
+              linkId = "link_to_module11",
+              imgSrc = "images/cytokinenet.png",
+              boxText = "Explore the extracellular networks modulating tumoral immune response.",
+              linkText = "Open Module"
+            )
+          ),
+          fluidRow(
+            imgLinkBox(
+              width = 6,
+              title = "Cell-Interaction Diagram",
+              linkId = "link_to_module12",
+              imgSrc = "images/cell-image.png",
+              boxText = "Explore cell and protein abundance on an illustration.",
               linkText = "Open Module"
             )
           )
@@ -247,6 +290,18 @@ explorepage <- dashboardPage(
       tabItem(
         tabName = "iotargets",
         iotarget_UI("module9")
+      ),
+      tabItem(
+        tabName = "cnvs",
+        cnvs_UI("module10")
+      ),
+      tabItem(
+        tabName = "cytokine_network",
+        cytokinenetwork_UI("module11")
+      ),
+      tabItem(
+        tabName = "cell_image",
+        cellimage_UI("module12")
       ),
       tabItem(
         tabName = "datainfo",

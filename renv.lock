@@ -1,6 +1,6 @@
 {
   "R": {
-    "Version": "3.6.2",
+    "Version": "3.6.0",
     "Repositories": [
       {
         "Name": "CRAN",
@@ -116,11 +116,11 @@
       "Source": "GitHub",
       "RemoteType": "github",
       "RemoteHost": "api.github.com",
+      "RemoteUsername": "CRI-iAtlas",
       "RemoteRepo": "ImmuneSubtypeClassifier",
-      "RemoteUsername": "Gibbsdavidl",
       "RemoteRef": "master",
-      "RemoteSha": "59e9aa1d377706819da69771dc0cb2cd13bb23d1",
-      "Hash": "143380067bd6b9f075c681950181fba7"
+      "RemoteSha": "2257fee0db18cfcc79356e567801e062fff67124",
+      "Hash": "a47ebf36879302c80a0e4b001a12db8c"
     },
     "KMsurv": {
       "Package": "KMsurv",
@@ -475,6 +475,18 @@
       "Repository": "CRAN",
       "Hash": "ec0bde6776afca14b9ec1e3e0735a846"
     },
+    "cyjShiny": {
+      "Package": "cyjShiny",
+      "Version": "1.0.8",
+      "Source": "GitHub",
+      "RemoteType": "github",
+      "RemoteHost": "api.github.com",
+      "RemoteRepo": "cyjShiny",
+      "RemoteUsername": "cytoscape",
+      "RemoteRef": "master",
+      "RemoteSha": "956a3cb5a8f709f4134f9774e6a767ce2b141764",
+      "Hash": "53ef28c7c9683859e9c4de113d3e6968"
+    },
     "data.table": {
       "Package": "data.table",
       "Version": "1.12.8",
@@ -691,6 +703,13 @@
       "Repository": "CRAN",
       "Hash": "d2d969d2ca127dbb2da60b5a20ee7234"
     },
+    "ggridges": {
+      "Package": "ggridges",
+      "Version": "0.5.2",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "b5c4e55a3856dff3c05595630a40edfc"
+    },
     "ggsci": {
       "Package": "ggsci",
       "Version": "2.9",
@@ -739,6 +758,19 @@
       "Source": "Repository",
       "Repository": "CRAN",
       "Hash": "270597dd84ec5ef7f59b27b4d28782ee"
+    },
+    "grImport2": {
+      "Package": "grImport2",
+      "Version": "0.2-0",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "e348e793cde95a4e94f5337f88039c7e"
+    },
+    "graph": {
+      "Package": "graph",
+      "Version": "1.64.0",
+      "Source": "Bioconductor",
+      "Hash": "b133290bd94320ed101d32cf556f78d8"
     },
     "gridExtra": {
       "Package": "gridExtra",
@@ -830,6 +862,13 @@
       "Source": "Repository",
       "Repository": "CRAN",
       "Hash": "6154ec2223172bce8162d4153cda21f7"
+    },
+    "jpeg": {
+      "Package": "jpeg",
+      "Version": "0.1-8.1",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "bc316c003aba520fc73d70ad53b5fc36"
     },
     "jsonlite": {
       "Package": "jsonlite",
@@ -1096,6 +1135,13 @@
       "Repository": "CRAN",
       "Hash": "3f1b0dbcc503320e6e7aae6c3ff87eaa"
     },
+    "png": {
+      "Package": "png",
+      "Version": "0.1-7",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "03b7076c234cb3331288919983326c55"
+    },
     "polynom": {
       "Package": "polynom",
       "Version": "1.4-0",
@@ -1224,15 +1270,14 @@
     },
     "renv": {
       "Package": "renv",
-      "Version": "0.9.2-37",
+      "Version": "0.9.3-3",
       "Source": "GitHub",
       "RemoteType": "github",
       "RemoteHost": "api.github.com",
-      "RemoteRepo": "renv",
       "RemoteUsername": "rstudio",
-      "RemoteRef": "master",
-      "RemoteSha": "46778d6c7314ba0a4273f1c312b39fdd9611e75f",
-      "Hash": "6f8d30dbf9cdaa3d2f8624286f2ae3de"
+      "RemoteRepo": "renv",
+      "RemoteRef": "0.9.3-3",
+      "RemoteSha": "4fd2ea4975f9946afae7691315b9a8c6bfabd8b3"
     },
     "reprex": {
       "Package": "reprex",
