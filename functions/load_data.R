@@ -116,14 +116,13 @@ load_extracellular_network <- function(){
 load_io_response <- function(){
   if (!USE_REMOTE_BQ) {
     
-    IO_PATH = Sys.getenv("IO_PATH")
     list(
-      fmx_io = feather::read_feather(paste(IO_PATH, "fmx_io.feather", sep = "")),
-      dataset_io_df = feather::read_feather(paste(IO_PATH, "datasets_io_df.feather", sep = "")),
-      groups_io_df = readr::read_csv(paste(IO_PATH, "groups_df.csv", sep = "")),
-      sample_group_io_df = readr::read_csv(paste(IO_PATH, "io_sample_group_df.csv", sep = "")),
-      feature_io_df = feather::read_feather(paste(IO_PATH, "feature_io_df.feather", sep = "")),
-      im_expr_io_df = feather::read_feather(paste(IO_PATH, "im_expr_io.feather", sep = ""))  
+      fmx_io = feather::read_feather("data/io/fmx_io.feather"),
+      dataset_io_df = feather::read_feather("data/io/datasets_io_df.feather"),
+      groups_io_df = readr::read_csv("data/io/groups_df.csv"),
+      sample_group_io_df = readr::read_csv("data/io/io_sample_group_df.csv"),
+      feature_io_df = feather::read_feather("data/io/feature_io_df.feather"),
+      im_expr_io_df = feather::read_feather("data/io/im_expr_io.feather")  
     )
   } 
 }
