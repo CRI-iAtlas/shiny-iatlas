@@ -31,3 +31,26 @@ create_forestplot <- function(
     p
 }
 
+
+create_forestplot_plotly <- function(
+                                     x,
+                                     y,
+                                     error
+                                     ){
+  
+  plotly::plot_ly(
+                  type='scatter',
+                  mode="markers",
+                  y= y, 
+                  x= x,
+          error_x=list(visible = T,
+               type = "data",
+               symmetric = T,
+               array=error)) %>%  
+    plotly::layout(xaxis=list(title="Hazard Ratio (log10)",
+                              zeroline=T,
+                              showticklabels=T),
+                   yaxis=list(zeroline=F,
+                              showticklabels=T))
+}
+

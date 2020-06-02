@@ -47,24 +47,24 @@ ioresponsemultivariate <- function(input,
     ns <- session$ns
     
     output$heatmap_op <- renderUI({
-      # 
-      # clin_data <- ioresponse_data$feature_df %>% 
-      #   dplyr::filter(`Variable Class` %in% c("Immune Checkpoint Treatment - Study Condition"))
-      # 
+
+      clin_data <- ioresponse_data$feature_df %>%
+        dplyr::filter(`Variable Class` %in% c("Immune Checkpoint Treatment - Study Condition"))
+
       # var_choices_clin <- create_filtered_nested_list_by_class(feature_df = clin_data,
       #                                                     filter_value = "Categorical",
       #                                                     class_column = "Variable Class",
       #                                                     internal_column = "FeatureMatrixLabelTSV",
       #                                                     display_column = "FriendlyLabel",
-                                                          # filter_column = "VariableType")
+      # filter_column = "VariableType")
         
-      var_choices <- create_filtered_nested_list_by_class(feature_df = ioresponse_data$feature_df,
+      var_choices_feat <- create_filtered_nested_list_by_class(feature_df = ioresponse_data$feature_df,
                                                             filter_value = "Numeric",
                                                             class_column = "Variable Class",
                                                             internal_column = "FeatureMatrixLabelTSV",
                                                             display_column = "FriendlyLabel",
                                                             filter_column = "VariableType")
-      #var_choices <- c(var_choices_clin, var_choices_feat)
+      var_choices <- var_choices_feat #c(var_choices_clin, var_choices_feat)
       
         selectizeInput(
             ns("var2_cox"),
@@ -77,27 +77,74 @@ ioresponsemultivariate <- function(input,
 
     feature_df_mult <- reactive({
         
-        req(input$datasets_mult, input$var2_cox)
+      req(input$datasets_mult, input$var2_cox)
         
       ioresponse_data$fmx_df %>% 
-            filter(Dataset %in% input$datasets_mult & treatment_when_collected == "Pre") %>%
+        filter(Dataset %in% input$datasets_mult) %>% 
+        `if`(
+          !("treatment_when_collected" %in% input$var2_cox),
+          dplyr::filter(., treatment_when_collected == "Pre"),
+          .
+        ) %>% 
+            #filter(Dataset %in% input$datasets_mult & treatment_when_collected == "Pre") %>%
             select(Sample_ID, Dataset, OS, OS_time, treatment_when_collected, dplyr::one_of(input$var2_cox))
     })
     
     #create dataframe with cox proportional hazard ratio for the selected datasets
     
+    #1.list which features have more than one level for each selected dataset
+    
+    dataset_ft <- reactive({
+      req(input$datasets_mult, input$var2_cox)
+      
+      all_comb <- tidyr::crossing(dataset = input$datasets_mult, feature = input$var2_cox) %>% 
+        merge(., ioresponse_data$feature_df %>% dplyr::select(FeatureMatrixLabelTSV, FriendlyLabel,VariableType), 
+              by.x = "feature", by.y ="FeatureMatrixLabelTSV")
+      
+      num_cols <- all_comb[which(all_comb$VariableType == "Numeric"),]
+      cat_cols <- all_comb[which(all_comb$VariableType == "Categorical"),]
+      
+      if(nrow(cat_cols)>0){
+        
+        cat_values <- purrr::map2_dfr(.x = cat_cols$dataset, .y = cat_cols$feature, .f = function(x, y){
+          
+          uvalue <- unique((feature_df_mult() %>% 
+                          dplyr::filter(Dataset == x))[[y]]) 
+       
+          if(length(uvalue)>1){
+            data.frame(dataset = x,
+                       feature = y,
+                       group = uvalue)
+          }else{
+            return()
+          }
+        })
+      cat_cols <- merge(cat_values, cat_cols, by = c("dataset", "feature"))
+      }
+    
+      
+    })
+    
+    
+    
     mult_ph_df <- reactive({
         req(input$datasets_mult, input$var2_cox)
-        
-        cox_features <- as.formula(paste(
-            "survival::Surv(OS_time, OS) ~", 
-            paste0(input$var2_cox, collapse = " + ")
-        ))
-        
+      print(dataset_ft())
         fit_cox <- function(dataset, data){
-            
+            #filtering data to dataset level
             data_cox <- data %>% 
                 filter(Dataset == dataset)
+            
+            #checking which features have more than one level for the dataset
+            valid_ft <- purrr::map(input$var2_cox, .f= function(x){
+              if(dplyr::n_distinct(data_cox[[x]])>1) return(x)
+              else return()
+            })
+            
+            cox_features <- as.formula(paste(
+              "survival::Surv(OS_time, OS) ~", 
+              paste0(valid_ft, collapse = " + ")
+            ))
             
             ph <- survival::coxph(cox_features, data_cox)
             #p <- survminer::ggforest(ph, data = data_cox , main = dataset, cpositions = c(0.02, 0.82, 1))
@@ -121,7 +168,7 @@ ioresponsemultivariate <- function(input,
             mutate(logHR = log10(`exp(coef)`),
                    logupper = log10(`upper .95`),
                    loglower = log10(`lower .95`))
-        
+        print(cox_df)
         cox_df
     })
     
