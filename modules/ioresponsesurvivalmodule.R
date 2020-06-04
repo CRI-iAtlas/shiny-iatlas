@@ -108,6 +108,8 @@ iosurvival <- function(input,
                  
     feature_df <- reactive({ #eventReactive(input$go_button,{
       shiny::validate(need(!is.null(input$datasets), "Select at least one dataset."))
+      req(input$var1_surv)
+      
       ioresponse_data$fmx_df %>% 
             filter(Dataset %in% datasets() & treatment_when_collected == "Pre") %>%
             select(Sample_ID, Dataset, treatment_when_collected, OS, OS_time, PFI_1, PFI_time_1, input$var1_surv)
@@ -115,7 +117,7 @@ iosurvival <- function(input,
     
     all_survival <- reactive({ #eventReactive(input$go_button,{
         
-        req(!is.null(feature_df()), cancelOutput = T)
+        req(input$var1_surv, !is.null(feature_df()), cancelOutput = T)
         sample_groups <- ioresponse_data$feature_df %>% 
           dplyr::filter(VariableType == "Categorical") %>% 
           dplyr::select(FeatureMatrixLabelTSV) %>% as.vector()
@@ -165,6 +167,7 @@ iosurvival <- function(input,
     #the KM Plots are stored as a list, so a few adjustments are necessary to plot everything
     observe({
         output$plots <- renderUI({
+          req(input$var1_surv)
 
             plot_output_list <-
                 lapply(1:length(datasets()), function(i) {
@@ -179,6 +182,7 @@ iosurvival <- function(input,
         lapply(1:length(datasets()), function(i){
             my_dataset <- datasets()[i]
             output[[my_dataset]] <- renderPlot({
+              req(input$var1_surv)
                 all_kmplot()[i]
                 })
         })
