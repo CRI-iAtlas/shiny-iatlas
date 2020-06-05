@@ -8,7 +8,7 @@ datasets_options <-  list(
                          "IMVigor210 - BLCA, Anti-PD-L1" = "IMVigor210", 
                          "Prins, 2019 - GBM, Anti-PD-1" = "Prins 2019")
 
-
+datasets_PFI <- c("Gide 2019", "Van Allen 2015", "Prins 2019")
 
 filter_dataset <- function(df, dataset,feature, var1, var2 = NULL){
   df %>% 
@@ -47,7 +47,7 @@ build_distribution_io_df <- function(
 }
 
 get_lines_pos <- function(samples, y){
-  
+  print(samples)
   n_int <- nrow(samples)
   
   divs <-seq(0, 1, len=n_int+1)
@@ -80,6 +80,39 @@ get_lines_pos <- function(samples, y){
                        0.2,
                        ", y1 =", 
                        - 0.1, 
+                       ", yref = 'paper')
+                       "
+                       )
+    if(i != (length(int_pos)-1)) lines_pos <- paste(lines_pos, ",")
+  }
+  paste(lines_pos, ")")
+}
+
+get_hlines_pos <- function(samples){
+  
+  n_int <- nrow(samples)
+  
+  divs <-seq(0, 1, len=n_int+1)
+  
+  #getting the intervals with the same variable
+  int_pos <- as.numeric()#divs[1]
+  for(i in 1:n_int){
+    try(if(samples$var1[i] != samples$var1[i+1]) int_pos <- c(int_pos, divs[i+1]), silent = TRUE)
+  }
+  int_pos <- c(int_pos, divs[n_int+1])
+  
+  lines_pos <- "list("
+  for (i in 1:(length(int_pos)-1)) {
+    
+    lines_pos <- paste(lines_pos,
+                       "list(line = list(color = 'rgba(68, 68, 68, 0.5)', width = 1), type = 'line', x0 =", 
+                       0,
+                       ", x1 =",
+                       -0.5,
+                       ", xref = 'paper', y0 =", 
+                       (int_pos[i]),
+                       ", y1 =", 
+                       (int_pos[i]), 
                        ", yref = 'paper')
                        "
                        )

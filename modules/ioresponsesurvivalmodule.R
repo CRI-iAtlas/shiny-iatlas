@@ -101,7 +101,7 @@ iosurvival <- function(input,
       switch(
        input$timevar,
        "OS_time" = input$datasets,
-       "PFI_time_1"= input$datasets[input$datasets %in% c("Gide 2019", "Van Allen 2015", "Prins 2019")]
+       "PFI_time_1"= input$datasets[input$datasets %in% datasets_PFI]
       )
     })
 
@@ -194,12 +194,18 @@ iosurvival <- function(input,
 #      shiny::validate(need(!is.null(input$datasets), "Select at least one dataset."))
 #      req(!is.null(feature_df()), input$var1_surv %in% colnames(feature_df()))
       shiny::req(!is.null(feature_df()), cancelOutput = T)
+      
+      if (input$timevar == "OS_time") {
+        status_column <- "OS"
+      } else {
+        status_column <- "PFI_1"
+      }
 
         all_hr <- purrr::map(.x = datasets(), data = feature_df(), variable = input$var1_surv, .f= function(dataset, data, variable){
             data_cox <- data %>%
                 filter(Dataset == dataset)
             
-            survival::coxph(as.formula(paste("survival::Surv(OS_time, OS) ~ ", variable)), data_cox)
+            survival::coxph(as.formula(paste("survival::Surv(", input$timevar, ",", status_column, ") ~ ", variable)), data_cox)
         })
 
         names(all_hr) <- datasets()
