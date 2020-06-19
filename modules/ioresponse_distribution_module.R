@@ -327,7 +327,7 @@ ioresponse <- function(input,
                    paired = paired_test(),
                    test = test_function(),
                    label = group_label,
-                   .f = get_t_test))
+                   .f = get_stat_test))
   })
   
   output$plot_text <- renderText({

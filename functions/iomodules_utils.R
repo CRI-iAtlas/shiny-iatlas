@@ -281,8 +281,12 @@ create_plot_twogroup <- function(dataset_data, plot_type, dataset, feature, grou
       plot_bgcolor  = "rgb(250, 250, 250)"
     )
 }
- 
-get_t_test <- function(df, group_to_split, sel_feature, dataset, paired = FALSE, test = t.test, label = group_to_split){
+
+log2foldchanges <- function(x,y){
+  mean(log2(x+0.00001))-mean(log2(y+0.00001))
+} 
+
+get_stat_test <- function(df, group_to_split, sel_feature, dataset, paired = FALSE, test = t.test, label = group_to_split){
  
   data_set <- df %>%
     filter(Dataset == dataset)
@@ -329,11 +333,13 @@ get_t_test <- function(df, group_to_split, sel_feature, dataset, paired = FALSE,
         test_data$Dataset <- as.character(dataset)
         test_data$Group1 <- paste0(names(split_data)[x], " (", nrow(split_data[[x]]),")")
         test_data$Group2 <- paste0(names(split_data)[y], " (", nrow(split_data[[y]]), ")")
+        test_data$FoldChange <- log2foldchanges(split_data[[x]][[sel_feature]],
+                                                split_data[[y]][[sel_feature]])
         
         test_data %>%
           mutate("-log10(pvalue)" = -log10(p.value)) %>% 
           dplyr::mutate_if(is.numeric, round, digits = 3) %>% 
-          dplyr::select(Dataset, Group1, Group2, statistic, p.value, "-log10(pvalue)")
+          dplyr::select(Dataset, Group1, Group2,  "Log2(FoldChange)" = FoldChange, statistic, p.value, "-log10(pvalue)")
         #dplyr::select(Dataset, Group1, "Group 1 Size" =  n_samples1, Group2,  "Group 2 Size" = n_samples2, statistic, p.value, "-log10(pvalue)")
       }
     })
