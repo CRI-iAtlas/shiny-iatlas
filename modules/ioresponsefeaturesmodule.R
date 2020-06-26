@@ -3,7 +3,7 @@ ioresponsefeatures_UI <- function(id){
   ns <- NS(id)
   
   tagList(
-    titleBox("iAtlas Explorer — Molecular Response to Immune Checkpoint Inhibitors"),
+    titleBox("iAtlas Explorer — Immune Features in Immune Checkpoint Inhibitors datasets"),
     textBox(
       width = 12,
       p("This module allows you to see how immune readouts vary across your groups.")
@@ -16,8 +16,8 @@ ioresponsefeatures_UI <- function(id){
       Use the plot parameters to adjust the type of plot and choice of scale.
       
       A table with the result of statistical tests comparing all pairwise combinations of groups is provided at the bottom of 
-      the page. For an A vs B comparison, a positive t-statistics corresponds to an elevated value in the A group over group B 
-      (Mean value in A greater than mean in B)." 
+      the page. For an A vs B comparison, a positive t-statistics or Wilcox statistics corresponds to an elevated value in the A group over group B 
+      (Mean value in A greater than mean in B). The table also includes a comparison of the log2 fold change of groups." 
     )
   )
 }
@@ -29,7 +29,7 @@ ioresponsefeatures <- function(
   
   var_choices <- reactive({
     ioresponse_data$feature_df %>% 
-        dplyr::filter(VariableType == "Numeric") %>% 
+        dplyr::filter(VariableType == "Numeric" & `Variable Class` != "NA") %>% 
         dplyr::select(
           INTERNAL = FeatureMatrixLabelTSV, 
           DISPLAY = FriendlyLabel,

@@ -67,7 +67,7 @@ ioresponsemultivariate <- function(input,
                                                           display_column = "FriendlyLabel",
       filter_column = "VariableType")
         
-      var_choices_feat <- create_filtered_nested_list_by_class(feature_df = ioresponse_data$feature_df,
+      var_choices_feat <- create_filtered_nested_list_by_class(feature_df = ioresponse_data$feature_df %>% dplyr::filter(`Variable Class` != "NA"),
                                                             filter_value = "Numeric",
                                                             class_column = "Variable Class",
                                                             internal_column = "FeatureMatrixLabelTSV",

@@ -96,7 +96,7 @@ ioresponse <- function(input,
   output$feature_op <- renderUI({
     selectInput(
       ns("var1_surv"),
-      "Variable",
+      "Select of Search for Variable",
       variable_options %>% create_nested_list_by_class()
     )
   })

@@ -75,27 +75,27 @@ explorepage <- dashboardPage(
       menuItem("Molecular Response to ICI",
                  icon = icon("bar-chart"), startExpanded = TRUE,
                menuSubItem(
-                 "IO Datasets Overview",
+                 "ICI Datasets Overview",
                  tabName = "ioresponse_overview",
                  icon = icon("cog")
                ), 
                menuSubItem(
-                 "IO Response",
+                 "ICI Immune Features",
                  tabName = "io_response",
                  icon = icon("cog")
                ),
                 menuSubItem(
-                   "IO Clinical Outcomes",
+                   "ICI Clinical Outcomes",
                    tabName = "io_survival",
                    icon = icon("cog")
                  ), 
                menuSubItem(
-                 "IO Multivariate",
+                 "ICI Multivariate",
                  tabName = "ioresponse_mult",
                  icon = icon("cog")
                ), 
                menuSubItem(
-                 "IO Immunomodulators",
+                 "ICI Immunomodulators",
                  tabName = "io_immunomodulator",
                  icon = icon("cog")
                )

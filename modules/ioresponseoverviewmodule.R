@@ -39,11 +39,11 @@ ioresponseoverview_UI <- function(id){
             width = 24,
             #includeMarkdown("data/markdown/io_response_description.markdown")
              p("Samples in each dataset can be grouped based on study characteristics. 
-               Here you can obtain details of these groups and the number of samples in each group per dataset.")
+               Here you can obtain details of these categories and the number of samples in each group per dataset.")
           ),
           optionsBox(
             width = 12,
-            selectInput(ns("group"), "Select Group", choices = ioresponse_data$group_df$Group)
+            selectInput(ns("group"), "Select Category", choices = ioresponse_data$group_df$Category)
           ),
           plotBox(
             width = 12,
@@ -90,9 +90,9 @@ ioresponseoverview <- function(input,
     ns <- session$ns
     
     output$select_group2 <- renderUI(
-      selectInput(ns("group2"), "Select second sample group to see overlap", 
+      selectInput(ns("group2"), "Select second category to see groups overlap", 
                   choices = (ioresponse_data$group_df %>% 
-                               dplyr::filter(Group != input$group))$Group)
+                               dplyr::filter(Category != input$group))$Category)
     )
     
     output$io_datasets_df <- DT::renderDT({
@@ -142,7 +142,7 @@ ioresponseoverview <- function(input,
     
     output$io_groups_df <- DT::renderDT({
       DT::datatable(ioresponse_data$group_df %>% 
-                      dplyr::filter(Group == input$group),
+                      dplyr::filter(Category == input$group),
                     rownames = FALSE,
                     options = list(dom = 't'))
     })
