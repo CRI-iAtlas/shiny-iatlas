@@ -47,7 +47,7 @@ build_distribution_io_df <- function(
 }
 
 get_lines_pos <- function(samples, y){
-  print(samples)
+  
   n_int <- nrow(samples)
   
   divs <-seq(0, 1, len=n_int+1)
@@ -206,17 +206,7 @@ create_plot_onegroup <- function(dataset_data, plot_type, dataset, feature, grou
                     custom_data = as.character(dataset),
                     fill_colors = group_colors, 
                     showlegend = F)  %>%
-    add_annotations(
-      text = dataset,
-      x = 0.5,
-      y = 1.1,
-      yref = "paper",
-      xref = "paper",
-      xanchor = "center",
-      yanchor = "top",
-      showarrow = FALSE,
-      font = list(size = 15)
-    )%>%
+    add_title_subplot_plotly(dataset) %>% 
     layout(
       xaxis = xform,
       margin = list(b = 10),
@@ -264,16 +254,7 @@ create_plot_twogroup <- function(dataset_data, plot_type, dataset, feature, grou
               custom_data = as.character(dataset),
               fill_colors = group_colors,
               showlegend = F) %>%
-    add_annotations(
-      text = dataset,
-      x = 0.5,
-      y = 1.1,
-      yref = "paper",
-      xref = "paper",
-      xanchor = "center",
-      yanchor = "top",
-      showarrow = FALSE,
-      font = list(size = 15)) %>%
+    add_title_subplot_plotly(dataset) %>% 
     layout(
       autosize = TRUE,
       shapes = lazyeval::lazy_eval(get_lines_pos(samples, -0.38)),
@@ -427,5 +408,177 @@ get_io_mosaic_df <- function(fdf, group1, group2){
    df_mosaic
 }
 
+#IO Survival
+
+get_feature_by_dataset <- function(datasets, features, feature_df, group_df, fmx_df){
   
+  all_comb <- tidyr::crossing(dataset = datasets, feature = features) %>% 
+    merge(., feature_df %>% dplyr::select(FeatureMatrixLabelTSV, FriendlyLabel,VariableType, `Variable Class Order`), 
+          by.x = "feature", by.y ="FeatureMatrixLabelTSV")
+  
+  num_cols <- all_comb[which(all_comb$VariableType == "Numeric"),]
+  cat_cols <- all_comb[which(all_comb$VariableType == "Categorical"),]
+  #Organize numerical features
+  if(nrow(num_cols)>0){
+    num_cols <- num_cols %>%
+      dplyr::select(dataset,
+                    group = feature,
+                    group_label = FriendlyLabel,
+                    order_within_sample_group = `Variable Class Order`) %>% 
+      dplyr::mutate(feature="Immune Feature",
+                    ft_label = "Immune Feature")
+    
+  }
+  #Check which datasets have more than one level for categorical features
+  if(nrow(cat_cols)>0){
+    cat_values <- purrr::map2_dfr(.x = cat_cols$dataset, .y = cat_cols$feature, .f = function(x, y){
+      
+      uvalue <- unique((fmx_df %>% 
+                          dplyr::filter(Dataset == x))[[y]]) 
+      
+      if(length(uvalue)>1) data.frame(dataset = x, feature = y, gname = uvalue) %>% mutate(group = paste0(y, gname))
+      else return()
+    })
+    
+    cat_cols <- merge(cat_values, cat_cols, by = c("dataset", "feature")) %>% 
+      merge(., group_df %>% dplyr::select(FeatureValue, FeatureName, order_within_sample_group), 
+            by.x = "gname", by.y = "FeatureValue") %>% 
+      select(dataset, feature, ft_label = FriendlyLabel, group, group_label = FeatureName, order_within_sample_group)
+  }
+  rbind(cat_cols, num_cols)
+}
+
+fit_coxph <- function(dataset, data, feature, time, status, ft_labels, multivariate = FALSE){
+  
+  data_cox <- data %>% 
+    filter(Dataset == dataset)
+  
+  #checking which features have more than one level for the dataset
+  valid_ft <- purrr::keep(feature, function(x) dplyr::n_distinct(data_cox[[x]])>1)
+  
+    if(multivariate == FALSE){
+      purrr::map_dfr(.x = valid_ft, function(x){
+        cox_features <- as.formula(paste(
+          "survival::Surv(", time, ",", status, ") ~ ", x)) 
+        
+        survival::coxph(cox_features, data_cox)%>% 
+          create_ph_df(dataset = dataset)
+      })
+    }else{
+      mult_ft <- paste0(valid_ft, collapse  = " + ")
+    
+      cox_features <- as.formula(paste(
+        "survival::Surv(", time, ",", status, ") ~ ", 
+        mult_ft)
+      )
+      survival::coxph(cox_features, data_cox) %>% 
+        create_ph_df(dataset = dataset)
+    }
+}
+
+create_ph_df <- function(coxphList, dataset){
+  
+  coef_stats <- as.data.frame(summary(coxphList)$conf.int)
+  coef_stats$dataset <- dataset
+  coef_stats$group <- row.names(coef_stats)
+  coef_stats$pvalue <- (coef(summary(coxphList))[,5])
+  
+  coef_stats %>% 
+    dplyr::mutate(logHR = log10(`exp(coef)`),
+                  logupper = log10(`upper .95`),
+                  loglower = log10(`lower .95`),
+                  difflog=logHR-loglower,
+                  logpvalue = -log10(pvalue))
+}
+
+build_coxph_df <- function(datasets, data, feature, time, status, ft_labels, multivariate = FALSE){
+ 
+  purrr::map_dfr(.x = datasets, .f= fit_coxph,
+                 data = data, 
+                 feature = feature,
+                 time = time,
+                 status = status,
+                 multivariate = multivariate) %>% 
+  {suppressMessages(dplyr::right_join(x = ., ft_labels))} %>%
+  dplyr::mutate(group_label=replace(group_label, is.na(logHR), paste("(Ref.)", .$group_label[is.na(logHR)]))) %>%
+  dplyr::mutate_all(~replace(., is.na(.), 0))
+}
+
+build_forestplot_dataset <- function(x, coxph_df, selected_features, xname){
+  
+  subset_df <- coxph_df %>%
+    dplyr::filter(dataset == x) %>%
+    dplyr::arrange(feature, desc(abs(logHR)))
+  
+  if(length(selected_features) == 1){
+    plot_title = "" 
+    ylabel = x 
+  }else{
+    plot_title = x
+    ylabel = subset_df$group_label
+  }
+  
+  subset_df$group_label <- factor(subset_df$group_label, levels = subset_df$group_label)
+  
+  p <-  create_forestplot_plotly(x = subset_df$logHR,
+                                 y = ylabel,
+                                 error = subset_df$difflog,
+                                 plot_title = plot_title,
+                                 xlab = xname)
+  
+  if(length(selected_features) == 1){
+    p <- p %>% 
+      layout(
+        title = unique(subset_df$group_label)
+      )
+  }
+  
+  if(dplyr::n_distinct(subset_df$feature)>1){ #categorical data selected
+    p <- p %>%
+      layout(
+        shapes = lazyeval::lazy_eval(get_hlines_pos(subset_df %>% dplyr::select(var1 = feature)))
+      )
+  }
+  p
+}
+
+build_heatmap_df <- function(coxph_df){
+   df <- coxph_df %>%
+    dplyr::filter(!stringr::str_detect(group_label, '(Ref.)')) %>%
+    dplyr::arrange(feature) %>% 
+    dplyr::select(dataset, group_label, logHR) %>%
+    tidyr::pivot_wider(names_from = group_label, values_from = logHR) %>% 
+    as.data.frame()
+  
+  row.names(df) <- df$dataset
+  df$dataset <- NULL
+  
+  t(as.matrix(df))
+}
+
+add_BH_annotation <- function(coxph_df, p){
+  
+  fdr_corrected <- coxph_df %>%
+    dplyr::filter(!stringr::str_detect(group_label, '(Ref.)')) %>%
+    dplyr::group_by(dataset) %>% 
+    dplyr::mutate(FDR = p.adjust(pvalue, method = "BH")) %>% 
+    dplyr::mutate(heatmap_annotation = dplyr::case_when(
+      pvalue > 0.05 | FDR > 0.2 ~ "",
+      pvalue <= 0.05 & FDR <= 0.2 & FDR > 0.05 ~ "*",
+      pvalue <= 0.05 & FDR <= 0.05 ~ "**"
+    )) %>% 
+    dplyr::select(dataset, group_label, pvalue, FDR, heatmap_annotation)
+  
+  p %>%
+    add_annotations(x = fdr_corrected$dataset,
+                    y = fdr_corrected$group_label,
+                    text = fdr_corrected$heatmap_annotation, 
+                    showarrow = F,
+                    font=list(color='black')) %>% 
+    add_annotations( text="BH pValue \n * <= 0.2 \n ** <= 0.05", xref="paper", yref="paper",
+                     x=1.03, xanchor="left",
+                     y=0, yanchor="bottom", 
+                     legendtitle=TRUE, showarrow=FALSE )
+} 
+
   

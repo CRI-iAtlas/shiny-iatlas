@@ -28,7 +28,7 @@ iosurvival_UI <- function(id){
                             column(
                                 width = 12,
                                 checkboxGroupInput(ns("datasets"), "Select Datasets", choices = datasets_options,
-                                                   selected = NULL)
+                                                   selected =  c("Gide 2019", "Hugo 2016"))
                             )
                         ),    
                         uiOutput(ns("survplot_op")),
@@ -52,10 +52,8 @@ iosurvival_UI <- function(id){
                                            min = 2,
                                            max = 10,
                                            value = 2
-                                         ))#,
-#                        div(class = "form-group shiny-input-container", actionButton(ns("go_button"), tags$b("GO"), width = "100%"))
+                                         ))
                 )
-                
             ),#optionsBox
             column(
                 width = 9,
@@ -63,13 +61,8 @@ iosurvival_UI <- function(id){
                                  helpText("There is no PFI annotation for Hugo 2016, Riaz 2017, and IMVigor210.")),
                 plotBox(
                     width = 12,
-                    uiOutput(ns("plots")) %>% 
-                        shinycssloaders::withSpinner()
-                ),
-                plotBox(
-                    width = 12,
-                    plotlyOutput(ns("forest"), height = "450px") %>%
-                        shinycssloaders::withSpinner()
+                    uiOutput(ns("plots")) %>%
+                      shinycssloaders::withSpinner()
                 )
             )
         ) #sectionBox
@@ -84,16 +77,36 @@ iosurvival <- function(input,
     
     output$survplot_op <- renderUI({
       
-      var_choices <- create_filtered_nested_list_by_class(feature_df = ioresponse_data$feature_df,
-                                                          filter_value = "Numeric",
-                                                          class_column = "Variable Class",
-                                                          internal_column = "FeatureMatrixLabelTSV",
-                                                          display_column = "FriendlyLabel",
-                                                          filter_column = "VariableType")
+      # var_choices <- create_filtered_nested_list_by_class(feature_df = ioresponse_data$feature_df %>% dplyr::filter(`Variable Class` != "NA"),
+      #                                                     filter_value = "Numeric",
+      #                                                     class_column = "Variable Class",
+      #                                                     internal_column = "FeatureMatrixLabelTSV",
+      #                                                     display_column = "FriendlyLabel",
+      #                                                     filter_column = "VariableType")
+      
+      # clin_data <- ioresponse_data$feature_df %>%
+      #   dplyr::filter(`Variable Class` %in% c("Immune Checkpoint Treatment - Study Condition"))
+      
+      var_choices_clin <- create_filtered_nested_list_by_class(feature_df = ioresponse_data$feature_df,
+                                                               filter_value = "Categorical",
+                                                               class_column = "Variable Class",
+                                                               internal_column = "FeatureMatrixLabelTSV",
+                                                               display_column = "FriendlyLabel",
+                                                               filter_column = "VariableType")
+      
+      var_choices_feat <- create_filtered_nested_list_by_class(feature_df = ioresponse_data$feature_df %>% dplyr::filter(`Variable Class` != "NA"),
+                                                               filter_value = "Numeric",
+                                                               class_column = "Variable Class",
+                                                               internal_column = "FeatureMatrixLabelTSV",
+                                                               display_column = "FriendlyLabel",
+                                                               filter_column = "VariableType")
+      var_choices <- c(var_choices_clin, var_choices_feat)
+      
       selectInput(
         ns("var1_surv"),
         "Variable",
-        var_choices
+        var_choices,
+        selected = "IMPRES"
       )
     })
     
@@ -105,8 +118,7 @@ iosurvival <- function(input,
       )
     })
 
-                 
-    feature_df <- reactive({ #eventReactive(input$go_button,{
+    feature_df <- reactive({
       shiny::validate(need(!is.null(input$datasets), "Select at least one dataset."))
       req(input$var1_surv)
       
@@ -115,13 +127,11 @@ iosurvival <- function(input,
             select(Sample_ID, Dataset, treatment_when_collected, OS, OS_time, PFI_1, PFI_time_1, input$var1_surv)
     })
     
-    all_survival <- reactive({ #eventReactive(input$go_button,{
-        
+    all_survival <- reactive({
         req(input$var1_surv, !is.null(feature_df()), cancelOutput = T)
         sample_groups <- ioresponse_data$feature_df %>% 
           dplyr::filter(VariableType == "Categorical") %>% 
           dplyr::select(FeatureMatrixLabelTSV) %>% as.vector()
-        n_groups <- dplyr::n_distinct(sample_groups)
 
         purrr::map(.x = datasets(), df = feature_df(), .f= function(dataset, df){
             dataset_df <- df %>% 
@@ -147,7 +157,7 @@ iosurvival <- function(input,
         sample_groups <- ioresponse_data$feature_df %>% filter(VariableType == "Categorical") %>% select(FeatureMatrixLabelTSV)
         
         if (input$var1_surv %in% sample_groups$FeatureMatrixLabelTSV) { 
-          group_colors <- viridisLite::viridis(dplyr::n_distinct(fmx_io[[input$var1_surv]]))
+          group_colors <- viridisLite::viridis(dplyr::n_distinct(ioresponse_data$fmx_df[[input$var1_surv]]))
         } else if(input$div_range == "median") {
           group_colors <- viridisLite::viridis(2)
         }else{
@@ -187,74 +197,4 @@ iosurvival <- function(input,
                 })
         })
     })
-
-   
-#forest plot     
-    output$forest <- renderPlotly({
-#      shiny::validate(need(!is.null(input$datasets), "Select at least one dataset."))
-#      req(!is.null(feature_df()), input$var1_surv %in% colnames(feature_df()))
-      shiny::req(!is.null(feature_df()), cancelOutput = T)
-      
-      if (input$timevar == "OS_time") {
-        status_column <- "OS"
-      } else {
-        status_column <- "PFI_1"
-      }
-
-        all_hr <- purrr::map(.x = datasets(), data = feature_df(), variable = input$var1_surv, .f= function(dataset, data, variable){
-            data_cox <- data %>%
-                filter(Dataset == dataset)
-            
-            survival::coxph(as.formula(paste("survival::Surv(", input$timevar, ",", status_column, ") ~ ", variable)), data_cox)
-        })
-
-        names(all_hr) <- datasets()
-      
-        create_ph_df <- function(coxphList){
-            
-            coef_stats <- as.data.frame(summary(coxphList)$conf.int)
-            coef_stats$feature <- row.names(coef_stats)
-            coef_stats
-        }
-        
-        cox_coef <- purrr::map(all_hr, create_ph_df)
-        log_meta_stats <- data.table::rbindlist(cox_coef, idcol = TRUE)
-        
-        log_meta_stats <- log_meta_stats %>% 
-            mutate(logHR = log10(`exp(coef)`),
-                   logupper = log10(`upper .95`),
-                   loglower = log10(`lower .95`))
-        
-        title <- convert_value_between_columns(input_value = input$var1_surv,
-                                               df = ioresponse_data$feature_df,
-                                               from_column = "FeatureMatrixLabelTSV",
-                                               to_column = "FriendlyLabel")
-        
-       title <- paste(title, " - Forest Plot")
-        
-        if(nrow(log_meta_stats)== base::length(datasets())){
-            create_forestplot(log_meta_stats,
-                              x=log_meta_stats$logHR,
-                              y=log_meta_stats$.id,
-                              xmin=log_meta_stats$loglower,
-                              xmax=log_meta_stats$logupper,
-                              xintercept = 0,
-                              xlab = 'Hazard Ratio (log10)',
-                              #ylab = "Reference",
-                              title = title)
-        }else{
-          #when feature is a categorical feature, such as response
-            create_forestplot(log_meta_stats,
-                              x=log_meta_stats$logHR,
-                              y=log_meta_stats$feature,
-                              xmin=log_meta_stats$loglower,
-                              xmax=log_meta_stats$logupper,
-                              xintercept = 0,
-                              xlab = 'Hazard Ratio (log10)',
-                              #ylab = "Reference",
-                              title = title,
-                              facet = ".id")
-        }
-    })
- 
 }

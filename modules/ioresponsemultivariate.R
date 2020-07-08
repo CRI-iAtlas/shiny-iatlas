@@ -3,48 +3,80 @@ ioresponsemultivariate_UI <- function(id){
     ns <- NS(id)
     
     tagList(
-        titleBox("iAtlas Explorer —  Multivariate survival analysis to Immune Checkpoint Inhibitors"),
+        titleBox("iAtlas Explorer —  Cox Proportional Hazard Ratio to Immune Checkpoint Inhibitors"),
         textBox(
             width = 12,
-            p("Create multivariate survival analysis and visualize Hazard Ratio in a forest plot and a heatmap.")
+            p("Create Cox Proportional Hazard Regression Models and visualize Hazard Ratio in a heatmap and a forest plot.")
         ),
         
         sectionBox(
-            title = "Multivariate analysis",
+            title = "Cox Proportional Hazard Ratio",
 
             messageBox(
                 width = 24,
-                p("Select the datasets of interest, variables, and outcome in terms of either overall survival (OS) or progression free interval (PFI) 
-                  endpoints to generate a forest plot with the log10 of the Cox Proportional Hazard Ratio with 95th confidence intervals for each variable. 
-                  A heatmap with the log10 of Hazard Ratio for all the datasets and variables selected is also displayed. ")
+                p("Analyze survival data with Cox proportional hazard models. Select the datasets of interest, variables, and outcome in terms of either overall survival (OS) or progression free interval (PFI) 
+                  endpoints." ),
+                p("Then, select whether the models should be univariable or multivariable. The univariable analysis will compute the Cox proportional hazard ratio (HR) for each combination of selected variable and dataset. The multivariable analysis will compute the HR considering all the selected features 
+                  as predictors of time to survival outcome."),
+                p("The results are summarized in a heatmap with the log10 of Hazard Ratio. For the univariable analysis, when more than one variable is selected, a Benjamini-Hochberg FDR correction is made, and variables with a p-value smaller than 0.05 and BH pvalue smaller than 0.05 are indicated in the heatmap.
+In addition, forest plot with the log10 of the Cox Proportional Hazard Ratio with 95th confidence intervals for each variable is displayed.")
             ),
             
             optionsBox(
-                width = 2, 
-                checkboxGroupInput(ns("datasets_mult"), "Select Datasets", choices = datasets_options,
-                                   selected =  c("Gide 2019", "Hugo 2016", "Riaz 2017", "Van Allen 2015")), 
-                uiOutput(ns("heatmap_op")),
-                selectInput(
-                  ns("timevar"),
-                  "Survival Endpoint",
-                  c("Overall Survival" = "OS_time",
-                    "Progression Free Interval" = "PFI_time_1"),
-                  selected = "OS_time"
+                width = 12,
+                column(
+                  width = 3,
+                  checkboxGroupInput(ns("datasets_mult"), "Select Datasets", choices = datasets_options,
+                                     selected =  c("Gide 2019", "Hugo 2016", "Riaz 2017", "Van Allen 2015"))
+                ),
+                column(
+                  width = 4,
+                  selectInput(
+                    ns("timevar"),
+                    "Survival Endpoint",
+                    c("Overall Survival" = "OS_time",
+                      "Progression Free Interval" = "PFI_time_1"),
+                    selected = "OS_time"
+                  ),
+                  selectInput(
+                    ns("analysisvar"),
+                    "Select Type of Analysis",
+                    c("Univariable Cox Proportional" = "uni_coxph",
+                      "Multivariable Cox Proportional" = "mult_coxph"
+                    ),
+                    selected = "uni_coxph"
+                  ),
+                  actionLink(ns("method_link"), "Click to view method description for each type.")
+                ),
+                column(
+                  width = 5,
+                  uiOutput(ns("heatmap_op"))
                 )
+
                 ),
             conditionalPanel(condition = paste0("input['", ns("timevar"), "'] == 'PFI_time_1'"),
                              helpText("There is no PFI annotation for Hugo 2016, Riaz 2017, and IMVigor210.")),
             plotBox(
-                width = 10,
-                plotlyOutput(ns("mult_forest"), width = "100%", height = "600px")%>%
-                    shinycssloaders::withSpinner(),
-                DT::dataTableOutput(ns("stats_summary"))
+              width = 12,
+              plotlyOutput(ns("mult_heatmap"), width = "100%", height = "600px")%>%
+                shinycssloaders::withSpinner()
             ),
             plotBox(
                 width = 12,
-                plotlyOutput(ns("mult_heatmap"), width = "100%", height = "500px")%>%
+                plotlyOutput(ns("mult_forest"), width = "100%", height = "700px")%>%
                     shinycssloaders::withSpinner()
             )
+        ),
+        sectionBox(
+          title = "Summary Table",
+          messageBox(
+            width = 24,
+            p("The table shows the computed data used to create the visualizations above.")
+            ),
+          plotBox(
+            width = 12,
+            DT::dataTableOutput(ns("stats_summary"))
+          )
         )
     )
 }
@@ -77,9 +109,9 @@ ioresponsemultivariate <- function(input,
       
         selectizeInput(
             ns("var2_cox"),
-            "Select features",
+            "Select or Search for variables",
             var_choices,
-            #selected = var_choices$`Predictor - Immune Checkpoint Treatment`,
+            selected = c("IMPRES", "Vincent_IPRES_NonResponder"),
             multiple = TRUE
         )
     })
@@ -91,16 +123,26 @@ ioresponsemultivariate <- function(input,
         "PFI_time_1"= input$datasets_mult[input$datasets_mult %in% datasets_PFI]
       )
     })
+    
+    mult_coxph <- reactive({
+      switch(
+        input$analysisvar,
+        "uni_coxph" = FALSE,
+        "mult_coxph" = TRUE
+      )
+    })
+    
+    status_column <- reactive({
+      switch(
+        input$timevar,
+        "OS_time" = "OS",
+        "PFI_time_1"= "PFI_1"
+      )
+    })
 
     feature_df_mult <- reactive({
         
       req(input$datasets_mult, input$var2_cox)
-      
-      if (input$timevar == "OS_time") {
-        status_column <- "OS"
-      } else {
-        status_column <- "PFI_1"
-      }
         
       ioresponse_data$fmx_df %>% 
         filter(Dataset %in% datasets()) %>% 
@@ -109,190 +151,76 @@ ioresponsemultivariate <- function(input,
           dplyr::filter(., treatment_when_collected == "Pre"),
           .
         ) %>% 
-            #filter(Dataset %in% input$datasets_mult & treatment_when_collected == "Pre") %>%
-            select(Sample_ID, Dataset, input$timevar, status_column, treatment_when_collected, dplyr::one_of(input$var2_cox))
+        dplyr::select(Sample_ID, Dataset, input$timevar, status_column(), treatment_when_collected, dplyr::one_of(input$var2_cox))
     })
-    
-    #create dataframe with cox proportional hazard ratio for the selected datasets
-    
-    #1.list which features have more than one level for each selected dataset
     
     dataset_ft <- reactive({
       req(input$datasets_mult, input$var2_cox)
-      
-      all_comb <- tidyr::crossing(dataset = datasets(), feature = input$var2_cox) %>% 
-        merge(., ioresponse_data$feature_df %>% dplyr::select(FeatureMatrixLabelTSV, FriendlyLabel,VariableType, `Variable Class Order`), 
-              by.x = "feature", by.y ="FeatureMatrixLabelTSV")
-      
-      num_cols <- all_comb[which(all_comb$VariableType == "Numeric"),]
-      cat_cols <- all_comb[which(all_comb$VariableType == "Categorical"),]
-      
-      if(nrow(num_cols)>0){
-        num_cols <- num_cols %>%
-          dplyr::select(dataset,
-                        group = feature,
-                        group_label = FriendlyLabel,
-                        order_within_sample_group = `Variable Class Order`) %>% 
-          dplyr::mutate(feature="Immune Feature",
-                        ft_label = "Immune Feature")
-         
-      }
-      
-      if(nrow(cat_cols)>0){
-        cat_values <- purrr::map2_dfr(.x = cat_cols$dataset, .y = cat_cols$feature, .f = function(x, y){
-          
-          uvalue <- unique((feature_df_mult() %>% 
-                          dplyr::filter(Dataset == x))[[y]]) 
-       
-          if(length(uvalue)>1) data.frame(dataset = x, feature = y, gname = uvalue) %>% mutate(group = paste0(y, gname))
-          else return()
-        })
-        
-      cat_cols <- merge(cat_values, cat_cols, by = c("dataset", "feature")) %>% 
-        merge(., ioresponse_data$sample_group_df %>% dplyr::select(FeatureValue, FeatureName, order_within_sample_group), 
-              by.x = "gname", by.y = "FeatureValue") %>% 
-        select(dataset, feature, ft_label = FriendlyLabel, group, group_label = FeatureName, order_within_sample_group)
-      }
-      rbind(cat_cols, num_cols)
+      #creates a df with the dataset x feature combinations that are available
+      get_feature_by_dataset(
+        datasets = datasets(), 
+        features = input$var2_cox, 
+        feature_df = ioresponse_data$feature_df, 
+        group_df = ioresponse_data$sample_group_df, 
+        fmx_df = feature_df_mult()
+      )
     })
     
-    mult_ph_df <- reactive({
+    coxph_df <- reactive({
         req(input$datasets_mult, input$var2_cox)
-      
-      if (input$timevar == "OS_time") {
-        status_column <- "OS"
-      } else {
-        status_column <- "PFI_1"
-      }
-      
-        fit_cox <- function(dataset, data){
-            #filtering data to dataset level
-            data_cox <- data %>% 
-                filter(Dataset == dataset)
-            
-            #checking which features have more than one level for the dataset
-            valid_ft <- purrr::map(input$var2_cox, .f= function(x){
-              if(dplyr::n_distinct(data_cox[[x]])>1) return(x)
-              else return()
-            })
-            
-            cox_features <- as.formula(paste(
-              "survival::Surv(", input$timevar, ",", status_column, ") ~ ", 
-              paste0(valid_ft, collapse = " + ")
-            ))
-            
-            survival::coxph(cox_features, data_cox)
-        }
-        
-        all_hr <- purrr::map(.x = datasets(), .f= fit_cox, data = feature_df_mult())
-        names(all_hr) <- datasets()
-        
-        create_ph_df <- function(coxphList){
-            
-            coef_stats <- as.data.frame(summary(coxphList)$conf.int)
-            coef_stats$group <- row.names(coef_stats)
-            coef_stats$pvalue <- (coef(summary(coxphList))[,5])
-            coef_stats$logpvalue <- -log10(coef(summary(coxphList))[,5])
-            coef_stats
-        }
-        
-        cox_coef <- purrr::map(all_hr, create_ph_df)
-       
-        data.table::rbindlist(cox_coef, fill = T, idcol = TRUE) %>% 
-            dplyr::mutate(logHR = log10(`exp(coef)`),
-                   logupper = log10(`upper .95`),
-                   loglower = log10(`lower .95`),
-                   difflog=logHR-loglower) %>% 
-          dplyr::rename(dataset = ".id")
+        build_coxph_df(datasets = datasets(),
+                       data = feature_df_mult(), 
+                       feature = input$var2_cox,
+                       time = input$timevar,
+                       status = status_column(),
+                       ft_labels = dataset_ft(),
+                       multivariate = mult_coxph())
     })
-    
-    mult_label_df <- reactive({
-      suppressMessages(dplyr::right_join(mult_ph_df(), dataset_ft())) %>% 
-      dplyr::mutate(group_label=replace(group_label, is.na(logHR), paste("(Ref.)", .$group_label[is.na(logHR)]))) %>% 
-      dplyr::mutate_all(~replace(., is.na(.), 0))
-    })
-    
     
     output$mult_forest <- renderPlotly({
       shiny::validate(need(!is.null(input$datasets_mult), "Select at least one dataset."))
-      # print(mult_ph_df())
-      # mult_label_df <- suppressMessages(dplyr::right_join(mult_ph_df(), dataset_ft())) %>% 
-      #                  dplyr::mutate(group_label=replace(group_label, is.na(logHR), paste("(Ref.)", .$group_label[is.na(logHR)]))) %>% 
-      #                  dplyr::mutate_all(~replace(., is.na(.), 0))
-      # 
-      all_forests <- purrr::map(.x = unique(mult_ph_df()$dataset), function(x){
-        
-        subset_df <- mult_label_df() %>% 
-          dplyr::filter(dataset == x) 
-        
-        #ordering sample groups when more than one level is selected
-        #if(dplyr::n_distinct(subset_df$feature)>1){
-          subset_df <- subset_df %>%
-            #dplyr::arrange(logpvalue, feature, (abs(logHR)))
-            dplyr::arrange(feature, desc(abs(logHR)))
+     
+      all_forests <- purrr::map(.x = unique(coxph_df()$dataset), 
+                                .f = build_forestplot_dataset, 
+                                coxph_df = coxph_df(),
+                                selected_features = input$var2_cox,
+                                xname = "log10(Hazard Ratio) + 95% CI") 
 
-          subset_df$group_label <- factor(subset_df$group_label, levels = subset_df$group_label)
-        #}
+      if(length(input$var2_cox) == 1){
+        plotly::subplot(all_forests, nrows = dplyr::n_distinct(coxph_df()$dataset), shareX = TRUE, titleX = TRUE, titleY= TRUE, margin = 0.01) 
+      }else{
+        npannel <- ((dplyr::n_distinct(coxph_df()$dataset)+1)%/%2)
+        plotly::subplot(all_forests, nrows = npannel, titleX = TRUE, titleY = TRUE, margin = 0.09)        
+      }
+    })
+    
+    output$mult_heatmap <- renderPlotly({
+      shiny::validate(need(!is.null(input$datasets_mult), "Select at least one dataset."))
+
+        heatmap_df <-  build_heatmap_df(coxph_df())
+
+        p <- create_heatmap(heatmap_df, "heatmap", scale_colors = T, legend_title = "log10(Hazard Ratio)")
         
-        p <-  create_forestplot_plotly(x = subset_df$logHR,
-                                 y = subset_df$group_label,
-                                 error = subset_df$difflog,
-                                 p.values = subset_df$logpvalue,
-                                 #dataset = subset_df$dataset,
-                                 xlab = "Hazard Ratio (log10)") %>%
-          add_annotations(
-            text = x,
-            x = 0.5,
-            y = 1,
-            yref = "paper",
-            xref = "paper",
-            xanchor = "center",
-            yanchor = "top",
-            yshift = 30,
-            showarrow = FALSE,
-            font = list(size = 15)) 
-        
-        
-        if(dplyr::n_distinct(subset_df$feature)>1){
-          p <- p %>% 
-            layout(
-              shapes = lazyeval::lazy_eval(get_hlines_pos(subset_df %>% dplyr::select(var1 = feature)))
-            )
-          }
-        p
-      })
-      npannel <- ((dplyr::n_distinct(mult_ph_df()$dataset)+1)%/%2)
-      print(mult_label_df())
-      plotly::subplot(all_forests, nrows = npannel, titleX = TRUE, titleY = TRUE, margin = 0.09)
-      
-      
+        if(mult_coxph() == FALSE & length(input$var2_cox)>1){
+          p <- add_BH_annotation(coxph_df(), p)
+        }
+       p
     })
     
     output$stats_summary <- DT::renderDataTable(
       
-      mult_label_df() %>% 
+      coxph_df() %>% 
         dplyr::select(dataset, Feature = ft_label, Variable = group_label, `log10(HR)` = logHR, loglower, logupper, pvalue, '-log10(p.value)' = logpvalue) %>%
         dplyr::mutate_if(is.numeric, formatC, digits = 3) %>%
         dplyr::arrange(dataset)
     )
     
-    output$mult_heatmap <- renderPlotly({
-
-        heatmap_df <- mult_ph_df() %>%
-            dplyr::select(dataset, group, logHR) %>%
-            tidyr::spread(key = group, value = logHR)
-     
-        row.names(heatmap_df) <- heatmap_df$dataset
-        heatmap_df$dataset <- NULL
-        
-        # colnames(heatmap_df) <- convert_value_between_columns(input_value =colnames(heatmap_df),
-        #                                                       df = ioresponse_data$feature_df,
-        #                                                       from_column = "FeatureMatrixLabelTSV",
-        #                                                       to_column = "FriendlyLabel",
-        #                                                       many_matches = "return_result")
-
-        p <- create_heatmap(t(as.matrix(heatmap_df)), "heatmap", scale_colors = T, legend_title = "Hazard Ratio (log10)")
-        
-        p #+ geom_tile(size = 1, colour = "black")
+    observeEvent(input$method_link,{
+      showModal(modalDialog(
+        title = "Method",
+        includeMarkdown("data/markdown/cox_regression.markdown"),
+        easyClose = TRUE,
+        footer = NULL
+      ))
     })
 }

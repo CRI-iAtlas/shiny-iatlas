@@ -90,7 +90,7 @@ explorepage <- dashboardPage(
                    icon = icon("cog")
                  ), 
                menuSubItem(
-                 "ICI Multivariate",
+                 "ICI Hazard Ratio",
                  tabName = "ioresponse_mult",
                  icon = icon("cog")
                ), 

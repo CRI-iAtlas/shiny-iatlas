@@ -217,3 +217,19 @@ format_plotly <- function(p) {
     ) %>% 
     plotly::config(displayModeBar = T)
 }
+
+add_title_subplot_plotly <- function(p, plot_title){
+  p %>% 
+    plotly::add_annotations(
+      text = plot_title,
+      x = 0.5,
+      y = 1,
+      yref = "paper",
+      xref = "paper",
+      xanchor = "center",
+      yanchor = "top",
+      yshift = 30,
+      showarrow = FALSE,
+      font = list(family = "Roboto, Open Sans, sans-serif",
+                  size = 15))
+}
