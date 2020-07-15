@@ -88,16 +88,20 @@ ioresponsemultivariate <- function(input,
     ns <- session$ns
     
     output$heatmap_op <- renderUI({
+      
+      non_selected_ds <- paste("Clinical data for", setdiff(unlist(datasets_options), input$datasets_mult), sep = " ")
 
       clin_data <- ioresponse_data$feature_df %>%
-        dplyr::filter(`Variable Class` %in% c("Immune Checkpoint Treatment - Study Condition"))
-
+        dplyr::filter(FeatureMatrixLabelTSV != "treatment_when_collected" & 
+                        FeatureMatrixLabelTSV %in% ioresponse_data$categories_df$Category &
+                        !`Variable Class` %in% non_selected_ds)
+      
       var_choices_clin <- create_filtered_nested_list_by_class(feature_df = clin_data,
                                                           filter_value = "Categorical",
                                                           class_column = "Variable Class",
                                                           internal_column = "FeatureMatrixLabelTSV",
                                                           display_column = "FriendlyLabel",
-      filter_column = "VariableType")
+                                                          filter_column = "VariableType")
         
       var_choices_feat <- create_filtered_nested_list_by_class(feature_df = ioresponse_data$feature_df %>% dplyr::filter(`Variable Class` != "NA"),
                                                             filter_value = "Numeric",
@@ -157,6 +161,7 @@ ioresponsemultivariate <- function(input,
     dataset_ft <- reactive({
       req(input$datasets_mult, input$var2_cox)
       #creates a df with the dataset x feature combinations that are available
+      
       get_feature_by_dataset(
         datasets = datasets(), 
         features = input$var2_cox, 
@@ -167,7 +172,7 @@ ioresponsemultivariate <- function(input,
     })
     
     coxph_df <- reactive({
-        req(input$datasets_mult, input$var2_cox)
+        req(input$datasets_mult, input$var2_cox, dataset_ft())
         build_coxph_df(datasets = datasets(),
                        data = feature_df_mult(), 
                        feature = input$var2_cox,
@@ -179,14 +184,14 @@ ioresponsemultivariate <- function(input,
     
     output$mult_forest <- renderPlotly({
       shiny::validate(need(!is.null(input$datasets_mult), "Select at least one dataset."))
+      shiny::validate(need(length(input$var2_cox)>0, "Select at least one variable."))
      
       all_forests <- purrr::map(.x = unique(coxph_df()$dataset), 
                                 .f = build_forestplot_dataset, 
                                 coxph_df = coxph_df(),
-                                selected_features = input$var2_cox,
                                 xname = "log10(Hazard Ratio) + 95% CI") 
 
-      if(length(input$var2_cox) == 1){
+      if(length(unique(coxph_df()$group)) == 1){
         plotly::subplot(all_forests, nrows = dplyr::n_distinct(coxph_df()$dataset), shareX = TRUE, titleX = TRUE, titleY= TRUE, margin = 0.01) 
       }else{
         npannel <- ((dplyr::n_distinct(coxph_df()$dataset)+1)%/%2)
@@ -196,6 +201,7 @@ ioresponsemultivariate <- function(input,
     
     output$mult_heatmap <- renderPlotly({
       shiny::validate(need(!is.null(input$datasets_mult), "Select at least one dataset."))
+      shiny::validate(need(length(input$var2_cox)>0, "Select at least one variable."))
 
         heatmap_df <-  build_heatmap_df(coxph_df())
 

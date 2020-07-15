@@ -150,8 +150,8 @@ get_text_pos <- function(df, col_div, y){
 
 get_group_labels <-  function(df, group){
   ioresponse_data$sample_group_df %>% 
-    dplyr::filter(sample_group == group) %>% 
-    select(FeatureValue, FeatureName, FeatureHex, order_within_sample_group)
+    dplyr::filter(Category == group) %>% 
+    select(FeatureValue, FeatureLabel, FeatureHex, order_within_sample_group)
 }
 
 combine_colors <- function(color1, color2){
@@ -165,18 +165,18 @@ combine_colors <- function(color1, color2){
 combine_groups <- function(df, group1, group2, label1, label2){
   
   label1 <- get_group_labels(df, group1)
-  label2 <- get_group_labels(df, group2)
-  
+ 
   df <- merge(df, label1, by.x = group1, by.y = "FeatureValue")
  
   if(group2 == "None" | group1 == group2){
     df <- df %>% 
-      dplyr::mutate(group = df$FeatureName,
+      dplyr::mutate(group = df$FeatureLabel,
                     color = df$FeatureHex)
   }else if(group2 != "None"  & group1 != group2){
+    label2 <- get_group_labels(df, group2)
     df <- merge(df, label2, by.x = group2, by.y = "FeatureValue")
     df <- df %>% 
-      dplyr::mutate(group = (paste(df$"FeatureName.x", "&",df$"FeatureName.y")),
+      dplyr::mutate(group = (paste(df$"FeatureLabel.x", "&",df$"FeatureLabel.y")),
                     color = combine_colors(FeatureHex.x, FeatureHex.y))
   }
   df
@@ -264,7 +264,7 @@ create_plot_twogroup <- function(dataset_data, plot_type, dataset, feature, grou
 }
 
 log2foldchanges <- function(x,y){
-  mean(log2(x+0.00001))-mean(log2(y+0.00001))
+  mean(log2(y+1))-mean(log2(x+1))
 } 
 
 get_stat_test <- function(df, group_to_split, sel_feature, dataset, paired = FALSE, test = t.test, label = group_to_split){
@@ -351,19 +351,19 @@ get_io_overview_table <- function(group){
     dplyr::mutate("Group Name" = purrr::map_chr(.[["Sample Group"]], function(x){
       if(x == "Not annotated") return("")
       convert_value_between_columns(input_value = x,
-                                    df = ioresponse_data$sample_group_df %>% filter(sample_group == group),
+                                    df = ioresponse_data$sample_group_df %>% filter(Category == group),
                                     from_column = "FeatureValue",
                                     to_column = "FeatureName")}),
       "Plot Color" = purrr::map_chr(.[["Sample Group"]], function(x){
         if(x == "Not annotated")return("#C9C9C9")
         convert_value_between_columns(input_value = x,
-                                      df = ioresponse_data$sample_group_df %>% filter(sample_group == group),
+                                      df = ioresponse_data$sample_group_df %>% filter(Category == group),
                                       from_column = "FeatureValue",
                                       to_column = "FeatureHex")}),
       "Order" = purrr::map_chr(.[["Sample Group"]], function(x){
         if(x == "Not annotated")return("0")
         convert_value_between_columns(input_value = x,
-                                      df = ioresponse_data$sample_group_df %>% filter(sample_group == group),
+                                      df = ioresponse_data$sample_group_df %>% filter(Category == group),
                                       from_column = "FeatureValue",
                                       to_column = "order_within_sample_group") %>% as.integer()
       })
@@ -376,14 +376,8 @@ get_io_mosaic_df <- function(fdf, group1, group2){
   label1 <- get_group_labels(ioresponse_data$fmx_df, group1)
   label2 <- get_group_labels(ioresponse_data$fmx_df, group2)
   
-  if(group1 == "Subtype_Immune_Model_Based"){
-    label1$FeatureName <- label1$FeatureValue
-  }else if(group2 == "Subtype_Immune_Model_Based"){
-    label2$FeatureName <- label2$FeatureValue
-  }
-  
   not_annot <- data.frame("FeatureValue" = NA_character_, 
-                          "FeatureName" = "Not annotated", 
+                          "FeatureLabel" = "Not annotated", 
                           "FeatureHex"="#C9C9C9", 
                           "order_within_sample_group" = 0)
   label1 <- rbind(label1, not_annot)
@@ -397,13 +391,13 @@ get_io_mosaic_df <- function(fdf, group1, group2){
               label2, by.x = group2, by.y = "FeatureValue") 
   
   df_mosaic <- df_mosaic %>% 
-                mutate(x= paste(Dataset, FeatureName.y)) %>% 
+                mutate(x= paste(Dataset, FeatureLabel.y)) %>% 
                 arrange(order_within_sample_group.y) %>% 
-                select(x, y = FeatureName.x, plot_color = FeatureHex.x) 
+                select(x, y = FeatureLabel.x, plot_color = FeatureHex.x) 
   
    df_mosaic$x <-  as.factor(df_mosaic$x)
    df_mosaic$y <-  factor(df_mosaic$y, levels = (label1 %>% 
-                                                    dplyr::arrange(order_within_sample_group))$FeatureName)
+                                                    dplyr::arrange(order_within_sample_group))$FeatureLabel)
   
    df_mosaic
 }
@@ -413,9 +407,9 @@ get_io_mosaic_df <- function(fdf, group1, group2){
 get_feature_by_dataset <- function(datasets, features, feature_df, group_df, fmx_df){
   
   all_comb <- tidyr::crossing(dataset = datasets, feature = features) %>% 
-    merge(., feature_df %>% dplyr::select(FeatureMatrixLabelTSV, FriendlyLabel,VariableType, `Variable Class Order`), 
-          by.x = "feature", by.y ="FeatureMatrixLabelTSV")
-  
+    merge(., feature_df %>% dplyr::select(FeatureMatrixLabelTSV, FriendlyLabel,VariableType, `Variable Class Order`),
+         by.x = "feature", by.y ="FeatureMatrixLabelTSV")
+
   num_cols <- all_comb[which(all_comb$VariableType == "Numeric"),]
   cat_cols <- all_comb[which(all_comb$VariableType == "Categorical"),]
   #Organize numerical features
@@ -425,36 +419,46 @@ get_feature_by_dataset <- function(datasets, features, feature_df, group_df, fmx
                     group = feature,
                     group_label = FriendlyLabel,
                     order_within_sample_group = `Variable Class Order`) %>% 
-      dplyr::mutate(feature="Immune Feature",
+      dplyr::mutate(feature=group,
                     ft_label = "Immune Feature")
     
   }
   #Check which datasets have more than one level for categorical features
   if(nrow(cat_cols)>0){
     cat_values <- purrr::map2_dfr(.x = cat_cols$dataset, .y = cat_cols$feature, .f = function(x, y){
-      
       uvalue <- unique((fmx_df %>% 
                           dplyr::filter(Dataset == x))[[y]]) 
       
-      if(length(uvalue)>1) data.frame(dataset = x, feature = y, gname = uvalue) %>% mutate(group = paste0(y, gname))
+      if(length(uvalue)>1) data.frame(dataset = as.character(x), 
+                                      feature = as.character(y), 
+                                      gname = as.character(uvalue),
+                                      stringsAsFactors = FALSE) %>% 
+        dplyr::mutate(group = paste0(feature, gname))
       else return()
     })
+  
+    if(nrow(cat_values)>0) cat_cols <- merge(cat_values, cat_cols, by = c("dataset", "feature")) %>% 
+      merge(., group_df, 
+            by.x = c("gname", "feature"), by.y = c("FeatureValue", "Category")) %>% 
+      select(dataset, feature, ft_label = FriendlyLabel, group, group_label = FeatureLabel, order_within_sample_group)
+    else return()
     
-    cat_cols <- merge(cat_values, cat_cols, by = c("dataset", "feature")) %>% 
-      merge(., group_df %>% dplyr::select(FeatureValue, FeatureName, order_within_sample_group), 
-            by.x = "gname", by.y = "FeatureValue") %>% 
-      select(dataset, feature, ft_label = FriendlyLabel, group, group_label = FeatureName, order_within_sample_group)
+    rbind(cat_cols, num_cols)
+  }else{
+    num_cols
   }
-  rbind(cat_cols, num_cols)
+  
 }
 
-fit_coxph <- function(dataset, data, feature, time, status, ft_labels, multivariate = FALSE){
+fit_coxph <- function(dataset1, data, feature, time, status, ft_labels, multivariate = FALSE){
   
   data_cox <- data %>% 
-    filter(Dataset == dataset)
+    filter(Dataset == dataset1)
   
   #checking which features have more than one level for the dataset
-  valid_ft <- purrr::keep(feature, function(x) dplyr::n_distinct(data_cox[[x]])>1)
+  #valid_ft <- purrr::keep(feature, function(x) dplyr::n_distinct(data_cox[[x]])>1)
+  valid_ft <- unique((ft_labels %>% 
+    dplyr::filter(dataset == dataset1))$feature)
   
     if(multivariate == FALSE){
       purrr::map_dfr(.x = valid_ft, function(x){
@@ -462,7 +466,7 @@ fit_coxph <- function(dataset, data, feature, time, status, ft_labels, multivari
           "survival::Surv(", time, ",", status, ") ~ ", x)) 
         
         survival::coxph(cox_features, data_cox)%>% 
-          create_ph_df(dataset = dataset)
+          create_ph_df(dataset = dataset1)
       })
     }else{
       mult_ft <- paste0(valid_ft, collapse  = " + ")
@@ -472,7 +476,7 @@ fit_coxph <- function(dataset, data, feature, time, status, ft_labels, multivari
         mult_ft)
       )
       survival::coxph(cox_features, data_cox) %>% 
-        create_ph_df(dataset = dataset)
+        create_ph_df(dataset = dataset1)
     }
 }
 
@@ -498,27 +502,26 @@ build_coxph_df <- function(datasets, data, feature, time, status, ft_labels, mul
                  feature = feature,
                  time = time,
                  status = status,
+                 ft_labels = ft_labels,
                  multivariate = multivariate) %>% 
   {suppressMessages(dplyr::right_join(x = ., ft_labels))} %>%
   dplyr::mutate(group_label=replace(group_label, is.na(logHR), paste("(Ref.)", .$group_label[is.na(logHR)]))) %>%
   dplyr::mutate_all(~replace(., is.na(.), 0))
 }
 
-build_forestplot_dataset <- function(x, coxph_df, selected_features, xname){
+build_forestplot_dataset <- function(x, coxph_df, xname){
   
   subset_df <- coxph_df %>%
     dplyr::filter(dataset == x) %>%
-    dplyr::arrange(feature, desc(abs(logHR)))
+    dplyr::arrange(ft_label, desc(abs(logHR)))
   
-  if(length(selected_features) == 1){
+  if(dplyr::n_distinct(coxph_df$group) == 1){
     plot_title = "" 
     ylabel = x 
   }else{
     plot_title = x
-    ylabel = subset_df$group_label
+    ylabel = factor(subset_df$group_label, levels = subset_df$group_label)
   }
-  
-  subset_df$group_label <- factor(subset_df$group_label, levels = subset_df$group_label)
   
   p <-  create_forestplot_plotly(x = subset_df$logHR,
                                  y = ylabel,
@@ -526,17 +529,17 @@ build_forestplot_dataset <- function(x, coxph_df, selected_features, xname){
                                  plot_title = plot_title,
                                  xlab = xname)
   
-  if(length(selected_features) == 1){
+  if(dplyr::n_distinct(coxph_df$group) == 1){
     p <- p %>% 
       layout(
         title = unique(subset_df$group_label)
       )
   }
   
-  if(dplyr::n_distinct(subset_df$feature)>1){ #categorical data selected
+  if(dplyr::n_distinct(subset_df$ft_label)>1){ #categorical data selected
     p <- p %>%
       layout(
-        shapes = lazyeval::lazy_eval(get_hlines_pos(subset_df %>% dplyr::select(var1 = feature)))
+        shapes = lazyeval::lazy_eval(get_hlines_pos(subset_df %>% dplyr::select(var1 = ft_label)))
       )
   }
   p

@@ -119,8 +119,8 @@ load_io_response <- function(){
     list(
       fmx_io = feather::read_feather("data/io/fmx_io.feather"),
       dataset_io_df = feather::read_feather("data/io/datasets_io_df.feather"),
-      groups_io_df = readr::read_csv("data/io/groups_df.csv"),
-      sample_group_io_df = readr::read_csv("data/io/io_sample_group_df.csv"),
+      categories_io_df = feather::read_feather("data/io/categories_df.feather"),
+      sample_group_io_df = feather::read_feather("data/io/io_sample_group_df.feather"),
       feature_io_df = feather::read_feather("data/io/feature_io_df.feather"),
       im_expr_io_df = feather::read_feather("data/io/im_expr_io.feather")  
     )
@@ -212,7 +212,7 @@ load_io_data <- function(){
   list(
     dataset_df = io_data$dataset_io_df,
     feature_df = io_data$feature_io_df,
-    group_df = io_data$groups_io_df,
+    categories_df = io_data$categories_io_df,
     sample_group_df = io_data$sample_group_io_df,
     fmx_df = io_data$fmx_io,
     im_expr = io_data$im_expr_io_df

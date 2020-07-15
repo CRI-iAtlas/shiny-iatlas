@@ -43,7 +43,7 @@ ioresponseoverview_UI <- function(id){
           ),
           optionsBox(
             width = 12,
-            selectInput(ns("group"), "Select Category", choices = ioresponse_data$group_df$Category)
+            selectInput(ns("group"), "Select Category", choices = ioresponse_data$categories_df$CategoryLabel)
           ),
           plotBox(
             width = 12,
@@ -61,7 +61,7 @@ ioresponseoverview_UI <- function(id){
           title = "Group Overlap",
           messageBox(
             width = 24,
-            p("See a mosaic plot for two sample groups")
+            p("See a mosaic plot for two sample groups.")
           ),
           optionsBox(
             width = 12,
@@ -91,8 +91,8 @@ ioresponseoverview <- function(input,
     
     output$select_group2 <- renderUI(
       selectInput(ns("group2"), "Select second category to see groups overlap", 
-                  choices = (ioresponse_data$group_df %>% 
-                               dplyr::filter(Category != input$group))$Category)
+                  choices = (ioresponse_data$categories_df %>% 
+                               dplyr::filter(CategoryLabel != input$group))$CategoryLabel)
     )
     
     output$io_datasets_df <- DT::renderDT({
@@ -141,8 +141,9 @@ ioresponseoverview <- function(input,
     
     
     output$io_groups_df <- DT::renderDT({
-      DT::datatable(ioresponse_data$group_df %>% 
-                      dplyr::filter(Category == input$group),
+      DT::datatable(ioresponse_data$categories_df %>% 
+                      dplyr::filter(CategoryLabel == input$group) %>% 
+                      dplyr::select(Category = CategoryLabel, Definition, `Sample Groups`, `Available for`),
                     rownames = FALSE,
                     options = list(dom = 't'))
     })

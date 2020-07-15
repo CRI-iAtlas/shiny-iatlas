@@ -105,7 +105,9 @@ ioresponse <- function(input,
     
     clin_data <- metadata_feature_df %>% 
       dplyr::filter(`Variable Class` %in% c("Immune Checkpoint Treatment - Response", 
-                                            "Immune Checkpoint Treatment - Study Condition"))
+                                            "Immune Checkpoint Treatment - Study Condition",
+                                            "Sample Category") &
+                      `FeatureMatrixLabelTSV` != "Study")
     
     var_choices <- create_filtered_nested_list_by_class(feature_df = clin_data,
                                                         filter_value = "Categorical",
@@ -117,7 +119,7 @@ ioresponse <- function(input,
       ns("groupvar"),
       "Select Sample Group",
       var_choices,
-      selected = "Progression"
+      selected = "Responder"
     )
   })
   
@@ -125,7 +127,7 @@ ioresponse <- function(input,
     lapply(unlist(datasets_options), function(x){
       
       clin_data <- metadata_feature_df %>% 
-        dplyr::filter(`Variable Class` == paste("Clinical data for", x) | `Variable Class` %in% c("Immune Checkpoint Treatment - Response", "Immune Checkpoint Treatment - Study Condition"))
+        dplyr::filter(`Variable Class` == paste("Clinical data for", x) | `Variable Class` %in% c("Immune Checkpoint Treatment - Response", "Immune Checkpoint Treatment - Study Condition", "Sample Category"))
       
       var_choices <- create_filtered_nested_list_by_class(feature_df = clin_data,
                                                           filter_value = "Categorical",
@@ -266,30 +268,36 @@ ioresponse <- function(input,
       dataset_data <- df_selected() %>%
         dplyr::filter(Dataset == dataset)
       
-     if(input[[group2]] == "None" | input$groupvar == input[[group2]]){#only one group selected
-      
-      dataset_data %>% 
-         create_plot_onegroup(., 
-                              plot_function(), 
-                              dataset, 
-                              "y", 
-                              "group", 
-                              varible_plot_label())
-        
-      }else{ #when two grouping levels are selected
-        
-        dataset_data %>%
-          create_plot_twogroup(.,
-                               plot_function(),
-                               dataset,
-                               "y",
-                               "group",
-                               input$groupvar,
-                               input[[group2]],
-                               varible_plot_label())
+      if(nrow(dataset_data)>0){
+        if(input[[group2]] == "None" | input$groupvar == input[[group2]]){#only one group selected
+          
+          dataset_data %>% 
+            create_plot_onegroup(., 
+                                 plot_function(), 
+                                 dataset, 
+                                 "y", 
+                                 "group", 
+                                 varible_plot_label())
+          
+        }else{ #when two grouping levels are selected
+          
+          dataset_data %>%
+            create_plot_twogroup(.,
+                                 plot_function(),
+                                 dataset,
+                                 "y",
+                                 "group",
+                                 input$groupvar,
+                                 input[[group2]],
+                                 varible_plot_label())
+        }
       }
-    })
     
+
+    }) %>% Filter(Negate(is.null),.) #excluding datasets that do not have annotaion for the selected variable
+    shiny::validate(
+      shiny::need(length(all_plots)>0, "Variable not annotated in the selected dataset(s). Select other datasets or check ICI Datasets Overview for more information.")
+    )
     s <- plotly::subplot(all_plots, shareX = TRUE, shareY = TRUE, nrows = 1, margin = c(0.01, 0.01, 0.01, 0.7))
     
     s$x$source <- "distPlots"
@@ -354,7 +362,7 @@ ioresponse <- function(input,
 
     purrr::map_chr(unlist(key_value), function(x) 
       paste0(x, ": ", 
-             ioresponse_data$sample_group_df[which(ioresponse_data$sample_group_df$FeatureName == x), "Characteristics"], "\n"))
+             ioresponse_data$sample_group_df[which(ioresponse_data$sample_group_df$FeatureLabel == x), "Characteristics"], "\n"))
   })
   
   output$drilldown_plot <- renderPlotly({
