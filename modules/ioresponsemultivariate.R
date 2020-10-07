@@ -75,7 +75,8 @@ In addition, forest plot with the log10 of the Cox Proportional Hazard Ratio wit
             ),
           plotBox(
             width = 12,
-            DT::dataTableOutput(ns("stats_summary"))
+            DT::dataTableOutput(ns("stats_summary")),
+            downloadButton(ns('download_stats'), 'Download')
           )
         )
     )
@@ -213,12 +214,18 @@ ioresponsemultivariate <- function(input,
        p
     })
     
-    output$stats_summary <- DT::renderDataTable(
-      
+    summary_table <- reactive({
       coxph_df() %>% 
-        dplyr::select(dataset, Feature = ft_label, Variable = group_label, `log10(HR)` = logHR, loglower, logupper, pvalue, '-log10(p.value)' = logpvalue) %>%
+        dplyr::select(dataset, Feature = ft_label, Variable = group_label, `log10(HR)` = logHR, loglower, logupper, pvalue, 'Neg(log10(p.value))' = logpvalue) %>%
         dplyr::mutate_if(is.numeric, formatC, digits = 3) %>%
         dplyr::arrange(dataset)
+    })
+    
+    output$stats_summary <- DT::renderDataTable(summary_table())
+    
+    output$download_stats <- downloadHandler(
+      filename = function() stringr::str_c("HR_results-", Sys.Date(), ".csv"),
+      content = function(con) readr::write_csv(summary_table(), con)
     )
     
     observeEvent(input$method_link,{

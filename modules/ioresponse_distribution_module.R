@@ -67,7 +67,8 @@ ioresponse_UI <- function(id,
         ),
         plotBox(
           width = 9,
-          DT::dataTableOutput(ns("stats1"))
+          DT::dataTableOutput(ns("stats1")),
+          downloadButton(ns('download_test'), 'Download')
         )
       ),
       conditionalPanel(
@@ -320,23 +321,34 @@ ioresponse <- function(input,
     )
   })
   
-  output$stats1 <- DT::renderDataTable({
+  test_summary_table <- reactive({
     req(input$groupvar)
     
     group_label <- convert_value_between_columns(input_value = input$groupvar,
-                                  df = metadata_feature_df,
-                                  from_column = "FeatureMatrixLabelTSV",
-                                  to_column = "FriendlyLabel")
-  
-    DT::datatable(purrr::map_dfr(.x = input$datasets, 
-                   df = df_selected(), 
-                   group_to_split = "group",
-                   sel_feature = input$var1_surv,
-                   paired = paired_test(),
-                   test = test_function(),
-                   label = group_label,
-                   .f = get_stat_test))
+                                                 df = metadata_feature_df,
+                                                 from_column = "FeatureMatrixLabelTSV",
+                                                 to_column = "FriendlyLabel")
+    
+    #DT::datatable(
+      purrr::map_dfr(.x = input$datasets, 
+                                 df = df_selected(), 
+                                 group_to_split = "group",
+                                 sel_feature = input$var1_surv,
+                                 paired = paired_test(),
+                                 test = test_function(),
+                                 label = group_label,
+                                 .f = get_stat_test)#)
   })
+  
+  output$stats1 <- DT::renderDataTable({
+    req(input$groupvar)
+    test_summary_table()
+  })
+  
+  output$download_test <- downloadHandler(
+    filename = function() stringr::str_c("test_results-", Sys.Date(), ".csv"),
+    content = function(con) readr::write_csv(test_summary_table(), con)
+  )
   
   output$plot_text <- renderText({
    

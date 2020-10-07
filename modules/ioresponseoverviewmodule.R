@@ -25,11 +25,11 @@ ioresponseoverview_UI <- function(id){
                 DT::DTOutput(
                     ns("io_datasets_df")
                 ),
-                downloadButton(ns('download_metadata'), 'Download Dataset Metadata')
-                # downloadButton(ns('download_data'), 'Download Immune Features and Clinical data'),
-                # downloadButton(ns('download_expr'), 'Download Gene Expression data'),
-                # br(),
-                # tags$a(href="https://www.synapse.org/", "Download the complete gene expression data from Synapse")
+                downloadButton(ns('download_metadata'), 'Download Dataset Metadata'),
+                downloadButton(ns('download_data'), 'Download Immune Features and Clinical data'),
+                downloadButton(ns('download_expr'), 'Download Gene Expression data'),
+                br(),
+                tags$a(href="https://www.synapse.org/", "Download the complete gene expression data from Synapse")
             )#plotBox
         ),
         sectionBox(
@@ -109,20 +109,20 @@ ioresponseoverview <- function(input,
                      escape= FALSE)
     })
     
-    # output$download_metadata <- downloadHandler(
-    #   filename = function() stringr::str_c("iatlas-io-metadata-", Sys.Date(), ".csv"),
-    #   content = function(con) readr::write_csv( con)
-    # )
-    # 
-    # output$download_data <- downloadHandler(
-    #   filename = function() stringr::str_c("iatlas-io-data-", Sys.Date(), ".csv"),
-    #   content = function(con) readr::write_csv(con)
-    # )
-    # 
-    # output$download_expr <- downloadHandler(
-    #   filename = function() stringr::str_c("iatlas-io-im-expr", Sys.Date(), ".csv"),
-    #   content = function(con) readr::write_csv( con)
-    # )
+    output$download_metadata <- downloadHandler(
+      filename = function() stringr::str_c("iatlas-io-metadata-", Sys.Date(), ".csv"),
+      content = function(con) readr::write_csv(ioresponse_data$dataset_df, con)
+    )
+
+    output$download_data <- downloadHandler(
+      filename = function() stringr::str_c("iatlas-io-data-", Sys.Date(), ".csv"),
+      content = function(con) readr::write_csv(ioresponse_data$fmx_df, con)
+    )
+
+    output$download_expr <- downloadHandler(
+      filename = function() stringr::str_c("iatlas-io-im-expr", Sys.Date(), ".csv"),
+      content = function(con) readr::write_csv(ioresponse_data$im_expr, con)
+    )
     
     group1 <- reactive({
       convert_value_between_columns(input_value = input$group,
