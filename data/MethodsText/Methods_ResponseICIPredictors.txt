@@ -1,0 +1,18 @@
+**Title:** Predictors of Response to Immune Checkpoint Inhibitor immunotherapy
+
+**Description:** Potential predictors of response to Immuno Checkpoint Inhibitors 
+  therapy were computed for all samples in the datasets in the Molecular Response to ICI modules.
+
+
+**References**
+
+[IMPRES](https://pubmed.ncbi.nlm.nih.gov/30127394/)
+
+[IPRES Non-Responder]
+
+[CTLA vs Th1]
+
+[Cytolytic Score]
+
+**Contributors:** Dante Bortone, Sarah Entwistle, Benjamin Vincent
+

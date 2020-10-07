@@ -40,7 +40,7 @@ datainfo <- function(input, output, session) {
             magrittr::use_series(`Variable Class`) %>% 
             sort %>% 
             unique %>% 
-            c("All classes", .)
+            c("All classes", ., "Predictor - Immune Checkpoint Treatment")
         selectInput(
             ns("class_choice"),
             label = "Select Class",
@@ -48,20 +48,37 @@ datainfo <- function(input, output, session) {
     })
     
     
+    selected_class_df <- reactive({
+      req(input$class_choice)
+      if(input$class_choice != "Predictor - Immune Checkpoint Treatment"){
+        df <- panimmune_data$feature_df %>%
+          dplyr::select(
+            `Feature Name` = FriendlyLabel,
+            `Variable Class`,
+            Unit,
+            VariableType
+          )
+      }else{
+        df <- ioresponse_data$feature_df %>%
+          dplyr::select(
+            `Feature Name` = FriendlyLabel,
+            `Variable Class`,
+            Unit,
+            VariableType
+          )
+      }
+      
+      if(input$class_choice != "All classes"){
+        df <- df %>% dplyr::filter(`Variable Class` == input$class_choice)
+      }
+      df
+    })
     
     output$feature_table <- DT::renderDT({
-        df <- panimmune_data$feature_df %>% 
-            dplyr::select(
-                `Feature Name` = FriendlyLabel, 
-                `Variable Class`, 
-                Unit, 
-                VariableType
-            ) 
-        if(input$class_choice != "All classes"){
-            df <- dplyr::filter(df, `Variable Class` == input$class_choice)
-        }
+        req(input$class_choice)
+      
         DT::datatable(
-            df, 
+          selected_class_df(), 
             selection = list(
                 mode = 'single'
             ),
@@ -75,24 +92,41 @@ datainfo <- function(input, output, session) {
     )
     
     feature_class_df <- reactive({
+      req(input$class_choice)
         feature_row <- input$feature_table_rows_selected
-        selected_class <- panimmune_data$feature_df[[feature_row, "Variable Class"]]
-        panimmune_data$feature_df %>% 
+        if(input$class_choice != "All classes") selected_class <- input$class_choice
+        else selected_class <- selected_class_df()[[feature_row, "Variable Class"]]
+        
+        if(input$class_choice != "Predictor - Immune Checkpoint Treatment"){
+          panimmune_data$feature_df %>% 
             dplyr::filter(`Variable Class` == selected_class) %>% 
             dplyr::select(
-                `Variable Class Order`,
-                `Feature Name` = FriendlyLabel, 
-                Unit, 
-                VariableType,
-                Origin
+              `Variable Class Order`,
+              `Feature Name` = FriendlyLabel, 
+              Unit, 
+              VariableType,
+              Origin
             ) %>% 
             dplyr::left_join(
-                panimmune_data$feature_method_df %>% 
-                    dplyr::select(`Feature Origin`, `Methods Tag`), 
-                by = c("Origin" = "Feature Origin")
+              panimmune_data$feature_method_df %>% 
+                dplyr::select(`Feature Origin`, `Methods Tag`), 
+              by = c("Origin" = "Feature Origin")
             ) %>% 
             dplyr::select(-Origin) %>% 
             dplyr::arrange(`Variable Class Order`, `Feature Name`)
+        }else{
+          ioresponse_data$feature_df %>% 
+            dplyr::filter(`Variable Class` == selected_class) %>% 
+            dplyr::select(
+              `Variable Class Order`,
+              `Feature Name` = FriendlyLabel, 
+              Unit, 
+              VariableType
+            ) %>% 
+            dplyr::mutate("Methods Tag" = "ResponseICIPredictors") %>% 
+            dplyr::arrange(`Variable Class Order`, `Feature Name`)
+          }
+
     })
     
     output$variable_class_table <- renderTable({
