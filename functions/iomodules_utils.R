@@ -497,7 +497,7 @@ create_ph_df <- function(coxphList, dataset){
 
 build_coxph_df <- function(datasets, data, feature, time, status, ft_labels, multivariate = FALSE){
  
-  purrr::map_dfr(.x = datasets, .f= fit_coxph,
+  df <- purrr::map_dfr(.x = datasets, .f= fit_coxph,
                  data = data, 
                  feature = feature,
                  time = time,
@@ -507,6 +507,20 @@ build_coxph_df <- function(datasets, data, feature, time, status, ft_labels, mul
   {suppressMessages(dplyr::right_join(x = ., ft_labels))} %>%
   dplyr::mutate(group_label=replace(group_label, is.na(logHR), paste("(Ref.)", .$group_label[is.na(logHR)]))) %>%
   dplyr::mutate_all(~replace(., is.na(.), 0))
+  
+  if(multivariate == FALSE){
+    df <-  df %>% 
+      dplyr::filter(!stringr::str_detect(group_label, '(Ref.)')) %>%
+      dplyr::group_by(dataset) %>% 
+      dplyr::mutate(FDR = p.adjust(pvalue, method = "BH")) %>% 
+      dplyr::ungroup() %>% 
+      dplyr::mutate(heatmap_annotation = dplyr::case_when(
+        pvalue > 0.05 | FDR > 0.2 ~ "",
+        pvalue <= 0.05 & FDR <= 0.2 & FDR > 0.05 ~ "*",
+        pvalue <= 0.05 & FDR <= 0.05 ~ "**"
+      )) 
+  }
+  df
 }
 
 build_forestplot_dataset <- function(x, coxph_df, xname){
@@ -562,14 +576,14 @@ build_heatmap_df <- function(coxph_df){
 add_BH_annotation <- function(coxph_df, p){
   
   fdr_corrected <- coxph_df %>%
-    dplyr::filter(!stringr::str_detect(group_label, '(Ref.)')) %>%
-    dplyr::group_by(dataset) %>% 
-    dplyr::mutate(FDR = p.adjust(pvalue, method = "BH")) %>% 
-    dplyr::mutate(heatmap_annotation = dplyr::case_when(
-      pvalue > 0.05 | FDR > 0.2 ~ "",
-      pvalue <= 0.05 & FDR <= 0.2 & FDR > 0.05 ~ "*",
-      pvalue <= 0.05 & FDR <= 0.05 ~ "**"
-    )) %>% 
+    # dplyr::filter(!stringr::str_detect(group_label, '(Ref.)')) %>%
+    # dplyr::group_by(dataset) %>% 
+    # dplyr::mutate(FDR = p.adjust(pvalue, method = "BH")) %>% 
+    # dplyr::mutate(heatmap_annotation = dplyr::case_when(
+    #   pvalue > 0.05 | FDR > 0.2 ~ "",
+    #   pvalue <= 0.05 & FDR <= 0.2 & FDR > 0.05 ~ "*",
+    #   pvalue <= 0.05 & FDR <= 0.05 ~ "**"
+    # )) %>% 
     dplyr::select(dataset, group_label, pvalue, FDR, heatmap_annotation)
   
   p %>%

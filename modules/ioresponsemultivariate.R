@@ -203,10 +203,10 @@ ioresponsemultivariate <- function(input,
     output$mult_heatmap <- renderPlotly({
       shiny::validate(need(!is.null(input$datasets_mult), "Select at least one dataset."))
       shiny::validate(need(length(input$var2_cox)>0, "Select at least one variable."))
+    
+      heatmap_df <-  build_heatmap_df(coxph_df())
 
-        heatmap_df <-  build_heatmap_df(coxph_df())
-
-        p <- create_heatmap(heatmap_df, "heatmap", scale_colors = T, legend_title = "log10(Hazard Ratio)")
+      p <- create_heatmap(heatmap_df, "heatmap", scale_colors = T, legend_title = "log10(Hazard Ratio)")
         
         if(mult_coxph() == FALSE & length(input$var2_cox)>1){
           p <- add_BH_annotation(coxph_df(), p)
@@ -215,10 +215,20 @@ ioresponsemultivariate <- function(input,
     })
     
     summary_table <- reactive({
-      coxph_df() %>% 
-        dplyr::select(dataset, Feature = ft_label, Variable = group_label, `log10(HR)` = logHR, loglower, logupper, pvalue, 'Neg(log10(p.value))' = logpvalue) %>%
-        dplyr::mutate_if(is.numeric, formatC, digits = 3) %>%
-        dplyr::arrange(dataset)
+      
+      if(mult_coxph() == FALSE){ #for univariable models, we need to display the FDR results
+        coxph_df() %>% 
+          dplyr::select(dataset, ft_label, group_label, logHR, loglower, logupper,  pvalue, logpvalue, FDR) %>% 
+          dplyr::rename(Feature = ft_label, Variable = group_label, `log10(HR)` = logHR, `p.value` = pvalue, `Neg(log10(p.value))` = logpvalue, `BH FDR` = FDR) %>%
+          dplyr::mutate_if(is.numeric, formatC, digits = 3) %>%
+          dplyr::arrange(dataset)
+      }else{
+        coxph_df() %>% 
+          dplyr::select(dataset, ft_label, group_label, logHR, loglower, logupper,  pvalue, logpvalue) %>% 
+          dplyr::rename(Feature = ft_label, Variable = group_label, `log10(HR)` = logHR, `p.value` = pvalue, `Neg(log10(p.value))` = logpvalue) %>%
+          dplyr::mutate_if(is.numeric, formatC, digits = 3) %>%
+          dplyr::arrange(dataset)
+      }
     })
     
     output$stats_summary <- DT::renderDataTable(summary_table())

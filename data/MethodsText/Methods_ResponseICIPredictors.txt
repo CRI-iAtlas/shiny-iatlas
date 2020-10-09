@@ -1,6 +1,6 @@
 **Title:** Predictors of Response to Immune Checkpoint Inhibitor immunotherapy
 
-**Description:** Potential predictors of response to Immuno Checkpoint Inhibitors 
+**Description:** Potential predictors of response to Immune Checkpoint Inhibitors 
   therapy were computed for all samples in the datasets in the Molecular Response to ICI modules.
 
 
