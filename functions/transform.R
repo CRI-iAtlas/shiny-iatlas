@@ -35,6 +35,7 @@ build_distribution_plot_df <- function(
     dplyr::mutate(y = scale_function(y)) %>% 
     tidyr::drop_na() %>% 
     dplyr::filter(!is.infinite(y))
+  
 }
 
 
@@ -739,6 +740,44 @@ build_cnvs_df <- function(df, response_var, group_column, group_options){
 # Functions below this line do not have tests yet, newly written functions 
 ###############################################################################
 
+build_distribution_plot_df2 <- function(
+  .df, 
+  ycol = "y", 
+  scale_func_choice = "None",
+  reorder_choice = "None",
+  grp_choice
+){
+
+  scale_function <- switch(
+    scale_func_choice,
+    "None" = identity, 
+    "Log2" = log2,
+    "Log2 + 1" = function(x) log2(x + 1),
+    "Log10" = log10,
+    "Log10 + 1" = function(x) log10(x + 1),
+  )
+  
+  reorder_function <- function(reorder_choice, x,y) {
+    x <- factor(x)
+    switch(
+      reorder_choice,
+      "None" = x,
+      "Median" = forcats::fct_reorder(x, y, median, na.rm=T),
+      "Mean" = forcats::fct_reorder(x, y, mean, na.rm=T),
+      "Max" = forcats::fct_reorder(x, y, max, na.rm=T),
+      "Min" = forcats::fct_reorder(x, y, min, na.rm=T)
+    )
+  }
+  
+  .df2 <- .df %>% 
+    dplyr::select(x, y = ycol, label) %>% 
+    tidyr::drop_na() %>% 
+    dplyr::mutate(y = scale_function(y)) %>% 
+    dplyr::mutate(x = reorder_function(reorder_choice,x,y)) %>%
+    tidyr::drop_na() %>% 
+    dplyr::filter(!is.infinite(y))
+
+}
 
 
 ###############################################################################

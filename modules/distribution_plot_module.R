@@ -59,6 +59,15 @@ distributions_plot_module_UI <- function(
                             "Display histogram of distribution by clicking on a violin", 
                             plot_clicked_group_default
                         )
+                    ),
+                    column(
+                        width = 4,
+                        selectInput(
+                            ns("reorder_distributions"), 
+                            "Reorder group", 
+                            choices=c('None','Median','Mean','Max','Min'),
+                            selected = 'None'
+                        )
                     )
                 )
             ),
@@ -160,11 +169,15 @@ distributions_plot_module <- function(
     })
     
     plot_df <- reactive({
-        req(data_df(), input$variable_choice, input$scale_method)
-        build_distribution_plot_df(
-            data_df(), 
+        req(data_df(), 
             input$variable_choice, 
             input$scale_method)
+        build_distribution_plot_df2(  
+            data_df(), 
+            input$variable_choice, 
+            input$scale_method,
+            input$reorder_distributions,
+            group_display_choice())
     })
     
     varible_display_name <- reactive({
