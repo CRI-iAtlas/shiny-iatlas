@@ -176,8 +176,8 @@ combine_groups <- function(df, group1, group2, label1, label2){
     label2 <- get_group_labels(df, group2)
     df <- merge(df, label2, by.x = group2, by.y = "FeatureValue")
     df <- df %>% 
-      dplyr::mutate(group = (paste(df$"FeatureLabel.x", "&",df$"FeatureLabel.y")),
-                    color = combine_colors(FeatureHex.x, FeatureHex.y))
+      dplyr::mutate(group = (paste(as.character(df$"FeatureLabel.x"), "& \n", as.character(df$"FeatureLabel.y"))),
+                    color = combine_colors(as.character(FeatureHex.x), as.character(FeatureHex.y)))
   }
   df
 }
@@ -218,7 +218,7 @@ create_plot_twogroup <- function(dataset_data, plot_type, dataset, feature, grou
    
   samples <- (dataset_data %>% group_by(dataset_data[[group1]], dataset_data[[group2]]) %>% 
                                 summarise(samples = dplyr::n()))
-                  colnames(samples) <- c("var1", "var2", "samples")
+  colnames(samples) <- c("var1", "var2", "samples")
 
   #get number of groups to draw lines
   samples <- (dataset_data %>% 
@@ -297,14 +297,16 @@ get_stat_test <- function(df, group_to_split, sel_feature, dataset, paired = FAL
                                 Group2 = paste0(names(split_data)[y], " (", nrow(split_data[[y]]), ")"),
                                 #Test = paste0("Not available for paired test. ", names(split_data)[x], " (", nrow(split_data[[x]]),") vs. ", names(split_data)[y], " (", nrow(split_data[[y]]), ")"),
                                 statistic = NA,
-                                p.value = NA)
+                                p.value = NA,
+                                stringsAsFactors = FALSE)
       }else if(nrow(split_data[[x]]) <=1 | nrow(split_data[[y]]) <=1){
         test_data <- data.frame(Dataset = dataset,
                                 Group1 = paste0("Few samples to perform test. ", names(split_data)[x], " (", nrow(split_data[[x]]),")"),
                                 Group2 = paste0(names(split_data)[y], " (", nrow(split_data[[y]]), ")"),
                                 #Test = paste0("Few samples to perform test.", names(split_data)[x], " (", nrow(split_data[[x]]),") vs. ", names(split_data)[y], " (", nrow(split_data[[y]]), ")"),
                                 statistic = NA,
-                                p.value = NA)
+                                p.value = NA,
+                                stringsAsFactors = FALSE)
       }else{
         test_data <- broom::tidy(test(split_data[[x]][[sel_feature]],
                                       split_data[[y]][[sel_feature]],
@@ -329,7 +331,8 @@ get_stat_test <- function(df, group_to_split, sel_feature, dataset, paired = FAL
                             Group1 = "Sample group has only one level for this dataset.",
                             Group2 = NA,
                             statistic = NA,
-                            p.value = NA)
+                            p.value = NA,
+                            stringsAsFactors = FALSE)
   }
 }
 
@@ -508,13 +511,17 @@ build_coxph_df <- function(datasets, data, feature, time, status, ft_labels, mul
   dplyr::mutate(group_label=replace(group_label, is.na(logHR), paste("(Ref.)", .$group_label[is.na(logHR)]))) %>%
   dplyr::mutate_all(~replace(., is.na(.), 0))
   
-  if(multivariate == FALSE){
-    df <-  df %>% 
+  if(multivariate == FALSE){ #so we need to compute FDR and add annotation in the heatmap
+    df_bh <-  df %>% 
       dplyr::filter(!stringr::str_detect(group_label, '(Ref.)')) %>%
       dplyr::group_by(dataset) %>% 
       dplyr::mutate(FDR = p.adjust(pvalue, method = "BH")) %>% 
-      dplyr::ungroup() %>% 
+      dplyr::ungroup() %>%
+      dplyr::select(dataset, group, FDR)
+    
+    df <- merge(df, df_bh, by = c("dataset", "group"), all.x = TRUE) %>% 
       dplyr::mutate(heatmap_annotation = dplyr::case_when(
+        is.na(FDR) ~ "",
         pvalue > 0.05 | FDR > 0.2 ~ "",
         pvalue <= 0.05 & FDR <= 0.2 & FDR > 0.05 ~ "*",
         pvalue <= 0.05 & FDR <= 0.05 ~ "**"
@@ -550,7 +557,7 @@ build_forestplot_dataset <- function(x, coxph_df, xname){
       )
   }
   
-  if(dplyr::n_distinct(subset_df$ft_label)>1){ #categorical data selected
+  if(dplyr::n_distinct(subset_df$ft_label)>1){ #categorical data selected, add lines dividing categories
     p <- p %>%
       layout(
         shapes = lazyeval::lazy_eval(get_hlines_pos(subset_df %>% dplyr::select(var1 = ft_label)))
@@ -576,14 +583,6 @@ build_heatmap_df <- function(coxph_df){
 add_BH_annotation <- function(coxph_df, p){
   
   fdr_corrected <- coxph_df %>%
-    # dplyr::filter(!stringr::str_detect(group_label, '(Ref.)')) %>%
-    # dplyr::group_by(dataset) %>% 
-    # dplyr::mutate(FDR = p.adjust(pvalue, method = "BH")) %>% 
-    # dplyr::mutate(heatmap_annotation = dplyr::case_when(
-    #   pvalue > 0.05 | FDR > 0.2 ~ "",
-    #   pvalue <= 0.05 & FDR <= 0.2 & FDR > 0.05 ~ "*",
-    #   pvalue <= 0.05 & FDR <= 0.05 ~ "**"
-    # )) %>% 
     dplyr::select(dataset, group_label, pvalue, FDR, heatmap_annotation)
   
   p %>%

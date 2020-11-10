@@ -27,9 +27,9 @@ ioresponseoverview_UI <- function(id){
                 ),
                 downloadButton(ns('download_metadata'), 'Download Dataset Metadata'),
                 downloadButton(ns('download_data'), 'Download Immune Features and Clinical data'),
-                downloadButton(ns('download_expr'), 'Download Gene Expression data'),
-                br(),
-                tags$a(href="https://www.synapse.org/", "Download the complete gene expression data from Synapse")
+                downloadButton(ns('download_expr'), 'Download Gene Expression data')
+                #br(),
+                #tags$a(href="https://www.synapse.org/", "Download the complete gene expression data from Synapse")
             )#plotBox
         ),
         sectionBox(

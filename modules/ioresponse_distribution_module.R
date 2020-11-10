@@ -54,7 +54,7 @@ ioresponse_UI <- function(id,
       ),#optionsBox
       plotBox(
         width = 12,
-        plotlyOutput(ns("dist_plots"), height = "700px") %>%
+        plotlyOutput(ns("dist_plots"), height = "500px") %>%
           shinycssloaders::withSpinner(),
         tagAppendAttributes(textOutput(ns("plot_text")), style="white-space:pre-wrap;"),
         h5("Click plot to see group information.")
@@ -244,7 +244,7 @@ ioresponse <- function(input,
           tidyr::drop_na(., input[[g2]]),
           .
         ) %>%
-        combine_groups(., input$groupvar, input[[g2]])
+        combine_groups(., as.character(input$groupvar), as.character(input[[g2]]))
     })
     
     new_df <- feature_values %>% 
@@ -364,13 +364,13 @@ ioresponse <- function(input,
       filter(Dataset == clicked_dataset) %>% 
       select(group) %>% 
       unique
-    
-    validate(need(data$x[[1]] %in% current_groups$group, " "))
+
+    validate(need(gsub("<br />", "\n", data$x[[1]]) %in% current_groups$group, " "))
     
     key_value <- data %>%
       dplyr::slice(1) %>% 
       magrittr::extract2("x") %>% 
-      strsplit(., " & ")
+      strsplit(., " & <br /> ")
 
     purrr::map_chr(unlist(key_value), function(x) 
       paste0(x, ": ", 
