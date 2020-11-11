@@ -780,6 +780,55 @@ build_distribution_plot_df2 <- function(
 }
 
 
+
+build_cellcontent_barplot_df2 <- function(df, x_column, y_column, sort_by_var_choice, reorder_func_choice) {
+  
+  assert_df_has_columns(df, c("GROUP", "fraction_type", "fraction"))
+  
+  reorder_function2 <- function(result_df, sort_by_var_choice, reorder_func_choice) {
+    if (reorder_func_choice == 'Descending') {
+      x_levels <- result_df %>% 
+        dplyr::filter(color == sort_by_var_choice) %>% 
+        dplyr::arrange(desc(y)) %>% 
+        dplyr::pull(x)
+    } else {
+      x_levels <- result_df %>% 
+        dplyr::filter(color == sort_by_var_choice) %>% 
+        dplyr::arrange(y) %>% 
+        dplyr::pull(x)
+    }
+    result_df$x <- factor(result_df$x, levels=x_levels)
+    result_df
+  }
+  
+  # sort_by_var_choice is labeled 'color' in the result_df
+  result_df <- df %>%
+    summarise_df_at_column(
+      column = "fraction",
+      grouping_columns = c("GROUP", "fraction_type"),
+      function_names = c("mean", "se")) %>% 
+    create_label(
+      title = stringr::str_to_title(y_column),
+      name_column = x_column,
+      group_column = "GROUP",
+      value_columns = c("mean", "se")) %>% 
+    dplyr::select(
+      x = "GROUP",
+      y = "mean",
+      color = "fraction_type",
+      error = "se",
+      label) 
+  
+  if (sort_by_var_choice != 'Group' & reorder_func_choice != 'None') {
+    # then we want to sort by something other than the group labels
+    result_df <- reorder_function2(result_df, sort_by_var_choice, reorder_func_choice)
+  }
+  assert_df_has_columns(result_df, c("x", "y", "label", "color", "error"))
+  assert_df_has_rows(result_df)
+  return(result_df)
+}
+
+
 ###############################################################################
 # Functions below this line have been deprecated
 ###############################################################################

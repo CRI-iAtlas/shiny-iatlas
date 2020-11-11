@@ -64,7 +64,7 @@ distributions_plot_module_UI <- function(
                         width = 4,
                         selectInput(
                             ns("reorder_distributions"), 
-                            "Reorder group", 
+                            "Reorder Function", 
                             choices=c('None','Median','Mean','Max','Min'),
                             selected = 'None'
                         )
