@@ -4,7 +4,7 @@ distributions_plot_module_UI <- function(
     message_html = p(stringr::str_c(
         "Select variable to its to see its distribution over sample groups.",
         "Plots are available as violin plots, and box plots with full data",
-        "points superimposed."
+        "points superimposed. For reordering violins, first choose a variable (bar) to sort on, then a sorting function like Mean or Median. Reordering function Max sorts by the maximum value and min by the minimum value within each group."
     )),
     click_text = "Click plot to see group information.",
     scale_default = "None",

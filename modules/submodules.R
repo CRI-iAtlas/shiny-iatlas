@@ -8,7 +8,7 @@ overall_cell_proportions_module_UI <- function(id){
         title = "Overall Cell Proportions",
         messageBox(
             width = 12,
-            p("The barplots show the mean proportion of the tumor fraction, overall stromal fraction (one minus tumor fractions) and the leukocyte fraction of samples with each group.  Error bars show standard error of the mean.")
+            p("The barplots show the mean proportion of the tumor fraction, overall stromal fraction (one minus tumor fractions) and the leukocyte fraction of samples with each group.  Error bars show standard error of the mean. For reordering bars, first choose a variable (bar) to sort on, then a sorting function like Mean. Reordering function Max sorts on the mean+error and min sorts on the mean-error.")
         ),
         fluidRow(
             optionsBox(
@@ -32,7 +32,7 @@ overall_cell_proportions_module_UI <- function(id){
                     selectInput(
                         ns("reorder_cp_bars_functions"), 
                         "Reorder Function", 
-                        choices=c('None','Ascending','Descending'),
+                        choices=c('None','Mean','Max', 'Min'),
                         selected = 'None'
                     )
                 )
@@ -188,7 +188,7 @@ cell_type_fractions_module_UI <- function(id){
                         selectInput(
                             ns("reorder_cf_bars_functions"), 
                             "Reorder Function", 
-                            choices=c('None','Ascending','Descending'),
+                            choices=c('None','Mean','Max', 'Min'),
                             selected = 'None'
                         )
                     )

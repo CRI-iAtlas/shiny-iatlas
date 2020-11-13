@@ -785,16 +785,25 @@ build_cellcontent_barplot_df2 <- function(df, x_column, y_column, sort_by_var_ch
   
   assert_df_has_columns(df, c("GROUP", "fraction_type", "fraction"))
   
+  #
+  # Here we reorder the bars. Max = mean+error, Min = mean-error
+  #
+  
   reorder_function2 <- function(result_df, sort_by_var_choice, reorder_func_choice) {
-    if (reorder_func_choice == 'Descending') {
-      x_levels <- result_df %>% 
-        dplyr::filter(color == sort_by_var_choice) %>% 
-        dplyr::arrange(desc(y)) %>% 
-        dplyr::pull(x)
-    } else {
+    if (reorder_func_choice == 'Mean') {
       x_levels <- result_df %>% 
         dplyr::filter(color == sort_by_var_choice) %>% 
         dplyr::arrange(y) %>% 
+        dplyr::pull(x)
+    } else if (reorder_func_choice == 'Max') {
+      x_levels <- result_df %>% 
+        dplyr::filter(color == sort_by_var_choice) %>% 
+        dplyr::arrange(y+error) %>% 
+        dplyr::pull(x)
+    } else if (reorder_func_choice == 'Min') {
+      x_levels <- result_df %>% 
+        dplyr::filter(color == sort_by_var_choice) %>% 
+        dplyr::arrange(y-error) %>% 
         dplyr::pull(x)
     }
     result_df$x <- factor(result_df$x, levels=x_levels)
