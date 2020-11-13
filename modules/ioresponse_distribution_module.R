@@ -382,7 +382,7 @@ ioresponse <- function(input,
     eventdata <- event_data("plotly_click", source = "distPlots")
     validate(need(!is.null(eventdata), "Click plot above"))
     
-    clicked_group <- eventdata$x[[1]]
+    clicked_group <- gsub("<br />", "\n", eventdata$x[[1]]) #eventdata$x[[1]]
     clicked_dataset <- eventdata$customdata[[1]]
     
     current_groups <- df_selected() %>% 
