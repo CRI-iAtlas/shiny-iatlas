@@ -22,7 +22,7 @@ overall_cell_proportions_module_UI <- function(id){
                     width = 4,
                     selectInput(
                         ns("reorder_cp_bars_var"),
-                        "Reorder Varible", 
+                        "Reorder Variable", 
                         choices=c('Group','Tumor_Fraction','leukocyte_fraction', 'Stromal_Fraction'),
                         selected = 'Group'
                     )
