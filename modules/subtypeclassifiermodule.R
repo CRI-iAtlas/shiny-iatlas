@@ -91,6 +91,10 @@ subtypeclassifier_UI <- function(id) {
           column(
             width = 3,
             actionButton(ns("subtypeGObutton"), "GO")
+          ),
+          column(
+            width = 3,
+            downloadLink(ns("genelist"), "Download list of genes required by the classifier.")
           )
         )
       ),
@@ -119,10 +123,9 @@ subtypeclassifier_UI <- function(id) {
       fluidRow(
         tableBox(
           width = 12,
-          div(style = "overflow-x: scroll",
-              DT::dataTableOutput(ns("subtypetable")) %>%
-                shinycssloaders::withSpinner()
-          )
+          DT::dataTableOutput(ns("subtypetable")) %>%
+            shinycssloaders::withSpinner(),
+          downloadButton(ns('download_calls'), 'Download')
         )
       )
     ),
@@ -137,10 +140,9 @@ subtypeclassifier_UI <- function(id) {
       fluidRow(
         tableBox(
           width = 12,
-          div(style = "overflow-x: scroll",
-              DT::dataTableOutput(ns("missinggenetable")) %>%
-                shinycssloaders::withSpinner()
-          )
+          DT::dataTableOutput(ns("missinggenetable")) %>%
+            shinycssloaders::withSpinner(),
+          downloadButton(ns('download_missing'), 'Download')
         )
       )
     )
@@ -165,6 +167,17 @@ subtypeclassifier <- function(
       readNewDataTable(input$expr_file_pred, input$sepa)
     })
     
+    ebpp_genes <- reactive({
+      data(ebpp_gene)
+      ebpp_genes_sig
+      })
+    
+    output$genelist <- downloadHandler(
+     filename = "subtypeclassifier_genes.tsv",
+     content = function(con){
+       write.csv(ebpp_genes(), con)
+     }
+    )
     
     #' geneMatchErrorReport
     #' Check whether the incoming data matches the 485 model gene IDs
@@ -201,11 +214,14 @@ subtypeclassifier <- function(
     
     # get new calls
     getCalls <- reactive({
-      
+      shiny::validate(
+        shiny::need(ncol(newData())>1,
+                    "Only one column available in the uploaded file. Please check if the selected file separator is the correct one."))
+    
       output$geneMatchCnt <- renderText({
         matchInfo <- geneMatchErrorReport(X=newData())
 
-        n <- round(matchInfo$matchError, digits = 3)
+        n <- (round(matchInfo$matchError, digits = 3))*100
         m <- matchInfo$numGenesInClassifier
           
         paste0('<b> Match error: ', n, '% from a total of ', m, ' genes required by the classifier.  Missing genes shown below. </b>')
@@ -224,38 +240,27 @@ subtypeclassifier <- function(
 
     # Filter data based on selections
     output$subtypetable <- DT::renderDataTable(
-      DT::datatable(
-        as.data.frame(getCalls()$Calls),
-        extensions = 'Buttons', options = list(
-          dom = 'Bfrtip',
-          buttons =
-            list('copy', 'print',
-                 list(
-                   extend = 'collection',
-                   buttons = c('csv', 'excel', 'pdf'),
-                   text = 'Download')
-            )
-        )
+      DT::datatable(as.data.frame(getCalls()$Calls))
+    )
 
+    missing_genes <- reactive({
+      as.data.frame(geneMatchErrorReport(X=newData())$missingGenes)
+    })
+    # Missing Genes Table
+    output$missinggenetable <- DT::renderDataTable(
+      DT::datatable(missing_genes()
+        #as.data.frame(geneMatchErrorReport(X=newData())$missingGenes)
       )
     )
     
-    # Missing Genes Table
-    output$missinggenetable <- DT::renderDataTable(
-      DT::datatable(
-        as.data.frame(geneMatchErrorReport(X=newData())$missingGenes),
-        extensions = 'Buttons', options = list(
-          dom = 'Bfrtip',
-          buttons =
-            list('copy', 'print',
-                 list(
-                   extend = 'collection',
-                   buttons = c('csv', 'excel', 'pdf'),
-                   text = 'Download')
-            )
-        )
-        
-      )
+    output$download_calls <- downloadHandler(
+      filename = function() stringr::str_c("immune-calls-", Sys.Date(), ".csv"),
+      content = function(con) readr::write_csv(getCalls()$Calls, con)
+    )
+    
+    output$download_missing <- downloadHandler(
+      filename = function() stringr::str_c("missing-genes-", Sys.Date(), ".csv"),
+      content = function(con) readr::write_csv(missing_genes(), con)
     )
 
 }
