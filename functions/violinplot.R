@@ -6,6 +6,7 @@ create_violinplot <- function(
     color_col = NA,
     label_col = NA,
     split_col = NA,
+    order_by = NULL,
     xlab = "",
     ylab = "", 
     title = "", 
@@ -51,7 +52,9 @@ create_violinplot <- function(
         layout(
             title = title,
             xaxis = list(title = xlab),
-            yaxis = list(title = ylab)
+            yaxis = list(title = ylab,
+                         categoryorder = "array",
+                         categoryarray = ~order_by)
         ) %>% 
         format_plotly() %>%
         I

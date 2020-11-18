@@ -1,6 +1,6 @@
 {
   "R": {
-    "Version": "3.6.0",
+    "Version": "4.0.2",
     "Repositories": [
       {
         "Name": "CRAN",
@@ -29,7 +29,7 @@
     ]
   },
   "Bioconductor": {
-    "Version": "3.10"
+    "Version": "3.11"
   },
   "Packages": {
     "AnnotationDbi": {
@@ -78,7 +78,7 @@
     },
     "Cairo": {
       "Package": "Cairo",
-      "Version": "1.5-10",
+      "Version": "1.5-12",
       "Source": "Repository",
       "Repository": "CRAN",
       "Hash": "3cf79cef0ec215d7cfdf9f7edc26bbae"
@@ -545,7 +545,7 @@
     },
     "dplyr": {
       "Package": "dplyr",
-      "Version": "0.8.3",
+      "Version": "1.0.0",
       "Source": "Repository",
       "Repository": "CRAN",
       "Hash": "c426258a806b7e69613432b197b9954d"
@@ -747,7 +747,7 @@
     },
     "glue": {
       "Package": "glue",
-      "Version": "1.3.1",
+      "Version": "1.4.2",
       "Source": "Repository",
       "Repository": "CRAN",
       "Hash": "d4e25697c450c01b202c79ef35694a83"
@@ -935,7 +935,7 @@
     },
     "lifecycle": {
       "Package": "lifecycle",
-      "Version": "0.1.0",
+      "Version": "0.2.0",
       "Source": "Repository",
       "Repository": "CRAN",
       "Hash": "dc0e9c03b3635ff433b045ce6bf0612d"
@@ -1123,7 +1123,7 @@
     },
     "plotly": {
       "Package": "plotly",
-      "Version": "4.9.0",
+      "Version": "4.9.2.1",
       "Source": "Repository",
       "Repository": "CRAN",
       "Hash": "286590ead74fada39b8dc0b47e118b0b"
@@ -1302,7 +1302,7 @@
     },
     "rlang": {
       "Package": "rlang",
-      "Version": "0.4.2",
+      "Version": "0.4.8",
       "Source": "Repository",
       "Repository": "CRAN",
       "Hash": "ff31d958a041593f58ba04fc637d90dd"
@@ -1572,7 +1572,7 @@
     },
     "vctrs": {
       "Package": "vctrs",
-      "Version": "0.2.1",
+      "Version": "0.3.4",
       "Source": "Repository",
       "Repository": "CRAN",
       "Hash": "5c2d0fe441406cba811b46708ea28e41"
