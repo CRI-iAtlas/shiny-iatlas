@@ -222,7 +222,7 @@ build_group_size_df <- function(df, group_col){
         dplyr::select(Group = group_col) %>% 
         get_complete_df_by_columns("Group") %>%  
         dplyr::group_by(Group) %>% 
-        dplyr::summarise(Group_Size = n()) 
+        dplyr::summarise(Group_Size = dplyr::n()) 
     assert_df_has_columns(result_df, c("Group", "Group_Size"))
     assert_df_has_rows(result_df)
     return(result_df)
