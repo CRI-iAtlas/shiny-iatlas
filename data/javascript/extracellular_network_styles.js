@@ -45,7 +45,7 @@
       "line-color": "black",
         "target-arrow-shape": "triangle",
         "target-arrow-color": "black",
-        "width": 0.5,
+        "width": "mapData(score,0,25,1.0,15.0)",
         "curve-style": "bezier"
     }
   }, {

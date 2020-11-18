@@ -54,42 +54,48 @@
     "css" : {
       "line-color" : "rgb(38,201,36)",
       "target-arrow-color" : "black",
-      "source-arrow-color" : "rgb(38,201,36)"
+      "source-arrow-color" : "rgb(38,201,36)",
+      "width": "mapData(score,0,25,1.0,15.0)"
     }
   }, {
     "selector" : "edge[interaction = 'C5']",
     "css" : {
       "line-color" : "rgb(0,66,249)",
       "target-arrow-color" : "black",
-      "source-arrow-color" : "rgb(0,66,249)"
+      "source-arrow-color" : "rgb(0,66,249)",
+      "width": "mapData(score,0,25,1.0,15.0)"
     }
   }, {
     "selector" : "edge[interaction = 'C6']",
     "css" : {
       "line-color" : "rgb(250,60,251)",
       "target-arrow-color" : "black",
-      "source-arrow-color" : "rgb(250,60,251)"
+      "source-arrow-color" : "rgb(250,60,251)",
+      "width": "mapData(score,0,25,1.0,15.0)"
     }
   }, {
     "selector" : "edge[interaction = 'C1']",
     "css" : {
       "line-color" : "rgb(251,12,28)",
       "target-arrow-color" : "black",
-      "source-arrow-color" : "rgb(251,12,28)"
+      "source-arrow-color" : "rgb(251,12,28)",
+      "width": "mapData(score,0,25,1.0,15.0)"
     }
   }, {
     "selector" : "edge[interaction = 'C2']",
     "css" : {
       "line-color" : "rgb(245,239,55)",
       "target-arrow-color" : "black",
-      "source-arrow-color" : "rgb(255,249,56)"
+      "source-arrow-color" : "rgb(255,249,56)",
+      "width": "mapData(score,0,25,1.0,15.0)"
     }
   }, {
     "selector" : "edge[interaction = 'C4']",
     "css" : {
       "line-color" : "rgb(35,203,202)",
       "target-arrow-color" : "black",
-      "source-arrow-color" : "rgb(35,203,202)"
+      "source-arrow-color" : "rgb(35,203,202)",
+      "width": "mapData(score,0,25,1.0,15.0)"
     }
   }, {
     "selector" : "edge:selected",
