@@ -1,6 +1,6 @@
 {
   "R": {
-    "Version": "3.6.2",
+    "Version": "4.0.2",
     "Repositories": [
       {
         "Name": "CRAN",
@@ -29,7 +29,7 @@
     ]
   },
   "Bioconductor": {
-    "Version": "3.10"
+    "Version": "3.11"
   },
   "Packages": {
     "AnnotationDbi": {

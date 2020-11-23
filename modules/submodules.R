@@ -8,18 +8,43 @@ overall_cell_proportions_module_UI <- function(id){
         title = "Overall Cell Proportions",
         messageBox(
             width = 12,
-            p("The barplots show the mean proportion of the tumor fraction, overall stromal fraction (one minus tumor fractions) and the leukocyte fraction of samples with each group.  Error bars show standard error of the mean.")
+            p("The barplots show the mean proportion of the tumor fraction, overall stromal fraction (one minus tumor fractions) and the leukocyte fraction of samples with each group.  Error bars show standard error of the mean. For reordering bars, first choose a variable (bar) to sort on, then a sorting function like Mean. Reordering function Max sorts on the mean+error and min sorts on the mean-error.")
         ),
         fluidRow(
-            
-            # ** Overall proportions bar plot ----
-            plotBox(
+            optionsBox(
                 width = 12,
-                plotlyOutput(ns("overall_props_barplot")) %>% 
-                    shinycssloaders::withSpinner(),
-                p(),
-                textOutput(ns("op_barplot_group_text"))
+                conditionalPanel(
+                    condition =  "output.display_group_choice",
+                    column(width = 4,uiOutput(ns("group_choice_ui"))),
+                    ns = ns
+                ),
+                column(
+                    width = 4,
+                    selectInput(
+                        ns("reorder_cp_bars_var"),
+                        "Reorder Variable", 
+                        choices=c('Group','Tumor_Fraction','leukocyte_fraction', 'Stromal_Fraction'),
+                        selected = 'Group'
+                    )
+                ),
+                column(
+                    width = 4,
+                    selectInput(
+                        ns("reorder_cp_bars_functions"), 
+                        "Reorder Function", 
+                        choices=c('None','Mean','Max', 'Min'),
+                        selected = 'None'
+                    )
+                )
             )
+        ),
+        # ** Overall proportions bar plot ----
+        plotBox(
+            width = 12,
+            plotlyOutput(ns("overall_props_barplot")) %>% 
+                shinycssloaders::withSpinner(),
+            p(),
+            textOutput(ns("op_barplot_group_text"))
         ),
         fluidRow(
             
@@ -68,10 +93,12 @@ overall_cell_proportions_module  <- function(
             nrow(cellcontent_df) > 0, 
             "Samples in current selected groups have no fraction data."))
         
-        barplot_df <- build_cellcontent_barplot_df(
+        barplot_df <- build_cellcontent_barplot_df2(
             cellcontent_df,
             x_column = "fraction_type",
-            y_column = "fraction")
+            y_column = "fraction",
+            input$reorder_cp_bars_var,
+            input$reorder_cp_bars_functions)
         
         create_barplot(
             barplot_df,
@@ -120,7 +147,9 @@ overall_cell_proportions_module  <- function(
     })
 }
 
-# cell_type_fractions_module ----
+####################################
+# cell_type_fractions_module ----###
+####################################
 
 cell_type_fractions_module_UI <- function(id){
     
@@ -136,11 +165,33 @@ cell_type_fractions_module_UI <- function(id){
         fluidRow(
             optionsBox(
                 width = 12,
-                selectInput(
-                    inputId = ns("cf_choice"),
-                    label = "Select Cell Fraction Type",
-                    choices = config_yaml$cell_type_aggregates,
-                    selected = config_yaml$cell_type_aggregates[[3]]
+                
+                fluidRow(
+                    column(
+                        width = 8,
+                        selectInput(
+                            inputId = ns("cf_choice"),
+                            label = "Select Cell Fraction Type",
+                            choices = config_yaml$cell_type_aggregates,
+                            selected = config_yaml$cell_type_aggregates[[3]]
+                        )
+                    )
+                ),
+                
+                fluidRow(
+                    column(
+                        width = 4,
+                        uiOutput(ns("create_dropdown_cell_types_control")) # ns("reorder_bars_cf_cond_var")
+                    ),
+                    column(
+                        width = 4,
+                        selectInput(
+                            ns("reorder_cf_bars_functions"), 
+                            "Reorder Function", 
+                            choices=c('None','Mean','Max', 'Min'),
+                            selected = 'None'
+                        )
+                    )
                 )
             )
         ),
@@ -158,6 +209,8 @@ cell_type_fractions_module_UI <- function(id){
     )
 }
 
+
+
 cell_type_fractions_module <- function(
     input, 
     output, 
@@ -167,7 +220,18 @@ cell_type_fractions_module <- function(
     sample_group_df,
     subset_df
 ){
+    ns <- session$ns
     
+    output$create_dropdown_cell_types_control <- renderUI({
+        selectInput(
+            ns("reorder_cf_bars_var"),
+            "Reorder Variable", 
+            choices=c('Group', get_factored_variables_from_feature_df(
+                input$cf_choice) %>% 
+                as.character),
+            selected = 'Group')
+    })
+
     output$cell_frac_barplot <- renderPlotly({
         
         req(!is.null(subset_df()), cancelOutput = T)
@@ -187,10 +251,12 @@ cell_type_fractions_module <- function(
             "Samples in current selected groups have no selected fraction data."))
         
         barplot_df <- 
-            build_cellcontent_barplot_df(
+            build_cellcontent_barplot_df2(
                 cell_fraction_df,
                 y_column = "fraction",
-                x_column = "fraction_type") %>%
+                x_column = "fraction_type",
+                input$reorder_cf_bars_var,
+                input$reorder_cf_bars_functions) %>%
             mutate(color = purrr::map_chr(color, get_variable_display_name))
         
         create_barplot(
@@ -218,7 +284,9 @@ cell_type_fractions_module <- function(
     
 }
 
-# data_table_module ----
+###########################
+# data_table_module ----###
+###########################
 
 data_table_module_UI <- function(
     id, 
