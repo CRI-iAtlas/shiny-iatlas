@@ -10,7 +10,8 @@ ioresponseoverview_UI <- function(id){
             p("This module describes the datasets that are available in iAtlas for the analysis of molecular response to 
               Immune Checkpoint Inhibitor immunotherapy(ICI). Primary data processing and scoring of immune response, including 
               immune signatures and cell-content estimates were performed by UNC Lineberger team Dante Bortone, Sarah Entwistle,
-              led by Benjamin G. Vincent.")
+              led by Benjamin G. Vincent."),
+            actionLink(ns("method_link"), "Click to view method description.")
         ),
         
         sectionBox(
@@ -182,6 +183,15 @@ ioresponseoverview <- function(input,
           autosize = TRUE,
           margin = list(b=0)
         )
+    })
+    
+    observeEvent(input$method_link,{
+      showModal(modalDialog(
+        title = "Method",
+        includeMarkdown("data/MethodsText/Methods_ResponseICIPredictors.txt"),
+        easyClose = TRUE,
+        footer = NULL
+      ))
     })
     
 }
