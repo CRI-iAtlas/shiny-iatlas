@@ -10,7 +10,9 @@ create_boxplot <- function(
     ylab = "", 
     title = "", 
     source_name = NULL, 
-    fill_colors = NA){
+    custom_data = "",
+    fill_colors = NA,
+    showlegend = T){
     
     if(is.na(key_col)) key_col <- x_col
     if(is.na(color_col)) color_col <- x_col
@@ -38,7 +40,9 @@ create_boxplot <- function(
             jitter = 0.7,
             pointpos = 0, 
             colors = fill_colors,
-            source = source_name
+            source = source_name,
+            customdata = custom_data,
+            showlegend = showlegend
         )) %>% 
         layout(
             title = title,

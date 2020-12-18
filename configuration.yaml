@@ -16,6 +16,12 @@ module_files:
   - "modules/cytokinenetwork.R"
   - "modules/cellimagemodule.R"
   - "modules/cnvmodule.R"
+  - "modules/ioresponseoverviewmodule.R"
+  - "modules/ioresponsesurvivalmodule.R"
+  - "modules/ioresponse_distribution_module.R"
+  - "modules/ioresponseimmunomodulatormodule.R"
+  - "modules/ioresponsefeaturesmodule.R"
+  - "modules/ioresponsemultivariate.R"
   
 function_files:
   - "functions/load_data.R"
@@ -31,12 +37,14 @@ function_files:
   - "functions/violinplot.R"
   - "functions/mosaicplot.R"
   - "functions/barplot.R"
+  - "functions/forestplot.R"
   - "functions/subtype_classifier.R"
   - "functions/tablef_fun.R"
   - "functions/imageplot.R"
   - "functions/event_data_utils.R"
   - "functions/extracellnet_utils.R"
   - "functions/cellimage_utils.R"
+  - "functions/iomodules_utils.R"
 
 page_files:
   - "pages/aboutpage.R"

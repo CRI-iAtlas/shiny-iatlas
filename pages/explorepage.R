@@ -72,6 +72,34 @@ explorepage <- dashboardPage(
                  icon = icon("cog")
                )
       ),
+      menuItem("Molecular Response to ICI",
+                 icon = icon("bar-chart"), startExpanded = TRUE,
+               menuSubItem(
+                 "ICI Datasets Overview",
+                 tabName = "ioresponse_overview",
+                 icon = icon("cog")
+               ), 
+               menuSubItem(
+                 "ICI Immune Features",
+                 tabName = "io_response",
+                 icon = icon("cog")
+               ),
+                menuSubItem(
+                   "ICI Clinical Outcomes",
+                   tabName = "io_survival",
+                   icon = icon("cog")
+                 ), 
+               menuSubItem(
+                 "ICI Hazard Ratio",
+                 tabName = "ioresponse_mult",
+                 icon = icon("cog")
+               ), 
+               menuSubItem(
+                 "ICI Immunomodulators",
+                 tabName = "io_immunomodulator",
+                 icon = icon("cog")
+               )
+      ),
       menuItem("Data Description",
                icon = icon("th-list"),
                tabName = "datainfo"
@@ -253,6 +281,60 @@ explorepage <- dashboardPage(
               linkText = "Open Module"
             )
           )
+        ),
+        sectionBox(
+          title = "Molecular Response to Immune Checkpoint Inhibitors",
+          messageBox(
+            width = 12,
+            p("Each module in this section provides visualizations of datasets with data from datasets 
+              from studies of treatments with Immune Checkpoint Inhibitors (ICI).")
+          ),
+          fluidRow(
+            imgLinkBox(
+              width = 6,
+              linkId = "link_to_io_response_overview",
+              title = "ICI Datasets Overview",
+              imgSrc = "images/ici-overview.png",
+              boxText = "This module provides short summaries of the available datasets.",
+              linkText = "Open Module"
+            ),
+            imgLinkBox(
+              width = 6,
+              linkId = "link_to_io_response_eda",
+              title = "ICI Immune Features",
+              imgSrc = "images/ici-immunefeatures.png",
+              boxText = "This module allows you to see how immune readouts vary across your groups and ICI datasets.",
+              linkText = "Open Module"
+            )
+          ),
+          fluidRow(
+            imgLinkBox(
+              width = 6,
+              linkId = "link_to_io_response1",
+              title = "ICI Clinical Outcomes",
+              imgSrc = "images/ici-survival.png",
+              boxText = "Plot survival curves based on immune characteristics and identify variables associated with outcome.",
+              linkText = "Open Module"
+            ),
+            imgLinkBox(
+              width = 6,
+              linkId = "link_to_io_response2",
+              title = "ICI Hazard Ratio",
+              imgSrc = "images/forestplot.png",
+              boxText = "Create Cox Proportional Hazard Regression Models and visualize Hazard Ratio in a heatmap and a forest plot.",
+              linkText = "Open Module"
+            )
+          ),
+          fluidRow(
+            imgLinkBox(
+              width = 6,
+              linkId = "link_to_io_response_immunomodulator",
+              title = "ICI Immunomodulators",
+              imgSrc = "images/ici-immunomodulator.png",
+              boxText = "Explore the expression of genes that code for immunomodulating proteins, including checkpoint proteins.",
+              linkText = "Open Module"
+            )
+          )
         )
       ),
       tabItem(
@@ -292,21 +374,41 @@ explorepage <- dashboardPage(
         iotarget_UI("module9")
       ),
       tabItem(
-        tabName = "cnvs",
-        cnvs_UI("module10")
-      ),
-      tabItem(
-        tabName = "cytokine_network",
-        cytokinenetwork_UI("module11")
-      ),
-      tabItem(
-        tabName = "cell_image",
-        cellimage_UI("module12")
-      ),
-      tabItem(
-        tabName = "datainfo",
-        datainfo_UI("moduleX")
-      )
+      tabName = "cnvs",
+      cnvs_UI("module10")
+    ),
+    tabItem(
+      tabName = "cytokine_network",
+      cytokinenetwork_UI("module11")
+    ),
+    tabItem(
+      tabName = "cell_image",
+      cellimage_UI("module12")
+    ),
+    tabItem(
+      tabName = "ioresponse_overview",
+      ioresponseoverview_UI("io_response_overview")
+    ),
+    tabItem(
+      tabName = "io_response",
+      ioresponsefeatures_UI("io_response_eda")
+    ),
+    tabItem(
+      tabName = "io_survival",
+      iosurvival_UI("io_response1")
+    ),
+    tabItem(
+      tabName = "ioresponse_mult",
+      ioresponsemultivariate_UI("io_response2")
+    ),
+    tabItem(
+      tabName = "io_immunomodulator",
+      ioresponseimmunomodulators_UI("io_response_immunomodulator")
+    ),
+    tabItem(
+      tabName = "datainfo",
+      datainfo_UI("moduleX")
+    )
     )
   )
 )

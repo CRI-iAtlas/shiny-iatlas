@@ -8,13 +8,13 @@ create_violinplot <- function(
     split_col = NA,
     order_by = NULL,
     xlab = "",
-    ylab = "", 
+    ylab = "",
     title = "", 
     source_name = NULL, 
+    custom_data = "",
     fill_colors = NA, 
     points = NULL,
     showlegend = T) {
-    
     
     if(is.na(key_col)) key_col <- x_col
     if(is.na(color_col)) color_col <- x_col
@@ -39,6 +39,7 @@ create_violinplot <- function(
             text = ~LABEL,
             points = points,
             source = source_name,
+            customdata = custom_data,
             colors = fill_colors,
             type = 'violin',
             hoverinfo = 'text',

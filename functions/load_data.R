@@ -113,6 +113,21 @@ load_extracellular_network <- function(){
   } 
 }
 
+load_io_response <- function(){
+  if (!USE_REMOTE_BQ) {
+    
+    list(
+      fmx_io = feather::read_feather("data/io/fmx_io.feather"),
+      dataset_io_df = feather::read_feather("data/io/datasets_io_df.feather"),
+      categories_io_df = feather::read_feather("data/io/categories_df.feather"),
+      sample_group_io_df = feather::read_feather("data/io/io_sample_group_df.feather"),
+      feature_io_df = feather::read_feather("data/io/feature_io_df.feather"),
+      im_expr_io_df = feather::read_feather("data/io/im_expr_io.feather")  
+    )
+  } 
+}
+
+
 ## selection choices for the cell fractions.  Lots of other choices possible.
 create_cell_fraction_options <- function() {
     if (!USE_REMOTE_BQ) {
@@ -188,4 +203,18 @@ load_data <- function() {
         ci_coord = extracellular_network_data$cell_coordinate,
         cellimage_base =  cellimage_base_data$cellimage_base
     )
+}
+
+load_io_data <- function(){
+  
+  io_data <- load_io_response()
+  
+  list(
+    dataset_df = io_data$dataset_io_df,
+    feature_df = io_data$feature_io_df,
+    categories_df = io_data$categories_io_df,
+    sample_group_df = io_data$sample_group_io_df,
+    fmx_df = io_data$fmx_io,
+    im_expr = io_data$im_expr_io_df
+  )
 }

@@ -215,5 +215,23 @@ format_plotly <- function(p) {
         size = font_size),
       margin = get_margins(p, font_size)
     ) %>% 
-    plotly::config(displayModeBar = T)
+    plotly::config(displayModeBar = T,
+                   toImageButtonOptions = list(
+                     format = "svg"))
+}
+
+add_title_subplot_plotly <- function(p, plot_title){
+  p %>% 
+    plotly::add_annotations(
+      text = plot_title,
+      x = 0.5,
+      y = 1,
+      yref = "paper",
+      xref = "paper",
+      xanchor = "center",
+      yanchor = "top",
+      yshift = 30,
+      showarrow = FALSE,
+      font = list(family = "Roboto, Open Sans, sans-serif",
+                  size = 15))
 }
