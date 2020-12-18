@@ -131,16 +131,6 @@ shinyServer(function(input, output, session) {
       reactive(subset_df()),
       reactive(plot_colors()))
     
-    # subtype predictor
-    callModule(
-        subtypeclassifier, 
-        "module_subtypeclassifier")
-
-    # Data info
-    callModule(
-        datainfo,
-        "moduleX")
-    
     # Cell Image
     callModule(
       cellimage,
@@ -150,6 +140,47 @@ shinyServer(function(input, output, session) {
       reactive(input$study_subset_selection),
       reactive(subset_df()),
       reactive(plot_colors()))
+    
+    #IO Molecular Response Overview
+    callModule(
+      ioresponseoverview,
+      "io_response_overview",
+      reactive(input$ss_choice),
+      reactive(group_internal_choice()),
+      reactive(input$study_subset_selection),
+      reactive(sample_group_df()),
+      reactive(subset_df()),
+      reactive(plot_colors()))
+    
+    #IO Molecular Response EDA
+    callModule(
+      ioresponsefeatures,
+      "io_response_eda"
+      )
+    
+    #IO Molecular Response Clinical Outcomes
+    callModule(
+      iosurvival,
+      "io_response1")
+    
+    callModule(
+      ioresponsemultivariate,
+      "io_response2")
+    
+    #IO Response Immunomodulators
+    callModule(
+      ioresponseimmunomodulators,
+      "io_response_immunomodulator")
+
+    # subtype predictor
+    callModule(
+        subtypeclassifier, 
+        "module_subtypeclassifier")
+
+    # Data info
+    callModule(
+        datainfo,
+        "moduleX")
     
     output$ss_choice <- renderText({
         input$ss_choice
@@ -190,6 +221,21 @@ shinyServer(function(input, output, session) {
     })
     observeEvent(input$link_to_module12, {
       shinydashboard::updateTabItems(session, "explorertabs", "cell_image")
+    })
+    observeEvent(input$link_to_io_response_overview, {
+      shinydashboard::updateTabItems(session, "explorertabs", "ioresponse_overview")
+    })
+    observeEvent(input$link_to_io_response_eda, {
+      shinydashboard::updateTabItems(session, "explorertabs", "io_response")
+    })
+    observeEvent(input$link_to_io_response1, {
+      shinydashboard::updateTabItems(session, "explorertabs", "io_survival")
+    })
+    observeEvent(input$link_to_io_response2, {
+      shinydashboard::updateTabItems(session, "explorertabs", "ioresponse_mult")
+    })
+    observeEvent(input$link_to_io_response_immunomodulator, {
+      shinydashboard::updateTabItems(session, "explorertabs", "io_immunomodulator")
     })
     observeEvent(input$link_to_module_subtypeclassifier, {
         updateNavlistPanel(session, "toolstabs", "Immune Subtype Classifier")
