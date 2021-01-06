@@ -3,6 +3,4 @@
 .Rhistory
 .Rproj.user
 *~
-data/io*
 rsconnect/
-data/io/*
