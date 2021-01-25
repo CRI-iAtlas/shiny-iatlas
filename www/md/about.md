@@ -10,7 +10,7 @@ The **Cancer Research Institute (CRI) iAtlas** is an interactive web platform an
 Please cite the [CRI iAtlas paper](https://f1000research.com/articles/9-1028/v1) (PubMed: [33214875](https://www.ncbi.nlm.nih.gov/pubmed/33214875)) when you use the CRI iAtlas app.
 
 ```md
-Eddy JA, Thorsson V, Lamb AE, Gibbs DL, Heimann C, Yu JX, Chung V, Chae Y, Dang K, Vincent BG, Shmulevich I, Guinney J. CRI iAtlas: an interactive portal for immuno-oncology research. F1000Research. 2020;9.
+Eddy JA, Thorsson V, Lamb AE, Gibbs DL, Heimann C, Yu JX, Chung V, Chae Y, Dang K, Vincent BG, Shmulevich I, Guinney J. CRI iAtlas: an interactive portal for immuno-oncology research. F1000Research. 2020, 9:1028.
 ```
 
 ### CRI iAtlas Explorer
