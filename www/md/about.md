@@ -5,6 +5,14 @@ The iAtlas portal serves as an interactive tool for exploring and analyzing immu
 The **Cancer Research Institute (CRI) iAtlas** is an interactive web platform and set of analytic tools for studying interactions between tumors and the immune microenvironment (Eddy et al., F1000Research 2020).  These tools allow researchers to explore associations between a variety of characterizations of immune response and genomic and clinical phenotypes.  The initial version of CRI iAtlas was based on an analysis performed by **The Cancer Genome Atlas (TCGA) Research Network** on the TCGA data set comprising over 10,000 tumor samples and 33 tumor types (Thorsson et al., Immunity 2018). In this analysis, each tumor sample was scored for a variety of readouts for immune response, such as immune cell composition, adaptive cell receptor repertoire, neoantigen load, and expression of genes coding for immunomodulatory proteins. iAtlas allows researchers to explore these data readouts, and the relation between them in TCGA tumor types and in overarching immune subtypes identified in the study. iAtlas is being expanded to share immune characterizations from other cancer genomics consortia and now includes data on response to immunotherapy agents. CRI iAtlas is made possible through a collaboration between the **Cancer Research Institute**, **Sage Bionetworks**, the **Institute for Systems Biology**, and the **UNC Lineberger Comprehensive Cancer Center**. CRI iAtlas can be found at https://www.cri-iatlas.org.
 
 
+### How to Cite Us
+
+Please cite the [CRI iAtlas paper](https://f1000research.com/articles/9-1028/v1) (PubMed: [33214875](https://www.ncbi.nlm.nih.gov/pubmed/33214875)) when you use the CRI iAtlas app.
+
+```md
+Eddy JA, Thorsson V, Lamb AE, Gibbs DL, Heimann C, Yu JX, Chung V, Chae Y, Dang K, Vincent BG, Shmulevich I, Guinney J. CRI iAtlas: an interactive portal for immuno-oncology research. F1000Research 2020, 9:1028.
+```
+
 ### CRI iAtlas Explorer
 
 The main feature of the iAtlas web tool is the **iAtlas Explorer**, which provides several *Analysis Modules* to explore and visualize results from the Immune Lanscape of Cancer. Each module presents information organized by theme, with multiple views and interactive controls to enhance and extend the information included in the original paper figures.
