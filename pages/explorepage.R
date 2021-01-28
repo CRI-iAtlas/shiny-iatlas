@@ -62,16 +62,21 @@ explorepage <- dashboardPage(
                  icon = icon("cog")
                ),
                menuSubItem(
+                 "Germline Analysis",
+                 tabName = "germline",
+                 icon = icon("cog")
+               ),
+               menuSubItem(
                  "Extracellular Networks",
                  tabName = "cytokine_network",
-		 icon = icon("cog")
-		),
-	       menuSubItem(
-                 "Cell-Interaction Diagram",
-                 tabName = "cell_image",
-                 icon = icon("cog")
-               )
-      ),
+          		   icon = icon("cog")
+          		 ),
+      	       menuSubItem(
+                       "Cell-Interaction Diagram",
+                       tabName = "cell_image",
+                       icon = icon("cog")
+                     )
+            ),
       menuItem("Molecular Response to ICI",
                  icon = icon("bar-chart"), startExpanded = TRUE,
                menuSubItem(
@@ -264,10 +269,10 @@ explorepage <- dashboardPage(
             ),
             imgLinkBox(
               width = 6,
-              title = "Extracellular Networks",
-              linkId = "link_to_module11",
-              imgSrc = "images/cytokinenet.png",
-              boxText = "Explore the extracellular networks modulating tumoral immune response.",
+              title = "Germline Analysis",
+              linkId = "link_to_germline",
+              imgSrc = "images/cell-image.png",
+              boxText = "Explore cell and protein abundance on an illustration.",
               linkText = "Open Module"
             )
           ),
@@ -278,6 +283,14 @@ explorepage <- dashboardPage(
               linkId = "link_to_module12",
               imgSrc = "images/cell-image.png",
               boxText = "Explore cell and protein abundance on an illustration.",
+              linkText = "Open Module"
+            ),
+            imgLinkBox(
+              width = 6,
+              title = "Extracellular Networks",
+              linkId = "link_to_module11",
+              imgSrc = "images/cytokinenet.png",
+              boxText = "Explore the extracellular networks modulating tumoral immune response.",
               linkText = "Open Module"
             )
           )
@@ -384,6 +397,10 @@ explorepage <- dashboardPage(
     tabItem(
       tabName = "cell_image",
       cellimage_UI("module12")
+    ),
+    tabItem(
+      tabName = "germline",
+      germline_ui("germline")
     ),
     tabItem(
       tabName = "ioresponse_overview",
