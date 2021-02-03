@@ -69,10 +69,6 @@ germline_heritability_ui <- function(id){
 
 germline_heritability_server <- function(input, output, session){
 
-      heritability <- reactive({
-        feather::read_feather("data/germline/germline_heritability.feather")
-      })
-      
       ancestry_options <- reactive({
         c("Ad Mixed American" = "American", "African" = "African", "Asian" = "Asian", "European"= "European", "European by Immune Subtype" = "European_immune")
       })
@@ -85,15 +81,15 @@ germline_heritability_server <- function(input, output, session){
         if(input$parameter == "cluster") opt <- ancestry_options()
         
         if(input$parameter == "display"){
-          opt <- heritability() %>%
+          opt <- germline_data$heritability %>%
             dplyr::select(display,`Annot.Figure.ImmuneCategory`) %>%
             dplyr::group_by(`Annot.Figure.ImmuneCategory`) %>%
             tidyr::nest(data = c(display))%>%
             dplyr::mutate(data = purrr::map(data, tibble::deframe)) %>%
             tibble::deframe()
         }
-        if(input$parameter == "Annot.Figure.ImmuneCategory") opt <- unique(heritability()$`Annot.Figure.ImmuneCategory`)
-        if(input$parameter == "Annot.Figure.ImmuneModule") opt <- unique(heritability()$`Annot.Figure.ImmuneModule`)
+        if(input$parameter == "Annot.Figure.ImmuneCategory") opt <- unique(germline_data$heritability$`Annot.Figure.ImmuneCategory`)
+        if(input$parameter == "Annot.Figure.ImmuneModule") opt <- unique(germline_data$heritability$`Annot.Figure.ImmuneModule`)
         
         shiny::selectizeInput(ns("group"), "Select variable", choices = opt, selected = opt[4])
         
@@ -111,7 +107,7 @@ germline_heritability_server <- function(input, output, session){
       hdf <- reactive({
         shiny::req(input$group)
         create_heritability_df(
-          heritablity_data = heritability(),
+          heritablity_data = germline_data$heritability,
           parameter = input$parameter,
           group = input$group,
           pval_thres =input$pvalue,
@@ -165,7 +161,7 @@ germline_heritability_server <- function(input, output, session){
                       "Click bar plot"))
         selected_plot_trait <- eventdata$y[[1]]
         
-        hdf_plot <-heritability()%>%
+        hdf_plot <- germline_data$heritability %>%
           dplyr::filter(cluster %in% sub_clusters & display == selected_plot_trait)
         
         plot_colors <- c("#bebebe", "#FF0000", "#FFFF00", "#00FF00")

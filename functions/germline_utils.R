@@ -174,7 +174,7 @@ build_manhattanplot_tbl <- function(
     dplyr::filter(chr_col %in% chr_selected) %>%
     # dplyr::filter(bp_col >= bp_min & bp_col <= bp_max) %>%
     dplyr::group_by(chr_col) %>%
-    dplyr::summarise(chr_len=max(bp_col)) %>%
+    dplyr::summarise(chr_len=max(bp_col), .groups = "drop_last") %>%
     # Calculate cumulative position of each chromosome
     dplyr::mutate(tot=cumsum(as.numeric(chr_len))-chr_len) %>%
     dplyr::select(-chr_len) %>%

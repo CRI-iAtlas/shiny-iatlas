@@ -127,6 +127,18 @@ load_io_response <- function(){
   } 
 }
 
+load_germline <- function(){
+  if (!USE_REMOTE_BQ) {
+    
+    list(
+      heritability = feather::read_feather("data/germline/germline_heritability.feather"),
+      gwas = feather::read_feather("data/germline/germline_GWAS_fullIFN.feather"),
+      coloc_tcga = feather::read_feather("data/germline/colocalization_TCGA_df.feather"),
+      coloc_gtex = feather::read_feather("data/germline/colocalization_GTEX_df.feather"),
+      rv_stats = feather::read_feather("data/germline/germline_rare_variants.feather")
+    )
+  } 
+}
 
 ## selection choices for the cell fractions.  Lots of other choices possible.
 create_cell_fraction_options <- function() {
@@ -217,4 +229,17 @@ load_io_data <- function(){
     fmx_df = io_data$fmx_io,
     im_expr = io_data$im_expr_io_df
   )
+}
+
+load_germline_data <- function(){
+
+    germline_data <- load_germline()
+    
+    list(
+      heritability = germline_data$heritability,
+      gwas = germline_data$gwas,
+      coloc_tcga = germline_data$coloc_tcga,
+      coloc_gtex = germline_data$coloc_gtex,
+      rare_variants = germline_data$rv_stats
+    )
 }

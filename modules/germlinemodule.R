@@ -19,15 +19,13 @@ germline_ui <- function(id){
       ),
     sectionBox(
       title = "GWAS",
-      germline_gwas_ui(ns("germline_gwas"))
+      germline_gwas_ui(ns("germline_gwas-module"))
     ),
     sectionBox(
       title = "Rare Variants",
       germline_rarevariants_ui(ns("germline_rarevariants"))
     )
   )
-  
-  
 }
 
 germline_server <- function(input, output, session){
@@ -38,7 +36,7 @@ germline_server <- function(input, output, session){
   )
   callModule(
     germline_gwas_server,
-    "germline_gwas"
+    "germline_gwas-module"
   )
   callModule(
     germline_rarevariants_server,

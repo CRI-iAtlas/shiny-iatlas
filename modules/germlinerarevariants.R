@@ -15,7 +15,7 @@ germline_rarevariants_ui <- function(id){
       shiny::column(
         width = 4,
         shiny::selectizeInput(ns("order_box"),
-                              "Order plots by ",
+                              "Order plot by ",
                               choices = list(
                                 "p-value" = "p_value",
                                 "Median" = "q2",
@@ -47,14 +47,10 @@ germline_rarevariants_ui <- function(id){
 germline_rarevariants_server <- function(input, output, session) {
       
       ns <- session$ns
-      
-      rv_data <- reactive({
-        feather::read_feather("data/germline/germline_rare_variants.feather")
-      })
-      
+
       output$features <- renderUI({
 
-        trait_choices <- rv_data() %>%
+        trait_choices <- germline_data$rare_variants %>% 
           dplyr::select(display,category) %>%
           dplyr::group_by(category) %>%
           tidyr::nest(data = c(display))%>%
@@ -68,7 +64,7 @@ germline_rarevariants_server <- function(input, output, session) {
       })
       
       selected_data <- reactive({
-        rv_data() %>%
+        germline_data$rare_variants %>%
           dplyr::filter(display == input$feature)
       })
       
