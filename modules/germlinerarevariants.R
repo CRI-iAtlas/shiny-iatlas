@@ -4,7 +4,10 @@ germline_rarevariants_ui <- function(id){
   shiny::tagList(
     messageBox(
       width = 12,
-      shiny::p("See rare variants boxplots for different pathways.")
+      shiny::p("The boxplots show the values of representative immune traits across samples with mutations in genes related to the defined functional categories."), 
+      shiny::p("We performed association analyses between germline pathogenic and likely pathogenic cancer predisposition variants in high penetrance susceptibility genes, and immune traits and immune
+               subtypes. Since mutations in most of the genes were rare, when possible, we collapsed genes into categories summarizing different biologic processes or functions. Boxplots were created based on precomputed statistics for each immune trait and pathway combination."),
+      shiny::actionLink(ns("method_link"), "Click to view method description.")
     ),
     optionsBox(
       width = 12,
@@ -34,7 +37,8 @@ germline_rarevariants_ui <- function(id){
     ),
     messageBox(
       width = 3,
-      shiny::p("Tests comparing a group with all other groups were performed.")
+      shiny::p("Tests comparing a pathway group with all other groups were performed. 
+              In the Pathway column, 'Multiple' refers to samples with mutation in more than one pathway; and 'No defect' refers to samples with no mutation in the studied pathways.")
     ),
     plotBox(
       width = 9,
@@ -70,12 +74,9 @@ germline_rarevariants_server <- function(input, output, session) {
       
       output$dist_plot <- plotly::renderPlotly({
         shiny::req(input$feature)
-        
+
         df <- selected_data() %>% tidyr::drop_na()
-        
-        #order plots
-        if(is.numeric(df[[input$order_box]]))  plot_levels <-levels(reorder(df[["pathway"]], df[[input$order_box]], sort))
-        else plot_levels <- (df %>% dplyr::arrange(.[[input$order_box]], p_value))$pathway %>% as.factor()
+        plot_levels <- (df %>% dplyr::arrange(desc(.[[input$order_box]])))$pathway
         
         create_boxplot_from_summary_stats(
           df,
@@ -95,8 +96,18 @@ germline_rarevariants_server <- function(input, output, session) {
       output$stats_tbl <- DT::renderDataTable({
         shiny::req(input$feature)
         DT::datatable(
-          selected_data() %>% dplyr::select(pathway, n_mutations, n, p_value) ,
-          rownames = FALSE
-        ) %>% DT::formatRound(columns= "p_value", digits=3)
+          selected_data() %>% dplyr::select(Pathway = pathway, 'Patients with mutation' = n_mutations, 'Total patients' = n, 'p-value' = p_value) ,
+          rownames = FALSE,
+          options = list(order = list(3, 'asc'))
+        ) %>% DT::formatRound(columns= "p-value", digits=3)
+      })
+      
+      observeEvent(input$method_link,{
+        shiny::showModal(modalDialog(
+          title = "Method",
+          includeMarkdown("data/MethodsText/germline-rarevariants.md"),
+          easyClose = TRUE,
+          footer = NULL
+        ))
       })
 }

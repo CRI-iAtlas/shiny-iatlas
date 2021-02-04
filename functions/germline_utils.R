@@ -113,45 +113,6 @@ format_heritability_plot <- function(p, hdf, fdr = FALSE){
   p
 }
 
-#' Add FDR annotation for plot display
-#'
-#' @param tbl A tibble
-#' @param FDR A column with FDR values
-#' @param intervals A vector with numbers for each FDR interval
-#' @param symbols A vector of strings, which will be used as symbols for each FDR interval
-#' @importFrom magrittr %>%
-#' @importFrom rlang .data
-#' @importFrom tidyr unite
-#' @importFrom tidyselect all_of
-create_FDR_label <- function(
-  tbl,
-  FDR,
-  intervals,
-  symbols
-){
-
-
-  #TODO:still duplicating all rows!
-  #example: test_fdr <- create_FDR_label(heritability$EUR, "FDR", c(0.001, 0.05), c("***", "*"))
-
-  intervals <-sort(intervals) #making sure that they are in an ascending order
-
-  tbl$FDR_label <- ""
-
-  df <- purrr::map_dfr(seq_along(intervals), function(i){
-
-    tbl %>%
-      dplyr::mutate(FDR_label =  replace(
-          FDR_label, (FDR_label == "" & FDR <= intervals[i]), symbols[i]
-        )
-    )
-    # print(dfm)
-    # dfm
-  })
-}
-
-
-
 #' Build Manhattan plot tibble
 #'
 #' @param gwas_df A Tibble with columns sample_id and group
@@ -166,34 +127,50 @@ build_manhattanplot_tbl <- function(
   gwas_df,
   chr_selected,
   bp_min,
-  bp_max) {
+  bp_max,
+  to_select,
+  to_highlight,
+  to_exclude) {
+  
+  if(to_highlight == FALSE & !is.null(to_exclude)) gwas <- gwas_df %>% dplyr::filter(!(display %in% to_exclude))
+  else if(to_highlight == TRUE) gwas <- gwas_df %>% dplyr::filter(display %in% to_select)
+  else gwas <- gwas_df
 
-  df <- gwas_df %>%
-
-    # Compute chromosome size
+  gwas %>%
     dplyr::filter(chr_col %in% chr_selected) %>%
-    # dplyr::filter(bp_col >= bp_min & bp_col <= bp_max) %>%
     dplyr::group_by(chr_col) %>%
     dplyr::summarise(chr_len=max(bp_col), .groups = "drop_last") %>%
-    # Calculate cumulative position of each chromosome
     dplyr::mutate(tot=cumsum(as.numeric(chr_len))-chr_len) %>%
     dplyr::select(-chr_len) %>%
-    # Add this info to the initial dataset
-    dplyr::left_join(gwas_df, ., by = "chr_col") %>%
-    # Add a cumulative position of each SNP
+    dplyr::left_join(gwas, ., by = "chr_col") %>%
     dplyr::arrange(chr_col, bp_col) %>%
     dplyr::mutate(x_col=bp_col+tot) %>%
-    # Add highlight and annotation information
     dplyr::mutate( log10p = -log10(PLINK.P),
                    text = paste("<b>",display, "</b>",
                                 "\n(Immune Trait Category: ", `Annot.Figure.ImmuneCategory`, ")",
                                 "\nSNP name: ", snp_id, "\nSNP: ", snp_col, "\nPosition: ", bp_col, "\nChromosome: ", chr_col,
-                                "\nPLINK MAF: ", maf, sep="")) #%>%
-
-  # Filter SNP to make the plot lighter
-  #filter(-log10(P)>0.5)
-
-  df
-
+                                "\nPLINK MAF: ", maf, sep=""))
 }
+
+get_mhtplot_xlabel <- function(
+  selected_region = input$selection,
+  gwas_df = gwas_mht(),
+  x_min = selected_min(),
+  x_max = selected_max()
+){
+  if(selected_region == "See all chromosomes"){
+    gwas_df %>%
+      dplyr::group_by(chr_col) %>%
+      dplyr::summarize(center=( max(x_col) + min(x_col) ) / 2 , .groups = "drop") %>%
+      dplyr::rename(label = chr_col)
+  }else{
+    breaks <- c(x_min, (x_min+x_max)/2, x_max)
+    data.frame(
+      label = paste(format(round(breaks / 1e6, 2), trim = TRUE), "Mb"),
+      center = breaks,
+      stringsAsFactors = FALSE
+    )
+  }
+}
+
 

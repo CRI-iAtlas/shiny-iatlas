@@ -4,15 +4,11 @@ germline_gwas_ui <- function(id){
   shiny::tagList(
     messageBox(
       width = 12,
-      shiny::p("GWAS were only performed on 33 immune traits that demonstrated nominally significant heritability (p < 0.05) in at least one ancestry group,
-               since these were most likely to have significant genetic effects. "),
-      shiny::p("The Manhattan plot below represents the -log10 p of the significant and suggestive GWAS hits by chromosomal position across the 33 immune
-               traits. Select an Immune Trait of interest to highlight the GWAS hits associated with this trait. You can also select a region of interest to narrow down the visualization."),
-      shiny::p("Manuscript context: Figure 3A is reproduced with the 'See all chromosomes' option.
-               Figures 4A can be reproduced by selecting IFN 21978456 in 'Select Immune Features'.
-               To generate Figure 4B, change the range of visualization to 'Select a region', Chromosome 2 and then select the coordinates by zooming in the plot or
-               by manually updating the start and end of the region of interest. Similar procedures should be followed for
-               Figures 4E, 5B, 5D, S4D, S5A, S5C, S5E."),
+      shiny::p("GWAS were performed on 33 immune traits that demonstrated nominally significant heritability (p < 0.05) in at least one ancestry group.  Here you can visualize the significant (p < 10-6) GWAS hits."),
+      shiny::p("Select Immune Features of interest to highlight or select the GWAS hits associated with this trait. You can also choose to exclude GWAS hits associated with a selected immune feature."),
+      shiny::p("If you select the 'Select a region' option, you will be able to select a region of interest and see the genomic region on a IGV plot."),
+      shiny::p("More information on a particular SNP can be obtained by clicking on the manhattan plot, or by searching on the dropdown menu on the right."),
+      shiny::p("Manuscript context: Figure 3A is reproduced with the 'See all chromosomes' option. To generate Figure 4B, change the range of visualization to 'Select a region', Chromosome 2 and then select the coordinates by zooming in the plot or by manually updating the start and end of the region of interest."),
       shiny::actionLink(ns("method_link_gwas"), "Click to view method description.")
       ),
     shiny::column(
@@ -65,9 +61,9 @@ germline_gwas_ui <- function(id){
     ),
     messageBox(
       width = 12,
-      shiny::p("We conducted a GWAS paired with colocalization analyses, and below you can access the results.
-                     eQTL and sQTL analyses were performed in TCGA and GTEx. The table in the left summarizes the TCGA results, and contains two types of plots: three level plots and expanded region. The table at the right summarises the GTEX results, and is updated with changes in the chromosome selected in the manhattan plot above."
-      ),
+      shiny::p("We conducted a GWAS paired with colocalization analyses, with eQTL and sQTL analyses performed in TCGA and GTEx. 
+               Results with a Colocalization Posterior Probability (CLPP) > 0.01 are summarized in the tables below."), 
+      shiny::p("Click on a table row to visualize the plot. The table is updated with available plots in the region displayed at the manhattan plot."),
       shiny::actionLink(ns("method_link_colocalization"), "Click to view method description.")
     ),
     column(
@@ -182,7 +178,7 @@ germline_gwas_server <- function(input, output, session) {
       #reset region with change of chromosome or selection of all chromosomes
       toReset <- reactive({
         shiny::req(input$selection == "Select a region")
-        list(selected_chr(), #chr_size(),
+        list(selected_chr(),
              input$selection)
       })
       
@@ -247,16 +243,14 @@ germline_gwas_server <- function(input, output, session) {
       
       gwas_mht <- eventReactive(toUpdate(),{
         shiny::req(immune_feat(), selected_chr(), selected_min(), selected_max())
-        
-        if(input$only_selected == 0 & !is.null(input$exclude_feat)) gwas_df <- germline_data$gwas %>% filter(!(display %in% input$exclude_feat))
-        else if(input$only_selected == 1) gwas_df <- germline_data$gwas %>% filter(display %in% input$immunefeature)
-        else gwas_df <- germline_data$gwas
-        
         build_manhattanplot_tbl(
-          gwas_df = gwas_df,
+          gwas_df = germline_data$gwas,
           chr_selected = selected_chr(),
           bp_min = selected_min(),
-          bp_max = selected_max())
+          bp_max = selected_max(),
+          to_select = input$immunefeature,
+          to_highlight = input$only_selected,
+          to_exclude = input$exclude_feat)
       })
       
       subset_gwas <- reactive({ #updates when range is changed
@@ -266,21 +260,14 @@ germline_gwas_server <- function(input, output, session) {
           dplyr::filter(bp_col >= selected_min() & bp_col <= selected_max())
       })
       
-      axisdf <- eventReactive(gwas_mht(), {# Prepare X axis
+      axisdf <- eventReactive(gwas_mht(), {
         shiny::req(gwas_mht(), subset_gwas())
-        if(input$selection == "See all chromosomes"){
-          gwas_mht() %>%
-            dplyr::group_by(chr_col) %>%
-            dplyr::summarize(center=( max(x_col) + min(x_col) ) / 2 , .groups = "drop") %>%
-            dplyr::rename(label = chr_col)
-        }else{
-          breaks <- c(selected_min(), (selected_min()+selected_max())/2, selected_max()) #c(min(subset_gwas()$bp_col), (min(subset_gwas()$bp_col) + max(subset_gwas()$bp_col))/2, max(subset_gwas()$bp_col))
-          data.frame(
-            label = paste(format(round(breaks / 1e6, 2), trim = TRUE), "Mb"),
-            center = breaks,
-            stringsAsFactors = FALSE
-          )
-        }
+        get_mhtplot_xlabel(
+          selected_region = input$selection,
+          gwas_df = gwas_mht(),
+          x_min = selected_min(),
+          x_max = selected_max()
+        )
       })
       
       x_title <- reactive({
@@ -308,7 +295,7 @@ germline_gwas_server <- function(input, output, session) {
             x_limits = c(selected_min(), max(selected_max(), subset_gwas()$x_col)),
             x_name = x_title(),
             y_name = "- log10(p-value)",
-            plot_title = "", #plot_title(),
+            plot_title = "",
             source_name = "gwas_mht"
           )
       })
@@ -422,19 +409,18 @@ germline_gwas_server <- function(input, output, session) {
       })
       
       #COLOCALIZATION
-      ##TCGA
-      col_tcga <- reactive({
-        germline_data$coloc_tcga %>%
-          dplyr::filter(CHR %in% selected_chr()) %>%
-          dplyr::select(Type, snp_id, Trait = display, QTL, gene, Splice = TCGA.Splice.ID, CHR, link_plot)
-      })
-      
       coloc_label <- reactive({
         switch(
           input$selection,
           "See all chromosomes" = "for all chromossomes",
           "Select a region" = paste("for chromossome", selected_chr())
         )
+      })
+      ##TCGA
+      col_tcga <- reactive({
+        germline_data$coloc_tcga %>%
+          dplyr::filter(CHR %in% selected_chr()) %>%
+          dplyr::select(Type, "SNP" = snp_id, Trait = display, QTL, gene, Splice = TCGA.Splice.ID, CHR, link_plot)
       })
       
       output$colocalization_tcga <- DT::renderDT({
@@ -478,7 +464,7 @@ germline_gwas_server <- function(input, output, session) {
         DT::datatable(
           germline_data$coloc_gtex %>%
             dplyr::filter(CHR %in% selected_chr()) %>%
-            dplyr::select(Trait = display, QTL, Tissue, Gene, CHR),
+            dplyr::select("SNP" = snp_id, Trait = display, QTL, Tissue, Gene, CHR),
           escape = FALSE,
           rownames = FALSE,
           caption = paste("GTEX colocalization plots available ", coloc_label()),
