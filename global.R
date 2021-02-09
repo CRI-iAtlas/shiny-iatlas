@@ -8,6 +8,7 @@ USE_REMOTE_GS <- config_yaml$gs_remote
 
 panimmune_data <- load_data()
 ioresponse_data <- load_io_data()
+germline_data <- load_germline_data()
 
 purrr::walk(config_yaml$module_files, source)
 purrr::walk(config_yaml$page_files, source)

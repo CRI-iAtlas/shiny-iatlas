@@ -141,6 +141,11 @@ shinyServer(function(input, output, session) {
       reactive(subset_df()),
       reactive(plot_colors()))
     
+    # Germline
+    callModule(
+      germline_server,
+      "germline")
+    
     #IO Molecular Response Overview
     callModule(
       ioresponseoverview,
@@ -221,6 +226,9 @@ shinyServer(function(input, output, session) {
     })
     observeEvent(input$link_to_module12, {
       shinydashboard::updateTabItems(session, "explorertabs", "cell_image")
+    })
+    observeEvent(input$link_to_germline, {
+      shinydashboard::updateTabItems(session, "explorertabs", "germline")
     })
     observeEvent(input$link_to_io_response_overview, {
       shinydashboard::updateTabItems(session, "explorertabs", "ioresponse_overview")
