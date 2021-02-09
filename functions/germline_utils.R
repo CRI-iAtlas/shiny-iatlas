@@ -73,18 +73,18 @@ create_heritability_df <- function(
 
     df <- heritablity_data %>%
       dplyr::filter(.[[parameter]] == group) %>%
-      dplyr::filter(pval <= pval_thres) %>%
-      dplyr::filter(Variance >= 0) %>%
+      dplyr::filter(p_value <= pval_thres) %>%
+      dplyr::filter(variance > 0) %>% 
       create_plotly_label(
         ., paste(.$display, "- ", ancestry_df[cluster], "Ancestry"),
-        paste("\n Immune Trait Category:",.$Annot.Figure.ImmuneCategory, "\n Immune Trait Module:", .$Annot.Figure.ImmuneModule),
-        c("Variance", "SE", "pval","FDR"),
+        paste("\n Immune Trait Category:",.$category, "\n Immune Trait Module:", .$module),
+        c("variance", "se", "p_value","fdr"),
         title = "Immune Trait"
       )
 
   #creating the y label
   if(parameter == "cluster") df <- df %>% mutate(ylabel = display)
-  else if (parameter == "Annot.Figure.ImmuneCategory" | parameter == "Annot.Figure.ImmuneModule")
+  else if (parameter == "category" | parameter == "module")
     df <- df %>% mutate(ylabel = paste(ancestry_df[cluster], display, sep = " - "))
   else  df <- df %>% mutate(ylabel = paste(ancestry_df[cluster], .[[parameter]], sep = " - "))
 }
@@ -98,7 +98,7 @@ format_heritability_plot <- function(p, hdf, fdr = FALSE){
     )
     if(fdr == TRUE){
       p <- p %>%
-            plotly::add_annotations(x = hdf$Variance+hdf$SE+0.01,
+            plotly::add_annotations(x = hdf$variance+hdf$se+0.01,
                                     y = hdf$ylabel,
                                     text = (hdf$plot_annot),
                                     xref = "x",
@@ -137,18 +137,18 @@ build_manhattanplot_tbl <- function(
   else gwas <- gwas_df
 
   gwas %>%
-    dplyr::filter(chr_col %in% chr_selected) %>%
-    dplyr::group_by(chr_col) %>%
-    dplyr::summarise(chr_len=max(bp_col), .groups = "drop_last") %>%
+    dplyr::filter(chr %in% chr_selected) %>%
+    dplyr::group_by(chr) %>%
+    dplyr::summarise(chr_len=max(bp), .groups = "drop_last") %>%
     dplyr::mutate(tot=cumsum(as.numeric(chr_len))-chr_len) %>%
     dplyr::select(-chr_len) %>%
-    dplyr::left_join(gwas, ., by = "chr_col") %>%
-    dplyr::arrange(chr_col, bp_col) %>%
-    dplyr::mutate(x_col=bp_col+tot) %>%
-    dplyr::mutate( log10p = -log10(PLINK.P),
+    dplyr::left_join(gwas, ., by = "chr") %>%
+    dplyr::arrange(chr, bp) %>%
+    dplyr::mutate(x_col=bp+tot) %>%
+    dplyr::mutate( log10p = -log10(p_value),
                    text = paste("<b>",display, "</b>",
-                                "\n(Immune Trait Category: ", `Annot.Figure.ImmuneCategory`, ")",
-                                "\nSNP name: ", snp_id, "\nSNP: ", snp_col, "\nPosition: ", bp_col, "\nChromosome: ", chr_col,
+                                "\n(Immune Trait Category: ", `category`, ")",
+                                "\nSNP name: ", snp_id, "\nSNP: ", snp_col, "\nChromosome: ", chr, "\nPosition: ", bp,
                                 "\nPLINK MAF: ", maf, sep=""))
 }
 
@@ -160,9 +160,9 @@ get_mhtplot_xlabel <- function(
 ){
   if(selected_region == "See all chromosomes"){
     gwas_df %>%
-      dplyr::group_by(chr_col) %>%
+      dplyr::group_by(chr) %>%
       dplyr::summarize(center=( max(x_col) + min(x_col) ) / 2 , .groups = "drop") %>%
-      dplyr::rename(label = chr_col)
+      dplyr::rename(label = chr)
   }else{
     breaks <- c(x_min, (x_min+x_max)/2, x_max)
     data.frame(

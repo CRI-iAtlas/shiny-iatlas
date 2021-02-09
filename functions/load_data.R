@@ -132,7 +132,7 @@ load_germline <- function(){
     
     list(
       heritability = feather::read_feather("data/germline/germline_heritability.feather"),
-      gwas = feather::read_feather("data/germline/germline_GWAS_fullIFN.feather"),
+      gwas = feather::read_feather("data/germline/germline_gwas.feather"),
       coloc_tcga = feather::read_feather("data/germline/colocalization_TCGA_df.feather"),
       coloc_gtex = feather::read_feather("data/germline/colocalization_GTEX_df.feather"),
       rv_stats = feather::read_feather("data/germline/germline_rare_variants.feather")

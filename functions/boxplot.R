@@ -75,7 +75,7 @@ create_boxplot_from_summary_stats <- function(
   
   if(is.na(key_col)) key_col <- y_col
   if(is.na(color_col)) color_col <- y_col
-  
+ 
   wrapr::let(
     alias = c(
       Y = y_col,

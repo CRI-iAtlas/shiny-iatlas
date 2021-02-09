@@ -4,9 +4,9 @@ germline_rarevariants_ui <- function(id){
   shiny::tagList(
     messageBox(
       width = 12,
-      shiny::p("The boxplots show the values of representative immune traits across samples with mutations in genes related to the defined functional categories."), 
+      shiny::p("The boxplots show the values of selected immune traits across samples with germline mutations in genes belonging to defined functional categories, or pathways."), 
       shiny::p("We performed association analyses between germline pathogenic and likely pathogenic cancer predisposition variants in high penetrance susceptibility genes, and immune traits and immune
-               subtypes. Since mutations in most of the genes were rare, when possible, we collapsed genes into categories summarizing different biologic processes or functions. Boxplots were created based on precomputed statistics for each immune trait and pathway combination."),
+                subtypes.  Since mutations in most of the genes were rare we collapsed genes into categories summarizing different biologic processes or functions, when possible."),
       shiny::actionLink(ns("method_link"), "Click to view method description.")
     ),
     optionsBox(
@@ -25,7 +25,7 @@ germline_rarevariants_ui <- function(id){
                                 "Mean" = "mean",
                                 "Min" = "min",
                                 "Max" = "max",
-                                "Number of patients with mutation" = "n_mutation"
+                                "Number of patients with mutation" = "n_mutations"
                               ),
                               selected = "p_value")
       )

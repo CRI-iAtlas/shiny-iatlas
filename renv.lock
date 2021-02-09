@@ -939,8 +939,8 @@
       "RemoteUsername": "heimannch",
       "RemoteRepo": "igvShiny",
       "RemoteRef": "master",
-      "RemoteSha": "89c2c90d6e45bbd95ce20e95aebac2b1929faf91",
-      "Hash": "db80c2e0bc68a13a7f99cfd494d93289"
+      "RemoteSha": "642e33ac94db2796d82ec208302e64fe4642fbf3",
+      "Hash": "5b13358b0994548a8f1f1fb891f57e70"
     },
     "ini": {
       "Package": "ini",

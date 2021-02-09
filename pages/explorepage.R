@@ -271,8 +271,8 @@ explorepage <- dashboardPage(
               width = 6,
               title = "Germline Analysis",
               linkId = "link_to_germline",
-              imgSrc = "images/cell-image.png",
-              boxText = "Explore cell and protein abundance on an illustration.",
+              imgSrc = "images/germline.png",
+              boxText = "Explore the germline genetic contribution to the immune landscape of cancer.",
               linkText = "Open Module"
             )
           ),

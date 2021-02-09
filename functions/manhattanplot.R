@@ -13,7 +13,7 @@ create_manhattanplot <- function(
   if(is.null(x_limits)) x_limits <- c(min(df$x_col), max(df$x_col))
 
   plotly::ggplotly(ggplot2::ggplot(df, aes(x=x_col, y=log10p, text=text)) +
-                      geom_point(data=subset(df, is_highlight=="no"), aes(color=as.factor(chr_col)), alpha=0.8, size=1.3) +
+                      geom_point(data=subset(df, is_highlight=="no"), aes(color=as.factor(chr)), alpha=0.8, size=1.3) +
                       scale_color_manual(values = rep(c("#19a8c7", "#12748a"), 22)) +
                       scale_x_continuous(label = x_label$label, breaks= x_label$center, limits = x_limits) +
                       scale_y_continuous(expand = c(0, 0.5), limits = c(y_min, y_max)) +
