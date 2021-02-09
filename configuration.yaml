@@ -16,6 +16,10 @@ module_files:
   - "modules/cytokinenetwork.R"
   - "modules/cellimagemodule.R"
   - "modules/cnvmodule.R"
+  - "modules/germlinemodule.R"
+  - "modules/germlineheritability.R"
+  - "modules/germlinegwas.R"
+  - "modules/germlinerarevariants.R"
   - "modules/ioresponseoverviewmodule.R"
   - "modules/ioresponsesurvivalmodule.R"
   - "modules/ioresponse_distribution_module.R"
@@ -38,6 +42,7 @@ function_files:
   - "functions/mosaicplot.R"
   - "functions/barplot.R"
   - "functions/forestplot.R"
+  - "functions/manhattanplot.R"
   - "functions/subtype_classifier.R"
   - "functions/tablef_fun.R"
   - "functions/imageplot.R"
@@ -45,6 +50,7 @@ function_files:
   - "functions/extracellnet_utils.R"
   - "functions/cellimage_utils.R"
   - "functions/iomodules_utils.R"
+  - "functions/germline_utils.R"
 
 page_files:
   - "pages/aboutpage.R"
