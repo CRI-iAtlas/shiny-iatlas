@@ -26,6 +26,7 @@ The main feature of the iAtlas web tool is the **iAtlas Explorer**, which provid
 + **TIL Maps:** Explore the characteristics of maps of tumor infiltrating lymphocytes obtained from analysis of H&E images.
 + **Driver Associations:** Explore asociations of microenvironment with driver mutations.
 + **Copy Number Variation:** Explore associations of microenvironment with gene copy number variations.
++ **Germline Analysis:** Explore the germline genetic contribution to the immune landscape of cancer.
 + **Extracellular Networks:** Explore the extracellular networks modulating tumoral immune response.
 + **Cell-Interaction Diagram:** Explore cell and protein abundance on an illustration.
 + **Molecular Response to Immune Checkpoint Inhibitor (ICI) therapy:** These modules allow you to explore the relationship between possible biomarkers of immune response and the outcome of response to ICI, based on publicly available datasets that we have processed for use in iAtlas: 
