@@ -1,6 +1,6 @@
 ## Updates
 
-Follow us on [Twitter](https://twitter.com/iatlas_cri) for latest developments!
+Follow [@iatlas_cri](https://twitter.com/iatlas_cri) on Twitter for latest developments!
 
 ## Source code and data resources
 iAtlas app, tools, and data and annotations
