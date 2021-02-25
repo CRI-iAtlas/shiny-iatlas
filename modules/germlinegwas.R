@@ -372,7 +372,7 @@ germline_gwas_server <- function(input, output, session) {
         dbsnp <- paste0("https://www.ncbi.nlm.nih.gov/snp/", selected_snp()$snp_id)
         gtex <- paste0("https://gtexportal.org/home/snp/", selected_snp()$snp_id)
         gwascat <- paste0("https://www.ebi.ac.uk/gwas/search?query=", selected_snp()$snp_id)
-        pheweb <- paste0("http://pheweb-tcga.qcri.org/variant/",  gsub(':([[:upper:]])', "-\\1", selected_snp()$snp_col))
+        pheweb <- paste0("http://pheweb-tcga.qcri.org/variant/", selected_snp()$snp_col) #gsub(':([[:upper:]])', "-\\1", selected_snp()$snp_col))
         dice <- paste0("https://dice-database.org/eqtls/",  selected_snp()$snp_id)
         
         p(strong(selected_snp()$snp_id), tags$br(),
