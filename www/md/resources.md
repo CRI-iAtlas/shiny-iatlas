@@ -22,7 +22,7 @@ iAtlas app, tools, and data and annotations
 
 + **CRI Landscape of Immuno-Oncology Drug Development:** https://www.cancerresearch.org/scientists/immuno-oncology-landscape
 
-### Source for targets of immunotherapy studies
+### Source for data in the Molecular Response to Immune Checkpoint Inhibitor modules:
 
 * [Cloughesy et al. Neoadjuvant anti-PD-1 immunotherapy promotes a survival benefit with intratumoral and systemic immune responses in recurrent glioblastoma. Nat Med. 2019 Mar;25(3):477-486](https://doi.org/10.1038/s41591-018-0337-7)
 
@@ -44,17 +44,17 @@ Workflows for characterization of immune environment in cancer
 
 ## Manuscripts
 
-+ [Eddy JA, Thorsson V, Lamb AE et al. CRI iAtlas: an interactive portal for immuno-oncology research. F1000Research 2020, 9:1028](https://f1000research.com/articles/9-1028/v1)
++ [Eddy et al. CRI iAtlas: an interactive portal for immuno-oncology research. F1000Research 2020, 9:1028](https://f1000research.com/articles/9-1028/v1)
 
 + [Gibbs DL, Robust classification of Immune Subtypes in Cancer, bioRxiv 2020.01.17.910950](https://www.biorxiv.org/content/10.1101/2020.01.17.910950v1)
 
-+ [Saltz et al. Spatial Organization And Molecular Correlation Of Tumor-Infiltrating Lymphocytes Using Deep Learning On Pathology Images; Cell Reports 23, 181-193, April 3 2018](https://www.cell.com/cell-reports/fulltext/S2211-1247(18\)30447-9)
++ [Saltz et al. Spatial Organization and Molecular Correlation of Tumor-Infiltrating Lymphocytes Using Deep Learning on Pathology Images. Cell Rep. 2018 Apr 3;23(1):181-193.e7](https://www.cell.com/cell-reports/fulltext/S2211-1247(18\)30447-9)
 
-+ [Sayaman et al., Germline genetic contribution to the immune landscape of cancer, Immunity (2021)](https://www.cell.com/immunity/fulltext/S1074-7613(21\)00034-0)
++ [Sayaman et al. Germline genetic contribution to the immune landscape of cancer. Immunity. 2021 Feb 9;54(2):367-386.e8](https://www.cell.com/immunity/fulltext/S1074-7613(21\)00034-0)
 
-+ [Thorsson V, Gibbs DL, Brown SD, et al., Immunity, Volume 48, Issue 4, p812 - 830.e14, 17 April 2018](https://www.cell.com/immunity/fulltext/S1074-7613(18\)30121-3)
++ [Thorsson et al. The Immune Landscape of Cancer. Immunity. 2018 Apr 17;48(4):812-830.e14](https://www.cell.com/immunity/fulltext/S1074-7613(18\)30121-3)
 
-+ [Upadhaya et al. Immuno-oncology drug development forges on despite COVID-19, Nature Reviews Drug Discovery 19, 751-752 (2020)](https://www.nature.com/articles/d41573-020-00166-1)
++ [Upadhaya et al. Immuno-oncology drug development forges on despite COVID-19. Nat Rev Drug Discov. 2020 Nov;19(11):751-752](https://www.nature.com/articles/d41573-020-00166-1)
 
 ## Organizations
 Organizations contributing to iAtlas
